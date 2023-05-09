@@ -37,6 +37,17 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/lens_commands.h"
+#import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
+#import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/named_guide.h"
+#import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/capabilities_types.h"
@@ -46,14 +57,6 @@
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/commands/lens_commands.h"
-#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
@@ -76,7 +79,9 @@
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito/incognito_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory_protocol.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_content_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+private.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_delegate.h"
@@ -87,9 +92,6 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/named_guide.h"
-#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -247,6 +249,11 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 // Returns `YES` if the coordinator is started.
 @property(nonatomic, assign) BOOL started;
 
+// Contains a factory which can generate NTP components which are initialized
+// on `start`.
+@property(nonatomic, strong) id<NewTabPageComponentFactoryProtocol>
+    componentFactory;
+
 @end
 
 @implementation NewTabPageCoordinator
@@ -257,10 +264,13 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
 #pragma mark - ChromeCoordinator
 
-- (instancetype)initWithBrowser:(Browser*)browser {
+- (instancetype)initWithBrowser:(Browser*)browser
+               componentFactory:
+                   (id<NewTabPageComponentFactoryProtocol>)componentFactory {
   DCHECK(browser);
   self = [super initWithBaseViewController:nil browser:browser];
   if (self) {
+    _componentFactory = componentFactory;
     _containerViewController = [[UIViewController alloc] init];
   }
   return self;
@@ -462,7 +472,8 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
   // before callbacks in repsonse to a feed refresh are called, ensuring the NTP
   // returns to a state at the top of the surface upon refresh.
   [self.NTPViewController resetStateUponReload];
-  self.discoverFeedService->RefreshFeed(/*feed_visible=*/true);
+  self.discoverFeedService->RefreshFeed(
+      FeedRefreshTrigger::kForegroundUserTriggered);
   [self reloadContentSuggestions];
 }
 
@@ -584,25 +595,19 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 
 // Creates all the NTP components.
 - (void)initializeNTPComponents {
-  self.NTPViewController = [[NewTabPageViewController alloc] init];
-  self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
-  self.NTPMediator = [[NewTabPageMediator alloc]
-              initWithWebState:self.webState
-            templateURLService:self.templateURLService
-                     URLLoader:UrlLoadingBrowserAgent::FromBrowser(self.browser)
-                   authService:self.authService
-               identityManager:IdentityManagerFactory::GetForBrowserState(
-                                   self.browser->GetBrowserState())
-         accountManagerService:ChromeAccountManagerServiceFactory::
-                                   GetForBrowserState(
-                                       self.browser->GetBrowserState())
-                    logoVendor:ios::provider::CreateLogoVendor(self.browser,
-                                                               self.webState)
-      identityDiscImageUpdater:self.headerController];
-  self.contentSuggestionsCoordinator = [[ContentSuggestionsCoordinator alloc]
-      initWithBaseViewController:nil
-                         browser:self.browser];
-  self.feedMetricsRecorder = self.discoverFeedService->GetFeedMetricsRecorder();
+  Browser* browser = self.browser;
+  id<NewTabPageComponentFactoryProtocol> componentFactory =
+      self.componentFactory;
+  self.NTPViewController = [componentFactory NTPViewController];
+  self.headerController = [componentFactory headerController];
+  self.NTPMediator =
+      [componentFactory NTPMediatorForBrowser:browser
+                                     webState:self.webState
+                     identityDiscImageUpdater:self.headerController];
+  self.contentSuggestionsCoordinator =
+      [componentFactory contentSuggestionsCoordinatorForBrowser:browser];
+  self.feedMetricsRecorder =
+      [componentFactory feedMetricsRecorderForBrowser:browser];
 }
 
 #pragma mark - Configurators
@@ -1105,14 +1110,7 @@ bool IsNTPActiveForWebState(web::WebState* web_state) {
 }
 
 - (BOOL)isStartSurface {
-  // TODO(crbug.com/1425382): This condition should be removed once the issue of
-  // having this coordinator started with no valid webstate (e.g. visible NTP in
-  // non-active tab) is resolved. At that point, we should just leave the
-  // `self.webState` DCHECK.
-  if (!self.webState) {
-    DCHECK(NO);
-    return NO;
-  }
+  DCHECK(self.webState);
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(self.webState);
   return NTPHelper && NTPHelper->ShouldShowStartSurface();

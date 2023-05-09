@@ -16,8 +16,8 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "components/os_crypt/os_crypt.h"
-#include "components/os_crypt/os_crypt_mocker.h"
+#include "components/os_crypt/sync/os_crypt.h"
+#include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/base/time.h"
@@ -321,7 +321,7 @@ class TestTrustedVaultClient : public TrustedVaultClient {
     std::move(cb).Run();
   }
 
-  void ClearDataForAccount(const CoreAccountInfo& account_info) override {
+  void ClearLocalDataForAccount(const CoreAccountInfo& account_info) override {
     // Not relevant in these tests.
   }
 

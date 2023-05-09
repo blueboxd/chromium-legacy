@@ -8,24 +8,39 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
+#include "base/cxx20_to_address.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_button_util.h"
+#include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_drag_data.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/page_navigator.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/base/models/dialog_model_menu_model_adapter.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -33,28 +48,33 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/view_utils.h"
 
 namespace {
 constexpr float kBorderRadius = 4.5f;
 constexpr float kButtonRadius = 5.0f;
 constexpr float kBorderThickness = 2.0f;
 
-// This value comes from tab_group_header.cc as kEmptyChipSize. Since this
-// button and the tab_group_header are rendered on different surfaces, keep the
-// value here in case we want to change one but not the other.
-constexpr float kCircleRadius = 14.0f;
+// This value comes from tab_group_style.cc (kEmptyChipSize). Since this
+// button and the tab_group_header are rendered on different surfaces, keep
+// the value here in case we want to change one but not the other.
+constexpr float kCircleRadius = 20.0f;
 }  // namespace
 
 SavedTabGroupButton::SavedTabGroupButton(
     const SavedTabGroup& group,
     base::RepeatingCallback<content::PageNavigator*()> page_navigator,
     PressedCallback callback,
+    Browser* browser,
     bool animations_enabled)
     : MenuButton(std::move(callback), group.title()),
       tab_group_color_id_(group.color()),
-      is_group_in_tabstrip_(group.local_group_id().has_value()),
       guid_(group.saved_guid()),
+      local_group_id_(group.local_group_id()),
       tabs_(group.saved_tabs()),
+      browser_(*browser),
+      service_(
+          *SavedTabGroupServiceFactory::GetForProfile(browser_->profile())),
       page_navigator_callback_(std::move(page_navigator)),
       context_menu_controller_(
           this,
@@ -72,8 +92,6 @@ SavedTabGroupButton::SavedTabGroupButton(
   // be enabled when a theme provider can provide one onpaint.
   SetEnabledTextColors(gfx::kPlaceholderColor);
 
-  // TODO (dljames): Add set_drag_controller to this button once dragging is
-  // built.
   SetMaxSize(gfx::Size(bookmark_button_util::kMaxButtonWidth, 0));
 
   ConfigureInkDropForToolbar(this);
@@ -100,13 +118,18 @@ SavedTabGroupButton::SavedTabGroupButton(
     // comfortably fit in the bookmarks bar.
     SetPreferredSize(gfx::Size(button_height, button_height));
   }
+
+  set_drag_controller(this);
 }
+
+SavedTabGroupButton::~SavedTabGroupButton() = default;
 
 void SavedTabGroupButton::UpdateButtonData(const SavedTabGroup& group) {
   SetText(group.title());
+  SetTooltipText(group.title());
   SetAccessibleName(group.title());
   tab_group_color_id_ = group.color();
-  is_group_in_tabstrip_ = group.local_group_id().has_value();
+  local_group_id_ = group.local_group_id();
   guid_ = group.saved_guid();
   tabs_.clear();
   tabs_ = group.saved_tabs();
@@ -124,8 +147,6 @@ void SavedTabGroupButton::UpdateButtonData(const SavedTabGroup& group) {
   }
 }
 
-SavedTabGroupButton::~SavedTabGroupButton() = default;
-
 std::u16string SavedTabGroupButton::GetTooltipText(const gfx::Point& p) const {
   return label()->GetPreferredSize().width() > label()->size().width()
              ? GetText()
@@ -135,8 +156,9 @@ std::u16string SavedTabGroupButton::GetTooltipText(const gfx::Point& p) const {
 void SavedTabGroupButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // If the button would have no name, avoid crashing by setting the name
   // explicitly empty.
-  if (GetAccessibleName().empty())
+  if (GetAccessibleName().empty()) {
     node_data->SetNameExplicitlyEmpty();
+  }
 
   views::MenuButton::GetAccessibleNodeData(node_data);
   node_data->AddStringAttribute(
@@ -178,8 +200,9 @@ void SavedTabGroupButton::OnPaintBackground(gfx::Canvas* canvas) {
   // Draw border.
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(kBorderThickness);
-  if (is_group_in_tabstrip_)
+  if (local_group_id_.has_value()) {
     canvas->DrawRoundRect(rect_f, kBorderRadius, flags);
+  }
 
   if (GetState() == STATE_HOVERED) {
     // TODO: Draw a box shadow on hover.
@@ -211,30 +234,124 @@ void SavedTabGroupButton::OnThemeChanged() {
   }
 }
 
+void SavedTabGroupButton::WriteDragDataForView(View* sender,
+                                               const gfx::Point& press_pt,
+                                               ui::OSExchangeData* data) {
+  SavedTabGroupButton* const button =
+      views::AsViewClass<SavedTabGroupButton>(sender);
+  CHECK(button);
+  CHECK(button == this);
+
+  // Write the image and MIME type to the OSExchangeData.
+  SavedTabGroupDragData::WriteToOSExchangeData(this, press_pt,
+                                               GetThemeProvider(), data);
+}
+
+int SavedTabGroupButton::GetDragOperationsForView(View* sender,
+                                                  const gfx::Point& p) {
+  // This may need to become more complicated
+  return ui::DragDropTypes::DRAG_MOVE;
+}
+
+bool SavedTabGroupButton::CanStartDragForView(View* sender,
+                                              const gfx::Point& press_pt,
+                                              const gfx::Point& p) {
+  // Check if we have not moved enough horizontally but we have moved downward
+  // vertically - downward drag.
+  gfx::Vector2d move_offset = p - press_pt;
+  return View::ExceededDragThreshold(move_offset);
+}
+
+void SavedTabGroupButton::TabMenuItemPressed(const GURL& url, int event_flags) {
+  CHECK(page_navigator_callback_);
+
+  content::OpenURLParams params(url, content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK,
+                                /*is_renderer_initiated=*/false,
+                                /*started_from_context_menu=*/true);
+  page_navigator_callback_.Run()->OpenURL(params);
+}
+
+void SavedTabGroupButton::MoveGroupToNewWindowPressed(int event_flags) {
+  Browser* browser = nullptr;
+
+  if (local_group_id_.has_value()) {
+    // Find the browser which contains `local_group_id_` if it is open already.
+    browser =
+        service_->listener()->GetBrowserWithTabGroupId(local_group_id_.value());
+  } else {
+    // Open the group in the current browser if it is closed.
+    browser = base::to_address(browser_);
+    service_->OpenSavedTabGroupInBrowser(browser, guid_);
+  }
+
+  // Move the open group to a new browser window.
+  const SavedTabGroup* group = service_->model()->Get(guid_);
+  browser->tab_strip_model()->delegate()->MoveGroupToNewWindow(
+      group->local_group_id().value());
+}
+
+void SavedTabGroupButton::DeleteGroupPressed(int event_flags) {
+  if (local_group_id_.has_value()) {
+    // Keep the opened tab group in the tabstrip but remove the SavedTabGroup
+    // data from the model.
+    TabGroup* tab_group =
+        browser_->tab_strip_model()->group_model()->GetTabGroup(
+            local_group_id_.value());
+
+    service_->UnsaveGroup(local_group_id_.value());
+
+    // Notify observers to update the tab group header.
+    // TODO(dljames): Find a way to move this into
+    // SavedTabGroupKeyedService::DisconnectLocalTabGroup. The goal is to
+    // abstract this logic from the button in case we need to do similar
+    // functionality elsewhere in the future. Ensure this change works when
+    // dragging a Saved group out of the window.
+    tab_group->SetVisualData(*tab_group->visual_data());
+
+  } else {
+    // Remove the SavedTabGroup from the model. No need to worry about updating
+    // tabstrip, since this group is not open.
+    service_->model()->Remove(guid_);
+  }
+}
+
 std::unique_ptr<ui::DialogModel>
 SavedTabGroupButton::CreateDialogModelForContextMenu() {
   ui::DialogModel::Builder dialog_model = ui::DialogModel::Builder();
 
+  const std::u16string move_or_open_group_text =
+      local_group_id_.has_value()
+          ? l10n_util::GetStringUTF16(
+                IDS_TAB_GROUP_HEADER_CXMENU_MOVE_GROUP_TO_NEW_WINDOW)
+          : l10n_util::GetStringUTF16(
+                IDS_TAB_GROUP_HEADER_CXMENU_OPEN_GROUP_IN_NEW_WINDOW);
+
+  dialog_model
+      .AddMenuItem(
+          ui::ImageModel::FromVectorIcon(kMoveGroupToNewWindowIcon),
+          move_or_open_group_text,
+          base::BindRepeating(&SavedTabGroupButton::MoveGroupToNewWindowPressed,
+                              base::Unretained(this)))
+      .AddMenuItem(
+          ui::ImageModel::FromVectorIcon(kCloseGroupIcon),
+          l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_DELETE_GROUP),
+          base::BindRepeating(&SavedTabGroupButton::DeleteGroupPressed,
+                              base::Unretained(this)))
+      .AddSeparator();
+
   for (const SavedTabGroupTab& tab : tabs_) {
-    dialog_model.AddMenuItem(
+    const ui::ImageModel& image =
         tab.favicon().has_value()
             ? ui::ImageModel::FromImage(tab.favicon().value())
-            : ui::ImageModel::FromImage(favicon::GetDefaultFavicon()),
-        tab.title().empty() ? base::UTF8ToUTF16(tab.url().spec()) : tab.title(),
-        base::BindRepeating(
-            [](GURL url,
-               base::RepeatingCallback<content::PageNavigator*()>
-                   page_navigator_callback,
-               int event_flags) {
-              content::OpenURLParams params(
-                  url, content::Referrer(),
-                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                  ui::PAGE_TRANSITION_AUTO_BOOKMARK,
-                  /*is_renderer_initiated=*/false,
-                  /*started_from_context_menu=*/true);
-              page_navigator_callback.Run()->OpenURL(params);
-            },
-            tab.url(), page_navigator_callback_));
+            : ui::ImageModel::FromImage(favicon::GetDefaultFavicon());
+    const std::u16string title =
+        tab.title().empty() ? base::UTF8ToUTF16(tab.url().spec()) : tab.title();
+    dialog_model.AddMenuItem(
+        image, title,
+        base::BindRepeating(&SavedTabGroupButton::TabMenuItemPressed,
+                            base::Unretained(this), tab.url()));
   }
 
   return dialog_model.Build();

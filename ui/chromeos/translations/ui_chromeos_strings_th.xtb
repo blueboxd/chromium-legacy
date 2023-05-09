@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">กำลังซิป <ph name="NUMBER_OF_ITEMS" /> รายการ...</translation>
 <translation id="1722687688096767818">กำลังเพิ่มโปรไฟล์...</translation>
 <translation id="1726100011689679555">เซิร์ฟเวอร์ชื่อ</translation>
+<translation id="1727562178154619254">พร้อมที่จะซิงค์แล้ว</translation>
 <translation id="1729953886957086472">เยอรมัน (เยอรมนี)</translation>
 <translation id="1730235522912993863">จีน (Cangjie)</translation>
 <translation id="1731889557567069540">คัดลอก <ph name="NUMBER_OF_ITEMS" /> รายการแล้ว</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">ความละเอียดของรูปภาพ</translation>
 <translation id="1972984168337863910">ขยายแผงความคิดเห็นเกี่ยวกับไฟล์</translation>
 <translation id="1995337122023280937">ไปยังตำแหน่งที่ตั้งไฟล์</translation>
-<translation id="1999709132469742660">การเข้าถึงไฟล์จาก URL ทั้งหมด</translation>
 <translation id="2001796770603320721">จัดการใน Google ไดรฟ์</translation>
 <translation id="2009067268969781306">การฟอร์แมตไดรฟ์จะลบข้อมูลทั้งหมดที่เก็บไว้ในไดรฟ์ การดำเนินการนี้ยกเลิกไม่ได้</translation>
 <translation id="2025955442973426285">ตีกรินยา</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">ละตินอเมริกา</translation>
 <translation id="5330145655348521461">ไฟล์เหล่านี้เปิดอยู่บนเดสก์ท็อปเครื่องอื่น โปรดย้ายมายัง <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) เพื่อดู</translation>
 <translation id="5330512191124428349">รับข้อมูล</translation>
-<translation id="5337538975554986899">การเข้าถึงไฟล์จาก URL ทั้งหมด ยกเว้น <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">จัดการการแชร์กับ Bruschetta</translation>
 <translation id="535792325654997756">คนกับแมว</translation>
 <translation id="5358764674931277">อัตราเฟรม</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">ข้อผิดพลาดเกิดขึ้นระหว่างการติดตั้งแอปพลิเคชัน Linux</translation>
 <translation id="5912396950572065471">รูปแบบ</translation>
 <translation id="5913638992615760742">การคัดลอกล้มเหลว ข้อผิดพลาดที่ไม่คาดคิด: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">มีฟีเจอร์การค้นหาใหม่พร้อมใช้งาน</translation>
 <translation id="5926082595146149752">ดัตช์ (เนเธอร์แลนด์) ด้วยแป้นพิมพ์พีซีสหรัฐฯ แบบสากล</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, , เปิดใช้งานหลังจากตั้งค่าอุปกรณ์</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">ยังไม่ได้โหลดใบรับรอง</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">แชร์โฟลเดอร์กับ Bruschetta</translation>
+<translation id="6750737795876287924">ไดเรกทอรีปัจจุบัน</translation>
 <translation id="6751256176799620176">เลือกไว้ 1 โฟลเดอร์</translation>
 <translation id="6755827872271341378">อุปกรณ์ Chrome OS Flex</translation>
 <translation id="6790428901817661496">เล่น</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">โฟลเดอร์</translation>
 <translation id="6976795442547527108">สิงโต</translation>
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
-<translation id="6979737339423435258">ตั้งแต่ต้น</translation>
 <translation id="6989942356279143254">สวีเดน</translation>
 <translation id="6990081529015358884">คุณไม่มีพื้นที่เหลือแล้ว</translation>
 <translation id="6993826899923627728">รายการเหล่านี้อยู่ในถังขยะ</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">ไม่มีรูปภาพล่าสุด</translation>
 <translation id="7460898608667578234">ยูเครน</translation>
 <translation id="7469894403370665791">เชื่อมต่อกับเครือข่ายนี้อัตโนมัติ</translation>
-<translation id="7481358317100446445">พร้อม</translation>
 <translation id="7486315294984620427">ต้องคัดลอกไฟล์ดังกล่าวไปยังไฟล์ Windows เพื่อวางใน Parallels Desktop</translation>
 <translation id="749452993132003881">ฮิระงะนะ</translation>
 <translation id="7495372004724182530">มาลายาลัม (ตามการออกเสียง)</translation>

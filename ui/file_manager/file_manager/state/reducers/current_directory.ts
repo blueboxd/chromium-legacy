@@ -17,12 +17,14 @@ import {ChangeDirectoryAction, ChangeFileTasksAction, ChangeSelectionAction, Upd
  */
 export function changeDirectory(
     currentState: State, action: ChangeDirectoryAction): State {
-  const fileData = currentState.allEntries[action.payload.key];
+  const {key, status} = action.payload;
+
+  const fileData = currentState.allEntries[key];
 
   let selection = currentState.currentDirectory?.selection;
   // Use an empty selection when a selection isn't defined or it's navigating to
   // a new directory.
-  if (!selection || currentState.currentDirectory?.key !== action.payload.key) {
+  if (!selection || currentState.currentDirectory?.key !== key) {
     selection = {
       keys: [],
       dirCount: 0,
@@ -43,7 +45,7 @@ export function changeDirectory(
       currentState.currentDirectory?.hasDlpDisabledFiles || false;
   // Use empty content when it isn't defined or it's navigating to a new
   // directory. The content will be updated again after a successful scan.
-  if (!content || currentState.currentDirectory?.key !== action.payload.key) {
+  if (!content || currentState.currentDirectory?.key !== key) {
     content = {
       keys: [],
     };
@@ -51,8 +53,8 @@ export function changeDirectory(
   }
 
   let currentDirectory: CurrentDirectory = {
-    key: action.payload.key,
-    status: action.payload.status,
+    key,
+    status,
     pathComponents: [],
     content: content,
     rootType: undefined,
@@ -65,7 +67,7 @@ export function changeDirectory(
   // At the end of the change directory, DirectoryContents will send an Action
   // with the Entry to be cached.
   if (fileData) {
-    const volumeManager = window.fileManager?.volumeManager;
+    const {volumeManager} = window.fileManager;
     if (!volumeManager) {
       console.debug(`VolumeManager not available yet.`);
       currentDirectory = currentState.currentDirectory || currentDirectory;
@@ -116,19 +118,26 @@ export function updateSelection(
     currentState: State, action: ChangeSelectionAction): State {
   if (!currentState.currentDirectory) {
     console.warn('Missing `currentDirectory`');
+    console.debug('Dropping action:', action);
     return currentState;
   }
 
   if (!currentState.currentDirectory.content) {
     console.warn('Missing `currentDirectory.content`');
+    console.debug('Dropping action:', action);
     return currentState;
   }
 
   const selectedKeys = action.payload.selectedKeys;
   const contentKeys = new Set(currentState.currentDirectory!.content!.keys);
-  if (!selectedKeys.every(key => contentKeys.has(key))) {
-    console.warn('Got selected keys that are not in current directory');
-    return currentState;
+  const missingKeys = selectedKeys.filter(k => !contentKeys.has(k));
+
+  if (missingKeys.length > 0) {
+    console.warn(
+        'Got selected keys that are not in current directory, ' +
+        'continuing anyway');
+    console.debug(`Missing keys: ${missingKeys.join('\n')} \nexisting keys:\n ${
+        (currentState.currentDirectory?.content?.keys ?? []).join('\n')}`);
   }
 
   const selection = getEmptySelection(selectedKeys);

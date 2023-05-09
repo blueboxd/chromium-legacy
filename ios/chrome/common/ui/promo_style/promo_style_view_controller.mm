@@ -7,6 +7,7 @@
 #import "base/check.h"
 #import "base/check_op.h"
 #import "base/i18n/rtl.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/constants.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -587,8 +588,16 @@ constexpr CGFloat kFullAvatarImageSize = 100;
 - (UIButton*)primaryActionButton {
   if (!_primaryActionButton) {
     _primaryActionButton = [[HighlightButton alloc] initWithFrame:CGRectZero];
-    _primaryActionButton.contentEdgeInsets =
+
+    // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
+    // deployment target is iOS 15.
+    UIEdgeInsets contentInsets =
         UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+    SetContentEdgeInsets(_primaryActionButton, contentInsets);
+    UIEdgeInsets titleInsets =
+        UIEdgeInsetsMake(0, kMoreArrowMargin, 0, kMoreArrowMargin);
+    SetTitleEdgeInsets(_primaryActionButton, titleInsets);
+
     [_primaryActionButton setBackgroundColor:[UIColor colorNamed:kBlueColor]];
     UIColor* titleColor = [UIColor colorNamed:kSolidButtonTextColor];
     [_primaryActionButton setTitleColor:titleColor
@@ -603,8 +612,8 @@ constexpr CGFloat kFullAvatarImageSize = 100;
 
     // Use `primaryActionString` even if scrolling to the end is mandatory
     // because at the viewDidLoad stage, the scroll view hasn't computed its
-    // content height, so there is no way to knOow if scrolling is needed. This
-    // label will be updated at the viewDidAppear stage if necessary.
+    // content height, so there is no way to knOow if scrolling is needed.
+    // This label will be updated at the viewDidAppear stage if necessary.
     [_primaryActionButton setTitle:self.primaryActionString
                           forState:UIControlStateNormal];
     UILabel* titleLabel = _primaryActionButton.titleLabel;
@@ -613,8 +622,6 @@ constexpr CGFloat kFullAvatarImageSize = 100;
     _primaryActionButton.titleLabel.adjustsFontForContentSizeCategory = YES;
     _primaryActionButton.accessibilityIdentifier =
         kPromoStylePrimaryActionAccessibilityIdentifier;
-    _primaryActionButton.titleEdgeInsets =
-        UIEdgeInsetsMake(0, kMoreArrowMargin, 0, kMoreArrowMargin);
     _primaryActionButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     [_primaryActionButton addTarget:self
                              action:@selector(didTapPrimaryActionButton)
@@ -912,11 +919,16 @@ constexpr CGFloat kFullAvatarImageSize = 100;
           accessibilityIdentifier:(NSString*)accessibilityIdentifier {
   UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
   [button setTitle:buttonText forState:UIControlStateNormal];
-  button.contentEdgeInsets =
-      UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
   [button setBackgroundColor:[UIColor clearColor]];
   UIColor* titleColor = [UIColor colorNamed:kBlueColor];
   [button setTitleColor:titleColor forState:UIControlStateNormal];
+
+  // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
+  // deployment target is iOS 15.
+  UIEdgeInsets contentInsets =
+      UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+  SetContentEdgeInsets(button, contentInsets);
+
   button.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   button.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1074,7 +1086,7 @@ constexpr CGFloat kFullAvatarImageSize = 100;
 
 // Helper that returns whether the `traitCollection` has a regular vertical
 // and regular horizontal size class.
-// Copied from "ios/chrome/browser/ui/util/uikit_ui_util.mm"
+// Copied from "ios/chrome/browser/shared/ui/util/uikit_ui_util.mm"
 - (bool)isRegularXRegularSizeClass:(UITraitCollection*)traitCollection {
   return traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
          traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular;

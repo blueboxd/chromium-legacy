@@ -88,10 +88,15 @@ std::vector<SnapshotItemDetails> CollectProfileItems() {
                           chrome_browsing_data_remover::DATA_TYPE_HISTORY,
                           SnapshotItemId::kTopSites),
       // Bookmarks
-      SnapshotItemDetails(base::FilePath(bookmarks::kBookmarksFileName),
+      SnapshotItemDetails(
+          base::FilePath(bookmarks::kLocalOrSyncableBookmarksFileName),
+          SnapshotItemDetails::ItemType::kFile,
+          chrome_browsing_data_remover::DATA_TYPE_BOOKMARKS,
+          SnapshotItemId::kLocalOrSyncableBookmarks),
+      SnapshotItemDetails(base::FilePath(bookmarks::kAccountBookmarksFileName),
                           SnapshotItemDetails::ItemType::kFile,
                           chrome_browsing_data_remover::DATA_TYPE_BOOKMARKS,
-                          SnapshotItemId::kBookmarks),
+                          SnapshotItemId::kAccountBookmarks),
       // Tab Restore and sessions
       // TODO(crbug.com/1103458): Remove legacy snapshots in M89
       SnapshotItemDetails(

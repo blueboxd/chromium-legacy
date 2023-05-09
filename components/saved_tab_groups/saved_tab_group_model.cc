@@ -51,14 +51,6 @@ const SavedTabGroup* SavedTabGroupModel::Get(const base::GUID& id) const {
   return &saved_tab_groups_[index.value()];
 }
 
-SavedTabGroup* SavedTabGroupModel::Get(const base::GUID& id) {
-  absl::optional<int> index = GetIndexOf(id);
-  if (!index.has_value())
-    return nullptr;
-
-  return &saved_tab_groups_[index.value()];
-}
-
 const SavedTabGroup* SavedTabGroupModel::Get(
     const tab_groups::TabGroupId local_group_id) const {
   absl::optional<int> index = GetIndexOf(local_group_id);
@@ -68,19 +60,9 @@ const SavedTabGroup* SavedTabGroupModel::Get(
   return &saved_tab_groups_[index.value()];
 }
 
-SavedTabGroup* SavedTabGroupModel::Get(
-    const tab_groups::TabGroupId local_group_id) {
-  absl::optional<int> index = GetIndexOf(local_group_id);
-  if (!index.has_value())
-    return nullptr;
-
-  return &saved_tab_groups_[index.value()];
-}
-
 void SavedTabGroupModel::Add(SavedTabGroup saved_group) {
   base::GUID group_guid = saved_group.saved_guid();
-  if (Contains(group_guid))
-    return;
+  CHECK(!Contains(group_guid));
 
   // Give a default position to groups if it is not already set.
   if (saved_group.position() == SavedTabGroup::kUnsetPosition)
@@ -355,22 +337,24 @@ std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupModel::MergeGroup(
 
 std::unique_ptr<sync_pb::SavedTabGroupSpecifics> SavedTabGroupModel::MergeTab(
     const sync_pb::SavedTabGroupSpecifics& sync_specific) {
-  const base::GUID& group_id =
+  const base::GUID& group_guid =
       base::GUID::ParseLowercase(sync_specific.tab().group_guid());
-  const base::GUID& tab_id = base::GUID::ParseLowercase(sync_specific.guid());
-  DCHECK(Contains(group_id));
-  DCHECK(Get(group_id)->ContainsTab(tab_id));
+  absl::optional<int> group_index = GetIndexOf(group_guid);
+  CHECK(group_index.has_value());
 
-  absl::optional<SavedTabGroupTab*> maybe_tab = Get(group_id)->GetTab(tab_id);
-  SavedTabGroupTab* tab = maybe_tab.value();
+  const base::GUID& tab_guid = base::GUID::ParseLowercase(sync_specific.guid());
+  CHECK(saved_tab_groups_[group_index.value()].ContainsTab(tab_guid));
 
-  tab->MergeTab(std::move(sync_specific));
+  SavedTabGroupTab merged_tab(*Get(group_guid)->GetTab(tab_guid));
+  merged_tab.MergeTab(std::move(sync_specific));
+  saved_tab_groups_[group_index.value()].ReplaceTabAt(tab_guid, merged_tab);
 
   for (auto& observer : observers_) {
-    observer.SavedTabGroupUpdatedFromSync(group_id, tab->saved_group_guid());
+    observer.SavedTabGroupUpdatedFromSync(group_guid,
+                                          merged_tab.saved_group_guid());
   }
 
-  return tab->ToSpecifics();
+  return merged_tab.ToSpecifics();
 }
 
 void SavedTabGroupModel::Reorder(const base::GUID& id, int new_index) {

@@ -41,7 +41,8 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 AuthenticatorData MakeAuthenticatorData(
     CredentialMetadata::SignCounter counter_type,
     const std::string& rp_id,
-    absl::optional<AttestedCredentialData> attested_credential_data);
+    absl::optional<AttestedCredentialData> attested_credential_data,
+    bool has_uv);
 
 // GenerateSignature signs the concatenation of the serialization of the given
 // authenticator data and the given client data hash, as required for
@@ -68,6 +69,12 @@ enum class CodeSigningState {
 // signed, `kNotSigned` if not, or `kUnknown` if the signing status cannot be
 // determined. (The latter will always happen on macOS < 10.12.)
 CodeSigningState ProcessIsSigned();
+
+// Returns whether biometrics are available for use. On macOS, this translates
+// to whether the device supports Touch ID, and whether the sensor is ready to
+// be used (i.e. not soft-locked from consecutive bad attempts; laptop lid not
+// closed).
+bool DeviceHasBiometricsAvailable();
 
 }  // namespace mac
 }  // namespace fido

@@ -280,6 +280,7 @@ void RecordRefreshTokenRevokedFromSource(
   UMA_HISTOGRAM_ENUMERATION("Signin.RefreshTokenRevoked.Source", source);
 }
 
+#if BUILDFLAG(IS_IOS)
 void RecordSigninAccountType(signin::ConsentLevel consent_level,
                              bool is_managed_account) {
   SigninAccountType account_type = is_managed_account
@@ -296,6 +297,7 @@ void RecordSigninAccountType(signin::ConsentLevel consent_level,
       break;
   }
 }
+#endif
 
 // --------------------------------------------------------------
 // User actions
@@ -452,6 +454,10 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromForYouFre"));
       break;
+    case AccessPoint::ACCESS_POINT_CREATOR_FEED_FOLLOW:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signin_FromCreatorFeedFollow"));
+      break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
       break;
@@ -578,6 +584,10 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
       NOTREACHED() << "Signin_Impression_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point);
+      break;
+    case AccessPoint::ACCESS_POINT_CREATOR_FEED_FOLLOW:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromCreatorFeedFollow"));
       break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();

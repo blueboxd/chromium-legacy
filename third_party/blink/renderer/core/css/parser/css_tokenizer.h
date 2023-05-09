@@ -23,7 +23,11 @@ class CORE_EXPORT CSSTokenizer {
   DISALLOW_NEW();
 
  public:
+  // The overload with const String& holds on to a reference to the string.
+  // (Most places, we probably don't need to do that, but fixing that would
+  // require manual inspection.)
   explicit CSSTokenizer(const String&, wtf_size_t offset = 0);
+  explicit CSSTokenizer(StringView, wtf_size_t offset = 0);
   CSSTokenizer(const CSSTokenizer&) = delete;
   CSSTokenizer& operator=(const CSSTokenizer&) = delete;
 
@@ -36,6 +40,14 @@ class CORE_EXPORT CSSTokenizer {
   const Vector<String>& StringPool() const { return string_pool_; }
   CSSParserToken TokenizeSingle();
   CSSParserToken TokenizeSingleWithComments();
+
+  // If you want the returned CSSParserTokens' Value() to be valid beyond
+  // the destruction of CSSTokenizer, you'll need to call PersistString()
+  // to some longer-lived tokenizer (escaped string tokens may have
+  // StringViews that refer to the string pool). The tokenizer
+  // (*this, not the destination) is in an undefined state after this;
+  // all you can do is destroy it.
+  void PersistStrings(CSSTokenizer& destination);
 
  private:
   template <bool SkipComments, bool StoreOffset>

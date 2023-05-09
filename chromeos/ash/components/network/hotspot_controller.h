@@ -10,9 +10,11 @@
 #include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/elapsed_timer.h"
 #include "chromeos/ash/components/network/hotspot_capabilities_provider.h"
 #include "chromeos/ash/components/network/hotspot_state_handler.h"
 #include "chromeos/ash/components/network/technology_state_controller.h"
+#include "chromeos/ash/services/hotspot_config/public/cpp/hotspot_enabled_state_provider.h"
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-forward.h"
 
 namespace ash {
@@ -27,12 +29,13 @@ namespace ash {
 // Enable or disable requests are queued and executes one request at a time in
 // order.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController
-    : public TechnologyStateController::HotspotOperationDelegate {
+    : public TechnologyStateController::HotspotOperationDelegate,
+      public hotspot_config::HotspotEnabledStateProvider {
  public:
   HotspotController();
   HotspotController(const HotspotController&) = delete;
   HotspotController& operator=(const HotspotController&) = delete;
-  virtual ~HotspotController();
+  ~HotspotController() override;
 
   void Init(HotspotCapabilitiesProvider* hotspot_capabilities_provider,
             HotspotStateHandler* hotspot_state_handler,
@@ -46,7 +49,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController
   // execute. If another request is already being processed, the current request
   // will wait until the previous one is completed.
   void EnableHotspot(HotspotControlCallback callback);
-  void DisableHotspot(HotspotControlCallback callback);
+  void DisableHotspot(HotspotControlCallback callback,
+                      hotspot_config::mojom::DisableReason disable_reason);
 
   // Set whether Hotspot should be allowed/disallowed by policy.
   void SetPolicyAllowHotspot(bool allow_hotspot);
@@ -57,13 +61,21 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController
   // Represents hotspot enable or disable control request parameters. Requests
   // are queued and processed one at a time.
   struct HotspotControlRequest {
-    HotspotControlRequest(bool enabled, HotspotControlCallback callback);
+    HotspotControlRequest(
+        bool enabled,
+        absl::optional<hotspot_config::mojom::DisableReason> disable_reason,
+        HotspotControlCallback callback);
     HotspotControlRequest(const HotspotControlRequest&) = delete;
     HotspotControlRequest& operator=(const HotspotControlRequest&) = delete;
     ~HotspotControlRequest();
 
     bool enabled;
     bool wifi_turned_off = false;
+    // Set for disable requests and will be nullopt for enable requests.
+    absl::optional<hotspot_config::mojom::DisableReason> disable_reason;
+    // Tracks the latency of enable hotspot operation and will be nullopt for
+    // disable requests.
+    absl::optional<base::ElapsedTimer> enable_latency_timer;
     HotspotControlCallback callback;
   };
 

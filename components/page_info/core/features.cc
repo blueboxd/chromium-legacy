@@ -4,6 +4,7 @@
 
 #include "components/page_info/core/features.h"
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
@@ -20,10 +21,18 @@ BASE_FEATURE(kPageInfoAboutThisSiteImprovedBottomSheet,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
+const char* pfings[]{"pt", "fr", "it", "nl", "de", "es"};
+
 extern bool IsAboutThisSiteFeatureEnabled(const std::string& locale) {
-  if (l10n_util::GetLanguage(locale) == "en") {
+  std::string lang = l10n_util::GetLanguage(locale);
+  if (lang == "en") {
     return base::FeatureList::IsEnabled(kPageInfoAboutThisSiteEn);
   } else {
+#if BUILDFLAG(IS_ANDROID)
+    if (base::Contains(pfings, lang)) {
+      return base::FeatureList::IsEnabled(kPageInfoAboutThisSiteEn);
+    }
+#endif
     return base::FeatureList::IsEnabled(kPageInfoAboutThisSiteNonEn);
   }
 }
@@ -53,11 +62,14 @@ BASE_FEATURE(kPageInfoAboutThisSiteMoreInfo,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-BASE_FEATURE(kPageInfoAboutThisSiteDescriptionPlaceholder,
-             "PageInfoAboutThisSiteDescriptionPlaceholder",
+#if !BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kPageInfoAboutThisSiteSecondaryIcon,
+             "PageInfoAboutThisSiteSecondaryIcon",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-#if !BUILDFLAG(IS_ANDROID)
+const base::FeatureParam<int> kAboutThisSiteSecondaryIconId{
+    &kPageInfoAboutThisSiteSecondaryIcon, "IconId", 0};
+
 BASE_FEATURE(kPageInfoHistoryDesktop,
              "PageInfoHistoryDesktop",
              base::FEATURE_DISABLED_BY_DEFAULT);

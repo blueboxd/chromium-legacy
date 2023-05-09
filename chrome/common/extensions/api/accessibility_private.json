@@ -234,7 +234,7 @@
       {
         "id": "AccessibilityFeature",
         "type": "string",
-        "enum": [ "googleTtsLanguagePacks", "dictationPumpkinParsing", "selectToSpeakVoiceSwitching", "dictationMoreCommands","selectToSpeakContextMenuOption", "dictationContextChecking"],
+        "enum": [ "googleTtsLanguagePacks","selectToSpeakContextMenuOption", "dictationContextChecking"],
         "description": "Subset of accessibility features."
       },
       {
@@ -857,6 +857,23 @@
               "name": "contents",
               "type": "binary",
               "description": "The contents of the DLC as a Uint8Array."
+            }
+          ]
+        }
+      },
+      {
+        "name": "isLacrosPrimary",
+        "type": "function",
+        "description": "Gets whether new browser windows and tabs should be in Lacros browser.",
+        "parameters": [],
+        "returns_async": {
+          "name": "callback",
+          "description": "A callback that is run when the result is returned.",
+          "parameters": [
+            {
+              "type": "boolean",
+              "name": "useLacros",
+              "description": "True if new browser windows and tabs should be in Lacros."
             }
           ]
         }

@@ -10,6 +10,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "base/containers/contains.h"
 #include "base/strings/string_piece_forward.h"
@@ -72,7 +73,9 @@ void InputDeviceTracker::OnActiveUserPrefServiceChanged(
   // `StringListPrefMember`s and record that we have seen all currently
   // connected devices.
   Init(pref_service);
-  RecordConnectedDevices();
+  if (!features::IsInputDeviceSettingsSplitEnabled()) {
+    RecordConnectedDevices();
+  }
 }
 
 bool InputDeviceTracker::WasDevicePreviouslyConnected(
@@ -126,6 +129,10 @@ void InputDeviceTracker::Init(PrefService* pref_service) {
 void InputDeviceTracker::RecordDeviceConnected(
     InputDeviceCategory category,
     const base::StringPiece& device_key) {
+  if (features::IsInputDeviceSettingsSplitEnabled()) {
+    return;
+  }
+
   auto* const observed_devices = GetObservedDevicesForCategory(category);
   // If `observed_devices` is null, that means we are not yet in a valid chrome
   // session.

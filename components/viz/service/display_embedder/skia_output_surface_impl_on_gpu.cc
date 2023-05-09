@@ -10,6 +10,7 @@
 
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
@@ -48,6 +49,7 @@
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/vulkan/buildflags.h"
@@ -334,6 +336,7 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseAsyncReadResultHelpers() {
 }
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
+  TRACE_EVENT0("cc", __PRETTY_FUNCTION__);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // We need to have context current or lost during the destruction.
@@ -366,6 +369,7 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   // before deleting ImplOnGpu's other member variables.
   shared_image_factory_.reset();
   if (has_context) {
+    TRACE_EVENT0("viz", "Cleanup");
     absl::optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (dependency_->GetGrShaderCache()) {
       cache_use.emplace(dependency_->GetGrShaderCache(),
@@ -380,6 +384,18 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
         context_state_->progress_reporter());
     gr_context()->flush(flush_info);
     gr_context()->submit(true);
+
+#if BUILDFLAG(ENABLE_VULKAN)
+    // No frame will come for us, make sure that all the cleanup is done.
+    if (base::FeatureList::IsEnabled(features::kGpuCleanupInBackground) &&
+        context_state_->GrContextIsVulkan()) {
+      DCHECK(context_state_->vk_context_provider());
+      auto* fence_helper = context_state_->vk_context_provider()
+                               ->GetDeviceQueue()
+                               ->GetFenceHelper();
+      fence_helper->PerformImmediateCleanup();
+    }
+#endif
   }
 
   sync_point_client_state_->Destroy();
@@ -593,10 +609,14 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     std::vector<gpu::SyncToken> sync_tokens,
     base::OnceClosure on_finished,
     base::OnceCallback<void(gfx::GpuFenceHandle)> return_release_fence_cb,
+    const gfx::Rect& update_rect,
     bool is_overlay) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
+
+  DLOG_IF(WARNING, !update_rect.IsEmpty())
+      << "FinishPaintRenderPass called with empty update_rect.";
 
   if (context_is_lost_)
     return;
@@ -618,7 +638,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   const auto& characterization = ddl->characterization();
   auto local_scoped_access = skia_representation->BeginScopedWriteAccess(
       characterization.sampleCount(), characterization.surfaceProps(),
-      &begin_semaphores, &end_semaphores,
+      update_rect, &begin_semaphores, &end_semaphores,
       gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
   if (!local_scoped_access) {
     MarkContextLost(CONTEXT_LOST_UNKNOWN);
@@ -1729,7 +1749,6 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
 
     if (MakeCurrent(/*need_framebuffer=*/true)) {
       if (presenter_) {
-        DCHECK(presenter_->IsSurfaceless());
 #if !BUILDFLAG(IS_WIN)
         output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
             std::make_unique<OutputPresenterGL>(
@@ -1739,7 +1758,6 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
             shared_gpu_deps_->memory_tracker(),
             GetDidSwapBuffersCompleteCallback());
 #else   // !BUILDFLAG(IS_WIN)
-        DCHECK(presenter_->SupportsDCLayers());
         output_device_ = std::make_unique<SkiaOutputDeviceDCompPresenter>(
             shared_image_factory_.get(),
             shared_image_representation_factory_.get(), context_state_.get(),
@@ -1791,10 +1809,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
     DCHECK(!gl_surface_->IsSurfaceless());
 #endif
   } else {
-    // If there is no gl_surface there must be presenter and it's always
-    // surfaceless.
+    // If there is no gl_surface there must be presenter.
     DCHECK(presenter_);
-    DCHECK(presenter_->IsSurfaceless());
   }
 
   return true;
@@ -1960,9 +1976,6 @@ bool SkiaOutputSurfaceImplOnGpu::MakeCurrent(bool need_framebuffer) {
     if (gl_surface_) {
       gl_surface_->OnMakeCurrent(context_state_->context());
     }
-    if (presenter_) {
-      presenter_->OnMakeCurrent(context_state_->context());
-    }
   }
 
   context_state_->set_need_context_state_reset(true);
@@ -1983,8 +1996,6 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersInternal(
 
   if (frame) {
     if (gl_surface_) {
-      gl_surface_->SetChoreographerVsyncIdForNextFrame(
-          frame->choreographer_vsync_id);
       if (frame->delegated_ink_metadata) {
         gl_surface_->SetDelegatedInkTrailStartPoint(
             std::move(frame->delegated_ink_metadata));
@@ -1993,10 +2004,12 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffersInternal(
     if (presenter_) {
       presenter_->SetChoreographerVsyncIdForNextFrame(
           frame->choreographer_vsync_id);
+#if BUILDFLAG(IS_WIN)
       if (frame->delegated_ink_metadata) {
         presenter_->SetDelegatedInkTrailStartPoint(
             std::move(frame->delegated_ink_metadata));
       }
+#endif
     }
   }
 
@@ -2097,24 +2110,9 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
     output_device_->SetViewportSize(frame->size);
     output_device_->SchedulePrimaryPlane(output_surface_plane_);
 
-    if (frame->sub_buffer_rect) {
-      if (capabilities().supports_post_sub_buffer) {
-        output_device_->PostSubBuffer(*frame->sub_buffer_rect,
-                                      buffer_presented_callback_,
-                                      std::move(*frame));
-
-      } else if (capabilities().supports_commit_overlay_planes) {
-        // CommitOverlayPlanes() can only be used for empty swap.
-        DCHECK(frame->sub_buffer_rect->IsEmpty());
-        output_device_->CommitOverlayPlanes(buffer_presented_callback_,
-                                            std::move(*frame));
-      } else {
-        NOTREACHED();
-      }
-    } else {
-      output_device_->SwapBuffers(buffer_presented_callback_,
-                                  std::move(*frame));
-    }
+    DCHECK(!frame->sub_buffer_rect || capabilities().supports_post_sub_buffer);
+    output_device_->Present(frame->sub_buffer_rect, buffer_presented_callback_,
+                            std::move(*frame));
   }
 
   // Reset the overlay plane information even on skipped swap.
@@ -2239,8 +2237,6 @@ void SkiaOutputSurfaceImplOnGpu::CheckReadbackCompletion() {
 }
 
 void SkiaOutputSurfaceImplOnGpu::PreserveChildSurfaceControls() {
-  if (gl_surface_)
-    gl_surface_->PreserveChildSurfaceControls();
   if (presenter_) {
     presenter_->PreserveChildSurfaceControls();
   }
@@ -2254,8 +2250,10 @@ void SkiaOutputSurfaceImplOnGpu::InitDelegatedInkPointRendererReceiver(
     gl_surface_->InitDelegatedInkPointRendererReceiver(
         std::move(pending_receiver));
   } else if (presenter_) {
+#if BUILDFLAG(IS_WIN)
     presenter_->InitDelegatedInkPointRendererReceiver(
         std::move(pending_receiver));
+#endif
   }
 }
 

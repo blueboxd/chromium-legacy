@@ -13,10 +13,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "content/common/aggregatable_report.mojom-shared.h"
-#include "content/common/aggregatable_report.mojom.h"
-#include "content/common/private_aggregation_features.h"
-#include "content/common/private_aggregation_host.mojom-forward.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/bidder_lazy_filler.h"
 #include "content/services/auction_worklet/for_debugging_only_bindings.h"
@@ -35,6 +31,9 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
+#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom-shared.h"
+#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom-forward.h"
 #include "v8/include/v8-context.h"
 #include "v8/include/v8-primitive.h"
 
@@ -317,7 +316,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
     mojom::BidderWorkletBidPtr bid =
         context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example.com/ad1", bid->render_url);
+    EXPECT_EQ("https://example.com/ad1", bid->ad_descriptor.url);
     EXPECT_EQ(10.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
   }
@@ -436,13 +435,14 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
     mojom::BidderWorkletBidPtr bid =
         context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example.com/ad5", bid->render_url);
+    EXPECT_EQ("https://example.com/ad5", bid->ad_descriptor.url);
     EXPECT_EQ(15.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(200), bid->bid_duration);
-    ASSERT_TRUE(bid->ad_components.has_value());
-    EXPECT_THAT(bid->ad_components.value(),
-                ElementsAre(GURL("https://example.com/portion3"),
-                            GURL("https://example.com/portion5")));
+    ASSERT_TRUE(bid->ad_component_descriptors.has_value());
+    EXPECT_THAT(
+        bid->ad_component_descriptors.value(),
+        ElementsAre(blink::AdDescriptor(GURL("https://example.com/portion3")),
+                    blink::AdDescriptor(GURL("https://example.com/portion5"))));
   }
 
   {
@@ -554,7 +554,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
     mojom::BidderWorkletBidPtr bid =
         context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example.com/ad2", bid->render_url);
+    EXPECT_EQ("https://example.com/ad2", bid->ad_descriptor.url);
     EXPECT_EQ(10.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
   }
@@ -1105,7 +1105,8 @@ class ContextRecyclerPrivateAggregationEnabledTest
     : public ContextRecyclerTest {
  public:
   ContextRecyclerPrivateAggregationEnabledTest() {
-    scoped_feature_list_.InitAndEnableFeature(content::kPrivateAggregationApi);
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kPrivateAggregationApi);
   }
 
   // Wraps a debug_key into the appropriate dictionary. Templated to allow both
@@ -1125,23 +1126,23 @@ class ContextRecyclerPrivateAggregationEnabledTest
           pa_requests,
       absl::uint128 bucket,
       int value,
-      absl::optional<content::mojom::DebugKeyPtr> debug_key = absl::nullopt) {
-    content::mojom::AggregatableReportHistogramContribution
-        expected_contribution(bucket, value);
+      absl::optional<blink::mojom::DebugKeyPtr> debug_key = absl::nullopt) {
+    blink::mojom::AggregatableReportHistogramContribution expected_contribution(
+        bucket, value);
 
-    content::mojom::DebugModeDetailsPtr debug_mode_details;
+    blink::mojom::DebugModeDetailsPtr debug_mode_details;
     if (debug_key.has_value()) {
-      debug_mode_details = content::mojom::DebugModeDetails::New(
+      debug_mode_details = blink::mojom::DebugModeDetails::New(
           /*is_enabled=*/true,
           /*debug_key=*/std::move(debug_key.value()));
     } else {
-      debug_mode_details = content::mojom::DebugModeDetails::New();
+      debug_mode_details = blink::mojom::DebugModeDetails::New();
     }
 
     auction_worklet::mojom::PrivateAggregationRequest expected_request(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution.Clone()),
-        content::mojom::AggregationServiceMode::kDefault,
+        blink::mojom::AggregationServiceMode::kDefault,
         std::move(debug_mode_details));
 
     ASSERT_EQ(pa_requests.size(), 1u);
@@ -1297,21 +1298,21 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
       EXPECT_THAT(error_msgs, ElementsAre());
     }
 
-    content::mojom::AggregatableReportHistogramContribution
+    blink::mojom::AggregatableReportHistogramContribution
         expected_contribution_1(/*bucket=*/123, /*value=*/45);
     auction_worklet::mojom::PrivateAggregationRequest expected_request_1(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution_1.Clone()),
-        content::mojom::AggregationServiceMode::kDefault,
-        content::mojom::DebugModeDetails::New());
+        blink::mojom::AggregationServiceMode::kDefault,
+        blink::mojom::DebugModeDetails::New());
 
-    content::mojom::AggregatableReportHistogramContribution
+    blink::mojom::AggregatableReportHistogramContribution
         expected_contribution_2(/*bucket=*/678, /*value=*/90);
     auction_worklet::mojom::PrivateAggregationRequest expected_request_2(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution_2.Clone()),
-        content::mojom::AggregationServiceMode::kDefault,
-        content::mojom::DebugModeDetails::New());
+        blink::mojom::AggregationServiceMode::kDefault,
+        blink::mojom::DebugModeDetails::New());
 
     PrivateAggregationRequests pa_requests =
         context_recycler.private_aggregation_bindings()
@@ -1566,7 +1567,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         context_recycler.private_aggregation_bindings()
             ->TakePrivateAggregationRequests(),
         /*bucket=*/123, /*value=*/45,
-        /*debug_key=*/content::mojom::DebugKey::New(1234u));
+        /*debug_key=*/blink::mojom::DebugKey::New(1234u));
   }
 
   // Debug mode enabled with large debug key
@@ -1590,7 +1591,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         context_recycler.private_aggregation_bindings()
             ->TakePrivateAggregationRequests(),
         /*bucket=*/123, /*value=*/45, /*debug_key=*/
-        content::mojom::DebugKey::New(std::numeric_limits<uint64_t>::max()));
+        blink::mojom::DebugKey::New(std::numeric_limits<uint64_t>::max()));
   }
 
   // Negative debug key
@@ -1688,7 +1689,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         context_recycler.private_aggregation_bindings()
             ->TakePrivateAggregationRequests(),
         /*bucket=*/123, /*value=*/45,
-        /*debug_key=*/content::mojom::DebugKey::New(1234u));
+        /*debug_key=*/blink::mojom::DebugKey::New(1234u));
   }
 
   // enableDebugMode called after report requested: debug details still applied
@@ -1713,7 +1714,7 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         context_recycler.private_aggregation_bindings()
             ->TakePrivateAggregationRequests(),
         /*bucket=*/123, /*value=*/45,
-        /*debug_key=*/content::mojom::DebugKey::New(1234u));
+        /*debug_key=*/blink::mojom::DebugKey::New(1234u));
   }
 
   // Multiple debug mode reports
@@ -1744,25 +1745,25 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
       EXPECT_THAT(error_msgs, ElementsAre());
     }
 
-    content::mojom::AggregatableReportHistogramContribution
+    blink::mojom::AggregatableReportHistogramContribution
         expected_contribution_1(/*bucket=*/123, /*value=*/45);
     auction_worklet::mojom::PrivateAggregationRequest expected_request_1(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution_1.Clone()),
-        content::mojom::AggregationServiceMode::kDefault,
-        content::mojom::DebugModeDetails::New(
+        blink::mojom::AggregationServiceMode::kDefault,
+        blink::mojom::DebugModeDetails::New(
             /*is_enabled=*/true,
-            /*debug_key=*/content::mojom::DebugKey::New(1234u)));
+            /*debug_key=*/blink::mojom::DebugKey::New(1234u)));
 
-    content::mojom::AggregatableReportHistogramContribution
+    blink::mojom::AggregatableReportHistogramContribution
         expected_contribution_2(/*bucket=*/678, /*value=*/90);
     auction_worklet::mojom::PrivateAggregationRequest expected_request_2(
         auction_worklet::mojom::AggregatableReportContribution::
             NewHistogramContribution(expected_contribution_2.Clone()),
-        content::mojom::AggregationServiceMode::kDefault,
-        content::mojom::DebugModeDetails::New(
+        blink::mojom::AggregationServiceMode::kDefault,
+        blink::mojom::DebugModeDetails::New(
             /*is_enabled=*/true,
-            /*debug_key=*/content::mojom::DebugKey::New(1234u)));
+            /*debug_key=*/blink::mojom::DebugKey::New(1234u)));
 
     PrivateAggregationRequests pa_requests =
         context_recycler.private_aggregation_bindings()
@@ -1777,10 +1778,9 @@ class ContextRecyclerPrivateAggregationExtensionsEnabledTest
     : public ContextRecyclerTest {
  public:
   ContextRecyclerPrivateAggregationExtensionsEnabledTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {content::kPrivateAggregationApi,
-         blink::features::kPrivateAggregationApiFledgeExtensions},
-        {});
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kPrivateAggregationApi,
+        {{"fledge_extensions_enabled", "true"}});
   }
 
   // Creates a PrivateAggregationRequest with ForEvent contribution.
@@ -1796,8 +1796,8 @@ class ContextRecyclerPrivateAggregationExtensionsEnabledTest
     return auction_worklet::mojom::PrivateAggregationRequest::New(
         auction_worklet::mojom::AggregatableReportContribution::
             NewForEventContribution(contribution.Clone()),
-        content::mojom::AggregationServiceMode::kDefault,
-        content::mojom::DebugModeDetails::New());
+        blink::mojom::AggregationServiceMode::kDefault,
+        blink::mojom::DebugModeDetails::New());
   }
 
   // Expects given `pa_requests` to have one item, which equals to the
@@ -1811,8 +1811,8 @@ class ContextRecyclerPrivateAggregationExtensionsEnabledTest
     auction_worklet::mojom::PrivateAggregationRequest expected_request(
         auction_worklet::mojom::AggregatableReportContribution::
             NewForEventContribution(expected_contribution.Clone()),
-        content::mojom::AggregationServiceMode::kDefault,
-        content::mojom::DebugModeDetails::New());
+        blink::mojom::AggregationServiceMode::kDefault,
+        blink::mojom::DebugModeDetails::New());
 
     ASSERT_EQ(pa_requests.size(), 1u);
     EXPECT_EQ(pa_requests[0], expected_request.Clone());
@@ -2334,6 +2334,56 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
                     .empty());
   }
 
+  // Invalid bucket dictionary, whose scale is NaN.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    gin::Dictionary bucket_dict =
+        gin::Dictionary::CreateEmpty(helper_->isolate());
+    bucket_dict.Set("baseValue", std::string("winningBid"));
+    bucket_dict.Set("scale", std::numeric_limits<double>::quiet_NaN());
+
+    gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    dict.Set("bucket", bucket_dict);
+    dict.Set("value", 1);
+
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), dict));
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:12 Uncaught "
+                            "TypeError: Invalid bucket dictionary."));
+
+    EXPECT_TRUE(context_recycler.private_aggregation_bindings()
+                    ->TakePrivateAggregationRequests()
+                    .empty());
+  }
+
+  // Invalid bucket dictionary, whose scale is infinity.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    gin::Dictionary bucket_dict =
+        gin::Dictionary::CreateEmpty(helper_->isolate());
+    bucket_dict.Set("baseValue", std::string("winningBid"));
+    bucket_dict.Set("scale", std::numeric_limits<double>::infinity());
+
+    gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    dict.Set("bucket", bucket_dict);
+    dict.Set("value", 1);
+
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), dict));
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:12 Uncaught "
+                            "TypeError: Invalid bucket dictionary."));
+
+    EXPECT_TRUE(context_recycler.private_aggregation_bindings()
+                    ->TakePrivateAggregationRequests()
+                    .empty());
+  }
+
   // Invalid bucket dictionary, whose offset is not a BigInt.
   {
     ContextRecyclerScope scope(context_recycler);
@@ -2569,7 +2619,8 @@ class ContextRecyclerPrivateAggregationDisabledTest
     : public ContextRecyclerTest {
  public:
   ContextRecyclerPrivateAggregationDisabledTest() {
-    scoped_feature_list_.InitAndDisableFeature(content::kPrivateAggregationApi);
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kPrivateAggregationApi);
   }
 
  private:
@@ -2623,7 +2674,8 @@ class ContextRecyclerPrivateAggregationDisabledForFledgeOnlyTest
  public:
   ContextRecyclerPrivateAggregationDisabledForFledgeOnlyTest() {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        content::kPrivateAggregationApi, {{"enabled_in_fledge", "false"}});
+        blink::features::kPrivateAggregationApi,
+        {{"enabled_in_fledge", "false"}});
   }
 
  private:
@@ -2676,8 +2728,9 @@ class ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest
     : public ContextRecyclerTest {
  public:
   ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest() {
-    scoped_feature_list_.InitWithFeatures({content::kPrivateAggregationApi},
-                                          {});
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kPrivateAggregationApi,
+        {{"fledge_extensions_enabled", "false"}});
   }
 
  private:

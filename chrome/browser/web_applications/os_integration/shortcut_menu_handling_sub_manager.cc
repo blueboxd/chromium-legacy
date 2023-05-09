@@ -94,20 +94,14 @@ void ShortcutMenuHandlingSubManager::Execute(
 void ShortcutMenuHandlingSubManager::StoreShortcutMenuData(
     const AppId& app_id,
     proto::ShortcutMenus* shortcut_menus,
-    WebAppIconManager::ShortcutIconDataVector downloaded_shortcut_menu_items) {
+    WebAppIconManager::ShortcutIconDataVector shortcut_menu_items) {
+  if (shortcut_menu_items.size() == 0) {
+    return;
+  }
   std::vector<WebAppShortcutsMenuItemInfo> shortcut_menu_item_info =
       registrar_->GetAppShortcutsMenuItemInfos(app_id);
-  // Due to the bitmaps possibly being not populated (see
-  // https://crbug.com/1427444), we just have empty bitmap data in that case. We
-  // continue to check to make sure that there aren't MORE bitmaps than
-  // items.
-  CHECK_LE(downloaded_shortcut_menu_items.size(),
-           shortcut_menu_item_info.size());
-  while (downloaded_shortcut_menu_items.size() <
-         shortcut_menu_item_info.size()) {
-    downloaded_shortcut_menu_items.emplace_back();
-  }
-  for (size_t menu_index = 0; menu_index < shortcut_menu_item_info.size();
+  CHECK_EQ(shortcut_menu_item_info.size(), shortcut_menu_items.size());
+  for (size_t menu_index = 0; menu_index < shortcut_menu_items.size();
        menu_index++) {
     proto::ShortcutMenuInfo* new_shortcut_menu_item =
         shortcut_menus->add_shortcut_menu_info();
@@ -117,7 +111,7 @@ void ShortcutMenuHandlingSubManager::StoreShortcutMenuData(
         shortcut_menu_item_info[menu_index].url.spec());
 
     for (const auto& [size, time] :
-         downloaded_shortcut_menu_items[menu_index][IconPurpose::ANY]) {
+         shortcut_menu_items[menu_index][IconPurpose::ANY]) {
       proto::ShortcutIconData* icon_data =
           new_shortcut_menu_item->add_icon_data_any();
       icon_data->set_icon_size(size);
@@ -125,7 +119,7 @@ void ShortcutMenuHandlingSubManager::StoreShortcutMenuData(
     }
 
     for (const auto& [size, time] :
-         downloaded_shortcut_menu_items[menu_index][IconPurpose::MASKABLE]) {
+         shortcut_menu_items[menu_index][IconPurpose::MASKABLE]) {
       proto::ShortcutIconData* icon_data =
           new_shortcut_menu_item->add_icon_data_maskable();
       icon_data->set_icon_size(size);
@@ -133,7 +127,7 @@ void ShortcutMenuHandlingSubManager::StoreShortcutMenuData(
     }
 
     for (const auto& [size, time] :
-         downloaded_shortcut_menu_items[menu_index][IconPurpose::MONOCHROME]) {
+         shortcut_menu_items[menu_index][IconPurpose::MONOCHROME]) {
       proto::ShortcutIconData* icon_data =
           new_shortcut_menu_item->add_icon_data_monochrome();
       icon_data->set_icon_size(size);

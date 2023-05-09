@@ -49,7 +49,7 @@ BluetoothRemoteGattDescriptorFloss::~BluetoothRemoteGattDescriptorFloss() {
 }
 
 std::string BluetoothRemoteGattDescriptorFloss::GetIdentifier() const {
-  return base::StringPrintf("%s/%d", characteristic_->GetIdentifier().c_str(),
+  return base::StringPrintf("%s/%04x", characteristic_->GetIdentifier().c_str(),
                             descriptor_->instance_id);
 }
 
@@ -70,7 +70,10 @@ BluetoothRemoteGattDescriptorFloss::GetCharacteristic() const {
 
 device::BluetoothRemoteGattCharacteristic::Permissions
 BluetoothRemoteGattDescriptorFloss::GetPermissions() const {
-  return descriptor_->permissions;
+  const auto& [props, perms] =
+      BluetoothGattCharacteristicFloss::ConvertPropsAndPermsFromFloss(
+          /*properties=*/0, descriptor_->permissions);
+  return perms;
 }
 
 void BluetoothRemoteGattDescriptorFloss::ReadRemoteDescriptor(
@@ -134,9 +137,11 @@ void BluetoothRemoteGattDescriptorFloss::GattDescriptorWrite(
     return;
   }
 
+  // Only handle if there is a write callback pending.
   auto [callback, error_callback, data] = std::move(pending_write_callbacks_);
-  DCHECK(callback);
-  DCHECK(error_callback);
+  if (!callback) {
+    return;
+  }
 
   if (status == GattStatus::kSuccess) {
     cached_data_ = data;

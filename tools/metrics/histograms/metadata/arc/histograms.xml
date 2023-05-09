@@ -135,6 +135,11 @@ chromium-metrics-reviews@google.com.
   <variant name=".Unmanaged" summary="User with optional Play Store feature"/>
 </variants>
 
+<variants name="ArcVmDataMigrationType">
+  <variant name="NewMigration" summary="new migration"/>
+  <variant name="ResumeMigration" summary="resume migration"/>
+</variants>
+
 <variants name="FileTypeByDirectoryOrNot">
   <variant name="Directories" summary="directories"/>
   <variant name="Files"
@@ -227,7 +232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Accessibility.WindowCount" enum="ArcAccessibilityFeature"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>sahok@chromium.org</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -266,7 +271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AndroidData.PerApp.Size" units="KB"
-    expires_after="2023-07-01">
+    expires_after="2023-09-03">
   <owner>momohatt@google.com</owner>
   <owner>arc-storage@google.com</owner>
   <summary>
@@ -318,7 +323,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.AndroidData.TraversalDuration" units="ms"
-    expires_after="2023-07-01">
+    expires_after="2023-09-03">
   <owner>momohatt@google.com</owner>
   <owner>arc-storage@google.com</owner>
   <summary>
@@ -612,20 +617,6 @@ chromium-metrics-reviews@google.com.
   <token key="ArcUserTypes" variants="ArcUserTypes"/>
 </histogram>
 
-<histogram name="Arc.Auth.AndroidIdSource{ArcUserTypes}"
-    enum="ArcAuthAndroidIdSource" expires_after="2022-08-09">
-  <obsolete>
-    Removed in M105.
-  </obsolete>
-  <owner>mhasank@google.com</owner>
-  <owner>arc-core@google.com</owner>
-  <summary>
-    The source of AndroidId during ARC provisioning. Recorded when trying to
-    determine if the device is checked in. {ArcUserTypes}
-  </summary>
-  <token key="ArcUserTypes" variants="ArcUserTypes"/>
-</histogram>
-
 <histogram name="Arc.Auth.Checkin.Attempts{ArcUserTypes}" units="attempts"
     expires_after="never">
 <!-- expires-never: Needed for long-term health monitoring of ARC provisioning. -->
@@ -710,7 +701,7 @@ chromium-metrics-reviews@google.com.
   <token key="ArcUserTypes" variants="ArcUserTypes"/>
 </histogram>
 
-<histogram name="Arc.Auth.NumAccounts" units="count" expires_after="2023-07-01">
+<histogram name="Arc.Auth.NumAccounts" units="count" expires_after="2023-09-03">
   <owner>anastasiian@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
@@ -720,7 +711,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.Auth.PercentAccounts" units="%" expires_after="2023-07-01">
+<histogram name="Arc.Auth.PercentAccounts" units="%" expires_after="2023-09-03">
   <owner>anastasiian@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
@@ -840,7 +831,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.ClipboardDragDrop" enum="ArcClipboardDragDropEvent"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>yhanada@google.com</owner>
   <owner>arc-framework@google.com</owner>
   <summary>The number of clipboard and drag-and-drop events.</summary>
@@ -1084,7 +1075,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.DataRestore.Status" enum="ArcDataRestoreStatus"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>khmel@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1331,24 +1322,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.ImageCopyPasteCompatOperationType"
-    enum="ArcImageCopyPasteCompatOperationType" expires_after="2023-03-05">
-  <owner>yhanada@chromium.org</owner>
-  <owner>arc-framework@google.com</owner>
-  <summary>
-    The operation type (copy-paste or drag-drop) and the source of the image
-    (from browser or Files app), counted when image copy-paste app compat is
-    triggered. Image copy-paste app compat is a feature that allows insertion of
-    images to Android apps through commitContent IME API or Android intent, when
-    the app don't support images in the clipboard. For example, when a user
-    pastes an image from Files app to an Android app and the app compat logic
-    succeeds to insert the image, then that is one histogram count. If it fails
-    (for example the app does not implement commitContent API) or the app
-    already supports image pasting from the clipboard and the app compat logic
-    is not used, that will not be counted.
-  </summary>
-</histogram>
-
 <histogram name="Arc.InputOverlay.ActionRepositionOperationType"
     enum="ArcInputOverlayRepositionOperationType" expires_after="2023-06-13">
   <owner>cuicuiruan@google.com</owner>
@@ -1383,7 +1356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.InputOverlay.FeatureState" enum="BooleanEnabled"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>cuicuiruan@google.com</owner>
   <owner>arc-gaming@google.com</owner>
   <summary>
@@ -1396,7 +1369,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.InputOverlay.MappingHintState" enum="BooleanEnabled"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>cuicuiruan@google.com</owner>
   <owner>arc-gaming@google.com</owner>
   <summary>
@@ -1419,6 +1392,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Arc.InputOverlay.{UI}RepositionWindowStateType"
+    enum="ArcInputOverlayWindowStateType" expires_after="2023-08-28">
+  <owner>cuicuiruan@google.com</owner>
+  <owner>arc-gaming@google.com</owner>
+  <summary>
+    Records the window state type when {UI} reposition happens. Records the
+    events when users release touch, mouse or key.
+  </summary>
+  <token key="UI">
+    <variant name="Action"/>
+    <variant name="ButtonGroup"/>
+    <variant name="MenuEntry"/>
+  </token>
+</histogram>
+
 <histogram name="Arc.IntentHelper.OpenAppWithIntentAction"
     enum="ArcIntentHelperIntentAction" expires_after="2023-07-30">
   <owner>tsergeant@chromium.org</owner>
@@ -1428,16 +1416,6 @@ chromium-metrics-reviews@google.com.
     Sharing from an Android app to a Web App installed through the Play Store).
     Records the action being handled by the Chrome OS app, like Viewing a URL or
     Sending content.
-  </summary>
-</histogram>
-
-<histogram name="Arc.IntentHelper.OpenType" enum="ArcIntentHelperOpenType"
-    expires_after="2020-08-16">
-  <owner>hashimoto@google.com</owner>
-  <owner>arc-core@google.com</owner>
-  <summary>
-    Types of things opened via ARC IntentHelperHost interface. Recorded when one
-    of the &quot;open&quot; methods of the interface is called.
   </summary>
 </histogram>
 
@@ -1533,7 +1511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.NearbyShare.DataHandlingFailure"
-    enum="ArcNearbyShareDataHandlingResult" expires_after="2023-06-04">
+    enum="ArcNearbyShareDataHandlingResult" expires_after="2023-08-27">
   <owner>ttefera@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>
@@ -1554,7 +1532,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.NearbyShare.FileStreamFailure" enum="PlatformFileError"
-    expires_after="2023-06-04">
+    expires_after="2023-08-27">
   <owner>ttefera@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>
@@ -1565,7 +1543,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.NearbyShare.IOFailure" enum="ArcNearbyShareIOErrorResult"
-    expires_after="2023-06-04">
+    expires_after="2023-08-27">
   <owner>ttefera@google.com</owner>
   <owner>arc-app-dev@google.com</owner>
   <summary>Records any IO errors while using NearbyShare.</summary>
@@ -1594,7 +1572,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.ArcNetworkEvent" enum="ArcNetworkEvent"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-networking@google.com</owner>
   <summary>
@@ -1605,7 +1583,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.DnsQuery.AndroidApi" enum="BooleanSuccess"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1614,7 +1592,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.DnsQuery.Other" enum="BooleanSuccess"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1683,7 +1661,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.OptInCancel" enum="ArcOptInCancel"
-    expires_after="2023-04-16">
+    expires_after="2023-09-16">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>Arc OptIn cancelation reason.</summary>
@@ -1730,7 +1708,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.OptInSilentAuthCode.SecondaryAccount"
-    enum="ArcOptInSilentAuthCode" expires_after="2023-03-12">
+    enum="ArcOptInSilentAuthCode" expires_after="2023-09-12">
   <owner>mhasank@google.com</owner>
   <owner>khmel@google.com</owner>
   <owner>arc-core@google.com</owner>
@@ -1816,7 +1794,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Arc.PlayStoreSearch.QueryTime" units="ms"
     expires_after="2023-03-19">
-  <owner>hejq@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>ypitsishin@chromium.org</owner>
+  <owner>chrome-knowledge-eng@google.com</owner>
   <summary>
     Time between sending an Play Store app discovery request and the storing
     returned results.
@@ -1832,25 +1812,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.PlayStoreSearch.ReturnedAppsTotal" units="apps"
-    expires_after="2022-05-01">
-  <owner>hejq@chromium.org</owner>
+<histogram name="Arc.PlayStoreSearch.ReturnedAppsTotalV2" units="apps"
+    expires_after="2023-09-01">
+  <owner>tby@chromium.org</owner>
+  <owner>ypitsishin@chromium.org</owner>
+  <owner>chrome-knowledge-eng@google.com</owner>
   <summary>
     The total number of returned apps of a Play Store app discovery query.
   </summary>
 </histogram>
 
-<histogram name="Arc.PlayStoreSearch.ReturnedInstantApps" units="apps"
-    expires_after="2020-06-28">
-  <owner>hejq@chromium.org</owner>
+<histogram name="Arc.PlayStoreSearch.ReturnedInstantAppsV2" units="apps"
+    expires_after="2023-09-01">
+  <owner>tby@chromium.org</owner>
+  <owner>ypitsishin@chromium.org</owner>
+  <owner>chrome-knowledge-eng@google.com</owner>
   <summary>
     The number of returned instant apps of a Play Store app discovery query.
   </summary>
 </histogram>
 
-<histogram name="Arc.PlayStoreSearch.ReturnedUninstalledApps" units="apps"
-    expires_after="2020-06-28">
-  <owner>hejq@chromium.org</owner>
+<histogram name="Arc.PlayStoreSearch.ReturnedUninstalledAppsV2" units="apps"
+    expires_after="2023-09-01">
+  <owner>tby@chromium.org</owner>
+  <owner>ypitsishin@chromium.org</owner>
+  <owner>chrome-knowledge-eng@google.com</owner>
   <summary>
     The number of returned uninstalled apps of a Play Store app discovery query.
   </summary>
@@ -1883,7 +1869,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Policy.Keys" enum="ArcPolicyKey"
-    expires_after="2023-05-09">
+    expires_after="2023-09-10">
   <owner>mhasank@google.com</owner>
   <owner>arc-commercial@google.com</owner>
   <summary>
@@ -1981,12 +1967,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Provisioning.TimeDelta.Failure{ArcUserTypes}" units="ms"
-    expires_after="2022-11-01">
-  <owner>alexchau@google.com</owner>
-  <owner>phweiss@google.com</owner>
+    expires_after="2024-03-08">
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Elapsed time from the signing in process start to call to onSignInFailed.
-    {ArcUserTypes}
+    Warning: this histogram was expired from 2022-11-01 to 2023-03-08; data may
+    be missing. {ArcUserTypes}
   </summary>
   <token key="ArcUserTypes" variants="ArcUserTypes">
     <variant name=""/>
@@ -1994,12 +1981,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Provisioning.TimeDelta.Success{ArcUserTypes}" units="ms"
-    expires_after="2022-11-01">
-  <owner>alexchau@google.com</owner>
-  <owner>phweiss@google.com</owner>
+    expires_after="2024-03-08">
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
   <summary>
     Elapsed time from the signing in process start to successful call to
-    onSignInComplete. {ArcUserTypes}
+    onSignInComplete. Warning: this histogram was expired from 2022-11-01 to
+    2023-03-08; data may be missing. {ArcUserTypes}
   </summary>
   <token key="ArcUserTypes" variants="ArcUserTypes">
     <variant name=""/>
@@ -2097,7 +2085,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.SdkVersionUpgradeType" enum="ArcSdkVersionUpgradeType"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>niwa@google.com</owner>
   <owner>arcvm-eng@google.com</owner>
   <summary>
@@ -2294,6 +2282,283 @@ chromium-metrics-reviews@google.com.
   <summary>
     Counts user interactions with ARC by type, such as ARC app launches via the
     shelf or launcher.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.DesiredDiskImageSizeInGB.{SatisfiedOrNot}"
+    units="GB" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The desired disk image size for the destination of ARCVM /data migration.
+    Reported each time the initial screen is shown and the free disk space
+    requirement is {SatisfiedOrNot}.
+  </summary>
+  <token key="SatisfiedOrNot">
+    <variant name="Satisfied" summary="satisfied"/>
+    <variant name="Unsatisfied" summary="not satisfied"/>
+  </token>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.Duration" units="seconds"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    Duration of the ARCVM /data migration. This is reported once when a newly
+    started migration is completed.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.EndStatus"
+    enum="CrOSFileSystemMigrationEndStatus" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The status of ARCVM /data migration when it ends. This is reported when a
+    migration finishes successfully, fails, or gets cancelled halfway.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.FailedErrorCode" enum="PlatformFileError"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The error code of a file operation failure that caused the ARCVM /data
+    migration to fail. Reported when a migration thread encounters a file
+    operation error. This can be reported multiple times for a migration when
+    multiple threads fail at around the same time.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.FailedOperationType"
+    enum="CrOSFileSystemMigrationFailedOperationType"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The type of file operation at which the ARCVM /data migration failed.
+    Reported when a migration thread encounters a file operation error. This can
+    be reported multiple times for a migration when multiple threads fail at
+    around the same time.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.FailedPathType"
+    enum="ArcVmDataMigrationFailedPathType" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The location of files at which ARCVM /data migration failed. Reported when a
+    migration thread encounters a file operation error. This can be reported
+    multiple times for a migration when multiple threads fail at around the same
+    time.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.InitialFreeSpace" units="MB"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The total amount of free disk space on the system when a new or resumed
+    ARCVM /data migration is started. Reported when a migration failed with
+    ENOSPC (no space error).
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.MigrationFinishReason{ArcUserTypes}"
+    enum="ArcVmDataMigrationFinishReason" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The reason why ARCVM /data migration is marked as finished. {ArcUserTypes}
+  </summary>
+  <token key="ArcUserTypes" variants="ArcUserTypes"/>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.MigrationStatusOnArcStarted{ArcUserTypes}"
+    enum="ArcVmDataMigrationStatus" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The status of ARCVM /data migration at the beginning of each ARC session.
+    {ArcUserTypes}
+  </summary>
+  <token key="ArcUserTypes" variants="ArcUserTypes"/>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.NoSpaceFailureFreeSpace" units="MB"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The total amount of free disk space on the system when the user encounters
+    ENOSPC (no space error) during ARCVM /data migration. Reported when a
+    migration failed with ENOSPC.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.NoSpaceXattrSize" units="bytes"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The total number of bytes of xattr data that we are trying to store on a
+    file when we encounter an ENOSPC (no space error) during ARCVM /data
+    migration. This includes both the xattr data already present on the file as
+    well as the new xattr we are trying to set. Reported when a migration thread
+    encounters ENOSPC on setting a new xattr. This can be reported multiple
+    times for a migration when multiple threads fail at around the same time.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.NotificationShownForTheFirstTime"
+    enum="BooleanEnabled" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    Counts the number of events that the notification for ARCVM /data migration
+    is shown for the first first time for the user.
+  </summary>
+</histogram>
+
+<histogram
+    name="Arc.VmDataMigration.RemainingDays.{ArcVmDataMigrationFrontEndEvents}"
+    units="days" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The number of days until the deadline displayed in the notification or the
+    confirmation dialog of ARCVM /data migration. The value is initialized as 30
+    when the notification is shown for the first time, and decremented until it
+    reaches the minimum value 1. When it reaches the minimum value, it means
+    that the migration should be performed in the same day and should not be
+    dismissed, so the notification and the dialog become nondismissible.
+    Reported when {ArcVmDataMigrationFrontEndEvents}.
+  </summary>
+  <token key="ArcVmDataMigrationFrontEndEvents">
+    <variant name="ConfirmationDialogAccepted"
+        summary="the accept button of the confirmation dialog is clicked"/>
+    <variant name="ConfirmationDialogCanceled"
+        summary="the cancel button of the confirmation dialog is clicked"/>
+    <variant name="ConfirmationDialogShown"
+        summary="the confirmation dialog is shown"/>
+    <variant name="NotificationShown" summary="the notification is shown"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Arc.VmDataMigration.RequiredFreeDiskSpaceInGB.{SatisfiedOrNot}"
+    units="GB" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The size of free disk space required for the ARCVM /data migration. Reported
+    each time the initial screen is shown and the free disk space requirement is
+    {SatisfiedOrNot}.
+  </summary>
+  <token key="SatisfiedOrNot">
+    <variant name="Satisfied" summary="satisfied"/>
+    <variant name="Unsatisfied" summary="not satisfied"/>
+  </token>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.ScreenEvent.On{ArcVmDataMigrationType}"
+    enum="ArcVmDataMigrationScreenEvent" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    Records events happening in the screen flow of ARCVM /data migration.
+    Recorded when an event happens during a {ArcVmDataMigrationType}.
+  </summary>
+  <token key="ArcVmDataMigrationType" variants="ArcVmDataMigrationType"/>
+</histogram>
+
+<histogram
+    name="Arc.VmDataMigration.ScreenInitialState.On{ArcVmDataMigrationType}"
+    enum="ArcVmDataMigrationScreenInitialState" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The initial state of the screen flow of ARCVM /data migration. Recorded at
+    the beginning of each {ArcVmDataMigrationType}.
+  </summary>
+  <token key="ArcVmDataMigrationType" variants="ArcVmDataMigrationType"/>
+</histogram>
+
+<histogram
+    name="Arc.VmDataMigration.ScreenSetupFailure.On{ArcVmDataMigrationType}"
+    enum="ArcVmDataMigrationScreenSetupFailure" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    Records failures in the setup phase of the screen flow of ARCVM /data
+    migration. Recorded when a failure happens during a
+    {ArcVmDataMigrationType}.
+  </summary>
+  <token key="ArcVmDataMigrationType" variants="ArcVmDataMigrationType"/>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.SetupResult"
+    enum="ArcVmDataMigrationSetupResult" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The result of the setup of ARCVM /data migration. Reported before triggering
+    the migration tool.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.StartStatus"
+    enum="CrOSFileSystemMigrationStartStatus" expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    The status of ARCVM /data migration when it starts. This is reported when a
+    new migration or a resumed migration is started.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.TotalFiles" units="files"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    Total number of files to be migrated in ARCVM /data migration. Reported once
+    at the beginning of a new migration.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VmDataMigration.TotalSizeMB" units="MB"
+    expires_after="2024-01-01">
+  <owner>momohatt@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    Total bytes to be migrated in ARCVM /data migration. Reported once at the
+    beginning of a new migration.
   </summary>
 </histogram>
 

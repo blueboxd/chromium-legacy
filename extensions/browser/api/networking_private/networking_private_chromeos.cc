@@ -389,8 +389,7 @@ void NetworkingPrivateChromeOS::SetProperties(
   NET_LOG(USER) << "networkingPrivate.setProperties for: "
                 << NetworkId(network);
   GetManagedConfigurationHandler()->SetProperties(
-      network->path(), base::Value(std::move(properties)),
-      std::move(success_callback),
+      network->path(), properties, std::move(success_callback),
       base::BindOnce(&NetworkHandlerFailureCallback,
                      std::move(failure_callback)));
 }
@@ -404,7 +403,7 @@ void NetworkHandlerCreateCallback(
 
 void NetworkingPrivateChromeOS::CreateNetwork(
     bool shared,
-    base::Value properties,
+    base::Value::Dict properties,
     StringCallback success_callback,
     FailureCallback failure_callback) {
   std::string user_id_hash, error;
@@ -415,8 +414,8 @@ void NetworkingPrivateChromeOS::CreateNetwork(
     return;
   }
 
-  const std::string guid = GetStringFromDictionary(
-      properties.GetDict(), ::onc::network_config::kGUID);
+  const std::string guid =
+      GetStringFromDictionary(properties, ::onc::network_config::kGUID);
   NET_LOG(USER) << "networkingPrivate.CreateNetwork. GUID=" << guid;
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, properties,

@@ -236,7 +236,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
   apk_name = "WebViewInstrumentationTest"
   apk_under_test = ":webview_instrumentation_apk"
   android_manifest = "../javatests/AndroidManifest.xml"
-  min_sdk_version = default_min_sdk_version
 
   deps = [
     ":webview_instrumentation_test_mock_services_java",
@@ -264,7 +263,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//components/component_updater/android:embedded_component_loader_java",
     "//components/content_capture/android:java",
     "//components/content_capture/android/test_support:java",
-    "//components/digital_asset_links/android:java",
+    "//components/content_relationship_verification/android:java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
@@ -635,13 +634,14 @@ test("android_webview_unittests") {
     "../browser/gfx/test/rendering_test.h",
     "../browser/lifecycle/aw_contents_lifecycle_notifier_unittest.cc",
     "../browser/metrics/aw_component_metrics_provider_delegate_unittests.cc",
+    "../browser/metrics/aw_metrics_service_client_sample_rate_unittest.cc",
     "../browser/metrics/aw_metrics_service_client_unittest.cc",
     "../browser/metrics/aw_server_side_allowlist_metrics_provider_unittests.cc",
     "../browser/metrics/visibility_metrics_logger_unittest.cc",
     "../browser/permission/media_access_permission_request_unittest.cc",
     "../browser/permission/permission_request_handler_unittest.cc",
     "../browser/renderer_host/auto_login_parser_unittest.cc",
-    "../browser/safe_browsing/aw_ping_manager_unittest.cc",
+    "../browser/safe_browsing/aw_ping_manager_factory_unittest.cc",
     "../browser/safe_browsing/aw_safe_browsing_allowlist_manager_unittest.cc",
     "../browser/state_serializer_unittest.cc",
     "../browser/tracing/aw_background_tracing_metrics_provider_unittest.cc",
@@ -704,9 +704,9 @@ robolectric_binary("android_webview_junit_tests") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//components/component_updater/android:embedded_component_loader_java",
-    "//components/digital_asset_links:java",
-    "//components/digital_asset_links/android:java",
-    "//components/digital_asset_links/android:junit_test_support",
+    "//components/content_relationship_verification:java",
+    "//components/content_relationship_verification/android:java",
+    "//components/content_relationship_verification/android:junit_test_support",
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_full_java",
     "//content/public/test/android:content_java_test_support",

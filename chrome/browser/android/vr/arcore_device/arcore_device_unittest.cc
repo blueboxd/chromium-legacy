@@ -18,9 +18,10 @@
 #include "components/webxr/mailbox_to_surface_bridge_impl.h"
 #include "device/vr/android/arcore/ar_image_transport.h"
 #include "device/vr/android/arcore/arcore_gl.h"
-#include "device/vr/android/arcore/arcore_session_utils.h"
+#include "device/vr/android/xr_java_coordinator.h"
 #include "device/vr/public/cpp/xr_frame_sink_client.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/public/mojom/xr_session.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -96,9 +97,9 @@ class StubMailboxToSurfaceBridgeFactory : public MailboxToSurfaceBridgeFactory {
   }
 };
 
-class StubArCoreSessionUtils : public ArCoreSessionUtils {
+class StubXrJavaCoordinator : public XrJavaCoordinator {
  public:
-  StubArCoreSessionUtils() = default;
+  StubXrJavaCoordinator() = default;
 
   void RequestArSession(int render_process_id,
                         int render_frame_id,
@@ -116,7 +117,7 @@ class StubArCoreSessionUtils : public ArCoreSessionUtils {
   }
   void EndSession() override {}
 
-  bool EnsureLoaded() override { return true; }
+  bool EnsureARCoreLoaded() override { return true; }
 
   base::android::ScopedJavaLocalRef<jobject> GetApplicationContext() override {
     JNIEnv* env = base::android::AttachCurrentThread();
@@ -291,7 +292,7 @@ class ArCoreDeviceTest : public testing::Test {
     std::move(quit_closure).Run();
   }
 
-  raw_ptr<StubArCoreSessionUtils> session_utils;
+  raw_ptr<StubXrJavaCoordinator> session_utils;
   mojo::Remote<mojom::XRFrameDataProvider> frame_provider;
   mojo::AssociatedRemote<mojom::XREnvironmentIntegrationProvider>
       environment_provider;
@@ -300,8 +301,8 @@ class ArCoreDeviceTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    std::unique_ptr<StubArCoreSessionUtils> session_utils_ptr =
-        std::make_unique<StubArCoreSessionUtils>();
+    std::unique_ptr<StubXrJavaCoordinator> session_utils_ptr =
+        std::make_unique<StubXrJavaCoordinator>();
     session_utils = session_utils_ptr.get();
     device_ = std::make_unique<ArCoreDevice>(
         std::make_unique<FakeArCoreFactory>(),

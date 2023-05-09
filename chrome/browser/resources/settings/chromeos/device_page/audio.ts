@@ -19,7 +19,7 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AudioDevice, AudioDeviceType, AudioEffectState, AudioSystemProperties, AudioSystemPropertiesObserverReceiver, MuteState} from '../../mojom-webui/cros_audio_config.mojom-webui.js';
+import {AudioDevice, AudioDeviceType, AudioEffectState, AudioSystemProperties, AudioSystemPropertiesObserverReceiver, MuteState} from '../mojom-webui/cros_audio_config.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route} from '../router.js';
@@ -35,7 +35,9 @@ function clampPercent(percent: number): number {
 
 const SettingsAudioElementBase = RouteObserverMixin(I18nMixin(PolymerElement));
 const VOLUME_ICON_OFF_LEVEL = 0;
-const VOLUME_ICON_LOUD_LEVEL = 30;
+// TODO(b/271871947): Match volume icon logic to QS revamp sliders.
+// Matches level calculated in unified_volume_view.cc.
+const VOLUME_ICON_LOUD_LEVEL = 34;
 const SETTINGS_20PX_ICON_PREFIX = 'settings20:';
 
 class SettingsAudioElement extends SettingsAudioElementBase {

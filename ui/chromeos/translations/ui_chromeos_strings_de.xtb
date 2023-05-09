@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> Elemente werden gezippt...</translation>
 <translation id="1722687688096767818">Profil wird hinzugefügt…</translation>
 <translation id="1726100011689679555">Nameserver</translation>
+<translation id="1727562178154619254">Bereit zur Synchronisierung</translation>
 <translation id="1729953886957086472">Deutsch (Deutschland)</translation>
 <translation id="1730235522912993863">Chinesisch (Cangjie)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> Elemente kopiert.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Bildauflösung</translation>
 <translation id="1972984168337863910">Erweiterte Dateiinformationen maximieren</translation>
 <translation id="1995337122023280937">Zum Dateispeicherort</translation>
-<translation id="1999709132469742660">Dateizugriff über alle URLs</translation>
 <translation id="2001796770603320721">In Drive verwalten</translation>
 <translation id="2009067268969781306">Durch die Formatierung eines Laufwerks werden alle darauf gespeicherten Daten gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</translation>
 <translation id="2025955442973426285">Tigrinya</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Lateinamerikanisch</translation>
 <translation id="5330145655348521461">Diese Dateien wurden auf einem anderen Desktop geöffnet. Wechsle zu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), um sie anzusehen.</translation>
 <translation id="5330512191124428349">Informationen ansehen</translation>
-<translation id="5337538975554986899">Dateizugriff über alle URLs außer <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Bruschetta-Freigabe verwalten</translation>
 <translation id="535792325654997756">Person mit Katzen</translation>
 <translation id="5358764674931277">Framerate</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Bei der Installation deiner Linux-Anwendung ist ein Fehler aufgetreten.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Unerwarteter Fehler beim Kopieren: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Es sind neue Suchfunktionen verfügbar</translation>
 <translation id="5926082595146149752">Niederländisch (Niederlande) mit internationaler US-amerikanischer PC-Tastatur</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Nach Geräteeinrichtung aktivieren</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Zertifikate nicht geladen</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Ordner für Bruschetta freigeben</translation>
+<translation id="6750737795876287924">Aktuelles Verzeichnis</translation>
 <translation id="6751256176799620176">1 Ordner ausgewählt</translation>
 <translation id="6755827872271341378">Chrome OS Flex-Gerät</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Ordner</translation>
 <translation id="6976795442547527108">Löwe</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Gesamte Zeit</translation>
 <translation id="6989942356279143254">Schwedisch</translation>
 <translation id="6990081529015358884">Du hast keinen freien Speicherplatz mehr.</translation>
 <translation id="6993826899923627728">Diese Elemente befinden sich im Papierkorb</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Keine zuletzt angesehenen Bilder</translation>
 <translation id="7460898608667578234">Ukrainisch</translation>
 <translation id="7469894403370665791">Verbindung zu diesem Netzwerk automatisch herstellen</translation>
-<translation id="7481358317100446445">Bereit</translation>
 <translation id="7486315294984620427">Um Dateien in Parallels Desktop per Drag-and-drop abzulegen, muss die Datei in „Windows-Dateien“ kopiert werden.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam (phonetisch)</translation>
@@ -965,7 +964,7 @@
 <translation id="8688591111840995413">Passwort ungültig</translation>
 <translation id="8698464937041809063">Google-Zeichnung</translation>
 <translation id="8698877009525468705">Diese Datei ist vertraulich und unterliegt den Einschränkungen durch die Administratorrichtlinie.</translation>
-<translation id="8712637175834984815">Ok</translation>
+<translation id="8712637175834984815">Alles klar</translation>
 <translation id="8713112442029511308">Maltesisch</translation>
 <translation id="8714406895390098252">Fahrrad</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> wurde ausgewählt.</translation>

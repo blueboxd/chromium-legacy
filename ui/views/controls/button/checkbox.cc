@@ -183,7 +183,11 @@ void Checkbox::OnThemeChanged() {
 SkPath Checkbox::GetFocusRingPath() const {
   SkPath path;
   gfx::Rect bounds = image()->GetMirroredContentsBounds();
-  bounds.Inset(1);
+  // Don't add extra insets in the ChromeRefresh case so that the focus ring can
+  // be drawn in the ChromeRefresh style.
+  if (!features::IsChromeRefresh2023()) {
+    bounds.Inset(1);
+  }
   path.addRect(RectToSkRect(bounds));
   return path;
 }
@@ -198,7 +202,7 @@ SkColor Checkbox::GetIconImageColor(int icon_state) const {
   if (features::IsChromeRefresh2023()) {
     active_color = GetColorProvider()->GetColor(
         (icon_state & IconState::CHECKED) ? ui::kColorAlertHighSeverity
-                                          : ui::kColorAlertMediumSeverity);
+                                          : ui::kColorAlertMediumSeverityIcon);
   }
 
   // Use the overridden checked icon image color instead if set.

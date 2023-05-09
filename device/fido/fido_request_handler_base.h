@@ -81,7 +81,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // Whether the platform authenticator has a matching credential for the
     // request. This is only set for a GetAssertion request.
     RecognizedCredential has_platform_authenticator_credential =
-        RecognizedCredential::kUnknown;
+        RecognizedCredential::kNoRecognizedCredential;
 
     // The set of recognized platform credential user entities that can fulfill
     // a GetAssertion request. Not all platform authenticators report this, so
@@ -108,6 +108,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // Indicates whether the Windows native UI will include a privacy notice
     // when creating a resident credential.
     bool win_native_ui_shows_resident_credential_notice = false;
+
+    // Whether the native Windows API reports that a user verifying platform
+    // authenticator is available.
+    bool win_is_uvpaa = false;
 
     // Contains the authenticator ID of the native Windows
     // authenticator if |has_win_native_api_authenticator| is true.
@@ -139,6 +143,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // contained credentials that could have been on the local device but
     // weren't.
     bool transport_list_did_include_internal = false;
+
+    // request_is_internal_only indicates that this request can only be serviced
+    // by internal authenticators (e.g. due to the attachment setting).
+    bool request_is_internal_only = false;
   };
 
   class COMPONENT_EXPORT(DEVICE_FIDO) Observer {
@@ -348,6 +356,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void InitializeAuthenticatorAndDispatchRequest(
       const std::string& authenticator_id);
   void ConstructBleAdapterPowerManager();
+  void OnWinIsUvpaa(bool is_uvpaa);
 
   AuthenticatorMap active_authenticators_;
   std::vector<std::unique_ptr<FidoDiscoveryBase>> discoveries_;

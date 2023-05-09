@@ -11,10 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
-#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/overlay_state/win/overlay_state_service.h"
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
-#include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -34,8 +32,6 @@ namespace viz {
 
 namespace {
 
-constexpr int kDCLayerDebugBorderWidth = 4;
-constexpr gfx::Insets kDCLayerDebugBorderInsets = gfx::Insets(-2);
 // This is the number of frames we should wait before actual overlay promotion
 // under multi-video cases.
 constexpr int kDCLayerFramesDelayedBeforeOverlay = 5;
@@ -339,14 +335,13 @@ bool HasOccludingDamageRect(
   return !occluding_damage_rect.IsEmpty();
 }
 
-bool IsFullScreenLetterboxing(const QuadList::Iterator& it,
-                              QuadList::ConstIterator quad_list_end,
-                              const gfx::RectF& display_rect) {
-  bool is_fullscreen = false;
-
-  // Two cases are considered as fullscreen letterboxing:
+bool IsPossibleFullScreenLetterboxing(const QuadList::Iterator& it,
+                                      QuadList::ConstIterator quad_list_end,
+                                      const gfx::RectF& display_rect) {
+  // Two cases are considered as possible fullscreen letterboxing:
   // 1. If the quad beneath the overlay quad is DrawQuad::Material::kSolidColor
-  // with black, and it covers the display size.
+  // with black, and it touches two sides of the screen, while starting at
+  // display origin (0, 0).
   // 2. If the quad beneath the overlay quad is
   // DrawQuad::Material::kTiledContent, and it touches two sides of the screen,
   // while starting at display origin (0, 0).
@@ -357,22 +352,18 @@ bool IsFullScreenLetterboxing(const QuadList::Iterator& it,
   beneath_overlay_it++;
 
   if (beneath_overlay_it != quad_list_end) {
-    if (beneath_overlay_it->material == DrawQuad::Material::kSolidColor &&
-        SolidColorDrawQuad::MaterialCast(*beneath_overlay_it)->color ==
-            SkColors::kBlack) {
-      gfx::RectF black_background_rect =
-          ClippedQuadRectangleF(*beneath_overlay_it);
-      is_fullscreen = (black_background_rect == display_rect);
-    } else if (beneath_overlay_it->material ==
-               DrawQuad::Material::kTiledContent) {
-      gfx::RectF tiled_rect = ClippedQuadRectangleF(*beneath_overlay_it);
-      is_fullscreen = (tiled_rect.origin() == display_rect.origin() &&
-                       (tiled_rect.width() == display_rect.width() ||
-                        tiled_rect.height() == display_rect.height()));
+    if (beneath_overlay_it->material == DrawQuad::Material::kTiledContent ||
+        (beneath_overlay_it->material == DrawQuad::Material::kSolidColor &&
+         SolidColorDrawQuad::MaterialCast(*beneath_overlay_it)->color ==
+             SkColors::kBlack)) {
+      gfx::RectF beneath_rect = ClippedQuadRectangleF(*beneath_overlay_it);
+      return (beneath_rect.origin() == display_rect.origin() &&
+              (beneath_rect.width() == display_rect.width() ||
+               beneath_rect.height() == display_rect.height()));
     }
   }
 
-  return is_fullscreen;
+  return false;
 }
 
 void RecordVideoDCLayerResult(DCLayerResult result,
@@ -472,12 +463,10 @@ bool IsClearVideoQuad(const QuadList::ConstIterator& it) {
 }  // namespace
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
-    const DebugRendererSettings* debug_settings,
     int allowed_yuv_overlay_count,
     bool skip_initialization_for_testing)
     : has_overlay_support_(skip_initialization_for_testing),
       allowed_yuv_overlay_count_(allowed_yuv_overlay_count),
-      debug_settings_(debug_settings),
       no_undamaged_overlay_promotion_(base::FeatureList::IsEnabled(
           features::kNoUndamagedOverlayPromotion)) {
   if (!skip_initialization_for_testing) {
@@ -601,55 +590,6 @@ void DCLayerOverlayProcessor::UpdateRootDamageRect(
   }
   damage_rect->Intersect(gfx::ToEnclosingRect(display_rect));
   damages_to_be_removed_.clear();
-}
-
-void DCLayerOverlayProcessor::InsertDebugBorderDrawQuad(
-    const OverlayCandidateList* dc_layer_overlays,
-    AggregatedRenderPass* render_pass,
-    const gfx::RectF& display_rect,
-    gfx::Rect* damage_rect) {
-  auto* shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
-  auto& quad_list = render_pass->quad_list;
-
-  // Add debug borders for the root damage rect after overlay promotion.
-  {
-    SkColor4f border_color = SkColors::kGreen;
-    auto it =
-        quad_list.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
-            quad_list.begin(), 1u);
-    auto* debug_quad = static_cast<DebugBorderDrawQuad*>(*it);
-
-    gfx::Rect rect = *damage_rect;
-    rect.Inset(kDCLayerDebugBorderInsets);
-    debug_quad->SetNew(shared_quad_state, rect, rect, border_color,
-                       kDCLayerDebugBorderWidth);
-  }
-
-  // Add debug borders for overlays/underlays
-  for (const auto& dc_layer : *dc_layer_overlays) {
-    gfx::Rect overlay_rect = gfx::ToEnclosingRect(
-        OverlayCandidate::DisplayRectInTargetSpace(dc_layer));
-    if (dc_layer.clip_rect)
-      overlay_rect.Intersect(*dc_layer.clip_rect);
-
-    // Overlay:red, Underlay:blue.
-    SkColor4f border_color =
-        dc_layer.plane_z_order > 0 ? SkColors::kRed : SkColors::kBlue;
-    auto it =
-        quad_list.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
-            quad_list.begin(), 1u);
-    auto* debug_quad = static_cast<DebugBorderDrawQuad*>(*it);
-
-    overlay_rect.Inset(kDCLayerDebugBorderInsets);
-    debug_quad->SetNew(shared_quad_state, overlay_rect, overlay_rect,
-                       border_color, kDCLayerDebugBorderWidth);
-  }
-
-  // Mark the entire output as damaged because the border quads might not be
-  // inside the current damage rect.  It's far simpler to mark the entire output
-  // as damaged instead of accounting for individual border quads which can
-  // change positions across frames.
-  damage_rect->Union(gfx::ToEnclosingRect(display_rect));
 }
 
 bool DCLayerOverlayProcessor::IsPreviousFrameUnderlayRect(
@@ -977,11 +917,6 @@ void DCLayerOverlayProcessor::Process(
     RecordOverlayHistograms(dc_layer_overlays,
                             this_frame_has_occluding_damage_rect, damage_rect);
   }
-
-  if (debug_settings_->show_dc_layer_debug_borders) {
-    InsertDebugBorderDrawQuad(dc_layer_overlays, render_pass, display_rect,
-                              damage_rect);
-  }
 }
 
 bool DCLayerOverlayProcessor::ShouldSkipOverlay(
@@ -1050,10 +985,10 @@ void DCLayerOverlayProcessor::UpdateDCLayerOverlays(
   RecordDCLayerResult(DC_LAYER_SUCCESS, it);
 
   OverlayCandidate dc_layer;
-  dc_layer.is_video_fullscreen_letterboxing =
+  dc_layer.maybe_video_fullscreen_letterboxing =
       is_page_fullscreen_mode
-          ? IsFullScreenLetterboxing(it, render_pass->quad_list.end(),
-                                     display_rect)
+          ? IsPossibleFullScreenLetterboxing(it, render_pass->quad_list.end(),
+                                             display_rect)
           : false;
   switch (it->material) {
     case DrawQuad::Material::kYuvVideoContent:

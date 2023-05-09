@@ -34,7 +34,8 @@ enum class AddressProfileImportRequirementMetric {
   // If present, the email address must be valid.
   kEmailValidRequirementFulfilled = 10,
   kEmailValidRequirementViolated = 11,
-  // If present, the country must be valid.
+  // The country is no longer required. Instead, an invalid observed country is
+  // replaced by the complement country logic.
   kCountryValidRequirementFulfilled = 12,
   kCountryValidRequirementViolated = 13,
   // If present, the state must be valid (if verifiable).
@@ -88,12 +89,15 @@ enum class AddressProfileImportCountrySpecificFieldRequirementsMetric {
   kMaxValue = LINE1_ZIP_STATE_CITY_REQUIREMENT_VIOLATED,
 };
 
-// Represent the overall status of a profile import.
+// These values are persisted to UMA logs. Entries should not be renumbered
+// and numeric values should never be reused. These values represent the overall
+// status of a profile import.
 enum class AddressProfileImportStatusMetric {
-  NO_IMPORT = 0,
-  REGULAR_IMPORT = 1,
-  SECTION_UNION_IMPORT = 2,
-  kMaxValue = SECTION_UNION_IMPORT,
+  kNoImport = 0,
+  kRegularImport = 1,
+  // This value was deprecated in M113.
+  kSectionUnionImport = 2,
+  kMaxValue = kSectionUnionImport,
 };
 
 // Logs the address profile import UKM after the form submission.
@@ -134,17 +138,8 @@ void LogSilentUpdatesProfileImportType(AutofillProfileImportType import_type);
 void LogNewProfileImportDecision(
     AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-// Logs the user decision for importing a new profile, which could only
-// be imported after an invalid country was ignored.
-void LogNewProfileWithIgnoredCountryImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
 // Logs the user decision for updating an exiting profile.
 void LogProfileUpdateImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision);
-// Logs the user decision for updating an exiting profile, which could only
-// be imported after an invalid country was ignored.
-void LogProfileUpdateWithIgnoredCountryImportDecision(
     AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
 // Logs if at least one setting-inaccessible field was removed on import.

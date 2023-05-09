@@ -22,8 +22,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 
-namespace ash {
-namespace phonehub {
+namespace ash::phonehub {
 
 using multidevice_setup::mojom::Feature;
 using multidevice_setup::mojom::FeatureState;
@@ -54,6 +53,11 @@ RecentAppsInteractionHandlerImpl::RecentAppsInteractionHandlerImpl(
 }
 
 RecentAppsInteractionHandlerImpl::~RecentAppsInteractionHandlerImpl() {
+  if (features::IsEcheNetworkConnectionStateEnabled() &&
+      eche_connection_status_observer_) {
+    eche_connection_status_observer_->RemoveObserver(this);
+  }
+
   multidevice_setup_client_->RemoveObserver(this);
   multidevice_feature_access_manager_->RemoveObserver(this);
 }
@@ -102,6 +106,16 @@ void RecentAppsInteractionHandlerImpl::NotifyRecentAppAddedOrUpdated(
   ComputeAndUpdateUiState();
 }
 
+void RecentAppsInteractionHandlerImpl::SetConnectionStatusObserver(
+    eche_app::EcheConnectionStatusObserver* eche_connection_status_observer) {
+  eche_connection_status_observer_ = eche_connection_status_observer;
+
+  if (features::IsEcheNetworkConnectionStateEnabled() &&
+      eche_connection_status_observer_) {
+    eche_connection_status_observer_->AddObserver(this);
+  }
+}
+
 base::flat_set<int64_t>
 RecentAppsInteractionHandlerImpl::GetUserIdsWithDisplayRecentApps() {
   base::flat_set<int64_t> user_ids;
@@ -148,7 +162,7 @@ void RecentAppsInteractionHandlerImpl::
     for (const auto& value : recent_apps_history_pref) {
       DCHECK(value.is_dict());
       recent_app_metadata_list_.emplace_back(
-          Notification::AppMetadata::FromValue(value),
+          Notification::AppMetadata::FromValue(value.GetDict()),
           base::Time::FromDoubleT(0));
     }
     has_loaded_prefs_ = true;
@@ -188,6 +202,16 @@ void RecentAppsInteractionHandlerImpl::OnNotificationAccessChanged() {
 
 void RecentAppsInteractionHandlerImpl::OnAppsAccessChanged() {
   ComputeAndUpdateUiState();
+}
+
+void RecentAppsInteractionHandlerImpl::OnConnectionStatusChanged(
+    eche_app::mojom::ConnectionStatus connection_status) {
+  // TODO(b/271478560): When receiving the connection_status, we should have a
+  // local variable to determine the state in ComputeAndUpdateUiState().
+  if (features::IsEcheNetworkConnectionStateEnabled()) {
+    connection_status_ = connection_status;
+    ComputeAndUpdateUiState();
+  }
 }
 
 void RecentAppsInteractionHandlerImpl::SetStreamableApps(
@@ -231,6 +255,8 @@ void RecentAppsInteractionHandlerImpl::ComputeAndUpdateUiState() {
   // 2. If some recent apps in list and streaming is allowed, the recent apps
   // view will be shown.
   // 3. Otherwise, no recent apps view will be shown.
+  // TODO(b/271478560): There will be five cases to handle after
+  // `eche_connection_status_` is implemented.
   bool allow_streaming = multidevice_setup_client_->GetFeatureState(
                              Feature::kEche) == FeatureState::kEnabledByUser;
 
@@ -265,5 +291,4 @@ void RecentAppsInteractionHandlerImpl::ClearRecentAppMetadataListAndPref() {
   has_loaded_prefs_ = false;
 }
 
-}  // namespace phonehub
-}  // namespace ash
+}  // namespace ash::phonehub

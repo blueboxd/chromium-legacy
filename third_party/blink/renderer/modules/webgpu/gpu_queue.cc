@@ -15,8 +15,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_copy_image_bitmap.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_copy_texture.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_image_copy_texture_tagged.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_origin_2d_dict.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_union_gpuorigin2ddict_unsignedlongenforcerangesequence.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -26,6 +24,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_conversions.h"
 #include "third_party/blink/renderer/modules/webgpu/external_texture_helper.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_adapter.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
@@ -38,46 +37,6 @@
 namespace blink {
 
 namespace {
-
-WGPUOrigin3D GPUOrigin2DToWGPUOrigin3D(const V8GPUOrigin2D* webgpu_origin) {
-  DCHECK(webgpu_origin);
-
-  WGPUOrigin3D dawn_origin = {
-      0,
-      0,
-      0,
-  };
-
-  switch (webgpu_origin->GetContentType()) {
-    case V8GPUOrigin2D::ContentType::kGPUOrigin2DDict: {
-      const GPUOrigin2DDict* webgpu_origin_2d_dict =
-          webgpu_origin->GetAsGPUOrigin2DDict();
-      dawn_origin.x = webgpu_origin_2d_dict->x();
-      dawn_origin.y = webgpu_origin_2d_dict->y();
-      break;
-    }
-    case V8GPUOrigin2D::ContentType::kUnsignedLongEnforceRangeSequence: {
-      const Vector<uint32_t>& webgpu_origin_sequence =
-          webgpu_origin->GetAsUnsignedLongEnforceRangeSequence();
-      // The WebGPU spec states that if the sequence isn't big enough then the
-      // default values of 0 are used (which are set above).
-      switch (webgpu_origin_sequence.size()) {
-        default:
-          // This is a 2D origin and the depth should be 0 always.
-          dawn_origin.y = webgpu_origin_sequence[1];
-          [[fallthrough]];
-        case 1:
-          dawn_origin.x = webgpu_origin_sequence[0];
-          [[fallthrough]];
-        case 0:
-          break;
-      }
-      break;
-    }
-  }
-
-  return dawn_origin;
-}
 
 bool IsValidExternalImageDestinationFormat(
     WGPUTextureFormat dawn_texture_format) {
@@ -218,6 +177,7 @@ ExternalSource GetExternalSourceFromExternalImage(
   // into a single blit.
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   auto image = canvas_image_source->GetSourceImageForCanvas(
+      CanvasResourceProvider::FlushReason::kWebGPUExternalImage,
       &source_image_status, image_size, kDontChangeAlpha);
   if (source_image_status != kNormalSourceImageStatus) {
     // Canvas back resource is broken, zero size, incomplete or invalid.
@@ -287,7 +247,7 @@ WGPUCopyTextureForBrowserOptions CreateCopyTextureForBrowserOptions(
 // CopyExternalImageToTexture().
 gfx::Rect GetSourceImageSubrect(StaticBitmapImage* image,
                                 gfx::Rect source_image_rect,
-                                const WGPUOrigin3D& origin,
+                                const WGPUOrigin2D& origin,
                                 const WGPUExtent3D& copy_size) {
   int width = static_cast<int>(copy_size.width);
   int height = static_cast<int>(copy_size.height);
@@ -479,8 +439,12 @@ void GPUQueue::WriteTextureImpl(ScriptState* script_state,
                                 GPUImageDataLayout* data_layout,
                                 const V8GPUExtent3D* write_size,
                                 ExceptionState& exception_state) {
-  WGPUExtent3D dawn_write_size = AsDawnType(write_size);
-  WGPUImageCopyTexture dawn_destination = AsDawnType(destination);
+  WGPUExtent3D dawn_write_size;
+  WGPUImageCopyTexture dawn_destination;
+  if (!ConvertToDawn(write_size, &dawn_write_size, exception_state) ||
+      !ConvertToDawn(destination, &dawn_destination, exception_state)) {
+    return;
+  }
 
   WGPUTextureDataLayout dawn_data_layout = {};
   {
@@ -538,11 +502,15 @@ void GPUQueue::copyExternalImageToTexture(
     return;
   }
 
-  WGPUExtent3D dawn_copy_size = AsDawnType(copy_size);
-
-  // Extract and validate source origin value.
-  WGPUOrigin3D origin_in_external_image =
-      GPUOrigin2DToWGPUOrigin3D(copyImage->origin());
+  WGPUExtent3D dawn_copy_size;
+  WGPUOrigin2D origin_in_external_image;
+  WGPUImageCopyTexture dawn_destination;
+  if (!ConvertToDawn(copy_size, &dawn_copy_size, exception_state) ||
+      !ConvertToDawn(copyImage->origin(), &origin_in_external_image,
+                     exception_state) ||
+      !ConvertToDawn(destination, &dawn_destination, exception_state)) {
+    return;
+  }
 
   const bool copyRectOutOfBounds =
       source.width < origin_in_external_image.x ||
@@ -567,8 +535,6 @@ void GPUQueue::copyExternalImageToTexture(
         "Copy depth is out of bounds of external image.");
     return;
   }
-
-  WGPUImageCopyTexture dawn_destination = AsDawnType(destination);
 
   if (!IsValidExternalImageDestinationFormat(
           destination->texture()->Format())) {
@@ -632,7 +598,7 @@ void GPUQueue::copyExternalImageToTexture(
 }
 
 void GPUQueue::CopyFromVideoElement(const ExternalTextureSource source,
-                                    const WGPUOrigin3D& origin,
+                                    const WGPUOrigin2D& origin,
                                     const WGPUExtent3D& copy_size,
                                     const WGPUImageCopyTexture& destination,
                                     bool dst_premultiplied_alpha,
@@ -683,7 +649,7 @@ void GPUQueue::CopyFromVideoElement(const ExternalTextureSource source,
 
   WGPUImageCopyExternalTexture src = {};
   src.externalTexture = external_texture.wgpu_external_texture;
-  src.origin = origin;
+  src.origin = {origin.x, origin.y, 0};
 
   GetProcs().queueCopyExternalTextureForBrowser(GetHandle(), &src, &destination,
                                                 &copy_size, &options);
@@ -691,7 +657,7 @@ void GPUQueue::CopyFromVideoElement(const ExternalTextureSource source,
 
 bool GPUQueue::CopyFromCanvasSourceImage(
     StaticBitmapImage* image,
-    const WGPUOrigin3D& origin,
+    const WGPUOrigin2D& origin,
     const WGPUExtent3D& copy_size,
     const WGPUImageCopyTexture& destination,
     bool dst_premultiplied_alpha,
@@ -713,14 +679,13 @@ bool GPUQueue::CopyFromCanvasSourceImage(
   image = unaccelerated_image.get();
 #endif  // BUILDFLAG(IS_LINUX)
 
-// TODO(crbug.com/1404632): Using webgpu mailbox texture to upload cpu backed
-// resource on x86 mac platform has bug. So disable using webgpu mailbox texture
-// uploading path on Mac x86 platform when source image is cpu backed resource.
-#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_X86_FAMILY)
-  if (!image->IsTextureBacked()) {
+  // TODO(crbug.com/1424119):
+  // Using a webgpu mailbox texture to upload a cpu-backed resource on OpenGLES uploads all
+  // zeros. Disable that upload path if the image is not texture-backed.
+  auto backendType = device()->adapter()->backendType();
+  if (backendType == WGPUBackendType_OpenGLES && !image->IsTextureBacked()) {
     use_webgpu_mailbox_texture = false;
   }
-#endif  // BUILDFLAG(IS_MAC) && defined(ARCH_CPU_X86_FAMILY)
 
   bool noop = copy_size.width == 0 || copy_size.height == 0 ||
               copy_size.depthOrArrayLayers == 0;

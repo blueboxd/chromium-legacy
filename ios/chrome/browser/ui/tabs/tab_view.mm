@@ -10,11 +10,13 @@
 #import "base/ios/ios_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
-#import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -301,19 +303,24 @@ UIImage* DefaultFaviconImage() {
   _closeButton = [HighlightButton buttonWithType:UIButtonTypeCustom];
   [_closeButton setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  // TODO(crbug.com/1418068): Remove after minimum version required is >=
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
   // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-  NSDirectionalEdgeInsets contentInsets =
-      NSDirectionalEdgeInsetsMake(kTabCloseTopInset, kTabCloseLeftInset,
-                                  kTabCloseBottomInset, kTabCloseRightInset);
-  [_closeButton.configuration setContentInsets:contentInsets];
-#else
-  [_closeButton setContentEdgeInsets:UIEdgeInsetsMake(kTabCloseTopInset,
-                                                      kTabCloseLeftInset,
-                                                      kTabCloseBottomInset,
-                                                      kTabCloseRightInset)];
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+          kTabCloseTopInset, kTabCloseLeftInset, kTabCloseBottomInset,
+          kTabCloseRightInset);
+      _closeButton.configuration = buttonConfiguration;
+    }
+  } else {
+    UIEdgeInsets contentInsets =
+        UIEdgeInsetsMake(kTabCloseTopInset, kTabCloseLeftInset,
+                         kTabCloseBottomInset, kTabCloseRightInset);
+    SetContentEdgeInsets(_closeButton, contentInsets);
+  }
 
   UIImage* closeButton =
       UseSymbols()

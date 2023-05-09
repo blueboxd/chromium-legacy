@@ -87,6 +87,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // cleared within a timeout.
 - (void)removeBrowsingCache;
 
+// Persists the current list of tabs to disk immediately.
+- (void)saveSessionImmediately;
+
 #pragma mark - Navigation Utilities (EG2)
 
 // Instructs some connected scene to open `URL` with default opening
@@ -687,6 +690,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns whether SF Symbols are used.
 - (BOOL)isSFSymbolEnabled;
 
+// Returns whether UIButtonConfiguration changes are enabled.
+- (BOOL)isUIButtonConfigurationEnabled;
+
 #pragma mark - ContentSettings
 
 // Gets the current value of the popup content setting preference for the
@@ -712,6 +718,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // UIKeyInputEscape constants as `input`.
 - (void)simulatePhysicalKeyboardEvent:(NSString*)input
                                 flags:(UIKeyModifierFlags)flags;
+
+#pragma mark - Default Utilities (EG2)
+
+// Stores a value for the provided key in NSUserDefaults.
+- (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName;
 
 #pragma mark - Pref Utilities (EG2)
 

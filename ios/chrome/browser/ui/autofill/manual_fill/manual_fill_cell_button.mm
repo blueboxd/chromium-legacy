@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_button.h"
 
+#import "base/ios/ios_util.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -58,17 +61,24 @@ static const CGFloat kButtonVerticalMargin = 12;
   self.titleLabel.adjustsFontForContentSizeCategory = YES;
   self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeading;
 
-  // TODO(crbug.com/1418068): Remove after minimum version required is >=
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
   // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-  self.configuration.contentInsets = NSDirectionalEdgeInsetsMake(
-      kButtonVerticalMargin, kButtonHorizontalMargin, kButtonVerticalMargin,
-      kButtonHorizontalMargin);
-#else
-  self.contentEdgeInsets =
-      UIEdgeInsetsMake(kButtonVerticalMargin, kButtonHorizontalMargin,
-                       kButtonVerticalMargin, kButtonHorizontalMargin);
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+          kButtonVerticalMargin, kButtonHorizontalMargin, kButtonVerticalMargin,
+          kButtonHorizontalMargin);
+      self.configuration = buttonConfiguration;
+    }
+  } else {
+    UIEdgeInsets contentEdgeInsets =
+        UIEdgeInsetsMake(kButtonVerticalMargin, kButtonHorizontalMargin,
+                         kButtonVerticalMargin, kButtonHorizontalMargin);
+    SetContentEdgeInsets(self, contentEdgeInsets);
+  }
 
   self.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
 }

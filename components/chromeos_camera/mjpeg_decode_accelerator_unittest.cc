@@ -249,7 +249,7 @@ class MjpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   const base::FilePath::CharType* user_jpeg_filenames_;
   const base::FilePath::CharType* test_data_path_;
   const base::FilePath::CharType* perf_output_path_;
-  base::Value metrics_;
+  base::Value::Dict metrics_;
 
   std::unique_ptr<media::LocalGpuMemoryBufferManager>
       gpu_memory_buffer_manager_;
@@ -282,8 +282,6 @@ void MjpegDecodeAcceleratorTestEnvironment::SetUp() {
 
   gpu_memory_buffer_manager_ =
       std::make_unique<media::LocalGpuMemoryBufferManager>();
-
-  metrics_ = base::Value(base::Value::Type::DICT);
 }
 
 void MjpegDecodeAcceleratorTestEnvironment::TearDown() {
@@ -470,7 +468,7 @@ MjpegDecodeAcceleratorTestEnvironment::GetSupportedDmaBufFormats() {
 void MjpegDecodeAcceleratorTestEnvironment::AddMetric(
     const std::string& name,
     const base::TimeDelta& time) {
-  metrics_.SetDoubleKey(name, time.InMillisecondsF());
+  metrics_.Set(name, time.InMillisecondsF());
 }
 
 enum ClientState {
@@ -780,10 +778,8 @@ void JpegClient::SaveToFile(int32_t task_id,
   const base::FilePath in_filename(task.image->filename());
   const base::FilePath out_filename =
       in_filename.ReplaceExtension(".png").InsertBeforeExtension(suffix);
-  const int size = base::checked_cast<int>(png_output.size());
-  const int file_written_bytes = base::WriteFile(
-      out_filename, reinterpret_cast<char*>(png_output.data()), size);
-  LOG_ASSERT(file_written_bytes == size);
+  const bool success = base::WriteFile(out_filename, png_output);
+  LOG_ASSERT(success);
 }
 
 double JpegClient::GetMeanAbsoluteDifference() {

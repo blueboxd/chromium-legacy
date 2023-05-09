@@ -14,8 +14,6 @@
 #import "components/password_manager/core/browser/test_password_store.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
-#import "components/password_manager/core/common/password_manager_pref_names.h"
-#import "components/prefs/testing_pref_service.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -26,12 +24,12 @@
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
+#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_consumer.h"
 #import "ios/chrome/browser/ui/settings/utils/password_auto_fill_status_observer.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest/include/gtest/gtest.h"
@@ -173,27 +171,6 @@ class PasswordsMediatorTest : public BlockCleanupTest {
   FakePasswordsConsumer* consumer_;
   PasswordsMediator* mediator_;
 };
-
-TEST_F(PasswordsMediatorTest, ElapsedTimeSinceLastCheck) {
-  EXPECT_NSEQ(@"Check never run.",
-              [mediator() formatElapsedTimeSinceLastCheck]);
-
-  base::Time expected1 = base::Time::Now() - base::Seconds(10);
-  browserState()->GetPrefs()->SetDouble(
-      password_manager::prefs::kLastTimePasswordCheckCompleted,
-      expected1.ToDoubleT());
-
-  EXPECT_NSEQ(@"Last checked just now.",
-              [mediator() formatElapsedTimeSinceLastCheck]);
-
-  base::Time expected2 = base::Time::Now() - base::Minutes(5);
-  browserState()->GetPrefs()->SetDouble(
-      password_manager::prefs::kLastTimePasswordCheckCompleted,
-      expected2.ToDoubleT());
-
-  EXPECT_NSEQ(@"Last checked 5 minutes ago.",
-              [mediator() formatElapsedTimeSinceLastCheck]);
-}
 
 // Consumer should be notified when passwords are changed.
 TEST_F(PasswordsMediatorTest, NotifiesConsumerOnPasswordChange) {

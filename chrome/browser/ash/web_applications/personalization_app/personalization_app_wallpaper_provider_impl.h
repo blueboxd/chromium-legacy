@@ -22,6 +22,7 @@
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/ash/wallpaper_handlers/backdrop_fetcher_delegate.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -45,6 +46,7 @@ class WebUI;
 
 namespace wallpaper_handlers {
 class BackdropCollectionInfoFetcher;
+class BackdropFetcherDelegate;
 class BackdropImageInfoFetcher;
 class GooglePhotosAlbumsFetcher;
 class GooglePhotosSharedAlbumsFetcher;
@@ -65,7 +67,10 @@ class PersonalizationAppWallpaperProviderImpl
     : public PersonalizationAppWallpaperProvider,
       ash::WallpaperControllerObserver {
  public:
-  explicit PersonalizationAppWallpaperProviderImpl(content::WebUI* web_ui);
+  PersonalizationAppWallpaperProviderImpl(
+      content::WebUI* web_ui,
+      std::unique_ptr<wallpaper_handlers::BackdropFetcherDelegate>
+          backdrop_fetcher_delegate);
 
   PersonalizationAppWallpaperProviderImpl(
       const PersonalizationAppWallpaperProviderImpl&) = delete;
@@ -142,7 +147,7 @@ class PersonalizationAppWallpaperProviderImpl
   void OnWallpaperPreviewEnded() override;
 
   // ash::personalization_app::mojom::WallpaperProvider:
-  void SelectWallpaper(uint64_t image_asset_id,
+  void SelectWallpaper(uint64_t unit_id,
                        bool preview_mode,
                        SelectWallpaperCallback callback) override;
 
@@ -351,10 +356,10 @@ class PersonalizationAppWallpaperProviderImpl
           type(in_type) {}
   };
 
-  // Store a mapping of valid image asset_ids to their ImageInfo to validate
-  // user wallpaper selections. This is filled when a user first visits the
-  // Wallpaper subpage of Personalization App.
-  std::map<uint64_t, ImageInfo> image_asset_id_map_;
+  // Stores the mapping of valid image unit_ids and their image variants. This
+  // is filled when a user first visits the Wallpaper subpage of Personalization
+  // App.
+  std::map<uint64_t, std::vector<ImageInfo>> image_unit_id_map_;
 
   // Stores the mapping of Google Photos album id to its photos' dedup keys.
   // Used to determine whether an album contains the currently selected
@@ -374,6 +379,9 @@ class PersonalizationAppWallpaperProviderImpl
   base::ScopedObservation<ash::WallpaperController,
                           ash::WallpaperControllerObserver>
       wallpaper_controller_observer_{this};
+
+  const std::unique_ptr<wallpaper_handlers::BackdropFetcherDelegate>
+      backdrop_fetcher_delegate_;
 
   // Place near bottom of class so this is cleaned up before any pending
   // callbacks are dropped.

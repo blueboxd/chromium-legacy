@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
@@ -52,7 +53,11 @@ const char kGlobalSidePanelRegistryKey[] = "global_side_panel_registry_key";
 constexpr int kSidePanelContentViewId = 42;
 constexpr int kSidePanelContentWrapperViewId = 43;
 
-constexpr SidePanelEntry::Id kDefaultEntry = SidePanelEntry::Id::kReadingList;
+SidePanelEntry::Id GetDefaultEntry() {
+  return base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel)
+             ? SidePanelEntry::Id::kBookmarks
+             : SidePanelEntry::Id::kReadingList;
+}
 
 std::unique_ptr<views::ImageButton> CreateControlButton(
     views::View* host,
@@ -196,7 +201,8 @@ void SidePanelCoordinator::Show(
   if (entry_id.has_value()) {
     Show(SidePanelEntry::Key(entry_id.value()), open_trigger);
   } else {
-    Show(GetLastActiveEntryKey().value_or(SidePanelEntry::Key(kDefaultEntry)),
+    Show(GetLastActiveEntryKey().value_or(
+             SidePanelEntry::Key(GetDefaultEntry())),
          open_trigger);
   }
 }
@@ -273,7 +279,12 @@ void SidePanelCoordinator::Toggle() {
   if (IsSidePanelShowing()) {
     Close();
   } else {
-    Show(absl::nullopt, SidePanelUtil::SidePanelOpenTrigger::kToolbarButton);
+    absl::optional<SidePanelEntry::Id> entry_id = absl::nullopt;
+    if (browser_view_->browser()->window()->IsFeaturePromoActive(
+            feature_engagement::kIPHPowerBookmarksSidePanelFeature)) {
+      entry_id = absl::make_optional(SidePanelEntry::Id::kBookmarks);
+    }
+    Show(entry_id, SidePanelUtil::SidePanelOpenTrigger::kToolbarButton);
   }
 }
 
@@ -338,6 +349,8 @@ void SidePanelCoordinator::Show(
     // Close IPH for side panel if shown.
     browser_view_->browser()->window()->CloseFeaturePromo(
         feature_engagement::kIPHReadingListInSidePanelFeature);
+    browser_view_->browser()->window()->CloseFeaturePromo(
+        feature_engagement::kIPHPowerBookmarksSidePanelFeature);
   }
 
   SidePanelContentSwappingContainer* content_wrapper =
@@ -584,8 +597,9 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
   combobox->SetMenuSelectionAtCallback(
       base::BindRepeating(&SidePanelCoordinator::OnComboboxChangeTriggered,
                           base::Unretained(this)));
-  combobox->SetSelectedIndex(combobox_model_->GetIndexForKey(
-      (GetLastActiveEntryKey().value_or(SidePanelEntry::Key(kDefaultEntry)))));
+  combobox->SetSelectedIndex(
+      combobox_model_->GetIndexForKey((GetLastActiveEntryKey().value_or(
+          SidePanelEntry::Key(GetDefaultEntry())))));
   combobox->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_PANEL_SELECTOR));
   combobox->SetProperty(
@@ -690,8 +704,8 @@ void SidePanelCoordinator::OnEntryRegistered(SidePanelRegistry* registry,
                                              SidePanelEntry* entry) {
   combobox_model_->AddItem(entry);
   if (GetContentView()) {
-    SetSelectedEntryInCombobox(
-        GetLastActiveEntryKey().value_or(SidePanelEntry::Key(kDefaultEntry)));
+    SetSelectedEntryInCombobox(GetLastActiveEntryKey().value_or(
+        SidePanelEntry::Key(GetDefaultEntry())));
   }
 
   // If `entry` is a contextual entry and the global entry with the same key is
@@ -709,8 +723,8 @@ void SidePanelCoordinator::OnEntryWillDeregister(SidePanelRegistry* registry,
     combobox_model_->RemoveItem(entry->key());
 
     if (GetContentView()) {
-      SetSelectedEntryInCombobox(
-          GetLastActiveEntryKey().value_or(SidePanelEntry::Key(kDefaultEntry)));
+      SetSelectedEntryInCombobox(GetLastActiveEntryKey().value_or(
+          SidePanelEntry::Key(GetDefaultEntry())));
     }
   }
 
@@ -722,6 +736,12 @@ void SidePanelCoordinator::OnEntryWillDeregister(SidePanelRegistry* registry,
     last_active_global_entry_key_ = absl::nullopt;
   }
 
+  // Save the entry's view: if it has a cached view, retrieve it. Otherwise if
+  // the entry is shown, get it from the side panel view. This is necessary so
+  // the view can be preserved so it won't be destroyed by Close().
+  std::unique_ptr<views::View> entry_view =
+      entry->CachedView() ? entry->GetContent() : nullptr;
+
   // Update the current entry to make sure we don't show an entry that is being
   // removed or close the panel if the entry being deregistered is the only one
   // that has been visible.
@@ -731,7 +751,21 @@ void SidePanelCoordinator::OnEntryWillDeregister(SidePanelRegistry* registry,
     // key is shown, do nothing.
     if (registry == global_registry_ &&
         GetActiveContextualEntryForKey(entry->key())) {
+      entry->CacheView(std::move(entry_view));
       return;
+    }
+
+    // Fetch the entry's view from the side panel container if it is shown.
+    auto* content_wrapper =
+        GetContentView()->GetViewByID(kSidePanelContentWrapperViewId);
+    DCHECK(content_wrapper);
+    if (content_wrapper->children().size() == 1) {
+      entry_view = content_wrapper->RemoveChildViewT(
+          content_wrapper->children().front());
+      // TODO(crbug.com/1423211): Log the time elapsed between when this view is
+      // removed, to when the new active entry's view is shown. This can
+      // determine if the user will notice a flash in the side panel in between
+      // different entries being shown.
     }
 
     if (auto* new_active_entry =
@@ -742,6 +776,10 @@ void SidePanelCoordinator::OnEntryWillDeregister(SidePanelRegistry* registry,
       Close();
     }
   }
+
+  // Cache the deregistering entry's view. This needs to be done after Close()
+  // might be called because Close() clears all cached views.
+  entry->CacheView(std::move(entry_view));
 }
 
 void SidePanelCoordinator::OnEntryIconUpdated(SidePanelEntry* entry) {

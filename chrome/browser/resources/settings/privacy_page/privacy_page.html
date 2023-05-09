@@ -39,7 +39,7 @@
             label="$i18n{clearBrowsingData}"
             sub-label="$i18n{clearBrowsingDataDescription}"
             on-click="onClearBrowsingDataTap_"></cr-link-row>
-        <template is="dom-if" if="[[showPrivacyGuideEntryPoint_]]">
+        <template is="dom-if" if="[[isPrivacyGuideAvailable]]">
           <cr-link-row id="privacyGuideLinkRow" class="hr"
               start-icon="settings20:wind-rose"
               label="$i18n{privacyGuideLabel}"
@@ -534,7 +534,7 @@
         </settings-subpage>
       </template>
       <template is="dom-if" if="[[privateStateTokensEnabled_]]">
-        <template is="dom-if" route-path="/content/antiAbuse" no-search>
+        <template is="dom-if" route-path="/content/autoVerify" no-search>
           <settings-subpage page-title="$i18n{siteSettingsAntiAbuse}">
             <settings-anti-abuse-page></settings-anti-abuse-page>
           </settings-subpage>
@@ -800,17 +800,9 @@
                   "$i18n{siteSettingsFileSystemWriteBlockedExceptions}"
               search-filter="[[searchFilter_]]">
           </category-setting-exceptions>
-         <template is="dom-if" if="[[showPersistentPermissions_]]">
-          <category-setting-exceptions
-              category="[[contentSettingsTypesEnum_.FILE_SYSTEM_WRITE]]"
-              read-only-list
-              allow-header=
-                  "$i18n{siteSettingsFileSystemWriteAllowed}"
-              block-header=
-                  "$i18n{siteSettingsFileSystemWriteBlockedExceptions}"
-              search-filter="[[searchFilter_]]">
-          </category-setting-exceptions>
-        </template>
+          <template is="dom-if" if="[[showPersistentPermissions_]]">
+            <file-system-site-list></file-system-site-list>
+          </template>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/hidDevices" no-search>

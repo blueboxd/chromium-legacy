@@ -100,7 +100,7 @@ function ReplyPromise(timestamp) {
 }
 
 // Returns a promise that resolves when the given frame fires its load event.
-function ReloadPromise(frame) {
+function LoadPromise(frame) {
   return new Promise((resolve) => {
     frame.addEventListener("load", (event) => {
       resolve();
@@ -126,11 +126,11 @@ async function DeleteCookieInFrame(frame, name, params) {
 }
 
 // Tests whether the frame can write cookies via document.cookie. Note that this
-// overwrites, then deletes, cookies named "cookie" and "foo".
+// overwrites, then optionally deletes, cookies named "cookie" and "foo".
 //
 // This function requires the caller to have included
 // /cookies/resources/cookie-helper.sub.js.
-async function CanFrameWriteCookies(frame) {
+async function CanFrameWriteCookies(frame, keep_after_writing = false) {
   const cookie_suffix = "Secure;SameSite=None;Path=/";
   await DeleteCookieInFrame(frame, "cookie", cookie_suffix);
   await DeleteCookieInFrame(frame, "foo", cookie_suffix);
@@ -142,8 +142,10 @@ async function CanFrameWriteCookies(frame) {
   const can_write = cookieStringHasCookie("cookie", "monster", cookies) &&
       cookieStringHasCookie("foo", "bar", cookies);
 
-  await DeleteCookieInFrame(frame, "cookie", cookie_suffix);
-  await DeleteCookieInFrame(frame, "foo", cookie_suffix);
+  if (!keep_after_writing) {
+    await DeleteCookieInFrame(frame, "cookie", cookie_suffix);
+    await DeleteCookieInFrame(frame, "foo", cookie_suffix);
+  }
 
   return can_write;
 }
@@ -183,9 +185,23 @@ function ObservePermissionChange(frame, args = []) {
 // Executes `location.reload()` in the given frame. The returned promise
 // resolves when the frame has finished reloading.
 function FrameInitiatedReload(frame) {
-  const reload = ReloadPromise(frame);
+  const reload = LoadPromise(frame);
   frame.contentWindow.postMessage({ command: "reload" }, "*");
   return reload;
+}
+
+// Executes `location.href = url` in the given frame. The returned promise
+// resolves when the frame has finished navigating.
+function FrameInitiatedNavigation(frame, url) {
+  const load = LoadPromise(frame);
+  frame.contentWindow.postMessage({ command: "navigate", url }, "*");
+  return load;
+}
+
+// Makes a subresource request to the provided host in the given frame, and returns the cookies in the response.
+function FetchFromFrame(frame, host) {
+  return PostMessageAndAwaitReply(
+    { command: "subresource cookies", host }, frame.contentWindow);
 }
 
 // Tries to set storage access policy, ignoring any errors.

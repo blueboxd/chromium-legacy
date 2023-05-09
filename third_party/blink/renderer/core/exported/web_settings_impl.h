@@ -53,7 +53,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   bool ViewportEnabled() const override;
   void SetAccelerated2dCanvasMSAASampleCount(int) override;
   void SetAutoplayPolicy(mojom::blink::AutoplayPolicy) override;
-  void SetPreferCompositingToLCDTextEnabled(bool) override;
+  void SetLCDTextPreference(LCDTextPreference) override;
   void SetAccessibilityPasswordValuesEnabled(bool) override;
   void SetAllowFileAccessFromFileURLs(bool) override;
   void SetAllowCustomScrollbarInMainFrame(bool) override;
@@ -130,6 +130,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetPrimaryPointerType(mojom::blink::PointerType) override;
   void SetAvailableHoverTypes(int) override;
   void SetPrimaryHoverType(mojom::blink::HoverType) override;
+  void SetOutputDeviceUpdateAbilityType(
+      mojom::blink::OutputDeviceUpdateAbilityType) override;
   void SetPreferHiddenVolumeControls(bool) override;
   void SetShouldProtectAgainstIpcFlooding(bool) override;
   void SetRenderVSyncNotificationEnabled(bool) override;

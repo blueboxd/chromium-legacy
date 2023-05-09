@@ -374,29 +374,34 @@ void AuthenticatorRequestDialogModel::TryUsbDevice() {
 }
 
 void AuthenticatorRequestDialogModel::StartPlatformAuthenticatorFlow() {
-  // Never try the platform authenticator if the request is known in advance to
-  // fail. Proceed to a special error screen instead.
   if (transport_availability_.request_type ==
       device::FidoRequestType::kGetAssertion) {
-    DCHECK_NE(transport_availability_.has_platform_authenticator_credential,
-              device::FidoRequestHandlerBase::RecognizedCredential::kUnknown);
-    if (transport_availability_.has_platform_authenticator_credential ==
-        device::FidoRequestHandlerBase::RecognizedCredential::
-            kNoRecognizedCredential) {
-      SetCurrentStep(Step::kErrorInternalUnrecognized);
-      return;
-    }
+    DCHECK_EQ(transport_availability_.has_platform_authenticator_credential,
+              device::FidoRequestHandlerBase::RecognizedCredential::
+                  kHasRecognizedCredential);
 
-    // For empty allow list requests, let the user select one of the silently
-    // enumerated credentials before dispatching to the platform authenticator.
-    if (transport_availability_.has_empty_allow_list &&
-        !transport_availability_.recognized_platform_authenticator_credentials
+    // If the platform authenticator reports known credentials, show them in the
+    // UI.
+    if (!transport_availability_.recognized_platform_authenticator_credentials
              .empty()) {
-      ephemeral_state_.creds_ =
-          transport_availability_.recognized_platform_authenticator_credentials;
-      SetCurrentStep(ephemeral_state_.creds_.size() == 1
-                         ? Step::kPreSelectSingleAccount
-                         : Step::kPreSelectAccount);
+      if (transport_availability_.has_empty_allow_list) {
+        // For discoverable credential requests, show an account picker.
+        ephemeral_state_.creds_ =
+            transport_availability_
+                .recognized_platform_authenticator_credentials;
+        SetCurrentStep(ephemeral_state_.creds_.size() == 1
+                           ? Step::kPreSelectSingleAccount
+                           : Step::kPreSelectAccount);
+      } else {
+        // For requests with an allow list, pre-select a random credential and
+        // show that one to the user. For platform authenticators with optional
+        // UV (e.g. Touch ID), this step essentially acts as the user presence
+        // check.
+        ephemeral_state_.creds_ = {
+            transport_availability_
+                .recognized_platform_authenticator_credentials.front()};
+        SetCurrentStep(Step::kPreSelectSingleAccount);
+      }
       return;
     }
   }
@@ -650,8 +655,7 @@ void AuthenticatorRequestDialogModel::AddAuthenticator(
     const device::FidoAuthenticator& authenticator) {
   if (!authenticator.AuthenticatorTransport()) {
 #if BUILDFLAG(IS_WIN)
-    DCHECK_EQ(authenticator.GetType(),
-              device::FidoAuthenticator::Type::kWinNative);
+    DCHECK_EQ(authenticator.GetType(), device::AuthenticatorType::kWinNative);
 #endif  // BUILDFLAG(IS_WIN)
     return;
   }
@@ -743,6 +747,16 @@ AuthenticatorRequestDialogModel::mechanisms() const {
 absl::optional<size_t> AuthenticatorRequestDialogModel::current_mechanism()
     const {
   return current_mechanism_;
+}
+
+void AuthenticatorRequestDialogModel::ContactPriorityPhone() {
+  for (auto& mechanism : mechanisms_) {
+    if (absl::holds_alternative<Mechanism::Phone>(mechanism.type)) {
+      mechanism.callback.Run();
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void AuthenticatorRequestDialogModel::ContactPhoneForTesting(
@@ -857,11 +871,8 @@ void AuthenticatorRequestDialogModel::set_cable_transport_info(
 std::vector<std::string> AuthenticatorRequestDialogModel::paired_phone_names()
     const {
   std::vector<std::string> names;
-  std::transform(paired_phones_.begin(), paired_phones_.end(),
-                 std::back_inserter(names),
-                 [](const PairedPhone& phone) -> const std::string& {
-                   return phone.name;
-                 });
+  base::ranges::transform(paired_phones_, std::back_inserter(names),
+                          &PairedPhone::name);
   names.erase(std::unique(names.begin(), names.end()), names.end());
   return names;
 }
@@ -947,6 +958,13 @@ void AuthenticatorRequestDialogModel::StartWinNativeApi(
     size_t mechanism_index) {
   DCHECK(transport_availability_.has_win_native_api_authenticator);
   current_mechanism_ = mechanism_index;
+
+  if (transport_availability_.request_is_internal_only &&
+      !transport_availability_.win_is_uvpaa) {
+    offer_try_again_in_ui_ = false;
+    SetCurrentStep(Step::kErrorWindowsHelloNotEnabled);
+    return;
+  }
 
   if (resident_key_requirement() !=
           device::ResidentKeyRequirement::kDiscouraged &&
@@ -1186,6 +1204,17 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
           /*priority=*/false);
       specific_phones_listed = true;
     }
+    bool skip_to_phone_confirmation =
+        base::FeatureList::IsEnabled(device::kWebAuthnPhoneConfirmationSheet) &&
+        is_get_assertion &&
+        transport_availability_.has_platform_authenticator_credential ==
+            device::FidoRequestHandlerBase::RecognizedCredential::
+                kNoRecognizedCredential &&
+        paired_phones_.size() == 1 && !use_conditional_mediation_ &&
+        transport_availability_.is_only_hybrid_or_internal;
+    if (skip_to_phone_confirmation) {
+      pending_step_ = Step::kPhoneConfirmationSheet;
+    }
   }
 
   if (include_add_phone_option) {
@@ -1194,9 +1223,9 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
     // code.
     bool is_priority = false;
     if (base::FeatureList::IsEnabled(device::kWebAuthPasskeysUI)) {
-      // On Windows<=10, we cannot tell in advance if the platform authenticator
-      // can fulfill a get assertion request. In that case, don't jump to the QR
-      // code.
+      // On Windows WebAuthn API < 4, we cannot tell in advance if the platform
+      // authenticator can fulfill a get assertion request. In that case, don't
+      // jump to the QR code.
       bool platform_authenticator_could_fulfill_get_assertion =
           is_get_assertion && !use_conditional_mediation_ &&
           transport_availability_.has_platform_authenticator_credential !=

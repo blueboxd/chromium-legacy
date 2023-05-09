@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 
+#include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -43,6 +44,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
@@ -117,8 +119,7 @@ const password_manager::InteractionsStats* FindStatsByUsername(
 ManagePasswordsUIController::ManagePasswordsUIController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      content::WebContentsUserData<ManagePasswordsUIController>(*web_contents),
-      are_passwords_revealed_when_next_bubble_is_opened_(false) {
+      content::WebContentsUserData<ManagePasswordsUIController>(*web_contents) {
   passwords_data_.set_client(
       ChromePasswordManagerClient::FromWebContents(web_contents));
   password_manager::PasswordStoreInterface* profile_password_store =
@@ -263,6 +264,23 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
     ClearPopUpFlagForBubble();
     passwords_data_.OnPasswordAutofilled(password_forms, origin,
                                          federated_matches);
+    if (GetState() == password_manager::ui::MANAGE_STATE) {
+      if (Browser* browser =
+              chrome::FindBrowserWithWebContents(web_contents())) {
+        if (browser->tab_strip_model()->GetActiveWebContents() ==
+            web_contents()) {
+          const bool has_non_empty_note =
+              !base::ranges::all_of(GetCurrentForms(), &std::u16string::empty,
+                                    &password_manager::PasswordForm::
+                                        GetNoteWithEmptyUniqueDisplayName);
+          if (has_non_empty_note) {
+            browser->window()->MaybeShowFeaturePromo(
+                feature_engagement::
+                    kIPHPasswordsManagementBubbleDuringSigninFeature);
+          }
+        }
+      }
+    }
     // Don't close the existing bubble. Update the icon later.
     if (bubble_status_ == BubbleStatus::SHOWN)
       bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
@@ -312,10 +330,6 @@ void ManagePasswordsUIController::OnShowMoveToAccountBubble(
 
 void ManagePasswordsUIController::OnBiometricAuthenticationForFilling(
     PrefService* prefs) {
-  // Existing dialog shouldn't be closed.
-  if (dialog_controller_) {
-    return;
-  }
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   const std::string promo_shown_counter =
       password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter;
@@ -384,7 +398,7 @@ void ManagePasswordsUIController::OnLoginsRetained(
 
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
-  if (ShouldBubblePopUp()) {
+  if (IsAutomaticallyOpeningBubble()) {
     DCHECK(!dialog_controller_);
     // This will detach any existing bubble so OnBubbleHidden() isn't called.
     weak_ptr_factory_.InvalidateWeakPtrs();
@@ -495,7 +509,6 @@ bool ManagePasswordsUIController::BubbleIsManualFallbackForSaving() const {
 }
 
 void ManagePasswordsUIController::OnBubbleShown() {
-  are_passwords_revealed_when_next_bubble_is_opened_ = false;
   bubble_status_ = BubbleStatus::SHOWN;
 }
 
@@ -599,8 +612,11 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
   // The icon is to be updated after the bubble (either "Save password" or "Sign
   // in to Chrome") is closed.
   bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
-  if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents()))
+  if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents())) {
     browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
+    browser->window()->MaybeShowFeaturePromo(
+        feature_engagement::kIPHPasswordsManagementBubbleAfterSaveFeature);
+  }
 }
 
 void ManagePasswordsUIController::SaveUnsyncedCredentialsInProfileStore(
@@ -728,19 +744,6 @@ bool ManagePasswordsUIController::IsSavingPromptBlockedExplicitlyOrImplicitly()
          stats->dismissal_count >= show_threshold;
 }
 
-bool ManagePasswordsUIController::AuthenticateUser() {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ManagePasswordsUIController::RequestAuthenticationAndReopenBubble,
-          weak_ptr_factory_.GetWeakPtr()));
-  return false;
-#else
-  return true;
-#endif
-}
-
 void ManagePasswordsUIController::AuthenticateUserWithMessage(
     const std::u16string& message,
     AvailabilityCallback callback) {
@@ -753,11 +756,9 @@ void ManagePasswordsUIController::AuthenticateUserWithMessage(
                      weak_ptr_factory_.GetWeakPtr());
 
   CancelAnyOngoingBiometricAuth();
-  biometric_authenticator_ =
-      passwords_data_.client()->GetBiometricAuthenticator();
+  biometric_authenticator_ = passwords_data_.client()->GetDeviceAuthenticator();
   biometric_authenticator_->AuthenticateWithMessage(
-      device_reauth::BiometricAuthRequester::kTouchToFill, message,
-      std::move(callback).Then(std::move(on_reauth_completed)));
+      message, std::move(callback).Then(std::move(on_reauth_completed)));
 #endif  // !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
 }
 
@@ -799,11 +800,6 @@ void ManagePasswordsUIController::
                          FinishMovingPasswordAfterAccountStoreOptInAuth,
                      weak_ptr_factory_.GetWeakPtr(),
                      passwords_data_.form_manager()));
-}
-
-bool ManagePasswordsUIController::ArePasswordsRevealedWhenBubbleIsOpened()
-    const {
-  return are_passwords_revealed_when_next_bubble_is_opened_;
 }
 
 void ManagePasswordsUIController::HidePasswordBubble() {
@@ -874,7 +870,7 @@ base::TimeDelta ManagePasswordsUIController::GetTimeoutForSaveFallback() {
 }
 
 void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
-  DCHECK(ShouldBubblePopUp());
+  DCHECK(IsAutomaticallyOpeningBubble());
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   // Can be zero in the tests.
   if (!browser)
@@ -884,8 +880,9 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
 }
 
 void ManagePasswordsUIController::ClearPopUpFlagForBubble() {
-  if (ShouldBubblePopUp())
+  if (IsAutomaticallyOpeningBubble()) {
     bubble_status_ = BubbleStatus::NOT_SHOWN;
+  }
 }
 
 void ManagePasswordsUIController::DestroyPopups() {
@@ -906,44 +903,6 @@ void ManagePasswordsUIController::WebContentsDestroyed() {
   if (account_password_store)
     account_password_store->RemoveObserver(this);
   HidePasswordBubble();
-}
-
-void ManagePasswordsUIController::RequestAuthenticationAndReopenBubble() {
-  base::WeakPtr<ManagePasswordsUIController> weak_ptr =
-      weak_ptr_factory_.GetWeakPtr();
-  bool auth_is_successful = ShowAuthenticationDialog();
-  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ManagePasswordsUIController::ReopenBubbleAfterAuth,
-                     weak_ptr, auth_is_successful));
-}
-
-void ManagePasswordsUIController::ReopenBubbleAfterAuth(
-    bool auth_is_successful) {
-  if (GetState() != password_manager::ui::PENDING_PASSWORD_STATE &&
-      GetState() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE)
-    return;
-  if (auth_is_successful)
-    are_passwords_revealed_when_next_bubble_is_opened_ = true;
-  bubble_status_ = BubbleStatus::SHOULD_POP_UP_AFTER_REAUTH;
-  UpdateBubbleAndIconVisibility();
-}
-
-bool ManagePasswordsUIController::ShowAuthenticationDialog() {
-// TODO(crbug.com/1353344): Use biometric authentication to reveal password in
-// the bubble.
-#if BUILDFLAG(IS_WIN)
-  return password_manager_util_win::AuthenticateUser(
-      web_contents()->GetNativeView(),
-      password_manager_util_win::GetMessageForLoginPrompt(
-          password_manager::ReauthPurpose::VIEW_PASSWORD));
-#elif BUILDFLAG(IS_MAC)
-  return password_manager_util_mac::AuthenticateUser(
-      password_manager::ReauthPurpose::VIEW_PASSWORD);
-#else
-  NOTREACHED();
-  return true;
-#endif
 }
 
 void ManagePasswordsUIController::
@@ -1055,7 +1014,7 @@ void ManagePasswordsUIController::CancelAnyOngoingBiometricAuth() {
   if (!biometric_authenticator_)
     return;
   biometric_authenticator_->Cancel(
-      device_reauth::BiometricAuthRequester::kTouchToFill);
+      device_reauth::DeviceAuthRequester::kTouchToFill);
   biometric_authenticator_.reset();
 }
 

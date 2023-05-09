@@ -462,7 +462,6 @@ TypedResult<ShortcutsMenuIconBitmaps> ReadShortcutsMenuIconsBlocking(
     // item.
     results.value.push_back(std::move(result));
   }
-  CHECK_EQ(shortcuts_menu_icons_sizes.size(), results.value.size());
   return results;
 }
 
@@ -566,7 +565,6 @@ ReadShortcutMenuIconsWithTimestampBlocking(
     // item.
     results.value.push_back(std::move(data));
   }
-  CHECK_EQ(shortcuts_menu_icons_sizes.size(), results.value.size());
   return results;
 }
 

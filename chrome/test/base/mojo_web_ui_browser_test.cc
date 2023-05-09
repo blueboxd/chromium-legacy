@@ -140,7 +140,7 @@ void MojoWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
       browser()->tab_strip_model()->GetActiveWebContents();
   std::string test_mojo_lite_js =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-          IDR_WEB_UI_TEST_MOJO_LITE_JS);
+          IDR_WEBUI_TEST_WEB_UI_TEST_MOJOM_LITE_JS);
   web_contents->GetPrimaryMainFrame()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(test_mojo_lite_js), base::NullCallback());
 #else

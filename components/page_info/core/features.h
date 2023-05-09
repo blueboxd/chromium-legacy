@@ -26,7 +26,11 @@ BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteNewIcon);
 
 // Enables the "About this site" section in Page Info.
 extern bool IsAboutThisSiteFeatureEnabled(const std::string& locale);
+
+// Controls the feature for English and other languages that are enabled by
+// default. Use IsAboutThisSiteFeatureEnabled() to check a specific language.
 BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteEn);
+// Controls the feature for languages that are not enabled by default yet.
 BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteNonEn);
 
 // Enables the "About this site" section for non-MSBB users.
@@ -40,13 +44,12 @@ extern const base::FeatureParam<bool> kShowSampleContent;
 // directly.
 BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteMoreInfo);
 
-// Shows a placeholder when a description is missing. Only enable in combination
-// with kPageInfoAboutThisSiteMoreInfo.
-// Use page_info::IsDescriptionPlaceholderEnabled() instead of checking this
-// flag directly.
-BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteDescriptionPlaceholder);
-
 #if !BUILDFLAG(IS_ANDROID)
+// Experiment with different secondary icons.
+BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteSecondaryIcon);
+// Parameter to select one of the icons from AboutThisSiteSeconaryIcon;
+extern const base::FeatureParam<int> kAboutThisSiteSecondaryIconId;
+
 // Enables the history section for Page Info on desktop.
 BASE_DECLARE_FEATURE(kPageInfoHistoryDesktop);
 

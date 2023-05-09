@@ -32,6 +32,8 @@ chromevox_modules = [
 chromevox_es6_modules = [
   "../common/automation_predicate.js",
   "../common/automation_util.js",
+  "../common/async_util.js",
+  "../common/browser_util.js",
   "../common/constants.js",
   "../common/cursors/cursor.js",
   "../common/cursors/range.js",
@@ -121,6 +123,7 @@ chromevox_es6_modules = [
   "background/range_automation_handler.js",
   "background/smart_sticky_mode.js",
   "background/tts_background.js",
+  "background/tts_interface.js",
   "background/user_action_monitor.js",
   "common/background_bridge.js",
   "common/braille/braille_command_data.js",
@@ -152,7 +155,6 @@ chromevox_es6_modules = [
   "common/spannable.js",
   "common/settings_manager.js",
   "common/tree_dumper.js",
-  "common/tts_interface.js",
   "common/tts_types.js",
   "learn_mode/learn_mode.js",
   "log_page/log.js",
@@ -200,7 +202,6 @@ group("build") {
     ":chromevox_options_script",
     ":chromevox_panel_script",
     ":chromevox_phonetic_dictionaries_js",
-    "//chrome/browser/resources/chromeos/accessibility/braille_ime:braille_ime_manifest",
     "//third_party/chromevox:chromevox_third_party_resources",
     "//third_party/liblouis",
   ]

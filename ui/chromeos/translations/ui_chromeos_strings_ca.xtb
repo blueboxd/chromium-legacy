@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">S'estan comprimint <ph name="NUMBER_OF_ITEMS" /> elements...</translation>
 <translation id="1722687688096767818">S'està afegint el perfil...</translation>
 <translation id="1726100011689679555">Servidors de noms</translation>
+<translation id="1727562178154619254">A punt per sincronitzar</translation>
 <translation id="1729953886957086472">Alemany (Alemanya)</translation>
 <translation id="1730235522912993863">Xinès (cangjie)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> elements copiats.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Resolució de la imatge</translation>
 <translation id="1972984168337863910">Desplega els taulers amb informació dels fitxers</translation>
 <translation id="1995337122023280937">Ves a la ubicació del fitxer</translation>
-<translation id="1999709132469742660">Tots els URL poden accedir al fitxer</translation>
 <translation id="2001796770603320721">Gestiona a Drive</translation>
 <translation id="2009067268969781306">En formatar una unitat, se'n suprimeixen totes les dades que s'hi hagin emmagatzemat. Aquesta acció no es pot desfer.</translation>
 <translation id="2025955442973426285">Tigrinya</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Espanyol d'Amèrica Llatina</translation>
 <translation id="5330145655348521461">Aquests fitxers s'han obert en un altre escriptori. Aneu a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) per veure'l.</translation>
 <translation id="5330512191124428349">Mostra la informació</translation>
-<translation id="5337538975554986899">Tots els URL poden accedir al fitxer, excepte <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Gestiona la compartició amb Bruschetta</translation>
 <translation id="535792325654997756">Persona amb gats</translation>
 <translation id="5358764674931277">Fotogrames per segon</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">S'ha produït un error en instal·lar l'aplicació per a Linux.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">L'operació de còpia ha fallat; s'ha produït un error inesperat: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Ara hi ha noves funcions de cerca disponibles</translation>
 <translation id="5926082595146149752">Neerlandès (Països Baixos) amb teclat internacional dels EUA (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Activa després de la configuració del dispositiu</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Els certificats no s'han carregat.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Comparteix la carpeta amb Bruschetta</translation>
+<translation id="6750737795876287924">Directori actual</translation>
 <translation id="6751256176799620176">1 carpeta seleccionada</translation>
 <translation id="6755827872271341378">Dispositiu ChromeOS Flex</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Carpetes</translation>
 <translation id="6976795442547527108">Lleó</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Sempre</translation>
 <translation id="6989942356279143254">Suec</translation>
 <translation id="6990081529015358884">Us heu quedat sense espai</translation>
 <translation id="6993826899923627728">Aquests elements són a la paperera</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">No hi ha cap imatge recent</translation>
 <translation id="7460898608667578234">Ucraïnès</translation>
 <translation id="7469894403370665791">Connecta automàticament a aquesta xarxa</translation>
-<translation id="7481358317100446445">A punt</translation>
 <translation id="7486315294984620427">Per deixar anar fitxers a Parallels Desktop, s'han de copiar a Fitxers de Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malaiàlam fonètic</translation>

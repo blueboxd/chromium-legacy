@@ -41,9 +41,13 @@ class ReadAnythingFontModel : public ui::ComboboxModel {
   std::string GetFontNameAt(size_t index);
   bool IsValidFontName(const std::string& font_name);
   bool IsValidFontIndex(size_t index);
-  void SetDefaultIndexFromPrefsFontName(std::string prefs_font_name);
+  size_t GetFontNameIndex(std::string font_name);
+  void SetSelectedIndex(size_t index);
   std::string GetLabelFontListAt(size_t index);
-  size_t GetStartingStateIndex() { return GetDefaultIndex().value(); }
+  size_t GetSelectedIndex() { return selected_index_; }
+
+  // Used by tests only.
+  absl::optional<size_t> GetDefaultIndexForTesting();
 
  protected:
   // ui::Combobox implementation:
@@ -56,8 +60,7 @@ class ReadAnythingFontModel : public ui::ComboboxModel {
   // Styled font names for the drop down options in front-end.
   std::vector<std::u16string> font_choices_;
 
-  // Default index for drop down, either zero or populated from prefs.
-  size_t default_index_ = 0;
+  size_t selected_index_ = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -73,6 +76,18 @@ class ReadAnythingColorsModel : public ReadAnythingMenuModel {
   ReadAnythingColorsModel(const ReadAnythingColorsModel&) = delete;
   ReadAnythingColorsModel& operator=(const ReadAnythingColorsModel&) = delete;
   ~ReadAnythingColorsModel() override;
+
+  // Enum for logging the user-chosen color.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class ReadAnythingColor {
+    kDefault = 0,
+    kLight = 1,
+    kDark = 2,
+    kYellow = 3,
+    kBlue = 4,
+    kMaxValue = kBlue,
+  };
 
   // Simple struct to hold the various colors to keep code cleaner.
   struct ColorInfo {
@@ -91,6 +106,12 @@ class ReadAnythingColorsModel : public ReadAnythingMenuModel {
     // The separator color, used for visual separators between elements in the
     // toolbar.
     ui::ColorId separator_color_id;
+
+    // The color of the dropdown menu, used for the combobox menu model.
+    ui::ColorId dropdown_color_id;
+
+    // The enum value used to log this theme.
+    ReadAnythingColorsModel::ReadAnythingColor logging_value;
   };
 
   bool IsValidIndex(size_t index) override;
@@ -199,6 +220,7 @@ class ReadAnythingModel {
         ui::ColorId foreground_color_id,
         ui::ColorId background_color_id,
         ui::ColorId separator_color_id,
+        ui::ColorId dropdown_color_id,
         read_anything::mojom::LineSpacing line_spacing,
         read_anything::mojom::LetterSpacing letter_spacing) = 0;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -236,6 +258,7 @@ class ReadAnythingModel {
   void SetSelectedColorsByIndex(size_t new_index);
   void SetSelectedLineSpacingByIndex(size_t new_index);
   void SetSelectedLetterSpacingByIndex(size_t new_index);
+  void OnSystemThemeChanged();
 
   ReadAnythingFontModel* GetFontModel() { return font_model_.get(); }
   double GetFontScale() { return font_scale_; }
@@ -243,8 +266,15 @@ class ReadAnythingModel {
   ReadAnythingLineSpacingModel* GetLineSpacingModel() {
     return line_spacing_model_.get();
   }
+  read_anything::mojom::LineSpacing line_spacing() { return line_spacing_; }
   ReadAnythingLetterSpacingModel* GetLetterSpacingModel() {
     return letter_spacing_model_.get();
+  }
+  read_anything::mojom::LetterSpacing letter_spacing() {
+    return letter_spacing_;
+  }
+  ReadAnythingColorsModel::ReadAnythingColor color_logging_value() {
+    return colors_model_->GetColorsAt(colors_combobox_index_).logging_value;
   }
 
  private:
@@ -253,10 +283,13 @@ class ReadAnythingModel {
   // State:
 
   // Members of read_anything::mojom::ReadAnythingTheme:
-  std::string font_name_ = kReadAnythingDefaultFontName;
+  std::string font_name_ = string_constants::kReadAnythingDefaultFontName;
   ui::ColorId foreground_color_id_ = kColorReadAnythingForeground;
   ui::ColorId background_color_id_ = kColorReadAnythingBackground;
+
+  // Additional theme colors.
   ui::ColorId separator_color_id_ = kColorReadAnythingSeparator;
+  ui::ColorId dropdown_color_id_ = kColorReadAnythingDropdownBackground;
 
   // A scale multiplier for font size (internal use only, not shown to user).
   float font_scale_ = kReadAnythingDefaultFontScale;

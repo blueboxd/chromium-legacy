@@ -4,11 +4,18 @@
 
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_bar.h"
 
+#include <memory>
+
+#include "base/guid.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_button.h"
 #include "chrome/browser/ui/views/bookmarks/saved_tab_groups/saved_tab_group_overflow_button.h"
+#include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/view_utils.h"
 
 namespace {
@@ -54,15 +61,21 @@ class SavedTabGroupBarUnitTest : public ChromeViewsTestBase {
 
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
+    CreateBrowser();
 
     saved_tab_group_model_ = std::make_unique<SavedTabGroupModel>();
     saved_tab_group_bar_ = std::make_unique<SavedTabGroupBar>(
-        nullptr, saved_tab_group_model(), false);
+        browser(), saved_tab_group_model(), false);
+
+    saved_tab_group_bar_->SetPageNavigator(nullptr);
   }
 
   void TearDown() override {
     saved_tab_group_bar_.reset();
     saved_tab_group_model_.reset();
+    browser_window_.reset();
+    browser_.reset();
+    profile_.reset();
 
     ChromeViewsTestBase::TearDown();
   }
@@ -87,9 +100,25 @@ class SavedTabGroupBarUnitTest : public ChromeViewsTestBase {
     return size;
   }
 
+  void CreateBrowser() {
+    TestingProfile::Builder profile_builder;
+    profile_ = profile_builder.Build();
+    browser_window_ = std::make_unique<TestBrowserWindow>();
+    Browser::CreateParams params(profile_.get(), /*user_gesture*/ true);
+    params.type = Browser::TYPE_NORMAL;
+    params.window = browser_window_.get();
+    browser_.reset(Browser::Create(params));
+  }
+
+  Browser* browser() { return browser_.get(); }
+
  private:
   std::unique_ptr<SavedTabGroupBar> saved_tab_group_bar_;
   std::unique_ptr<SavedTabGroupModel> saved_tab_group_model_;
+
+  std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestBrowserWindow> browser_window_;
+  std::unique_ptr<Browser> browser_;
 
   const int button_padding_;
   const int button_height_;
@@ -179,7 +208,7 @@ TEST_F(SavedTabGroupBarUnitTest, BarsWithSameModelsHaveSameButtons) {
   saved_tab_group_model()->Add(kSavedTabGroup1);
 
   SavedTabGroupBar another_tab_group_bar_on_same_model(
-      nullptr, saved_tab_group_model(), false);
+      browser(), saved_tab_group_model(), false);
 
   EXPECT_EQ(saved_tab_group_bar()->children().size(),
             another_tab_group_bar_on_same_model.children().size());
@@ -232,17 +261,44 @@ TEST_F(SavedTabGroupBarUnitTest, UpdatedVisualDataMakesChangeToSpecificView) {
 }
 
 TEST_F(SavedTabGroupBarUnitTest, MoveButtonFromModelMove) {
+  const auto get_button_guids = [this]() {
+    std::vector<base::GUID> guids;
+    for (views::View* view : saved_tab_group_bar()->children()) {
+      const SavedTabGroupButton* button =
+          views::AsViewClass<SavedTabGroupButton>(view);
+      if (!button) {
+        continue;
+      }
+
+      guids.push_back(button->guid());
+    }
+
+    // Also check that we found the right number of buttons and that they're
+    // contiguous at the start of `children()`.
+    const size_t num_children = saved_tab_group_bar()->children().size();
+    EXPECT_EQ(guids.size(), num_children - 1);
+    EXPECT_NE(views::AsViewClass<SavedTabGroupOverflowButton>(
+                  saved_tab_group_bar()->children()[num_children - 1]),
+              nullptr);
+
+    return guids;
+  };
+
+  const base::GUID guid_1 = kSavedTabGroup1.saved_guid();
+  const base::GUID guid_2 = kSavedTabGroup2.saved_guid();
+  const base::GUID guid_3 = kSavedTabGroup3.saved_guid();
+
   saved_tab_group_model()->Add(kSavedTabGroup1);
   saved_tab_group_model()->Add(kSavedTabGroup2);
+  saved_tab_group_model()->Add(kSavedTabGroup3);
 
-  const auto& button_list = saved_tab_group_bar()->children();
-  views::View* button_1 = button_list[0];
-
-  // move the tab and expect the one that was moved to be in the expected
-  // position.
-  saved_tab_group_model()->Reorder(kSavedTabGroup1.saved_guid(), 1);
-  EXPECT_EQ(3u, saved_tab_group_bar()->children().size());
-  EXPECT_EQ(button_1, saved_tab_group_bar()->children()[1]);
+  ASSERT_THAT(get_button_guids(), testing::ElementsAre(guid_1, guid_2, guid_3));
+  saved_tab_group_model()->Reorder(kSavedTabGroup2.saved_guid(), 2);
+  EXPECT_THAT(get_button_guids(), testing::ElementsAre(guid_1, guid_3, guid_2));
+  saved_tab_group_model()->Reorder(kSavedTabGroup2.saved_guid(), 0);
+  EXPECT_THAT(get_button_guids(), testing::ElementsAre(guid_2, guid_1, guid_3));
+  saved_tab_group_model()->Reorder(kSavedTabGroup2.saved_guid(), 1);
+  EXPECT_THAT(get_button_guids(), testing::ElementsAre(guid_1, guid_2, guid_3));
 }
 
 // If the restriction is exactly the expected size all should be visible

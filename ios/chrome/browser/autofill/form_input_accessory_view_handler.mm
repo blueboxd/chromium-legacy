@@ -11,7 +11,7 @@
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ui/base/device_form_factor.h"
@@ -253,9 +253,11 @@ NSArray* FindDescendantToolbarItemsForActionName(
     return;
   }
 
-  web::WebFrame* frame =
-      _webState->GetPageWorldWebFramesManager()->GetFrameWithId(
-          base::SysNSStringToUTF8(_lastFocusFormActivityWebFrameID));
+  web::WebFramesManager* framesManager =
+      autofill::SuggestionControllerJavaScriptFeature::GetInstance()
+          ->GetWebFramesManager(_webState);
+  web::WebFrame* frame = framesManager->GetFrameWithId(
+      base::SysNSStringToUTF8(_lastFocusFormActivityWebFrameID));
 
   if (!frame) {
     completionHandler(false, false);
@@ -291,9 +293,11 @@ NSArray* FindDescendantToolbarItemsForActionName(
   if (!performedAction && _webState) {
     // We could not find the built-in form assist controls, so try to focus
     // the next or previous control using JavaScript.
-    web::WebFrame* frame =
-        _webState->GetPageWorldWebFramesManager()->GetFrameWithId(
-            base::SysNSStringToUTF8(_lastFocusFormActivityWebFrameID));
+    web::WebFramesManager* framesManager =
+        autofill::SuggestionControllerJavaScriptFeature::GetInstance()
+            ->GetWebFramesManager(_webState);
+    web::WebFrame* frame = framesManager->GetFrameWithId(
+        base::SysNSStringToUTF8(_lastFocusFormActivityWebFrameID));
 
     if (frame) {
       autofill::SuggestionControllerJavaScriptFeature::GetInstance()
@@ -311,9 +315,11 @@ NSArray* FindDescendantToolbarItemsForActionName(
   if (!performedAction && _webState) {
     // We could not find the built-in form assist controls, so try to focus
     // the next or previous control using JavaScript.
-    web::WebFrame* frame =
-        _webState->GetPageWorldWebFramesManager()->GetFrameWithId(
-            base::SysNSStringToUTF8(_lastFocusFormActivityWebFrameID));
+    web::WebFramesManager* framesManager =
+        autofill::SuggestionControllerJavaScriptFeature::GetInstance()
+            ->GetWebFramesManager(_webState);
+    web::WebFrame* frame = framesManager->GetFrameWithId(
+        base::SysNSStringToUTF8(_lastFocusFormActivityWebFrameID));
 
     if (frame) {
       autofill::SuggestionControllerJavaScriptFeature::GetInstance()

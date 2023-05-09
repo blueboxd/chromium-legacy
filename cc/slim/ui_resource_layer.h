@@ -60,8 +60,12 @@ class COMPONENT_EXPORT(CC_SLIM) UIResourceLayer : public Layer {
 
   bool HasDrawableContent() const override;
   void AppendQuads(viz::CompositorRenderPass& render_pass,
-                   const gfx::Transform& transform,
-                   const gfx::Rect* clip) override;
+                   FrameData& data,
+                   const gfx::Transform& transform_to_root,
+                   const gfx::Transform& transform_to_target,
+                   const gfx::Rect* clip_in_target,
+                   const gfx::Rect& visible_rect,
+                   float opacity) override;
 
  private:
   cc::UIResourceLayer* cc_layer() const;

@@ -144,7 +144,7 @@
 <translation id="2180197493692062006">Es gab ein Problem. Versuche, die App wieder zu öffnen.</translation>
 <translation id="2209788852729124853">Traffic-Zähler zurücksetzen</translation>
 <translation id="2212733584906323460">Namensauflösung</translation>
-<translation id="2217935453350629363">Aktuelle Geschwindigkeit</translation>
+<translation id="2217935453350629363">Momentane Geschwindigkeit</translation>
 <translation id="2224337661447660594">Kein Internet</translation>
 <translation id="222447520299472966">Es muss mindestens ein Art Gallery-Album ausgewählt werden</translation>
 <translation id="2230005943220647148">Celsius</translation>
@@ -163,6 +163,7 @@
 <translation id="2346474577291266260">Sehr gut (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2364498172489649528">Bestanden</translation>
+<translation id="2367335866686097760">Tastenbelegung der Taste</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Feedbackbericht senden</translation>
 <translation id="2407209115954268704">SIM-Lock-Status</translation>
@@ -235,10 +236,11 @@
 <translation id="319101249942218879">Avatarbild geändert</translation>
 <translation id="3192947282887913208">Audiodateien</translation>
 <translation id="3199982728237701504">Dokumenteneinzug (beidseitig)</translation>
+<translation id="3211671540163313381">Tastenbelegung des Steuerkreuzes</translation>
 <translation id="3226405216343213872">Suche nach Scannern läuft</translation>
+<translation id="3226657629376379887">Layout-Aktionsmenü</translation>
 <translation id="3246869037381808805">Druckaufträge, die älter als 1 Tag sind, werden entfernt</translation>
 <translation id="3268178239013324452">Fehlgeschlagen – Druckerklappe offen</translation>
-<translation id="3275506277319227640">Fixieren: <ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">Avatarbild</translation>
 <translation id="3283504360622356314">{0,plural, =1{Datei bearbeiten}other{Dateien bearbeiten}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
@@ -275,7 +277,6 @@
 <translation id="3595596368722241419">Akku voll</translation>
 <translation id="3600339377155080675">Display spiegeln</translation>
 <translation id="3602290021589620013">Vorschau</translation>
-<translation id="360282891121575443">Fotos in geteilten Alben können von anderen Nutzern aktualisiert werden. Bei täglichen Änderungen werden möglicherweise Hintergründe angezeigt, die sich derzeit nicht im Album befinden.</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Hintergrund ändern</translation>
 <translation id="360565022852130722">Das WLAN ist mit dem schwachen Protokoll WEP 802.1x gesichert</translation>
@@ -357,7 +358,6 @@
 <translation id="4311195029067684288">Vollständig</translation>
 <translation id="4333390807948134856">Die Taste „<ph name="KEY_NAME" />“ wird gedrückt</translation>
 <translation id="435692326371619097">Hier kannst du die APN-Netzwerkeinstellungen verwalten. APNs stellen eine Verbindung zwischen einem Mobilfunknetz und dem Internet her. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">An kleinerer Seite fixieren</translation>
 <translation id="4378373042927530923">Nicht ausgeführt</translation>
 <translation id="4378551569595875038">Verbindung...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -568,6 +568,7 @@
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> weitere Alben</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6122277663991249694">Dienst für die Chrome OS-Eingabemethoden</translation>
+<translation id="6136285399872347291">Letztes Zeichen löschen</translation>
 <translation id="6137767437444130246">Nutzerzertifikat</translation>
 <translation id="6146993107019042706">Gib zum Schluss dein neues Passwort ein</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -615,6 +616,7 @@
 <translation id="650266656685499220">Gehe zu Google Fotos, um Alben zu erstellen</translation>
 <translation id="6516990319416533844">Wenn du die Aufladegeschwindigkeit deines Akkus testen möchtest, warte zuerst, bis er ein wenig entladen ist</translation>
 <translation id="6517239166834772319">Entdecken</translation>
+<translation id="6526200165918397681">An Hintergrund anpassen</translation>
 <translation id="6527081081771465939">Unbekanntes WLAN-Sicherheitsprotokoll</translation>
 <translation id="6535178685492749208">Du bist offline. Dein Feedback wird später gesendet.</translation>
 <translation id="65587193855025101">Flachbett</translation>
@@ -634,7 +636,6 @@
 <translation id="6657585470893396449">Passwort</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="6692996468359469499">Informationen zu deiner Auswahl erhalten</translation>
-<translation id="6698459586333070823">Geteilte Alben können von anderen Nutzern aktualisiert werden</translation>
 <translation id="6704062477274546131">DNS-Auflösung</translation>
 <translation id="6723839937902243910">Leistung</translation>
 <translation id="6723847290197874913">Hintergrundbeleuchtung der Tastatur</translation>
@@ -671,6 +672,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Fehler – Autorisierung fehlgeschlagen</translation>
 <translation id="7103252855940681301">Der Name des Geräts <ph name="INDEX" /> von <ph name="COUNT" /> lautet „<ph name="NAME" />“.</translation>
+<translation id="7108668606237948702">Eingabe</translation>
 <translation id="7130438335435247835">Zugangspunkt (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Nameserver}other{Nameserver}}</translation>
 <translation id="7143207342074048698">Verbindung...</translation>
@@ -736,7 +738,7 @@
 <translation id="7701040980221191251">Keine</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
-<translation id="773153675489693198">Ladezyklen</translation>
+<translation id="773153675489693198">Anzahl der Ladezyklen</translation>
 <translation id="7747039790905080783">Vorinstallierter Schlüssel</translation>
 <translation id="7762130827864645708">Du hast dein Passwort geändert. Bitte verwende ab jetzt das neue Passwort.</translation>
 <translation id="7763470514545477072">Domain-Suffix stimmt überein</translation>
@@ -789,7 +791,6 @@
 <translation id="8226628635270268143">Hier kannst du deine bevorzugten Fotos und Alben auswählen</translation>
 <translation id="8227119283605456246">Datei anhängen</translation>
 <translation id="8230672074305416752">Das standardmäßige Netzwerk-Gateway konnte nicht kontaktiert werden</translation>
-<translation id="8242426110754782860">Fortfahren</translation>
 <translation id="8246209727385807362">Unbekannter Mobilfunkanbieter</translation>
 <translation id="827422111966801947">Indigo</translation>
 <translation id="8286154143153872371">Stelle bitte eine Verbindung zu einem Netzwerk her und lade die Seite neu, um den Hintergrund anzusehen.</translation>
@@ -800,6 +801,7 @@
 <translation id="8318753676953949627">Keine Bilder vorhanden</translation>
 <translation id="8336739000755212683">Bild des Gerätekontos ändern</translation>
 <translation id="8347227221149377169">Druckaufträge</translation>
+<translation id="8351855506390808906">Tastenbelegung des Touchpoints</translation>
 <translation id="8352772353338965963">Füge ein Konto für die Mehrfachanmeldung hinzu. Du kannst auf alle angemeldeten Konten zugreifen, ohne ein Passwort eingeben zu müssen. Verwende diese Funktion daher nur mit vertrauenswürdigen Konten.</translation>
 <translation id="8364946094152050673">Kein Nameserver</translation>
 <translation id="8372477600026034341">Zusätzliche Hosts</translation>
@@ -833,7 +835,7 @@
 <translation id="8675354002693747642">Vorinstallierter Schlüssel</translation>
 <translation id="8677859815076891398">Keine Alben. Ein Album in <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" /> erstellen.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Verwende zum Verwalten dieser Funktion den Rechts- und Linkspfeil.</translation>
-<translation id="8712637175834984815">Ok</translation>
+<translation id="8712637175834984815">Alles klar</translation>
 <translation id="871560550817059752">Fehlgeschlagen – Keine Tinte</translation>
 <translation id="8723108084122415655">Das nicht standardmäßige Netzwerk hat den Latenzgrenzwert überschritten</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
@@ -896,7 +898,7 @@
 <translation id="9137526406337347448">Google-Dienste</translation>
 <translation id="9138630967333032450">Umschalttaste links</translation>
 <translation id="9149391708638971077">Speichertest ausführen</translation>
-<translation id="9157515863513902090">An größerer Seite fixieren</translation>
+<translation id="9161276708550942948">Leerzeichen</translation>
 <translation id="9173638680043580060">Nur noch wenige Sekunden</translation>
 <translation id="917720651393141712">Testen</translation>
 <translation id="9188992814426075118">Die Tastatur kann automatisch an den Hintergrund angepasst werden</translation>

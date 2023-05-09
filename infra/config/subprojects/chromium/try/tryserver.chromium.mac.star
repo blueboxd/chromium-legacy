@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "cpu", "goma", "os", "reclient", "xcode")
+load("//lib/builders.star", "cpu", "os", "reclient", "xcode")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 
@@ -71,7 +71,6 @@ try_.builder(
         "ci/Mac Retina Release (AMD)",
     ],
     os = os.MAC_DEFAULT,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 try_.builder(
@@ -85,7 +84,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "mac-builder-next-rel",
+    name = "mac-builder-next",
     mirrors = ["ci/Mac Builder Next"],
     builderless = False,
     os = os.MAC_13,
@@ -137,8 +136,6 @@ try_.compilator_builder(
     branch_selector = branches.selector.MAC_BRANCHES,
     os = os.MAC_DEFAULT,
     check_for_flakiness = True,
-    goma_backend = goma.backend.RBE_PROD,
-    goma_jobs = goma.jobs.J150,
     main_list_view = "try",
 )
 
@@ -226,7 +223,6 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.13 Tests",
     ],
-    goma_backend = goma.backend.RBE_PROD,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -293,8 +289,8 @@ try_.builder(
         is_compile_only = True,
     ),
     os = os.MAC_DEFAULT,
-    goma_backend = goma.backend.RBE_PROD,
     main_list_view = "try",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(),
 )
 
@@ -323,14 +319,14 @@ try_.builder(
     name = "mac_upload_clang",
     executable = "recipe:chromium_upload_clang",
     builderless = False,
-    execution_timeout = 6 * time.hour,
+    execution_timeout = 8 * time.hour,
 )
 
 try_.builder(
     name = "mac_upload_clang_arm",
     executable = "recipe:chromium_upload_clang",
     builderless = False,
-    execution_timeout = 6 * time.hour,
+    execution_timeout = 8 * time.hour,
 )
 
 try_.builder(
@@ -351,6 +347,8 @@ ios_builder(
     mirrors = [
         "ci/ios-blink-dbg-fyi",
     ],
+    cpu = cpu.ARM64,
+    execution_timeout = 12 * time.hour,
 )
 
 ios_builder(
@@ -380,7 +378,6 @@ ios_builder(
     mirrors = ["ci/ios-m1-simulator"],
     os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 ios_builder(
@@ -451,8 +448,8 @@ ios_builder(
     check_for_flakiness = True,
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
-    goma_backend = goma.backend.RBE_PROD,
     main_list_view = "try",
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
         location_filters = [
             "ios/.+",
@@ -485,6 +482,13 @@ ios_builder(
 )
 
 ios_builder(
+    name = "ios-wpt-fyi-rel",
+    mirrors = [
+        "ci/ios-wpt-fyi-rel",
+    ],
+)
+
+ios_builder(
     name = "ios15-beta-simulator",
     mirrors = ["ci/ios15-beta-simulator"],
 )
@@ -492,7 +496,7 @@ ios_builder(
 ios_builder(
     name = "ios15-sdk-simulator",
     mirrors = ["ci/ios15-sdk-simulator"],
-    os = os.MAC_12,
+    os = os.MAC_13,
 )
 
 ios_builder(
@@ -509,7 +513,7 @@ ios_builder(
     mirrors = [
         "ci/ios16-sdk-simulator",
     ],
-    os = os.MAC_DEFAULT,
+    os = os.MAC_13,
     xcode = xcode.x14betabots,
 )
 
@@ -561,6 +565,7 @@ try_.gpu.optional_tests_builder(
             cq.location_filter(path_regexp = "third_party/blink/renderer/modules/mediastream/.+"),
             cq.location_filter(path_regexp = "third_party/blink/renderer/modules/webcodecs/.+"),
             cq.location_filter(path_regexp = "third_party/blink/renderer/modules/webgl/.+"),
+            cq.location_filter(path_regexp = "third_party/blink/renderer/modules/webgpu/.+"),
             cq.location_filter(path_regexp = "third_party/blink/renderer/platform/graphics/gpu/.+"),
             cq.location_filter(path_regexp = "tools/clang/scripts/update.py"),
             cq.location_filter(path_regexp = "tools/mb/mb_config_expectations/tryserver.chromium.mac.json"),

@@ -7,7 +7,6 @@
 
 // The functions in this file are alphabetized. Please insert new functions in
 // alphabetical order.
-#include <memory>
 
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
@@ -97,7 +96,7 @@ class AccessibilityPrivateInstallPumpkinForDictationFunction
                              ACCESSIBILITY_PRIVATE_INSTALLPUMPKINFORDICTATION)
  private:
   void OnPumpkinInstallFinished(
-      std::unique_ptr<::extensions::api::accessibility_private::PumpkinData>
+      absl::optional<::extensions::api::accessibility_private::PumpkinData>
           data);
 };
 
@@ -295,6 +294,13 @@ class AccessibilityPrivateUpdateSwitchAccessBubbleFunction
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.updateSwitchAccessBubble",
                              ACCESSIBILITY_PRIVATE_UPDATESWITCHACCESSBUBBLE)
+};
+
+class AccessibilityPrivateIsLacrosPrimaryFunction : public ExtensionFunction {
+  ~AccessibilityPrivateIsLacrosPrimaryFunction() override = default;
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.isLacrosPrimary",
+                             ACCESSIBILITY_PRIVATE_ISLACROSPRIMARY)
 };
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_CHROMEOS_H_

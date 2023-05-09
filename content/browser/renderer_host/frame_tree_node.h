@@ -109,7 +109,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // IsOutermostMainFrame will be true for the outermost main frame in an inner
   // guest view.
   bool IsMainFrame() const;
-  bool IsOutermostMainFrame();
+  bool IsOutermostMainFrame() const;
 
   // Clears any state in this node which was set by the document itself (CSP &
   // UserActivationState) and notifies proxies as appropriate. Invoked after
@@ -146,7 +146,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
 
   // See `RenderFrameHost::GetParentOrOuterDocument()` for
   // documentation.
-  RenderFrameHostImpl* GetParentOrOuterDocument();
+  RenderFrameHostImpl* GetParentOrOuterDocument() const;
 
   // See `RenderFrameHostImpl::GetParentOrOuterDocumentOrEmbedder()` for
   // documentation.
@@ -276,6 +276,10 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   const network::mojom::ContentSecurityPolicy* csp_attribute() const {
     return attributes_->parsed_csp_attribute.get();
   }
+  // Tracks iframe's 'browsingtopics' attribute, indicating whether the
+  // navigation requests on this frame should calculate and send the
+  // `Sec-Browsing-Topics` header.
+  bool browsing_topics() const { return attributes_->browsing_topics; }
   const absl::optional<std::string> html_id() const { return attributes_->id; }
   // This tracks iframe's 'name' attribute instead of window.name, which is
   // tracked in FrameReplicationState. See the comment for frame_name() for
@@ -508,8 +512,9 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // GetParentOrOuterDocumentOrEmbedder for details.
   // `include_prospective` includes embedders which own our frame tree, but have
   // not yet attached it to the outer frame tree.
-  RenderFrameHostImpl* GetParentOrOuterDocumentHelper(bool escape_guest_view,
-                                                      bool include_prospective);
+  RenderFrameHostImpl* GetParentOrOuterDocumentHelper(
+      bool escape_guest_view,
+      bool include_prospective) const;
 
   // Sets the unique_name and name fields on replication_state_. To be used in
   // prerender activation to make sure the FrameTreeNode replication state is
@@ -554,11 +559,18 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
       const std::vector<blink::FencedFrame::ReportingDestination>& destination)
       override;
 
-  // Return the number of fenced frame boundaries above this frame. The
+  // Returns the number of fenced frame boundaries above this frame. The
   // outermost main frame's frame tree has fenced frame depth 0, a topmost
   // fenced frame tree embedded in the outermost main frame has fenced frame
   // depth 1, etc.
-  size_t GetFencedFrameDepth();
+  //
+  // Also, sets `shared_storage_fenced_frame_root_count` to the
+  // number of fenced frame boundaries (roots) above this frame that originate
+  // from shared storage. This is used to check whether a fenced frame
+  // originates from shared storage only (i.e. not from FLEDGE).
+  // TODO(crbug.com/1347953): Remove this check once we put permissions inside
+  // FencedFrameConfig.
+  size_t GetFencedFrameDepth(size_t& shared_storage_fenced_frame_root_count);
 
   // Traverse up from this node. Return all valid
   // `node->fenced_frame_properties_->shared_storage_budget_metadata` (i.e. this
@@ -570,6 +582,13 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // with any node.
   std::vector<const SharedStorageBudgetMetadata*>
   FindSharedStorageBudgetMetadata();
+
+  // Returns any shared storage context string that was written to a
+  // `blink::FencedFrameConfig` before navigation via
+  // `setSharedStorageContext()`, as long as the request is for a same-origin
+  // frame within the config's fenced frame tree (or a same-origin descendant of
+  // a URN iframe).
+  absl::optional<std::u16string> GetEmbedderSharedStorageContextIfAllowed();
 
   // Accessor to BrowsingContextState for subframes only. Only main frame
   // navigations can change BrowsingInstances and BrowsingContextStates,
@@ -586,10 +605,10 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // their opener.
   void ClearOpenerReferences();
 
-  // Calculates whether one of the ancestor frames or this frame has a CSPEE
-  // in place. This is eventually sent over to LocalFrame in the renderer where
-  // it will be used by HTMLFencedFrameElement::canLoadOpaqueURL for information
-  // it can't get on its own.
+  // Calculates whether one of the ancestor frames or this frame has a CSPEE in
+  // place. This is eventually sent over to LocalFrame in the renderer where it
+  // will be used by NavigatorAuction::canLoadAdAuctionFencedFrame for
+  // information it can't get on its own.
   bool AncestorOrSelfHasCSPEE() const;
 
   // Reset every navigation in this frame, and its descendants. This is called

@@ -44,7 +44,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
 
   DCHECK(color_provider);
   NSColor* badge_text_color = skia::SkColorToSRGBNSColor(
-      color_provider->GetColor(ui::kColorButtonBackgroundProminent));
+      color_provider->GetColor(ui::kColorBadgeForeground));
 
   NSDictionary* badge_attrs = @{
     NSFontAttributeName : badge_font.GetNativeFont(),
@@ -94,7 +94,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
                                             yRadius:badge_radius];
         DCHECK(color_provider);
         NSColor* badge_color = skia::SkColorToSRGBNSColor(
-            color_provider->GetColor(ui::kColorButtonBackgroundProminent));
+            color_provider->GetColor(ui::kColorBadgeBackground));
         [badge_color set];
         [rounded_badge_rect fill];
 
@@ -114,11 +114,11 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
           dest_rect, views::BadgePainter::kBadgeHorizontalMargin, 0);
       const int badge_radius =
           views::LayoutProvider::Get()->GetCornerRadiusMetric(
-              views::ShapeContextTokens::kBadgeRadius);
-      NSBezierPath* rounded_badge_rect =
-          [NSBezierPath bezierPathWithRoundedRect:badge_frame
-                                          xRadius:badge_radius
-                                          yRadius:badge_radius];
+                views::ShapeContextTokens::kBadgeRadius);
+      NSBezierPath* rounded_badge_rect = [NSBezierPath
+          bezierPathWithRoundedRect:badge_frame
+                            xRadius:badge_radius
+                            yRadius:badge_radius];
       NSColor* badge_color = skia::SkColorToSRGBNSColor(
           color_provider->GetColor(ui::kColorButtonBackgroundProminent));
       [badge_color set];
@@ -137,46 +137,40 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
 NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
   // Embed horizontal centering space as NSMenuItem will otherwise left-align
   // it.
-  if (@available(macOS 10.8, *)) {
-    return [NSImage
-         imageWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)
-               flipped:NO
-        drawingHandler:^(NSRect dest_rect) {
-          NSBezierPath* dot_path = [NSBezierPath
-              bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
-                                                  kIPHDotSize)];
-          NSColor* dot_color = skia::SkColorToSRGBNSColor(
-              color_provider->GetColor(ui::kColorButtonBackgroundProminent));
-          [dot_color set];
-          [dot_path fill];
+  return [NSImage
+       imageWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)
+             flipped:NO
+      drawingHandler:^(NSRect dest_rect) {
+        NSBezierPath* dot_path = [NSBezierPath
+            bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
+                                                kIPHDotSize)];
+        NSColor* dot_color = skia::SkColorToSRGBNSColor(
+            color_provider->GetColor(ui::kColorButtonBackgroundProminent));
+        [dot_color set];
+        [dot_path fill];
 
-          return YES;
-        }];
-  } else {
-    NSImage *dot_image = [[NSImage alloc] initWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)];
-    [dot_image lockFocus];
-    NSBezierPath* dot_path = [NSBezierPath
-        bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
-                                            kIPHDotSize)];
-    NSColor* dot_color = skia::SkColorToSRGBNSColor(
-        color_provider->GetColor(ui::kColorButtonBackgroundProminent));
-    [dot_color set];
-    [dot_path fill];
-    [dot_image unlockFocus];
-    return [dot_image retain];
-  }
+        return YES;
+      }];
 }
 
 }  // namespace
 
 // --- Private API begin ---
 
-@interface NSCarbonMenuImpl : NSObject
+// Historically, all menu handling in macOS was handled by HI Toolbox, and the
+// bridge from Cocoa to Carbon to use Carbon's menus was the class
+// NSCarbonMenuImpl. However, starting in macOS 13, it looks like this is
+// changing, as now a NSCocoaMenuImpl class exists, which is optionally created
+// in -[NSMenu _createMenuImpl] and may possibly in the future be returned from
+// -[NSMenu _menuImpl]. Therefore, abstract away into a protocol the (one)
+// common method that this code uses that is present on both Impl classes.
+@protocol CrNSMenuImpl <NSObject>
+@optional
 - (void)highlightItemAtIndex:(NSInteger)index;
 @end
 
-@interface NSMenu ()
-- (NSCarbonMenuImpl*)_menuImpl;
+@interface NSMenu (Impl)
+- (id<CrNSMenuImpl>)_menuImpl;
 - (CGRect)_boundsIfOpen;
 @end
 
@@ -298,7 +292,7 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
       NSMenu* const menu_obj = note.object;
       if (alerted_index.has_value()) {
         if ([menu respondsToSelector:@selector(_menuImpl)]) {
-          NSCarbonMenuImpl* menuImpl = [menu_obj _menuImpl];
+          id<CrNSMenuImpl> menuImpl = [menu_obj _menuImpl];
           if ([menuImpl respondsToSelector:@selector(highlightItemAtIndex:)]) {
             const auto index =
                 base::checked_cast<NSInteger>(alerted_index.value());

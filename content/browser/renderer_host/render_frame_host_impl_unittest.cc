@@ -15,6 +15,7 @@
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/fake_local_frame.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/navigation_simulator_impl.h"
@@ -42,7 +43,7 @@
 #endif  // BUIDLFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "content/browser/webauth/authenticator_environment_impl.h"
+#include "content/browser/webauth/authenticator_environment.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 #endif
@@ -1219,6 +1220,68 @@ TEST_F(RenderFrameHostImplTest, GetCookieSettingOverrides) {
   }
 }
 
+TEST_F(RenderFrameHostImplTest, GetIsThirdPartyCookiesUserBypassEnabled) {
+  GURL url = GURL("https://example.test/");
+  GURL child_url = GURL("https://example.test/child");
+
+  std::unique_ptr<NavigationSimulator> simulator =
+      NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+  simulator->Start();
+
+  // Set user bypass BREF and prepare to commit.
+  {
+    blink::RuntimeFeatureStateContext& context =
+        NavigationRequest::From(simulator->GetNavigationHandle())
+            ->GetMutableRuntimeFeatureStateContext();
+    context.SetThirdPartyCookiesUserBypassEnabled(true);
+  }
+  simulator->ReadyToCommit();
+
+  // Verify that GetIsThirdPartyCookiesUserBypassEnabled returns false
+  // (because the BREF is not yet committed).
+  {
+    auto* rfh = static_cast<TestRenderFrameHost*>(
+        simulator->GetNavigationHandle()->GetRenderFrameHost());
+    EXPECT_FALSE(rfh->GetIsThirdPartyCookiesUserBypassEnabled());
+
+    // Check that a child frame gives the same result.
+    EXPECT_FALSE(
+        rfh->AppendChild("child1")->GetIsThirdPartyCookiesUserBypassEnabled());
+  }
+
+  // Commit the navigation and check that
+  // GetIsThirdPartyCookiesUserBypassEnabled now returns true.
+  simulator->Commit();
+  {
+    auto* rfh =
+        static_cast<TestRenderFrameHost*>(simulator->GetFinalRenderFrameHost());
+    EXPECT_TRUE(rfh->GetIsThirdPartyCookiesUserBypassEnabled());
+
+    // Check that a child frame gives the same result.
+    EXPECT_TRUE(
+        rfh->AppendChild("child1")->GetIsThirdPartyCookiesUserBypassEnabled());
+  }
+
+  // Start a different navigation on a new child frame and verify that the
+  // value comes from the committed main frame.
+  {
+    auto* main_rfh =
+        static_cast<TestRenderFrameHost*>(simulator->GetFinalRenderFrameHost());
+    TestRenderFrameHost* child_rfh = main_rfh->AppendChild("child3");
+    std::unique_ptr<NavigationSimulator> child_simulator =
+        NavigationSimulator::CreateRendererInitiated(child_url, child_rfh);
+    child_simulator->Start();
+    blink::RuntimeFeatureStateContext& context =
+        NavigationRequest::From(child_simulator->GetNavigationHandle())
+            ->GetMutableRuntimeFeatureStateContext();
+    context.SetThirdPartyCookiesUserBypassEnabled(false);
+    child_simulator->ReadyToCommit();
+    EXPECT_TRUE(child_rfh->GetIsThirdPartyCookiesUserBypassEnabled());
+    child_simulator->Commit();
+    EXPECT_TRUE(child_rfh->GetIsThirdPartyCookiesUserBypassEnabled());
+  }
+}
+
 class RenderFrameHostImplThirdPartyStorageTest
     : public RenderViewHostImplTestHarness,
       public testing::WithParamInterface<bool> {
@@ -1293,9 +1356,8 @@ TEST_F(RenderFrameHostImplTest, GetVirtualAuthenticatorManagerWhenInactiveRFH) {
   // Enable a back forward cache.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeaturesAndParameters(
-      {{features::kBackForwardCache, {}}},
-      // Allow BackForwardCache for all devices regardless of their memory.
-      {features::kBackForwardCacheMemoryControls});
+      GetBasicBackForwardCacheFeatureForTesting(),
+      GetDefaultDisabledBackForwardCacheFeaturesForTesting());
 
   // Create a page with an iframe:
   contents()->NavigateAndCommit(GURL("https://initial.example.test/"));
@@ -1312,7 +1374,7 @@ TEST_F(RenderFrameHostImplTest, GetVirtualAuthenticatorManagerWhenInactiveRFH) {
     mojo::Remote<blink::test::mojom::VirtualAuthenticatorManager> remote;
     child_rfh->GetVirtualAuthenticatorManager(
         remote.BindNewPipeAndPassReceiver());
-    EXPECT_TRUE(AuthenticatorEnvironmentImpl::GetInstance()
+    EXPECT_TRUE(AuthenticatorEnvironment::GetInstance()
                     ->IsVirtualAuthenticatorEnabledFor(
                         contents()->GetPrimaryFrameTree().root()->child_at(0)));
   }
@@ -1332,7 +1394,7 @@ TEST_F(RenderFrameHostImplTest, GetVirtualAuthenticatorManagerWhenInactiveRFH) {
     mojo::Remote<blink::test::mojom::VirtualAuthenticatorManager> remote;
     child_rfh->GetVirtualAuthenticatorManager(
         remote.BindNewPipeAndPassReceiver());
-    EXPECT_FALSE(AuthenticatorEnvironmentImpl::GetInstance()
+    EXPECT_FALSE(AuthenticatorEnvironment::GetInstance()
                      ->IsVirtualAuthenticatorEnabledFor(
                          contents()->GetPrimaryFrameTree().root()));
   }

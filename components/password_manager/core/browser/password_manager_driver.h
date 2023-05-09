@@ -54,11 +54,6 @@ class PasswordManagerDriver
   virtual void SetPasswordFillData(
       const autofill::PasswordFormFillData& form_data) = 0;
 
-  // Notifies the driver that a password field that has no associated username.
-  // This is used as an instrumentation for DevTools.
-  virtual void PasswordFieldHasNoAssociatedUsername(
-      autofill::FieldRendererId password_element_renderer_id) = 0;
-
   // Informs the driver that there are no saved credentials in the password
   // store for the current page.
   // |should_show_popup_without_passwords| instructs the driver that the popup
@@ -145,6 +140,9 @@ class PasswordManagerDriver
 
   // Returns the ax tree id associated with this driver.
   virtual ::ui::AXTreeID GetAxTreeId() const = 0;
+
+  // Returns the frame ID of the frame associated with this driver.
+  virtual int GetFrameId() const = 0;
 
   // Returns the last committed URL of the frame.
   virtual const GURL& GetLastCommittedURL() const = 0;

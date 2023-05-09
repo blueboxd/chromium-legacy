@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/sampled_effect.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
+#include "third_party/blink/renderer/core/animation/view_timeline.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
@@ -257,8 +258,13 @@ void KeyframeEffect::setComposite(String composite_string) {
 // https://w3.org/TR/web-animations-1/#dom-keyframeeffect-getkeyframes
 HeapVector<ScriptValue> KeyframeEffect::getKeyframes(
     ScriptState* script_state) {
-  if (Animation* animation = GetAnimation())
+  if (Animation* animation = GetAnimation()) {
     animation->FlushPendingUpdates();
+    if (ViewTimeline* view_timeline =
+            DynamicTo<ViewTimeline>(animation->timeline())) {
+      view_timeline->ResolveTimelineOffsets(/* invalidate_effect */ false);
+    }
+  }
 
   HeapVector<ScriptValue> computed_keyframes;
   if (!model_->HasFrames() || !script_state->ContextIsValid())
@@ -444,15 +450,8 @@ void KeyframeEffect::AttachCompositedLayers() {
   DCHECK(GetAnimation());
   CompositorAnimation* compositor_animation =
       GetAnimation()->GetCompositorAnimation();
-  // If this is a paint worklet element and it is animating custom property
-  // only, it doesn't require an element id to run on the compositor thread.
-  // However, our compositor animation system requires the element to be on the
-  // property tree in order to keep ticking the animation. Therefore, we give a
-  // very special element id for this animation so that the compositor animation
-  // system recognize it. We do not use 0 as the element id because 0 is
-  // kInvalidElementId.
   if (compositor_animation && !Model()->RequiresPropertyNode()) {
-    compositor_animation->AttachNoElement();
+    compositor_animation->AttachPaintWorkletElement();
     return;
   }
   CompositorAnimations::AttachCompositedLayers(*effect_target_,

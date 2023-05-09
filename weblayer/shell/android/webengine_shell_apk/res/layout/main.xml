@@ -19,10 +19,16 @@ found in the LICENSE file.
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     <LinearLayout
+        android:id="@+id/app_bar"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:weightSum="6">
+        <ImageButton
+            android:id="@+id/reload_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_stop" />
         <EditText
             android:id="@+id/url_bar"
             android:layout_width="0dp"

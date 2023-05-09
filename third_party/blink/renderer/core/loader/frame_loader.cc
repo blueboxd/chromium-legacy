@@ -116,6 +116,7 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -132,6 +133,22 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+namespace {
+
+void LogJavaScriptUrlHistogram(LocalDOMWindow* origin_window, String script) {
+  origin_window->CountUse(WebFeature::kExecutedJavaScriptURLFromFrame);
+  if (script.length() > 6) {
+    return;
+  }
+
+  script = script.StripWhiteSpace().Replace(";", "");
+  if (script == "''" || script == "\"\"") {
+    origin_window->CountUse(WebFeature::kExecutedEmptyJavaScriptURLFromFrame);
+  }
+}
+
+}  // namespace
 
 bool IsBackForwardLoadType(WebFrameLoadType type) {
   return type == WebFrameLoadType::kBackForward;
@@ -750,6 +767,11 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   if (url.ProtocolIsJavaScript()) {
     if (!origin_window ||
         origin_window->CanExecuteScripts(kAboutToExecuteScript)) {
+      if (origin_window && request.GetFrameType() ==
+                               mojom::blink::RequestContextFrameType::kNested) {
+        LogJavaScriptUrlHistogram(origin_window, url.GetPath());
+      }
+
       frame_->GetDocument()->ProcessJavaScriptUrl(url,
                                                   request.JavascriptWorld());
     }
@@ -852,7 +874,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
       request.GetInputStartTime(), request.HrefTranslate().GetString(),
       request.Impression(), request.GetInitiatorFrameToken(),
       request.TakeSourceLocation(),
-      request.TakeInitiatorPolicyContainerKeepAliveHandle());
+      request.TakeInitiatorPolicyContainerKeepAliveHandle(),
+      request.IsContainerInitiated());
 }
 
 static void FillStaticResponseIfNeeded(WebNavigationParams* params,
@@ -982,6 +1005,7 @@ void FrameLoader::CommitNavigation(
   DCHECK(document_loader_);
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
+
   if (!frame_->IsNavigationAllowed() ||
       frame_->GetDocument()->PageDismissalEventBeingDispatched() !=
           Document::kNoDismissal) {
@@ -1291,10 +1315,7 @@ void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader,
   CHECK(document_loader_);
 
   document_loader_->SetCommitReason(commit_reason);
-
-  virtual_time_pauser_.PauseVirtualTime();
   document_loader_->StartLoading();
-  virtual_time_pauser_.UnpauseVirtualTime();
 
   if (commit_reason != CommitReason::kInitialization) {
     // Following the call to StartLoading, the DocumentLoader state has taken
@@ -1547,6 +1568,12 @@ bool FrameLoader::ShouldClose(bool is_reload) {
     if (!descendant_frame->Tree().IsDescendantOf(frame_))
       continue;
     descendant_frame->GetDocument()->BeforeUnloadDoneWillUnload();
+  }
+
+  if (!frame_->IsDetached() && frame_->IsOutermostMainFrame() &&
+      base::FeatureList::IsEnabled(features::kMemoryCacheStrongReference)) {
+    MemoryCache::Get()->SavePageResourceStrongReferences(
+        frame_->AllResourcesUnderFrame());
   }
 
   if (!is_reload) {

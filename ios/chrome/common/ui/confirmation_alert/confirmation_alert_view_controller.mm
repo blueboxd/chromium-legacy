@@ -5,6 +5,7 @@
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_view_controller.h"
 
 #import "base/check.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
@@ -695,14 +696,19 @@ const CGFloat kFaviconBadgeSideLength = 24;
                   forControlEvents:UIControlEventTouchUpInside];
   [secondaryActionButton setTitle:self.secondaryActionString
                          forState:UIControlStateNormal];
-  secondaryActionButton.contentEdgeInsets =
-      UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
   [secondaryActionButton setBackgroundColor:[UIColor clearColor]];
   UIColor* titleColor = [UIColor colorNamed:self.secondaryActionTextColor
                                                 ? self.secondaryActionTextColor
                                                 : kBlueColor];
   [secondaryActionButton setTitleColor:titleColor
                               forState:UIControlStateNormal];
+
+  // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
+  // deployment target is iOS 15.
+  UIEdgeInsets contentInsets =
+      UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+  SetContentEdgeInsets(secondaryActionButton, contentInsets);
+
   secondaryActionButton.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   secondaryActionButton.titleLabel.adjustsFontForContentSizeCategory = NO;
@@ -726,8 +732,13 @@ const CGFloat kFaviconBadgeSideLength = 24;
                  forControlEvents:UIControlEventTouchUpInside];
   [tertiaryActionButton setTitle:self.tertiaryActionString
                         forState:UIControlStateNormal];
-  tertiaryActionButton.contentEdgeInsets =
+
+  // TODO(crbug.com/1418068): Replace with UIButtonConfiguration when min
+  // deployment target is iOS 15.
+  UIEdgeInsets contentInsets =
       UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
+  SetContentEdgeInsets(tertiaryActionButton, contentInsets);
+
   [tertiaryActionButton setBackgroundColor:[UIColor clearColor]];
   UIColor* titleColor = [UIColor colorNamed:kBlueColor];
   [tertiaryActionButton setTitleColor:titleColor forState:UIControlStateNormal];

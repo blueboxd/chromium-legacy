@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> елемента се компресират...</translation>
 <translation id="1722687688096767818">Потребителският профил се добавя...</translation>
 <translation id="1726100011689679555">Сървъри за имена</translation>
+<translation id="1727562178154619254">Готово за синхронизиране</translation>
 <translation id="1729953886957086472">Немски (Германия)</translation>
 <translation id="1730235522912993863">Китайски (цандзие)</translation>
 <translation id="1731889557567069540">Копирахте <ph name="NUMBER_OF_ITEMS" /> елемента.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Разделителна способност на изображението</translation>
 <translation id="1972984168337863910">Разгъване на панелите с информация за файловете</translation>
 <translation id="1995337122023280937">Към местоположението на файла</translation>
-<translation id="1999709132469742660">Достъп до файла от всички URL адреси</translation>
 <translation id="2001796770603320721">Управление в Диск</translation>
 <translation id="2009067268969781306">При форматирането на устройство ще бъдат изтрити всички съхранявани на него данни. Това действие не може да бъде отменено.</translation>
 <translation id="2025955442973426285">Тигриня</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">латиноамерикански</translation>
 <translation id="5330145655348521461">Тези файлове се отвориха на друг работен плот. Преминете към <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), за да ги прегледате.</translation>
 <translation id="5330512191124428349">Получаване на информация</translation>
-<translation id="5337538975554986899">Достъп до файла от всички URL адреси освен <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Управление на споделянето с Bruschetta</translation>
 <translation id="535792325654997756">Човек с котки</translation>
 <translation id="5358764674931277">Скорост на кадрите</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Възникна грешка при инсталирането на приложението за Linux.</translation>
 <translation id="5912396950572065471">Формат</translation>
 <translation id="5913638992615760742">Копирането не бе успешно. Възникна неочаквана грешка: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Налице са нови функции за търсене</translation>
 <translation id="5926082595146149752">Нидерландски (Нидерландия) с американска международна клавиатура (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, активиране след настройване на устройството</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Сертификатите не са заредени</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Споделяне на папката с Bruschetta</translation>
+<translation id="6750737795876287924">Текуща директория</translation>
 <translation id="6751256176799620176">Избрахте 1 папка</translation>
 <translation id="6755827872271341378">Устройство с ChromeOS Flex</translation>
 <translation id="6790428901817661496">Пускане</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6976795442547527108">Лъв</translation>
 <translation id="6979158407327259162">Google Диск</translation>
-<translation id="6979737339423435258">За цялото време</translation>
 <translation id="6989942356279143254">Шведски</translation>
 <translation id="6990081529015358884">Нямате свободно място</translation>
 <translation id="6993826899923627728">Тези елементи са в кошчето ви</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Няма скорошни изображения</translation>
 <translation id="7460898608667578234">украински</translation>
 <translation id="7469894403370665791">Автоматично свързване с тази мрежа</translation>
-<translation id="7481358317100446445">Готова</translation>
 <translation id="7486315294984620427">За да хванете и преместите файлове в Parallels Desktop, те трябва да бъдат копирани в папката с файлове на Windows.</translation>
 <translation id="749452993132003881">хирагана</translation>
 <translation id="7495372004724182530">Малаялам (фонетична клавиатура)</translation>

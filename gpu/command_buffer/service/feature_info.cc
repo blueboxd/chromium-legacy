@@ -198,7 +198,7 @@ FeatureInfo::FeatureInfo(
   feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
-#elif BUILDFLAG(IS_MAC)
+#elif BUILDFLAG(IS_APPLE)
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
@@ -1723,6 +1723,16 @@ void FeatureInfo::InitializeFeatures() {
                         "GL_AMD_framebuffer_multisample_advanced")) {
     feature_flags_.amd_framebuffer_multisample_advanced = true;
     AddExtensionString("GL_AMD_framebuffer_multisample_advanced");
+  }
+
+  if (gfx::HasExtension(extensions, "GL_ANGLE_shader_pixel_local_storage")) {
+    feature_flags_.angle_shader_pixel_local_storage = true;
+    AddExtensionString("GL_ANGLE_shader_pixel_local_storage");
+  }
+
+  if (gfx::HasExtension(extensions,
+                        "GL_ANGLE_shader_pixel_local_storage_coherent")) {
+    AddExtensionString("GL_ANGLE_shader_pixel_local_storage_coherent");
   }
 
   if (gfx::HasExtension(extensions, "GL_ANGLE_rgbx_internal_format")) {

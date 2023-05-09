@@ -22,8 +22,24 @@ static_library("eche_app_ui_pref") {
   deps = [ "//base:base" ]
 }
 
+static_library("eche_connection_status") {
+  sources = [
+    "eche_connection_status_observer.cc",
+    "eche_connection_status_observer.h",
+  ]
+
+  deps = [
+    "//ash/constants",
+    "//ash/webui/eche_app_ui/mojom",
+    "//base:base",
+    "//chromeos/ash/components/multidevice/logging",
+  ]
+}
+
 static_library("eche_app_ui") {
   sources = [
+    "accessibility_tree_converter.cc",
+    "accessibility_tree_converter.h",
     "apps_access_manager.cc",
     "apps_access_manager.h",
     "apps_access_manager_impl.cc",
@@ -84,6 +100,7 @@ static_library("eche_app_ui") {
 
   deps = [
     ":eche_app_ui_pref",
+    ":eche_connection_status",
     "//ash",
     "//ash/constants",
     "//ash/public/cpp",
@@ -142,6 +159,7 @@ source_set("unit_tests") {
     "eche_alert_generator_unittest.cc",
     "eche_app_manager_unittest.cc",
     "eche_connection_scheduler_impl_unittest.cc",
+    "eche_connection_status_observer_unittest.cc",
     "eche_connector_impl_unittest.cc",
     "eche_feature_status_provider_unittest.cc",
     "eche_message_receiver_impl_unittest.cc",
@@ -159,6 +177,7 @@ source_set("unit_tests") {
   deps = [
     ":eche_app_ui",
     ":eche_app_ui_pref",
+    ":eche_connection_status",
     ":test_support",
     "//ash:test_support",
     "//ash/public/cpp",

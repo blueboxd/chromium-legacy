@@ -16,7 +16,6 @@ source_set("js_messaging") {
   frameworks = [ "Foundation.framework" ]
 
   sources = [
-    "content_world.h",
     "java_script_feature.h",
     "java_script_feature_util.h",
     "script_message.h",
@@ -24,13 +23,17 @@ source_set("js_messaging") {
     "web_frame_user_data.h",
     "web_frame_util.h",
     "web_frames_manager.h",
+    "web_frames_manager_observer_bridge.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("content_world_header") {
+  sources = [ "content_world.h" ]
+}
+
 compile_ts("util_scripts") {
-  allow_js = true
   sources = [ "resources/utils.ts" ]
 }
 

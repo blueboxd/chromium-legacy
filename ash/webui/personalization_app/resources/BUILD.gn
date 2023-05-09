@@ -55,6 +55,8 @@ build_webui("build") {
     "js/ambient/zero_state_element.ts",
     "js/keyboard_backlight/keyboard_backlight_element.ts",
     "js/keyboard_backlight/zone_customization_element.ts",
+    "js/keyboard_backlight/color_icon_element.ts",
+    "js/keyboard_backlight/color_selector_element.ts",
     "js/personalization_main_element.ts",
     "js/personalization_router_element.ts",
     "js/personalization_toast_element.ts",
@@ -120,6 +122,7 @@ build_webui("build") {
     "js/user/user_reducers.ts",
     "js/user/user_selectors.ts",
     "js/user/user_state.ts",
+    "js/user/utils.ts",
     "js/user/webcam_utils_proxy.ts",
     "js/utils.ts",
     "js/wallpaper/constants.ts",
@@ -148,12 +151,13 @@ build_webui("build") {
   ts_composite = true
   ts_definitions = [ "//tools/typescript/definitions/metrics_private.d.ts" ]
   ts_deps = [
+    "//ash/webui/common/resources:build_ts",
     "//third_party/polymer/v3_0:library",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/cr_components/localized_link:build_ts",
     "//ui/webui/resources/cr_elements:build_ts",
     "//ui/webui/resources/js:build_ts",
-    "//ui/webui/resources/mojo:library",
+    "//ui/webui/resources/mojo:build_ts",
   ]
   ts_extra_deps = [ "//ash/webui/common/resources:generate_definitions" ]
 

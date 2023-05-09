@@ -33,6 +33,8 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
       bool show_pair_personal_portraits,
       const gfx::Size& screen_size,
       OnScreenUpdateInfoFetchedCallback callback) override;
+  void FetchPreviewImages(const gfx::Size& preview_size,
+                          OnPreviewImagesFetchedCallback callback) override;
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(const AmbientSettings& settings,
                       UpdateSettingsCallback callback) override;
@@ -48,13 +50,6 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
       OnSettingsAndAlbumsFetchedCallback callback) override;
   void FetchWeather(FetchWeatherCallback callback) override;
   const std::array<const char*, 2>& GetBackupPhotoUrls() const override;
-
-  void GetGooglePhotosAlbumsPreview(
-      const std::vector<std::string>& album_ids,
-      int preview_width,
-      int preview_height,
-      int num_previews,
-      GetGooglePhotosAlbumsPreviewCallback callback) override;
 
  private:
   using BackdropClientConfig = chromeos::ambient::BackdropClientConfig;
@@ -110,20 +105,6 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
                        ash::PersonalAlbums personal_albums);
 
   void OnSettingsAndAlbumsFetched(OnSettingsAndAlbumsFetchedCallback callback);
-
-  void StartToGetGooglePhotosAlbumsPreview(
-      const std::vector<std::string>& album_ids,
-      int preview_width,
-      int preview_height,
-      int num_previews,
-      GetGooglePhotosAlbumsPreviewCallback callback,
-      const std::string& gaia_id,
-      const std::string& access_token);
-
-  void OnGetGooglePhotosAlbumsPreview(
-      GetGooglePhotosAlbumsPreviewCallback callback,
-      std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
-      std::unique_ptr<std::string> response);
 
   // Temporary store for FetchSettingsAndAlbums() when |GetSettingsCallback|
   // called. |settings_| will be absl::nullopt if server returns with error.

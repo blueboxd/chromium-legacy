@@ -16,7 +16,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/app_session_browser_window_handler.h"
 #include "chrome/browser/chromeos/app_mode/app_session_metrics_service.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_troubleshooting_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -36,6 +35,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/chromeos/app_mode/kiosk_session_plugin_handler.h"
@@ -225,7 +225,7 @@ void AppSession::RegisterProfilePrefs(
                                 false);
 }
 
-void AppSession::Init(const std::string& app_id) {
+void AppSession::InitForChromeAppKiosk(const std::string& app_id) {
   app_window_handler_ = std::make_unique<AppWindowHandler>(this);
   app_window_handler_->Init(profile(), app_id);
   CreateBrowserWindowHandler(absl::nullopt);
@@ -271,18 +271,12 @@ AppSession::AppSession(
 
 void AppSession::CreateBrowserWindowHandler(
     const absl::optional<std::string>& web_app_name) {
-  // TODO(b/269431236): share ShutdownAppSession callback between
-  // KioskTroubleshootingController and AppSessionBrowserWindowHandler.
   browser_window_handler_ = std::make_unique<AppSessionBrowserWindowHandler>(
       profile(), web_app_name,
       base::BindRepeating(&AppSession::OnHandledNewBrowserWindow,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&AppSession::ShutdownAppSession,
-                          weak_ptr_factory_.GetWeakPtr()),
-      std::make_unique<KioskTroubleshootingController>(
-          profile_->GetPrefs(),
-          base::BindOnce(&AppSession::ShutdownAppSession,
-                         weak_ptr_factory_.GetWeakPtr())));
+      base::BindOnce(&AppSession::ShutdownAppSession,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AppSession::OnHandledNewBrowserWindow(bool is_closing) {

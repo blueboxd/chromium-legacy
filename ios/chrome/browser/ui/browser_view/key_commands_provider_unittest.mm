@@ -5,12 +5,12 @@
 #import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 
 #import "base/test/metrics/user_action_tester.h"
-#import "base/test/scoped_feature_list.h"
 #import "base/test/task_environment.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/bookmark_node.h"
+#import "components/bookmarks/common/bookmark_metrics.h"
 #import "components/bookmarks/test/bookmark_test_helpers.h"
-#import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/find_in_page/java_script_find_tab_helper.h"
 #import "ios/chrome/browser/lens/lens_browser_agent.h"
@@ -19,15 +19,14 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/sessions/fake_tab_restore_service.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
+#import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
+#import "ios/chrome/browser/shared/ui/util/url_with_title.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer_browser_agent.h"
-#import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
-#import "ios/chrome/browser/ui/keyboard/features.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
-#import "ios/chrome/browser/ui/util/url_with_title.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
@@ -65,8 +64,9 @@ class KeyCommandsProviderTest : public PlatformTest {
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(IOSChromeTabRestoreServiceFactory::GetInstance(),
                               base::BindRepeating(BuildFakeTabRestoreService));
-    builder.AddTestingFactory(ios::BookmarkModelFactory::GetInstance(),
-                              ios::BookmarkModelFactory::GetDefaultFactory());
+    builder.AddTestingFactory(
+        ios::LocalOrSyncableBookmarkModelFactory::GetInstance(),
+        ios::LocalOrSyncableBookmarkModelFactory::GetDefaultFactory());
     browser_state_ = builder.Build();
     browser_ = std::make_unique<TestBrowser>(browser_state_.get());
     web_state_list_ = browser_->GetWebStateList();
@@ -75,7 +75,8 @@ class KeyCommandsProviderTest : public PlatformTest {
     scene_state_ = [[SceneState alloc] initWithAppState:nil];
     SceneStateBrowserAgent::CreateForBrowser(browser_.get(), scene_state_);
     bookmark_model_ =
-        ios::BookmarkModelFactory::GetForBrowserState(browser_state_.get());
+        ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
+            browser_state_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
     provider_ = [[KeyCommandsProvider alloc] initWithBrowser:browser_.get()];
   }
@@ -166,6 +167,11 @@ class KeyCommandsProviderTest : public PlatformTest {
   KeyCommandsProvider* provider_;
 };
 
+// Checks that KeyCommandsProvider returns key commands.
+TEST_F(KeyCommandsProviderTest, ReturnsKeyCommands) {
+  EXPECT_NE(0u, provider_.keyCommands.count);
+}
+
 #pragma mark - Responder Chain Tests
 
 // Checks that the nextResponder is nil by default.
@@ -191,30 +197,6 @@ TEST_F(KeyCommandsProviderTest, NextResponderReset) {
   [provider_ respondBetweenViewController:nil andResponder:nil];
 
   EXPECT_EQ(provider_.nextResponder, nil);
-}
-
-#pragma mark - Finch Feature Tests
-
-// Checks that KeyCommandsProvider returns key commands when the Keyboard
-// Shortcuts Menu feature is enabled.
-TEST_F(KeyCommandsProviderTest, ReturnsKeyCommands_MenuEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{kKeyboardShortcutsMenu},
-      /*disabled_features=*/{});
-
-  EXPECT_NE(0u, provider_.keyCommands.count);
-}
-
-// Checks that KeyCommandsProvider returns key commands when the Keyboard
-// Shortcuts Menu feature is disabled.
-TEST_F(KeyCommandsProviderTest, ReturnsKeyCommands_MenuDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{},
-      /*disabled_features=*/{kKeyboardShortcutsMenu});
-
-  EXPECT_NE(0u, provider_.keyCommands.count);
 }
 
 #pragma mark - CanPerform Tests
@@ -923,7 +905,8 @@ TEST_F(KeyCommandsProviderTest, ValidateBookmarkCommand) {
   }
 
   // Remove the bookmark.
-  bookmark_model_->Remove(bookmark);
+  bookmark_model_->Remove(bookmark,
+                          bookmarks::metrics::BookmarkEditSource::kOther);
 
   for (UIKeyCommand* command in provider_.keyCommands) {
     [provider_ validateCommand:command];

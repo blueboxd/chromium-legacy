@@ -340,9 +340,6 @@ class ComputedStyle : public ComputedStyleBase,
   // into new instances.
   CORE_EXPORT static scoped_refptr<ComputedStyle> CreateInitialStyleSingleton();
 
-  // Shallow copy into a new instance sharing DataPtrs.
-  CORE_EXPORT static scoped_refptr<ComputedStyle> Clone(const ComputedStyle&);
-
   static const ComputedStyle* NullifyEnsured(const ComputedStyle* style) {
     if (!style) {
       return nullptr;
@@ -2246,14 +2243,6 @@ class ComputedStyle : public ComputedStyleBase,
     return blink::ShouldCollapseSpacesAndTabs(ws);
   }
 
-  bool ShouldWrapLine() const { return DeprecatedAutoWrap(WhiteSpace()); }
-  bool ShouldWrapLineBreakingSpaces() const {
-    return blink::ShouldWrapLineBreakingSpaces(WhiteSpace());
-  }
-  bool ShouldWrapLineTrailingSpaces() const {
-    return blink::ShouldWrapLineTrailingSpaces(WhiteSpace());
-  }
-
   bool ShouldPreserveSpacesAndTabs() const {
     return blink::ShouldPreserveSpacesAndTabs(WhiteSpace());
   }
@@ -2274,6 +2263,10 @@ class ComputedStyle : public ComputedStyleBase,
     return false;
   }
 
+  bool ShouldWrapLine() const { return DeprecatedAutoWrap(WhiteSpace()); }
+  bool ShouldBreakSpaces() const {
+    return blink::ShouldBreakSpaces(WhiteSpace());
+  }
   bool BreakOnlyAfterWhiteSpace() const {
     return (ShouldPreserveSpacesAndTabs() && ShouldWrapLine()) ||
            GetLineBreak() == LineBreak::kAfterWhiteSpace;
@@ -2658,6 +2651,9 @@ class ComputedStyle : public ComputedStyleBase,
            !unforced_color.IsSystemColorIncludingDeprecated();
   }
   bool ShouldForceColor(const StyleColor& unforced_color) const {
+    // If any other properties are added that are affected by ForcedColors mode,
+    // adjust EditingStyle::RemoveForcedColorsIfNeeded and
+    // EditingStyle::MergeStyleFromRulesForSerialization accordingly.
     return ShouldForceColor(InForcedColorsMode(), ForcedColorAdjust(),
                             unforced_color);
   }
@@ -2779,10 +2775,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   // Access to UserModify().
   friend class MatchedPropertiesCache;
 
-  explicit ComputedStyleBuilder(const ComputedStyle& style) {
-    style_ = ComputedStyle::Clone(style);
-    SetStyleBase(*style_);
-  }
+  CORE_EXPORT explicit ComputedStyleBuilder(const ComputedStyle& style);
   ComputedStyleBuilder(const ComputedStyleBuilder& builder) = delete;
   ComputedStyleBuilder(ComputedStyleBuilder&&) = default;
   ComputedStyleBuilder& operator=(const ComputedStyleBuilder&) = delete;
@@ -2791,10 +2784,7 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   scoped_refptr<const ComputedStyle> TakeStyle() { return std::move(style_); }
 
   // NOTE: Prefer `TakeStyle()` if possible.
-  scoped_refptr<const ComputedStyle> CloneStyle() const {
-    DCHECK(style_);
-    return ComputedStyle::Clone(*style_);
-  }
+  CORE_EXPORT scoped_refptr<const ComputedStyle> CloneStyle() const;
 
   CORE_EXPORT void InheritFrom(
       const ComputedStyle& inherit_parent,

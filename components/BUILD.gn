@@ -175,7 +175,8 @@ test("components_unittests") {
     "//components/open_from_clipboard:unit_tests",
     "//components/openscreen_platform:unittests",
     "//components/optimization_guide/core:unit_tests",
-    "//components/os_crypt:unit_tests",
+    "//components/os_crypt/async/browser:unit_tests",
+    "//components/os_crypt/sync:unit_tests",
     "//components/password_manager/core/browser:unit_tests",
     "//components/payments/core:unit_tests",
     "//components/policy/core/browser:unit_tests",
@@ -339,13 +340,13 @@ test("components_unittests") {
       "//components/cast_streaming:unit_tests",
       "//components/certificate_transparency:unit_tests",
       "//components/content_capture/browser:unit_tests",
+      "//components/content_relationship_verification:unit_tests",
       "//components/content_settings/browser:unit_tests",
       "//components/contextual_search/core/browser:unit_tests",
       "//components/continuous_search/browser:unit_tests",
       "//components/continuous_search/common:unit_tests",
       "//components/custom_handlers:unit_tests",
       "//components/devtools/simple_devtools_protocol_client:unit_tests",
-      "//components/digital_asset_links:unit_tests",
       "//components/discardable_memory/client:unit_tests",
       "//components/discardable_memory/common:unit_tests",
       "//components/discardable_memory/service:unit_tests",
@@ -949,6 +950,7 @@ if (!is_ios) {
       sources += [ "printing/test/print_render_frame_helper_browsertest.cc" ]
       deps += [
         "//build:chromeos_buildflags",
+        "//components/printing/browser",
         "//components/printing/common:mojo_interfaces",
         "//components/printing/test:test_support",
       ]

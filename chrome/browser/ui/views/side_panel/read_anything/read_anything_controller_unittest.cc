@@ -28,7 +28,7 @@ class ReadAnythingControllerTest : public TestWithBrowserView {
     // Reset prefs to default values for test.
     browser()->profile()->GetPrefs()->SetString(
         prefs::kAccessibilityReadAnythingFontName,
-        kReadAnythingDefaultFontName);
+        string_constants::kReadAnythingDefaultFontName);
     browser()->profile()->GetPrefs()->SetDouble(
         prefs::kAccessibilityReadAnythingFontScale,
         kReadAnythingDefaultFontScale);
@@ -70,6 +70,7 @@ class ReadAnythingControllerTest : public TestWithBrowserView {
   }
 
   void OnUIReady() { controller_->OnUIReady(); }
+  void OnUIDestroyed() { controller_->OnUIDestroyed(); }
 
   std::string GetPrefFontName() {
     return browser()->profile()->GetPrefs()->GetString(
@@ -248,5 +249,6 @@ TEST_F(ReadAnythingControllerTest, OnLetterSpacingChangedInvalidInput) {
 
 TEST_F(ReadAnythingControllerTest, CallOnUIReadyTwiceNoCrash) {
   OnUIReady();
+  OnUIDestroyed();
   OnUIReady();
 }

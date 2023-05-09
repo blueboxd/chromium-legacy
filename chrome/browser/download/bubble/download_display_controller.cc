@@ -8,8 +8,8 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/download/bubble/download_bubble_controller.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
+#include "chrome/browser/download/bubble/download_bubble_ui_controller.h"
 #include "chrome/browser/download/bubble/download_bubble_ui_model_utils.h"
 #include "chrome/browser/download/bubble/download_display.h"
 #include "chrome/browser/download/bubble/download_icon_state.h"
@@ -34,7 +34,8 @@ using DownloadIconState = download::DownloadIconState;
 
 // The amount of time for the toolbar icon to be visible after a download is
 // completed.
-constexpr base::TimeDelta kToolbarIconVisibilityTimeInterval = base::Hours(24);
+constexpr base::TimeDelta kToolbarIconVisibilityTimeInterval =
+    base::Minutes(60);
 
 // The amount of time for the toolbar icon to stay active after a download is
 // completed. If the download completed while full screen, the timer is started
@@ -363,21 +364,19 @@ bool DownloadDisplayController::IsDisplayShowingDetails() {
 DownloadDisplayController::ProgressInfo
 DownloadDisplayController::GetProgress() {
   ProgressInfo progress_info;
-  std::vector<std::unique_ptr<DownloadUIModel>> all_models =
-      bubble_controller_->GetAllItemsToDisplay();
+  std::vector<std::unique_ptr<DownloadUIModel>> in_progress_models =
+      bubble_controller_->GetInProgressItems();
+  progress_info.download_count = in_progress_models.size();
   int64_t received_bytes = 0;
   int64_t total_bytes = 0;
 
-  for (const auto& model : all_models) {
-    if (IsModelInProgress(model.get())) {
-      ++progress_info.download_count;
-      if (model->GetTotalBytes() <= 0) {
-        // There may or may not be more data coming down this pipe.
-        progress_info.progress_certain = false;
-      } else {
-        received_bytes += model->GetCompletedBytes();
-        total_bytes += model->GetTotalBytes();
-      }
+  for (const auto& model : in_progress_models) {
+    if (model->GetTotalBytes() <= 0) {
+      // There may or may not be more data coming down this pipe.
+      progress_info.progress_certain = false;
+    } else {
+      received_bytes += model->GetCompletedBytes();
+      total_bytes += model->GetTotalBytes();
     }
   }
 

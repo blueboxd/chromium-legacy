@@ -31,7 +31,7 @@
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
 #include "components/network_session_configurator/common/network_features.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/sync/os_crypt.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
@@ -92,7 +92,7 @@
 #if (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)) || \
     BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#include "components/os_crypt/key_storage_config_linux.h"
+#include "components/os_crypt/sync/key_storage_config_linux.h"
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -566,7 +566,7 @@ void NetworkService::StartNetLog(base::File file,
 
   file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
       std::move(file), capture_mode,
-      std::make_unique<base::Value>(std::move(constants)));
+      std::make_unique<base::Value::Dict>(std::move(constants)));
   file_net_log_observer_->StartObserving(net_log_);
 }
 

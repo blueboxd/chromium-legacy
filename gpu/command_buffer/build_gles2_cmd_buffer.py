@@ -4034,6 +4034,13 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_shared_image',
     'unit_test': False,
   },
+  # NOTE: Following functions are given an INTERNAL suffix but they're not
+  # truly 'internal'. This is because they are to be accessed as client only
+  # from RasterImplementationGLES to be used with Passthrough Command Decoder.
+  # Also, they have similar implementations to corresponding functions for
+  # Raster Decoder.
+  # TODO(hitawala): Remove these methods once OOP-C is launched and we prefer
+  # Raster Decoder over Passthrough Command Decoder everywhere.
   'ConvertRGBAToYUVAMailboxesINTERNAL': {
     'decoder_func': 'DoConvertRGBAToYUVAMailboxesINTERNAL',
     'extension': 'CHROMIUM_shared_image',
@@ -4063,7 +4070,108 @@ _FUNCTION_INFO = {
     'impl_func': True,
     'unit_test': False,
     'trace_level': 2,
-  }
+  },
+  # mailbox_offset refers to the offset in shared memory pointing to shared
+  # image mailbox.
+  'ReadbackARGBImagePixelsINTERNAL': {
+    'type': 'Custom',
+    'extension': 'CHROMIUM_shared_image',
+    'impl_func': False,
+    'client_test': False,
+    'cmd_args':
+        'GLint src_x, GLint src_y, GLint plane_index, GLuint dst_width, '
+        'GLuint dst_height, GLuint row_bytes, GLuint dst_sk_color_type, '
+        'GLuint dst_sk_alpha_type, GLint shm_id, GLuint shm_offset, '
+        'GLuint color_space_offset, GLuint pixels_offset, '
+        'GLuint mailbox_offset',
+    'result': ['uint32_t'],
+    'trace_level': 2,
+  },
+  'FramebufferMemorylessPixelLocalStorageANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'unit_test': False,
+    'es3': True,
+    'decoder_func': 'DoFramebufferMemorylessPixelLocalStorageANGLE',
+  },
+  'FramebufferTexturePixelLocalStorageANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'unit_test': False,
+    'es3': True,
+    'decoder_func': 'DoFramebufferTexturePixelLocalStorageANGLE',
+  },
+  'FramebufferPixelLocalClearValuefvANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'type': 'PUT',
+    'count': 4,
+    'unit_test': False,
+    'es3': True,
+    'decoder_func': 'DoFramebufferPixelLocalClearValuefvANGLE',
+  },
+  'FramebufferPixelLocalClearValueivANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'type': 'PUT',
+    'count': 4,
+    'unit_test': False,
+    'es3': True,
+    'decoder_func': 'DoFramebufferPixelLocalClearValueivANGLE',
+  },
+  'FramebufferPixelLocalClearValueuivANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'type': 'PUT',
+    'use_count_func': True,
+    'count': 4,
+    'unit_test': False,
+    'es3': True,
+    'decoder_func': 'DoFramebufferPixelLocalClearValueuivANGLE',
+  },
+  'BeginPixelLocalStorageANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'type': 'PUTn',
+    'count': 1,
+    'unit_test': False,
+    'es3': True,
+    'decoder_func': 'DoBeginPixelLocalStorageANGLE',
+  },
+  'EndPixelLocalStorageANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'type': 'PUTn',
+    'count': 1,
+    'unit_test': False,
+    'es3': True,
+    'decoder_func': 'DoBeginPixelLocalStorageANGLE',
+  },
+  'PixelLocalStorageBarrierANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'unit_test': False,
+    'es3': True,
+    'decoder_func': 'DoPixelLocalStorageBarrierANGLE',
+  },
+  'GetFramebufferPixelLocalStorageParameterfvANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'type': 'GETn',
+    'unit_test': False,
+    'es3': True,
+    'result': ['SizedResult<GLfloat>'],
+    'decoder_func': 'DoGetFramebufferPixelLocalStorageParameterfvANGLE',
+  },
+  'GetFramebufferPixelLocalStorageParameterivANGLE': {
+    'extension': 'ANGLE_shader_pixel_local_storage',
+    'extension_flag': 'angle_shader_pixel_local_storage',
+    'type': 'GETn',
+    'unit_test': False,
+    'es3': True,
+    'result': ['SizedResult<GLint>'],
+    'decoder_func': 'DoGetFramebufferPixelLocalStorageParameterivANGLE',
+  },
 
 }
 

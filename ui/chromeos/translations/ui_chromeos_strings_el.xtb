@@ -85,6 +85,7 @@
 <translation id="1722487484194605434">Συμπίεση <ph name="NUMBER_OF_ITEMS" /> στοιχείων...</translation>
 <translation id="1722687688096767818">Προσθήκη προφίλ…</translation>
 <translation id="1726100011689679555">Διακομιστές ονομάτων</translation>
+<translation id="1727562178154619254">Έτοιμο για συγχρονισμό</translation>
 <translation id="1729953886957086472">Γερμανικά (Γερμανίας)</translation>
 <translation id="1730235522912993863">Κινεζικά Cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> στοιχεία αντιγράφηκαν.</translation>
@@ -120,7 +121,6 @@
 <translation id="1942765061641586207">Ανάλυση εικόνας</translation>
 <translation id="1972984168337863910">Ανάπτυξη πλαισίων σχολίων αρχείων</translation>
 <translation id="1995337122023280937">Μετάβαση στην τοποθεσία αρχείου</translation>
-<translation id="1999709132469742660">Πρόσβαση στο αρχείο για όλα τα URL</translation>
 <translation id="2001796770603320721">Διαχείριση στο Drive</translation>
 <translation id="2009067268969781306">Η διαμόρφωση ενός δίσκου θα διαγράψει όλα τα δεδομένα που έχουν αποθηκευτεί σε αυτόν. Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.</translation>
 <translation id="2025955442973426285">Τιγκρίνια</translation>
@@ -554,7 +554,6 @@
 <translation id="5323213332664049067">Λατινικής Αμερικής</translation>
 <translation id="5330145655348521461">Αυτά τα αρχεία άνοιξαν σε διαφορετικό προφίλ. Μεταφερθείτε στο προφίλ <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) για να τα δείτε.</translation>
 <translation id="5330512191124428349">Λήψη πληροφοριών</translation>
-<translation id="5337538975554986899">Πρόσβαση στο αρχείο για όλα τα URL εκτός από <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Διαχείριση κοινοποίησης στο Bruschetta</translation>
 <translation id="535792325654997756">Άτομο με γάτες</translation>
 <translation id="5358764674931277">Ρυθμός καρέ</translation>
@@ -628,6 +627,7 @@
 <translation id="5911887972742538906">Παρουσιάστηκε σφάλμα κατά την εγκατάσταση της εφαρμογής σας Linux.</translation>
 <translation id="5912396950572065471">Διαμόρφωση</translation>
 <translation id="5913638992615760742">Αποτυχία λειτουργίας αντιγραφής, μη αναμενόμενο σφάλμα: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Νέες διαθέσιμες λειτουργίες αναζήτησης</translation>
 <translation id="5926082595146149752">Ολλανδικά (Ολλανδία) με πληκτρολόγιο υπολογιστή Διεθνές ΗΠΑ</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ενεργοποίηση μετά τη ρύθμιση συσκευής</translation>
@@ -717,6 +717,7 @@
 <translation id="6732801395666424405">Δεν έχουν φορτωθεί τα πιστοποιητικά</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Κοινοποίηση φακέλου στο Bruschetta</translation>
+<translation id="6750737795876287924">Τρέχων κατάλογος</translation>
 <translation id="6751256176799620176">Επιλέχθηκε 1 φάκελος</translation>
 <translation id="6755827872271341378">Συσκευή ChromeOS Flex</translation>
 <translation id="6790428901817661496">Αναπαραγωγή</translation>
@@ -755,7 +756,6 @@
 <translation id="6973630695168034713">Φάκελοι</translation>
 <translation id="6976795442547527108">Λιοντάρι</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Από την αρχή</translation>
 <translation id="6989942356279143254">Σουηδικά</translation>
 <translation id="6990081529015358884">Δεν υπάρχει ελεύθερος χώρος</translation>
 <translation id="6993826899923627728">Αυτά τα στοιχεία βρίσκονται στον κάδο</translation>
@@ -812,7 +812,6 @@
 <translation id="7460898608667578234">Ουκρανικά
 </translation>
 <translation id="7469894403370665791">Αυτόματη σύνδεση σε αυτό το δίκτυο</translation>
-<translation id="7481358317100446445">Έτοιμο</translation>
 <translation id="7486315294984620427">Για να αποθέσετε αρχεία στο Parallels Desktop, το αρχείο θα πρέπει να αντιγραφεί στα αρχεία των Windows.</translation>
 <translation id="749452993132003881">Χιραγκάνα</translation>
 <translation id="7495372004724182530">Φωνητική εισαγωγή Μαλαγιαλαμικών</translation>
@@ -960,6 +959,7 @@
 <translation id="8492972329130824181">Το οικιακό δίκτυο δεν είναι διαθέσιμο. Για να συνδεθείτε, πρέπει να ενεργοποιήσετε την περιαγωγή δεδομένων κινητής τηλεφωνίας.</translation>
 <translation id="8499098729323186194">Εξαγωγή <ph name="NUMBER_OF_ITEMS" /> στοιχείων…</translation>
 <translation id="8502913769543567768">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Ενεργοποίηση μετά τη ρύθμιση συσκευής, Διαχειριζόμενο από τον διαχειριστή σας</translation>
+<translation id="8512483403832814140">Οποιαδήποτε στιγμή</translation>
 <translation id="8521441079177373948">ΗΒ</translation>
 <translation id="853494022971700746">Γαλλικά (Γαλλίας)</translation>
 <translation id="8540608333167683902">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Λεπτομέρειες</translation>

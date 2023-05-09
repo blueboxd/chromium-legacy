@@ -199,6 +199,10 @@
     Selected all entries.
   </message>
 
+  <message name="IDS_FILE_BROWSER_CURRENT_DIRECTORY_LABEL" desc="Message spoken by Chromevox/screenreader when the selected directory in the directory tree is the current directory.">
+    Current directory
+  </message>
+
   <message name="IDS_FILE_BROWSER_SIZE_BYTES" desc="Size in bytes.">
     <ph name="NUMBER_OF_BYTES">$1<ex>42</ex></ph> bytes
   </message>
@@ -614,7 +618,7 @@
     Preparing to sync <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
   </message>
   <message name="IDS_FILE_BROWSER_READY_TO_SYNC_MY_DRIVE" desc="Files app message displayed to users after they copy files into My Drive to help them understand that files pasted into My Drive are not immediately synced.">
-    Ready
+    Ready to sync
   </message>
   <message name="IDS_FILE_BROWSER_EXTRACT_FILESYSTEM_ERROR" desc="File Manager error message.">
     Extract operation failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
@@ -858,6 +862,9 @@
   <message name="IDS_FILE_BROWSER_SEARCH_NO_MATCHING_RESULTS_DESC" desc="Text displayed in the files under the title when a search has no results">
     Try another search
   </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_V2_EDUCATION_NUDGE" desc="Educational text that appears next to the search query to inform the user about existence of new search features.">
+    New search features available
+  </message>
 
   <message name="IDS_FILE_BROWSER_SEARCH_A11Y_CLEAR_SEARCH" desc="Text spoken by ChromeVox/screen reader when a search term has been cleared">
     Search text cleared, showing all files and folders.
@@ -872,7 +879,7 @@
     This folder
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_OPTIONS_RECENCY_ALL_TIME" desc="Text shown in search options if search results are not limited by time">
-    All time
+    Any time
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_OPTIONS_RECENCY_TODAY" desc="Text shown in search options if search results are limited to files modified today">
     Today
@@ -1707,10 +1714,10 @@
     File access by <ph name="RESTRICTED_DESTINATIONS">$1<ex>https://google.com</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS_FILE_ACCESS_ALL" desc="The message shown when a wildcard is given in as a restricted destination.">
-    File access by all urls
+    File access by all websites and URLs
   </message>
   <message name="IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS_FILE_ACCESS_ALL_EXCEPT" desc="The message shown when a wildcard is given in as a restricted destination but some destinations should be excluded.">
-    File access by all urls except <ph name="NON_RESTRICTED_DESTINATIONS">$1<ex>https://google.com</ex></ph>
+    File access by all websites and URLs except <ph name="NON_RESTRICTED_DESTINATIONS">$1<ex>https://google.com</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_DLP_RESTRICTION_DETAILS_FILE_TRANSFER" desc="The message shown for the list of DLP restricted components.">
     File transfer to <ph name="RESTRICTED_COMPONENTS">$1<ex>removable storage</ex></ph>
@@ -1732,5 +1739,8 @@
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_MOVED_FILE_NUDGE" desc="Educational text that appears in the navigation tree when a file is automatically moved to Google Drive by the Office Cloud Upload feature/dialog.">
     Recently opened Microsoft files have moved to Google Drive
+  </message>
+  <message name="IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME_FILES" desc="The source of a system-generated notification from the Files app, as displayed to the user.">
+  Files
   </message>
 </grit-part>

@@ -16,12 +16,9 @@
 #include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/trace_event/common/trace_event_common.h"
-#include "base/trace_event/trace_conversion_helper.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
-#include "content/browser/preloading/preloading_attempt_impl.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/preloading/prerender/prerender_metrics.h"
 #include "content/browser/preloading/prerender/prerender_navigation_utils.h"
@@ -29,17 +26,32 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame.mojom.h"
+#include "content/public/browser/preloading_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/gurl.h"
 
 namespace content {
 
 namespace {
+
+bool IsBackground(Visibility visibility) {
+  // PrerenderHostRegistry treats HIDDEN and OCCLUDED as background.
+  switch (visibility) {
+    case Visibility::HIDDEN:
+    case Visibility::OCCLUDED:
+      return true;
+    case Visibility::VISIBLE:
+      return false;
+  }
+}
 
 bool DeviceHasEnoughMemoryForPrerender() {
   // This method disallows prerendering on low-end devices if the
@@ -165,6 +177,9 @@ int PrerenderHostRegistry::CreateAndStartHost(
     }
 
     // Don't prerender when the trigger is in the background.
+    // TODO(https://crbug.com/1401252): When the sequential prerendering is
+    // enabled, enqueue this prerender request until the initiator page gets
+    // foregrounded.
     if (initiator_web_contents.GetVisibility() == Visibility::HIDDEN) {
       RecordFailedPrerenderFinalStatus(
           PrerenderCancellationReason(
@@ -370,8 +385,8 @@ int PrerenderHostRegistry::StartPrerendering(int frame_tree_node_id) {
       DCHECK(prerender_host->initiator_web_contents());
 
       // Don't start the pending prerender triggered by the background tab.
-      if (prerender_host->initiator_web_contents()->GetVisibility() ==
-          Visibility::HIDDEN) {
+      if (IsBackground(
+              prerender_host->initiator_web_contents()->GetVisibility())) {
         return RenderFrameHost::kNoFrameTreeNodeId;
       }
 
@@ -809,64 +824,45 @@ void PrerenderHostRegistry::DidFinishNavigation(
 }
 
 void PrerenderHostRegistry::OnVisibilityChanged(Visibility visibility) {
-  if (base::FeatureList::IsEnabled(blink::features::kPrerender2InBackground)) {
-    // Update the timer for prerendering timeout in the background.
-    switch (visibility) {
-      case Visibility::HIDDEN:
-        // Keep a prerendered page alive in the background when its visibility
-        // state changes to HIDDEN if the feature is enabled.
-        DCHECK(!timeout_timer_for_embedder_.IsRunning());
-        DCHECK(!timeout_timer_for_speculation_rules_.IsRunning());
-
-        timeout_timer_for_embedder_.SetTaskRunner(GetTimerTaskRunner());
-        timeout_timer_for_speculation_rules_.SetTaskRunner(
-            GetTimerTaskRunner());
-
-        // Cancel PrerenderHost in the background when it exceeds a certain
-        // amount of time. The timeout differs depending on the trigger
-        // type.
-        timeout_timer_for_embedder_.Start(
-            FROM_HERE, kTimeToLiveInBackgroundForEmbedder,
-            base::BindOnce(&PrerenderHostRegistry::CancelHostsForTrigger,
-                           base::Unretained(this),
-                           PrerenderTriggerType::kEmbedder,
-                           PrerenderCancellationReason(
-                               PrerenderFinalStatus::kTimeoutBackgrounded)));
-        timeout_timer_for_speculation_rules_.Start(
-            FROM_HERE, kTimeToLiveInBackgroundForSpeculationRules,
-            base::BindOnce(&PrerenderHostRegistry::CancelHostsForTrigger,
-                           base::Unretained(this),
-                           PrerenderTriggerType::kSpeculationRule,
-                           PrerenderCancellationReason(
-                               PrerenderFinalStatus::kTimeoutBackgrounded)));
-        break;
-      case Visibility::OCCLUDED:
-      case Visibility::VISIBLE:
-        // Stop the timer when a prerendered page gets visible to users.
-        timeout_timer_for_embedder_.Stop();
-        timeout_timer_for_speculation_rules_.Stop();
-        break;
-    }
-
-    if (!base::FeatureList::IsEnabled(
-            blink::features::kPrerender2SequentialPrerendering))
+  // Update the timer for prerendering timeout in the background.
+  if (IsBackground(visibility)) {
+    if (timeout_timer_for_embedder_.IsRunning() ||
+        timeout_timer_for_speculation_rules_.IsRunning()) {
+      // Keep the timers which started on a previous visibility change.
       return;
-
-    // Start the next prerender when the page gets back to the foreground.
-    switch (visibility) {
-      case Visibility::VISIBLE:
-      case Visibility::OCCLUDED:
-        if (running_prerender_host_id_ == RenderFrameHost::kNoFrameTreeNodeId)
-          StartPrerendering(RenderFrameHost::kNoFrameTreeNodeId);
-        break;
-      case Visibility::HIDDEN:
-        break;
     }
-    return;
-  }
+    // Keep a prerendered page alive in the background when its visibility
+    // state changes to HIDDEN or OCCLUDED.
+    timeout_timer_for_embedder_.SetTaskRunner(GetTimerTaskRunner());
+    timeout_timer_for_speculation_rules_.SetTaskRunner(GetTimerTaskRunner());
 
-  if (visibility == Visibility::HIDDEN) {
-    CancelAllHosts(PrerenderFinalStatus::kTriggerBackgrounded);
+    // Cancel PrerenderHost in the background when it exceeds a certain
+    // amount of time. The timeout differs depending on the trigger type.
+    timeout_timer_for_embedder_.Start(
+        FROM_HERE, kTimeToLiveInBackgroundForEmbedder,
+        base::BindOnce(&PrerenderHostRegistry::CancelHostsForTrigger,
+                       base::Unretained(this), PrerenderTriggerType::kEmbedder,
+                       PrerenderCancellationReason(
+                           PrerenderFinalStatus::kTimeoutBackgrounded)));
+    timeout_timer_for_speculation_rules_.Start(
+        FROM_HERE, kTimeToLiveInBackgroundForSpeculationRules,
+        base::BindOnce(&PrerenderHostRegistry::CancelHostsForTrigger,
+                       base::Unretained(this),
+                       PrerenderTriggerType::kSpeculationRule,
+                       PrerenderCancellationReason(
+                           PrerenderFinalStatus::kTimeoutBackgrounded)));
+  } else {
+    // Stop the timer when a prerendered page gets visible to users.
+    timeout_timer_for_embedder_.Stop();
+    timeout_timer_for_speculation_rules_.Stop();
+
+    if (base::FeatureList::IsEnabled(
+            blink::features::kPrerender2SequentialPrerendering)) {
+      // Start the next prerender if needed.
+      if (running_prerender_host_id_ == RenderFrameHost::kNoFrameTreeNodeId) {
+        StartPrerendering(RenderFrameHost::kNoFrameTreeNodeId);
+      }
+    }
   }
 }
 
@@ -951,7 +947,7 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
 
   // TODO(crbug.com/1399709): Remove the restriction after further investigation
   // and discussion.
-  // Disallow activation when the navigation happens in the background.
+  // Disallow activation when the navigation happens in the hidden tab.
   if (web_contents()->GetVisibility() == Visibility::HIDDEN) {
     CancelHost(host->frame_tree_node_id(),
                PrerenderFinalStatus::kActivatedInBackground);

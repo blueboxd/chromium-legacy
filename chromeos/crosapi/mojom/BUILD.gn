@@ -63,6 +63,7 @@ mojom("mojom") {
     "login.mojom",
     "login_screen_storage.mojom",
     "login_state.mojom",
+    "media_ui.mojom",
     "message_center.mojom",
     "metrics.mojom",
     "metrics_reporting.mojom",
@@ -86,6 +87,7 @@ mojom("mojom") {
     "screen_manager.mojom",
     "select_file.mojom",
     "sharesheet.mojom",
+    "smart_reader.mojom",
     "speech_recognition.mojom",
     "structured_metrics_service.mojom",
     "sync.mojom",
@@ -108,15 +110,18 @@ mojom("mojom") {
     "web_page_info.mojom",
   ]
   disable_variants = true
+  enable_js_fuzzing = false
   cpp_only = true
 
   public_deps = [
     ":video_capture",
+    "//chromeos/components/drivefs/mojom",
     "//chromeos/components/remote_apps/mojom",
     "//chromeos/components/sensors/mojom",
     "//chromeos/services/machine_learning/public/mojom",
     "//chromeos/services/network_health/public/mojom:types",
     "//components/digital_goods/mojom:mojom",
+    "//components/global_media_controls/public/mojom:device_service",
     "//components/metrics/structured/mojom",
     "//components/tab_groups/public/mojom:mojo_bindings",
     "//media/mojo/mojom:speech_recognition",

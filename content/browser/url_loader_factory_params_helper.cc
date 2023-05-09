@@ -99,14 +99,14 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
 
   params->trust_token_redemption_policy = trust_token_redemption_policy;
 
-  GetContentClient()->browser()->OverrideURLLoaderFactoryParams(
-      process->GetBrowserContext(), origin, is_for_isolated_world,
-      params.get());
-
   // If we have a URLLoaderNetworkObserver, request loading state updates.
   if (url_loader_network_observer) {
     params->provide_loading_state_updates = true;
   }
+
+  GetContentClient()->browser()->OverrideURLLoaderFactoryParams(
+      process->GetBrowserContext(), origin, is_for_isolated_world,
+      params.get());
 
   params->cookie_observer = std::move(cookie_observer);
   params->url_loader_network_observer = std::move(url_loader_network_observer);
@@ -273,7 +273,7 @@ URLLoaderFactoryParamsHelper::CreateForEarlyHintsPreload(
           early_hints.headers->cross_origin_embedder_policy,
           network::IsOriginPotentiallyTrustworthy(tentative_origin),
           early_hints.ip_address_space,
-          network::mojom::PrivateNetworkRequestPolicy::kBlock);
+          network::mojom::LocalNetworkRequestPolicy::kBlock);
 
   return CreateParams(
       process, /*origin=*/tentative_origin,

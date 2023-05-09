@@ -65,6 +65,7 @@ Layer::Layer(scoped_refptr<cc::Layer> cc_layer)
 
 Layer::~Layer() {
   RemoveAllChildren();
+  DCHECK_EQ(num_descendants_that_draw_content_, 0);
 }
 
 void Layer::SetLayerTree(LayerTree* layer_tree) {
@@ -109,7 +110,7 @@ void Layer::InsertChildSlim(scoped_refptr<Layer> child, size_t position) {
 
 void Layer::WillAddChildSlim(Layer* child) {
   child->RemoveFromParentSlim();
-  child->parent_ = this;
+  child->SetParentSlim(this);
   child->SetLayerTree(layer_tree());
 }
 
@@ -125,7 +126,7 @@ void Layer::ReplaceChild(Layer* old_child, scoped_refptr<Layer> new_child) {
   auto it = base::ranges::find_if(
       children_, [&](auto& ptr) { return ptr.get() == old_child; });
   DCHECK(it != children_.end());
-  old_child->parent_ = nullptr;
+  old_child->SetParentSlim(nullptr);
   old_child->SetLayerTree(nullptr);
 
   if (new_child) {
@@ -153,7 +154,7 @@ void Layer::RemoveFromParentSlim() {
   base::EraseIf(parent_->children_,
                 [&](auto& ptr) { return ptr.get() == this; });
   parent_->NotifyTreeChanged();
-  parent_ = nullptr;
+  SetParentSlim(nullptr);
 }
 
 void Layer::RemoveAllChildren() {
@@ -167,7 +168,7 @@ void Layer::RemoveAllChildren() {
 
   for (auto& child : children_) {
     child->SetLayerTree(nullptr);
-    child->parent_ = nullptr;
+    child->SetParentSlim(nullptr);
   }
   children_.clear();
   NotifyTreeChanged();
@@ -182,6 +183,31 @@ bool Layer::HasAncestor(Layer* layer) const {
   }
   DCHECK(!cc_layer() || !cc_layer()->HasAncestor(layer->cc_layer()));
   return false;
+}
+
+void Layer::SetParentSlim(Layer* parent) {
+  if (parent_ == parent) {
+    return;
+  }
+  int drawing_layers_in_subtree = GetNumDrawingLayersInSubtree();
+  if (parent_) {
+    parent_->ChangeDrawableDescendantsBySlim(0 - drawing_layers_in_subtree);
+  }
+  parent_ = parent;
+  if (parent_) {
+    parent_->ChangeDrawableDescendantsBySlim(drawing_layers_in_subtree);
+  }
+}
+
+void Layer::ChangeDrawableDescendantsBySlim(int num) {
+  DCHECK_GE(num_descendants_that_draw_content_ + num, 0);
+  if (!num) {
+    return;
+  }
+  num_descendants_that_draw_content_ += num;
+  if (parent_) {
+    parent_->ChangeDrawableDescendantsBySlim(num);
+  }
 }
 
 void Layer::SetPosition(const gfx::PointF& position) {
@@ -221,6 +247,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
     cc_layer()->SetTransform(transform);
     return;
   }
+  CHECK(transform.Is2dTransform());
   if (transform_ == transform) {
     return;
   }
@@ -257,7 +284,7 @@ void Layer::SetIsDrawable(bool drawable) {
     return;
   }
   is_drawable_ = drawable;
-  SetDrawsContent(HasDrawableContent());
+  UpdateDrawsContent();
 }
 
 void Layer::SetBackgroundColor(SkColor4f color) {
@@ -293,6 +320,8 @@ bool Layer::contents_opaque() const {
 }
 
 void Layer::SetOpacity(float opacity) {
+  DCHECK_GE(opacity, 0.f);
+  DCHECK_LE(opacity, 1.f);
   if (cc_layer()) {
     cc_layer()->SetOpacity(opacity);
     return;
@@ -312,15 +341,22 @@ bool Layer::draws_content() const {
   return cc_layer() ? cc_layer()->draws_content() : draws_content_;
 }
 
-void Layer::SetDrawsContent(bool value) {
+int Layer::NumDescendantsThatDrawContent() const {
   if (cc_layer()) {
-    cc_layer()->SetDrawsContent(value);
-    return;
+    return cc_layer()->NumDescendantsThatDrawContent();
   }
+  return num_descendants_that_draw_content_;
+}
+
+void Layer::UpdateDrawsContent() {
+  bool value = HasDrawableContent();
   if (draws_content_ == value) {
     return;
   }
   draws_content_ = value;
+  if (parent_) {
+    parent_->ChangeDrawableDescendantsBySlim(value ? 1 : -1);
+  }
   NotifyPropertyChanged();
 }
 
@@ -373,7 +409,7 @@ bool Layer::HasDrawableContent() const {
   return is_drawable_;
 }
 
-gfx::Transform Layer::ComputeTransformToParent() {
+gfx::Transform Layer::ComputeTransformToParent() const {
   // Layer transform is:
   // position x transform_origin x transform x -transform_origin
   gfx::Transform transform =
@@ -386,9 +422,62 @@ gfx::Transform Layer::ComputeTransformToParent() {
   return transform;
 }
 
+absl::optional<gfx::Transform> Layer::ComputeTransformFromParent() const {
+  // TODO(crbug.com/1408128): Consider caching this result since GetInverse
+  // may be expensive.
+  gfx::Transform inverse_transform;
+  if (!transform_.GetInverse(&inverse_transform)) {
+    return absl::nullopt;
+  }
+  // TransformFromParent is:
+  // transform_origin x inverse_transform x -transform_origin x -position
+  gfx::Transform from_parent;
+  from_parent.Translate3d(transform_origin_.x(), transform_origin_.y(),
+                          transform_origin_.z());
+  from_parent.PreConcat(inverse_transform);
+  from_parent.Translate3d(-transform_origin_.x(), -transform_origin_.y(),
+                          -transform_origin_.z());
+  from_parent.Translate(-position_.x(), -position_.y());
+  return from_parent;
+}
+
+bool Layer::HasFilters() const {
+  return !filters_.empty();
+}
+
+int Layer::GetNumDrawingLayersInSubtree() const {
+  return num_descendants_that_draw_content_ + (draws_content_ ? 1 : 0);
+}
+
 void Layer::AppendQuads(viz::CompositorRenderPass& render_pass,
-                        const gfx::Transform& transform,
-                        const gfx::Rect* clip) {}
+                        FrameData& data,
+                        const gfx::Transform& transform_to_root,
+                        const gfx::Transform& transform_to_target,
+                        const gfx::Rect* clip_in_target,
+                        const gfx::Rect& visible_rect,
+                        float opacity) {}
+
+viz::SharedQuadState* Layer::CreateAndAppendSharedQuadState(
+    viz::CompositorRenderPass& render_pass,
+    const gfx::Transform& transform_to_target,
+    const gfx::Rect* clip_in_target,
+    const gfx::Rect& visible_rect,
+    float opacity) {
+  DCHECK(!HasFilters() || render_pass.filters.IsEmpty());
+  render_pass.filters = ToCcFilters(filters_);
+  viz::SharedQuadState* quad_state =
+      render_pass.CreateAndAppendSharedQuadState();
+  const gfx::Rect layer_rect{bounds()};
+  DCHECK(layer_rect.Contains(visible_rect));
+  absl::optional<gfx::Rect> clip_opt;
+  if (clip_in_target) {
+    clip_opt = *clip_in_target;
+  }
+  quad_state->SetAll(transform_to_target, layer_rect, visible_rect,
+                     gfx::MaskFilterInfo(), clip_opt, contents_opaque(),
+                     opacity, SkBlendMode::kSrcOver, 0);
+  return quad_state;
+}
 
 void Layer::NotifyTreeChanged() {
   if (cc_layer()) {
@@ -404,25 +493,6 @@ void Layer::NotifyPropertyChanged() {
   if (layer_tree_) {
     static_cast<LayerTreeImpl*>(layer_tree_)->NotifyPropertyChanged();
   }
-}
-
-viz::SharedQuadState* Layer::CreateAndAppendSharedQuadState(
-    viz::CompositorRenderPass& render_pass,
-    const gfx::Transform& transform,
-    const gfx::Rect* clip) {
-  viz::SharedQuadState* quad_state =
-      render_pass.CreateAndAppendSharedQuadState();
-  const gfx::Rect rect{bounds()};
-  absl::optional<gfx::Rect> clip_opt;
-  if (clip) {
-    clip_opt = *clip;
-  }
-  // TODO(crbug.com/1408128): Set visible_layer_rect properly.
-  quad_state->SetAll(transform, /*layer_rect=*/rect,
-                     /*visible_layer_rect=*/rect, gfx::MaskFilterInfo(),
-                     std::move(clip_opt), contents_opaque(), opacity(),
-                     SkBlendMode::kSrcOver, 0);
-  return quad_state;
 }
 
 }  // namespace cc::slim

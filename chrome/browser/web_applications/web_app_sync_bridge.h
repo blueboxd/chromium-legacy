@@ -11,6 +11,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/one_shot_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -143,6 +144,13 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
+  // Signals that the sync system has received data from the server at some
+  // point, potentially on a previous startup. Apps may still be installing or
+  // uninstalling.
+  const base::OneShotEvent& on_sync_connected() const {
+    return on_sync_connected_;
+  }
+
   // Used for testing only.
   void set_disable_checks_for_testing(bool disable_checks_for_testing) {
     disable_checks_for_testing_ = disable_checks_for_testing;
@@ -189,12 +197,15 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   void MergeLocalAppsToSync(const syncer::EntityChangeList& entity_data,
                             syncer::MetadataChangeList* metadata_change_list);
 
-  void PrepareLocalUpdateFromSyncChange(const syncer::EntityChange& change,
-                                        RegistryUpdateData* update_local_data);
+  void PrepareLocalUpdateFromSyncChange(
+      const syncer::EntityChange& change,
+      RegistryUpdateData* update_local_data,
+      std::vector<AppId>& apps_display_mode_changed);
 
   // Update registrar and Install/Uninstall missing/excessive local apps.
   void ApplySyncChangesToRegistrar(
-      std::unique_ptr<RegistryUpdateData> update_local_data);
+      std::unique_ptr<RegistryUpdateData> update_local_data,
+      const std::vector<AppId>& apps_display_mode_changed);
 
   void MaybeUninstallAppsPendingUninstall();
   void MaybeInstallAppsFromSyncAndPendingInstallation();
@@ -207,6 +218,8 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   raw_ptr<WebAppCommandManager, DanglingUntriaged> command_manager_;
   raw_ptr<WebAppCommandScheduler, DanglingUntriaged> command_scheduler_;
   raw_ptr<WebAppInstallManager, DanglingUntriaged> install_manager_;
+
+  base::OneShotEvent on_sync_connected_;
 
   bool is_in_update_ = false;
   bool disable_checks_for_testing_ = false;

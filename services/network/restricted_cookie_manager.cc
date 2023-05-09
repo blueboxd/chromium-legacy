@@ -8,7 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/compiler_specific.h"  // for [[fallthrough]];
+#include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -341,12 +343,14 @@ RestrictedCookieManager::RestrictedCookieManager(
     const CookieSettings& cookie_settings,
     const url::Origin& origin,
     const net::IsolationInfo& isolation_info,
+    const net::CookieSettingOverrides& cookie_setting_overrides,
     mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
     net::FirstPartySetMetadata first_party_set_metadata,
     UmaMetricsUpdater* metrics_updater)
     : role_(role),
       cookie_store_(cookie_store),
       cookie_settings_(cookie_settings),
+      cookie_setting_overrides_(cookie_setting_overrides),
       origin_(origin),
       isolation_info_(isolation_info),
       cookie_observer_(std::move(cookie_observer)),
@@ -358,8 +362,11 @@ RestrictedCookieManager::RestrictedCookieManager(
               cookie_partition_key_)),
       same_party_attribute_enabled_(base::FeatureList::IsEnabled(
           net::features::kSamePartyAttributeEnabled)),
+      receiver_(this),
       metrics_updater_(metrics_updater) {
   DCHECK(cookie_store);
+  DCHECK(!cookie_setting_overrides_.Has(
+      net::CookieSettingOverride::kStorageAccessGrantEligible));
 }
 
 RestrictedCookieManager::~RestrictedCookieManager() {
@@ -830,6 +837,14 @@ void RestrictedCookieManager::CookiesEnabledFor(
       GetCookieSettingOverrides(has_storage_access)));
 }
 
+void RestrictedCookieManager::InstallReceiver(
+    mojo::PendingReceiver<mojom::RestrictedCookieManager> pending_receiver,
+    base::OnceClosure on_disconnect_callback) {
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(pending_receiver));
+  receiver_.set_disconnect_handler(std::move(on_disconnect_callback));
+}
+
 void RestrictedCookieManager::RemoveChangeListener(Listener* listener) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   listener->RemoveFromList();
@@ -877,7 +892,7 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
 
 net::CookieSettingOverrides RestrictedCookieManager::GetCookieSettingOverrides(
     bool has_storage_access) const {
-  net::CookieSettingOverrides overrides;
+  net::CookieSettingOverrides overrides = cookie_setting_overrides_;
   if (has_storage_access) {
     overrides.Put(net::CookieSettingOverride::kStorageAccessGrantEligible);
   }

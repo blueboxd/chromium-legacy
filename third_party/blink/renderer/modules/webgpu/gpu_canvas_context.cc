@@ -125,7 +125,8 @@ void GPUCanvasContext::Reshape(int width, int height) {
   Host()->SetNeedsCompositingUpdate();
 }
 
-scoped_refptr<StaticBitmapImage> GPUCanvasContext::GetImage() {
+scoped_refptr<StaticBitmapImage> GPUCanvasContext::GetImage(
+    CanvasResourceProvider::FlushReason) {
   if (!swap_buffers_)
     return nullptr;
 
@@ -415,10 +416,17 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
     return;
   }
 
+  gfx::HDRMode hdr_mode = gfx::HDRMode::kDefault;
+  absl::optional<gfx::HDRMetadata> hdr_metadata;
+  if (descriptor->hasHdrOptions()) {
+    ParseCanvasHighDynamicRangeOptions(descriptor->hdrOptions(), hdr_mode,
+                                       hdr_metadata);
+  }
+
   swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
       this, device_->GetDawnControlClient(), device_->GetHandle(),
       static_cast<WGPUTextureUsage>(texture_descriptor_.usage),
-      texture_descriptor_.format, color_space_));
+      texture_descriptor_.format, color_space_, hdr_mode, hdr_metadata));
   swap_buffers_->SetFilterQuality(filter_quality_);
 
   // Note: SetContentsOpaque is only an optimization hint. It doesn't
@@ -537,7 +545,7 @@ void GPUCanvasContext::ReplaceDrawingBuffer(bool destroy_swap_buffers) {
   }
 }
 
-void GPUCanvasContext::FinalizeFrame(bool /*printing*/) {
+void GPUCanvasContext::FinalizeFrame(CanvasResourceProvider::FlushReason) {
   // In some cases, such as when a canvas is hidden of offscreen, compositing
   // will never happen and thus OnTextureTransferred will never be called. In
   // those cases, getCurrentTexture is still required to return a new texture
@@ -697,7 +705,8 @@ scoped_refptr<StaticBitmapImage> GPUCanvasContext::SnapshotInternal(
   if (!CopyTextureToResourceProvider(texture, size, resource_provider.get()))
     return nullptr;
 
-  return resource_provider->Snapshot();
+  return resource_provider->Snapshot(
+      CanvasResourceProvider::FlushReason::kNone);
 }
 
 // DawnObjectBase substitute methods

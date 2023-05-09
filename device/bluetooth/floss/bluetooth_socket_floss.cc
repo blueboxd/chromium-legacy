@@ -142,9 +142,8 @@ void BluetoothSocketFloss::Disconnect(base::OnceClosure callback) {
     adapter_ = nullptr;
     connecting_socket_info_.id = FlossSocketManager::kInvalidSocketId;
   }
-
   // Close the socket manager instance.
-  if (listening_socket_info_) {
+  else if (listening_socket_info_) {
     FlossDBusManager::Get()->GetSocketManager()->Close(
         listening_socket_info_->id,
         base::BindOnce(&BluetoothSocketFloss::CompleteClose,
@@ -341,12 +340,11 @@ void BluetoothSocketFloss::CompleteAccept(
 void BluetoothSocketFloss::CompleteClose(
     base::OnceClosure callback,
     DBusResult<FlossDBusClient::BtifStatus> result) {
-  if (!result.has_value()) {
-    is_accepting_ = false;
+  if (result.has_value()) {
+    DVLOG(1) << "Result of closing socket = " << static_cast<uint32_t>(*result);
   }
 
-  DVLOG(1) << "Result of closing socket = " << static_cast<uint32_t>(*result);
-
+  is_accepting_ = false;
   std::move(callback).Run();
 }
 

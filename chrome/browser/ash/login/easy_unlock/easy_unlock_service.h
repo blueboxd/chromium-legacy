@@ -63,6 +63,7 @@ class EasyUnlockService : public KeyedService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Registers Easy Unlock local state entries.
+  // TODO(b/227674947): Delete
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Removes the hardlock state for the given user.
@@ -75,11 +76,6 @@ class EasyUnlockService : public KeyedService,
 
   // Returns the user currently associated with the service.
   virtual AccountId GetAccountId() const = 0;
-
-  // Retrieve the stored remote devices list:
-  //   * If in regular context, device list is retrieved from prefs.
-  //   * If in sign-in context, device list is retrieved from TPM.
-  virtual const base::Value::List* GetRemoteDevices() const = 0;
 
   // Sets the service up and schedules service initialization.
   void Initialize();
@@ -109,6 +105,9 @@ class EasyUnlockService : public KeyedService,
   virtual SmartLockState GetInitialSmartLockState() const;
 
   // Sets the hardlock state for the associated user.
+  // TODO(b/227674947): Delete any hardlock logic and deprecate its
+  // corresponding pref. Now that Sign in with Smart Lock is deprecated and the
+  // UI revamp is launched, we can remove it.
   void SetHardlockState(SmartLockStateHandler::HardlockState state);
 
   // Returns the hardlock state for the associated user.
@@ -147,6 +146,10 @@ class EasyUnlockService : public KeyedService,
   // choice for unlock. Returns the empty string if the ProximityAuthSystem or
   // the UnlockManager is uninitialized.
   std::string GetLastRemoteStatusUnlockForLogging();
+
+  // Retrieves the remote device list stored for the account in
+  // |proximity_auth_system_|.
+  const multidevice::RemoteDeviceRefList GetRemoteDevicesForTesting() const;
 
  protected:
   EasyUnlockService(Profile* profile,
@@ -249,8 +252,6 @@ class EasyUnlockService : public KeyedService,
   // Called when the system resumes from a suspended state.
   void OnSuspendDone();
 
-  void EnsureTpmKeyPresentIfNeeded();
-
   // Determines whether failure to unlock with phone should be handled as an
   // authentication failure.
   bool IsSmartLockStateValidOnRemoteAuthFailure() const;
@@ -282,8 +283,6 @@ class EasyUnlockService : public KeyedService,
 
   // Whether the service has been shut down.
   bool shut_down_;
-
-  bool tpm_key_checked_;
 
   base::WeakPtrFactory<EasyUnlockService> weak_ptr_factory_{this};
 };

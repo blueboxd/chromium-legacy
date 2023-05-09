@@ -515,6 +515,7 @@ void DrawLineOp::Serialize(PaintOpWriter& writer,
   writer.Write(y0);
   writer.Write(x1);
   writer.Write(y1);
+  writer.Write(draw_as_path);
 }
 
 void DrawOvalOp::Serialize(PaintOpWriter& writer,
@@ -835,6 +836,7 @@ PaintOp* DrawLineOp::Deserialize(PaintOpReader& reader, void* output) {
   reader.Read(&op->y0);
   reader.Read(&op->x1);
   reader.Read(&op->y1);
+  reader.Read(&op->draw_as_path);
   return op;
 }
 
@@ -1259,9 +1261,15 @@ void DrawLineOp::RasterWithFlags(const DrawLineOp* op,
                                  const PaintFlags* flags,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
   flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
-    c->drawLine(op->x0, op->y0, op->x1, op->y1, p);
+    if (op->draw_as_path) {
+      SkPath path;
+      path.moveTo(op->x0, op->y0);
+      path.lineTo(op->x1, op->y1);
+      c->drawPath(path, p);
+    } else {
+      c->drawLine(op->x0, op->y0, op->x1, op->y1, p);
+    }
   });
 }
 
@@ -1866,10 +1874,9 @@ bool PaintOp::QuickRejectDraw(const PaintOp& op, const SkCanvas* canvas) {
     return false;
 
   SkRect rect;
-  if (!PaintOp::GetBounds(op, &rect)) {
+  if (!PaintOp::GetBounds(op, &rect) || !rect.isFinite()) {
     return false;
   }
-  DCHECK(rect.isFinite());
 
   if (op.IsPaintOpWithFlags()) {
     SkPaint paint = static_cast<const PaintOpWithFlags&>(op).flags.ToSkPaint();

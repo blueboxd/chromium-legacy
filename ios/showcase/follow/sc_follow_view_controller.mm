@@ -6,6 +6,8 @@
 
 #import "ios/chrome/browser/follow/followed_web_site_state.h"
 #import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_favicon_data_source.h"
+#import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/follow/first_follow_view_controller.h"
 #import "ios/chrome/browser/ui/follow/followed_web_channel.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
@@ -15,8 +17,6 @@
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_ui_updater.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/followed_web_channels_data_source.h"
-#import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
-#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
@@ -130,10 +130,10 @@ NSInteger kFaviconSymbolPointSize = 17;
           initWithTitle:@"First Web Channel"
                  active:YES
           faviconSource:^(void (^completion)(UIImage* favicon)) {
-            [weakSelf faviconForURL:nil
-                         completion:^(FaviconAttributes* attributes) {
-                           completion(attributes.faviconImage);
-                         }];
+            [weakSelf faviconForPageURL:nil
+                             completion:^(FaviconAttributes* attributes) {
+                               completion(attributes.faviconImage);
+                             }];
           }];
 
   self.alerter.baseViewController = firstFollowViewController;
@@ -184,10 +184,14 @@ NSInteger kFaviconSymbolPointSize = 17;
   return channel;
 }
 
+- (void)loadFollowedWebSites {
+  return;
+}
+
 #pragma mark - TableViewFaviconDataSource
 
-- (void)faviconForURL:(CrURL*)URL
-           completion:(void (^)(FaviconAttributes*))completion {
+- (void)faviconForPageURL:(CrURL*)URL
+               completion:(void (^)(FaviconAttributes*))completion {
   // This mimics the behavior of favicon loader by immediately returning a
   // default image, then fetching and returning another image.
   UIImage* image1 =

@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "GPU Mac Builder",
-              "project": "chromium-m112"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -35,7 +35,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Mac Release (Intel)",
-              "project": "chromium-m112"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -57,7 +57,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "GPU Mac Builder",
-                "project": "chromium-m112"
+                "project": "chromium"
               }
             }
           },
@@ -65,7 +65,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Mac Retina Release (AMD)",
-              "project": "chromium-m112"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -87,7 +87,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "GPU Mac Builder",
-                "project": "chromium-m112"
+                "project": "chromium"
               }
             }
           }
@@ -97,22 +97,26 @@
         {
           "bucket": "ci",
           "builder": "GPU Mac Builder",
-          "project": "chromium-m112"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Mac Release (Intel)",
-          "project": "chromium-m112"
+          "project": "chromium"
         },
         {
           "bucket": "ci",
           "builder": "Mac Retina Release (AMD)",
-          "project": "chromium-m112"
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [
+        {
+          "builder": "mac-inverse-fieldtrials-fyi-rel",
+          "group": "tryserver.chromium.mac"
+        },
         {
           "builder": "mac-rel",
           "group": "tryserver.chromium.mac"
@@ -136,6 +140,6 @@
   "builder_group": "chromium.gpu",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium.gpu"
   ]
 }

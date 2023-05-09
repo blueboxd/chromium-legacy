@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Pakataan <ph name="NUMBER_OF_ITEMS" /> kohdetta…</translation>
 <translation id="1722687688096767818">Lisätään profiilia…</translation>
 <translation id="1726100011689679555">Nimipalvelimet</translation>
+<translation id="1727562178154619254">Valmis synkronoimaan</translation>
 <translation id="1729953886957086472">saksa (Saksa)</translation>
 <translation id="1730235522912993863">kiina (cangjie)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> kohdetta kopioitu</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Kuvan resoluutio</translation>
 <translation id="1972984168337863910">Laajenna tiedostojen palautepaneelit</translation>
 <translation id="1995337122023280937">Siirry tiedoston sijaintiin</translation>
-<translation id="1999709132469742660">Pääsy tiedostoon kaikista URL-osoitteista</translation>
 <translation id="2001796770603320721">Ylläpidä Drivessa</translation>
 <translation id="2009067268969781306">Driven alustaminen poistaa kaiken sille tallennetun datan. Tätä toimintoa ei voi kumota.</translation>
 <translation id="2025955442973426285">tigrinja</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Latinalainen Amerikka</translation>
 <translation id="5330145655348521461">Nämä tiedostot avattiin toisella työpöydällä. Näet tiedostot siirtymällä profiiliin <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="5330512191124428349">Näytä tiedot</translation>
-<translation id="5337538975554986899">Pääsy tiedostoon kaikista URL-osoitteista paitsi täältä: <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Hallinnoi Bruschettalle jakamista</translation>
 <translation id="535792325654997756">Henkilö ja kissoja</translation>
 <translation id="5358764674931277">Kuvanopeus</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Linux-sovellusta asennettaessa tapahtui virhe.</translation>
 <translation id="5912396950572065471">Muoto</translation>
 <translation id="5913638992615760742">Kopiointi epäonnistui odottamattoman virheen vuoksi: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Uusia hakuominaisuuksia saatavilla</translation>
 <translation id="5926082595146149752">hollanti (Alankomaat), Yhdysvaltain kansainvälinen PC-näppäimistö</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, aktivoi laitteen käyttöönoton jälkeen</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Varmenteita ei ole ladattu</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Jaa kansio Bruschettalle</translation>
+<translation id="6750737795876287924">Nykyinen hakemisto</translation>
 <translation id="6751256176799620176">1 kansio valittu</translation>
 <translation id="6755827872271341378">ChromeOS Flex ‑laite</translation>
 <translation id="6790428901817661496">Toista</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Kansiot</translation>
 <translation id="6976795442547527108">Leijona</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Kaikki</translation>
 <translation id="6989942356279143254">ruotsi</translation>
 <translation id="6990081529015358884">Tila ei riitä</translation>
 <translation id="6993826899923627728">Nämä kohteet ovat roskakorissa</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Ei viimeaikaisia kuvia</translation>
 <translation id="7460898608667578234">ukraina</translation>
 <translation id="7469894403370665791">Yhdistä automaattisesti tähän verkkoon</translation>
-<translation id="7481358317100446445">Valmis</translation>
 <translation id="7486315294984620427">Jotta voit pudottaa tiedostoja Parallels Desktopiin, tiedosto on kopioitava Windows-tiedostoihin.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">foneettinen malajalam</translation>
@@ -941,6 +940,7 @@
 <translation id="8492972329130824181">Kotiverkko ei ole käytettävissä. Yhteyden muodostaminen edellyttää roamingia.</translation>
 <translation id="8499098729323186194">Puretaan <ph name="NUMBER_OF_ITEMS" /> kohdetta…</translation>
 <translation id="8502913769543567768">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, aktivoi laitteen käyttöönoton jälkeen, järjestelmänvalvojan ylläpitämä</translation>
+<translation id="8512483403832814140">Milloin tahansa</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="853494022971700746">ranska (Ranska)</translation>
 <translation id="8540608333167683902">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signaalin vahvuus <ph name="SIGNAL_STRENGTH" /> %, lisätietoja</translation>

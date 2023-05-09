@@ -21,6 +21,7 @@
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
+#import "components/supervised_user/core/common/features.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
@@ -77,11 +78,12 @@
 #import "ios/chrome/browser/safe_browsing/tailored_security/tailored_security_tab_helper.h"
 #import "ios/chrome/browser/search_engines/search_engine_tab_helper.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
+#import "ios/chrome/browser/supervised_user/supervised_user_url_filter_tab_helper.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/annotations/annotations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -182,6 +184,11 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   }
 
   PolicyUrlBlockingTabHelper::CreateForWebState(web_state);
+
+  if (base::FeatureList::IsEnabled(
+          supervised_user::kFilterWebsitesForSupervisedUsersOnThirdParty)) {
+    SupervisedUserURLFilterTabHelper::CreateForWebState(web_state);
+  }
 
   ImageFetchTabHelper::CreateForWebState(web_state);
 

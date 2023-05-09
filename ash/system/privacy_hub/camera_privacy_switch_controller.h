@@ -17,10 +17,6 @@
 
 namespace ash {
 
-// The ID for a notification shown when the user tries to use a camera while the
-// camera is disabled in Privacy Hub.
-inline constexpr char kPrivacyHubCameraOffNotificationId[] =
-    "ash.media.privacy_hub.activity_with_disabled_camera";
 // The ID for a notification shown when the user enables camera via a HW switch
 // but it is still disabled in PrivacyHub.
 inline constexpr char
@@ -72,9 +68,6 @@ class ASH_EXPORT CameraPrivacySwitchController
   // Handles the change in the number of cameras
   void OnCameraCountChanged(int new_camera_count);
 
-  // Returns the last observed HW switch state for the camera.
-  cros::mojom::CameraPrivacySwitchState HWSwitchState() const;
-
   // Sets Privacy switch API for testing.
   void SetCameraPrivacySwitchAPIForTest(
       std::unique_ptr<CameraPrivacySwitchAPI> switch_api);
@@ -95,8 +88,6 @@ class ASH_EXPORT CameraPrivacySwitchController
  private:
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   std::unique_ptr<CameraPrivacySwitchAPI> switch_api_;
-  cros::mojom::CameraPrivacySwitchState camera_privacy_switch_state_ =
-      cros::mojom::CameraPrivacySwitchState::UNKNOWN;
   int active_applications_using_camera_count_ = 0;
   bool is_camera_observer_added_ = false;
   int camera_count_ = -1;

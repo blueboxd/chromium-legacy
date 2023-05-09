@@ -76,7 +76,7 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
   void CopyToGpuMemoryBuffer(const SyncToken& sync_token,
                              const Mailbox& mailbox) override;
 #endif
-  SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
+  SwapChainMailboxes CreateSwapChain(viz::SharedImageFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
                                      GrSurfaceOrigin surface_origin,
@@ -86,6 +86,10 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
                           const Mailbox& mailbox) override;
   uint32_t UsageForMailbox(const Mailbox& mailbox) override;
   void NotifyMailboxAdded(const Mailbox& mailbox, uint32_t usage) override;
+
+  void AddReferenceToSharedImage(const SyncToken& sync_token,
+                                 const Mailbox& mailbox,
+                                 uint32_t usage) override;
 
  private:
   Mailbox AddMailbox(const Mailbox& mailbox);

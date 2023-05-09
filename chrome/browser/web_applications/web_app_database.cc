@@ -315,7 +315,7 @@ TabStrip::Visibility ProtoToTabStripVisibility(
 std::string FilePathToProto(const base::FilePath& path) {
   base::Pickle pickle;
   path.WriteToPickle(&pickle);
-  return std::string(static_cast<const char*>(pickle.data()), pickle.size());
+  return std::string(pickle.data_as_char(), pickle.size());
 }
 
 absl::optional<base::FilePath> ProtoToFilePath(const std::string& bytes) {
@@ -473,9 +473,9 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         syncer::TimeToProtoTime(web_app.manifest_update_time()));
   }
 
-  if (web_app.install_source_for_metrics()) {
-    local_data->set_install_source_for_metrics(
-        static_cast<int>(*web_app.install_source_for_metrics()));
+  if (web_app.latest_install_source()) {
+    local_data->set_latest_install_source(
+        static_cast<int>(*web_app.latest_install_source()));
   }
 
   if (web_app.chromeos_data().has_value()) {
@@ -1006,12 +1006,12 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetLastLaunchTime(
         syncer::ProtoTimeToTime(local_data.last_launch_time()));
   }
-  if (local_data.has_install_source_for_metrics()) {
-    int install_source = local_data.install_source_for_metrics();
+  if (local_data.has_latest_install_source()) {
+    int install_source = local_data.latest_install_source();
     if (install_source >= 0 &&
         install_source <
             static_cast<int>(webapps::WebappInstallSource::COUNT)) {
-      web_app->SetInstallSourceForMetrics(
+      web_app->SetLatestInstallSource(
           static_cast<webapps::WebappInstallSource>(install_source));
     }
   }
@@ -1093,13 +1093,16 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       file_handler.accept.push_back(std::move(accept_entry));
     }
 
-    absl::optional<std::vector<apps::IconInfo>> file_handler_icon_infos =
-        ParseAppIconInfos("WebApp", file_handler_proto.downloaded_icons());
-    if (!file_handler_icon_infos) {
-      // ParseAppIconInfos() reports any errors.
-      return nullptr;
+    if (WebAppFileHandlerManager::IconsEnabled()) {
+      absl::optional<std::vector<apps::IconInfo>> file_handler_icon_infos =
+          ParseAppIconInfos("WebApp", file_handler_proto.downloaded_icons());
+      if (!file_handler_icon_infos) {
+        // ParseAppIconInfos() reports any errors.
+        return nullptr;
+      }
+      file_handler.downloaded_icons =
+          std::move(file_handler_icon_infos.value());
     }
-    file_handler.downloaded_icons = std::move(file_handler_icon_infos.value());
 
     file_handlers.push_back(std::move(file_handler));
   }
@@ -1187,7 +1190,6 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     }
     shortcuts_menu_item_infos.emplace_back(std::move(shortcut_info));
   }
-  const size_t shortcut_menu_item_size = shortcuts_menu_item_infos.size();
   web_app->SetShortcutsMenuItemInfos(std::move(shortcuts_menu_item_infos));
 
   std::vector<IconSizes> shortcuts_menu_icons_sizes;
@@ -1210,11 +1212,6 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
             shortcuts_icon_sizes_proto.icon_sizes_monochrome().end()));
 
     shortcuts_menu_icons_sizes.push_back(std::move(icon_sizes));
-  }
-  // Due to the bitmaps possibly being not populated (see
-  // https://crbug.com/1427444), we just have empty bitmap data in that case.
-  while (shortcuts_menu_icons_sizes.size() < shortcut_menu_item_size) {
-    shortcuts_menu_icons_sizes.emplace_back();
   }
   web_app->SetDownloadedShortcutsMenuIconsSizes(
       std::move(shortcuts_menu_icons_sizes));
@@ -1526,8 +1523,6 @@ void WebAppDatabase::OnDatabaseOpened(
   }
 
   store_ = std::move(store);
-  // TODO(loyso): Use ReadAllDataAndPreprocess to parse protos in the background
-  // sequence.
   store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      std::move(callback)));

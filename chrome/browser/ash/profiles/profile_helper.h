@@ -169,9 +169,6 @@ class ProfileHelper {
   // primary user.
   static void SetAlwaysReturnPrimaryUserForTesting(bool value);
 
-  // Flushes all files of |profile|.
-  virtual void FlushProfile(Profile* profile) = 0;
-
   // DEPRECATED: please set up UserManager.
   // Associates |user| with profile with the same user_id,
   // for GetUserByProfile() testing.
@@ -193,7 +190,6 @@ class ProfileHelper {
   // TODO(nkostylev): Create a test API class that will be the only one allowed
   // to access private test methods.
   friend class FakeChromeUserManager;
-  friend class MockUserManager;
   friend class ProfileHelperTest;
   friend class ::IndependentOTRProfileManagerTest;
 

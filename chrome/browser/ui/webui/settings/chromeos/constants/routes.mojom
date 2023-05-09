@@ -147,6 +147,7 @@ enum Subpage {
   // Files section.
   kNetworkFileShares = 1300,
   kOfficeFiles = 1301,
+  kGoogleDrive = 1302,
 
   // Printing section.
   kPrintingDetails = 1400,
@@ -162,6 +163,7 @@ enum Subpage {
   kCursorAndTouchpad = 1508,
   kAudioAndCaptions = 1509,
   kSelectToSpeak = 1510,
+  kChromeVox = 1511,
 
   // Note: Reset section has no subpages.
 
@@ -196,7 +198,6 @@ const string kBluetoothSavedDevicesSubpagePath = "bluetoothSavedDevices";
 // MultiDevice section.
 const string kMultiDeviceSectionPath = "multidevice";
 const string kMultiDeviceFeaturesSubpagePath = "multidevice/features";
-const string kSmartLockSubpagePath = "multidevice/features/smartLock";
 const string kNearbyShareSubpagePath = "multidevice/nearbyshare";
 
 // People section.
@@ -283,6 +284,7 @@ const string kJapaneseManageUserDictionarySubpagePath =
 
 // Files section.
 const string kFilesSectionPath = "files";
+const string kGoogleDriveSubpagePath = "googleDrive";
 const string kNetworkFileSharesSubpagePath = "smbShares";
 const string kOfficeFilesSubpagePath = "officeFiles";
 
@@ -298,6 +300,7 @@ const string kDisplayAndMagnificationSubpagePath = "displayAndMagnification";
 const string kKeyboardAndTextInputSubpagePath = "keyboardAndTextInput";
 const string kCursorAndTouchpadSubpagePath = "cursorAndTouchpad";
 const string kSelectToSpeakSubpagePath = "textToSpeech/selectToSpeak";
+const string kChromeVoxSubpagePath = "textToSpeech/chromeVox";
 const string kAudioAndCaptionsSubpagePath = "audioAndCaptions";
 const string kTextToSpeechSubpagePath = "manageAccessibility/tts";
 const string kSwitchAccessOptionsSubpagePath =

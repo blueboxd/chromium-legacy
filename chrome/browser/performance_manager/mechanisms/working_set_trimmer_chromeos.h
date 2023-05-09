@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_MECHANISMS_WORKING_SET_TRIMMER_CHROMEOS_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_MECHANISMS_WORKING_SET_TRIMMER_CHROMEOS_H_
 
+#include "ash/components/arc/mojom/memory.mojom-forward.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
@@ -42,7 +43,7 @@ class WorkingSetTrimmerChromeOS : public WorkingSetTrimmer {
 
   // WorkingSetTrimmer implementation:
   bool PlatformSupportsWorkingSetTrim() override;
-  bool TrimWorkingSet(const ProcessNode* process_node) override;
+  void TrimWorkingSet(const ProcessNode* process_node) override;
 
  private:
   friend class base::NoDestructor<WorkingSetTrimmerChromeOS>;
@@ -57,7 +58,7 @@ class WorkingSetTrimmerChromeOS : public WorkingSetTrimmer {
       content::BrowserContext* context);
 
   // TrimWorkingSet based on ProcessId |pid|.
-  bool TrimWorkingSet(base::ProcessId pid);
+  void TrimWorkingSet(base::ProcessId pid);
 
   // Asks vm_concierge to trim ARCVM's memory in the same way as TrimWorkingSet.
   // The function must be called on the UI thread.
@@ -72,6 +73,11 @@ class WorkingSetTrimmerChromeOS : public WorkingSetTrimmer {
                          ArcVmReclaimType reclaim_type,
                          int page_limit,
                          bool result);
+  void OnArcVmMemoryGuestReclaim(TrimArcVmWorkingSetCallback callback,
+                                 arc::mojom::ReclaimResultPtr result);
+
+  void LogErrorAndInvokeCallback(const char* error,
+                                 TrimArcVmWorkingSetCallback callback);
 
   // The constructor is made private to prevent instantiation of this class
   // directly, it should always be retrieved via

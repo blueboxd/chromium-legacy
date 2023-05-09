@@ -343,6 +343,9 @@ void LocalFrameClientImpl::Detached(FrameDetachType type) {
   // place at this point since we are no longer associated with the Page.
   web_frame_->SetClient(nullptr);
 
+  if (type == FrameDetachType::kSwap) {
+    client->WillSwap();
+  }
   client->WillDetach();
 
   // We only notify the browser process when the frame is being detached for
@@ -526,7 +529,8 @@ void LocalFrameClientImpl::BeginNavigation(
     const LocalFrameToken* initiator_frame_token,
     std::unique_ptr<SourceLocation> source_location,
     mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
-        initiator_policy_container_keep_alive_handle) {
+        initiator_policy_container_keep_alive_handle,
+    bool is_container_initiated) {
   if (!web_frame_->Client())
     return;
 
@@ -685,6 +689,7 @@ void LocalFrameClientImpl::BeginNavigation(
                                                     .GetSandboxFlags();
 
   navigation_info->href_translate = href_translate;
+  navigation_info->is_container_initiated = is_container_initiated;
 
   web_frame_->Client()->BeginNavigation(std::move(navigation_info));
 }

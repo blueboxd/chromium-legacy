@@ -235,7 +235,7 @@ CookiesGetFunction::~CookiesGetFunction() = default;
 
 ExtensionFunction::ResponseAction CookiesGetFunction::Run() {
   parsed_args_ = api::cookies::Get::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
+  EXTENSION_FUNCTION_VALIDATE(parsed_args_);
 
   // Read/validate input parameters.
   std::string error;
@@ -310,7 +310,7 @@ CookiesGetAllFunction::~CookiesGetAllFunction() {
 
 ExtensionFunction::ResponseAction CookiesGetAllFunction::Run() {
   parsed_args_ = api::cookies::GetAll::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
+  EXTENSION_FUNCTION_VALIDATE(parsed_args_);
 
   std::string error;
   if (parsed_args_->details.url &&
@@ -407,7 +407,7 @@ CookiesSetFunction::~CookiesSetFunction() {
 
 ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
   parsed_args_ = api::cookies::Set::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
+  EXTENSION_FUNCTION_VALIDATE(parsed_args_);
 
   // Read/validate input parameters.
   std::string error;
@@ -536,7 +536,7 @@ void CookiesSetFunction::GetCookieListCallback(
     }
   }
 
-  Respond(value ? std::move(*value) : WithArguments());
+  Respond(value ? std::move(*value) : NoArguments());
 }
 
 CookiesRemoveFunction::CookiesRemoveFunction() {
@@ -547,7 +547,7 @@ CookiesRemoveFunction::~CookiesRemoveFunction() {
 
 ExtensionFunction::ResponseAction CookiesRemoveFunction::Run() {
   parsed_args_ = api::cookies::Remove::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parsed_args_.get());
+  EXTENSION_FUNCTION_VALIDATE(parsed_args_);
 
   // Read/validate input parameters.
   std::string error;

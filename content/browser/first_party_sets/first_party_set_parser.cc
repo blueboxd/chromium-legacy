@@ -338,12 +338,12 @@ base::expected<SetsAndAliases, ParseError> ParseSet(
   for (const std::pair<net::SchemefulSite, net::FirstPartySetEntry>&
            site_and_entry : set_entries) {
     bool inserted = elements.insert(site_and_entry.first).second;
-    DCHECK(inserted);
+    CHECK(inserted);
   }
   for (const std::pair<net::SchemefulSite, net::SchemefulSite>&
            alias_and_canonical : aliases) {
     bool inserted = elements.insert(alias_and_canonical.first).second;
-    DCHECK(inserted);
+    CHECK(inserted);
   }
 
   return std::make_pair(FirstPartySetParser::SingleSet(set_entries), aliases);
@@ -501,15 +501,15 @@ FirstPartySetParser::ParseSetsFromEnterprisePolicy(
           policy.FindList(kFirstPartySetPolicyReplacementsField), elements,
           PolicySetType::kReplacement, warnings);
   if (!parsed_replacements.has_value()) {
-    return base::unexpected(
-        std::make_pair(parsed_replacements.error(), warnings));
+    return std::make_pair(base::unexpected(parsed_replacements.error()),
+                          warnings);
   }
 
   base::expected<std::vector<SingleSet>, ParseError> parsed_additions =
       GetPolicySetsFromList(policy.FindList(kFirstPartySetPolicyAdditionsField),
                             elements, PolicySetType::kAddition, warnings);
   if (!parsed_additions.has_value()) {
-    return base::unexpected(std::make_pair(parsed_additions.error(), warnings));
+    return std::make_pair(base::unexpected(parsed_additions.error()), warnings);
   }
 
   return std::make_pair(

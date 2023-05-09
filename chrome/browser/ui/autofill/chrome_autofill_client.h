@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/payments/autofill_error_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/autofill_progress_dialog_controller_impl.h"
-#include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
@@ -28,7 +28,6 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents_user_data.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/fast_checkout/fast_checkout_client.h"
@@ -45,27 +44,46 @@
 namespace autofill {
 
 struct AutofillErrorDialogContext;
+class AutofillOptimizationGuide;
 class AutofillPopupControllerImpl;
 struct VirtualCardEnrollmentFields;
 class VirtualCardEnrollmentManager;
 struct VirtualCardManualFallbackBubbleOptions;
 
 // Chrome implementation of AutofillClient.
+//
 // ChromeAutofillClient is instantiated once per WebContents, and usages of
 // main frame refer to the primary main frame because WebContents only has a
 // primary main frame.
-// TODO(crbug.com/1351388): During prerendering in MPArch, the autofill client
-// should be attached not to the web contents but the outer-most main frame.
-class ChromeAutofillClient
-    : public AutofillClient,
-      public content::WebContentsUserData<ChromeAutofillClient>,
-      public content::WebContentsObserver
+//
+// Production code should not depend on ChromeAutofillClient but only on
+// ContentAutofillClient. This ensures that tests can inject different
+// implementations of ContentAutofillClient without causing invalid casts to
+// ChromeAutofillClient.
+class ChromeAutofillClient : public ContentAutofillClient,
+                             public content::WebContentsObserver
 #if !BUILDFLAG(IS_ANDROID)
     ,
-      public zoom::ZoomObserver
+                             public zoom::ZoomObserver
 #endif  // !BUILDFLAG(IS_ANDROID)
 {
  public:
+  // Creates a new ChromeAutofillClient for the given `web_contents` if no
+  // ContentAutofillClient is associated with the `web_contents` yet. Otherwise,
+  // it's a no-op.
+  static void CreateForWebContents(content::WebContents* web_contents);
+
+  // Only tests that require ChromeAutofillClient's `*ForTesting()` functions
+  // may use this function.
+  //
+  // Generally, code should use ContentAutofillClient::FromWebContents() if
+  // possible. This is because many tests inject clients that do not inherit
+  // from ChromeAutofillClient.
+  static ChromeAutofillClient* FromWebContentsForTesting(
+      content::WebContents* web_contents) {
+    return static_cast<ChromeAutofillClient*>(FromWebContents(web_contents));
+  }
+
   ChromeAutofillClient(const ChromeAutofillClient&) = delete;
   ChromeAutofillClient& operator=(const ChromeAutofillClient&) = delete;
   ~ChromeAutofillClient() override;
@@ -75,6 +93,7 @@ class ChromeAutofillClient
   bool IsOffTheRecord() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   AutofillDownloadManager* GetDownloadManager() override;
+  AutofillOptimizationGuide* GetAutofillOptimizationGuide() const override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   IBANManager* GetIBANManager() override;
@@ -265,8 +284,6 @@ class ChromeAutofillClient
   explicit ChromeAutofillClient(content::WebContents* web_contents);
 
  private:
-  friend class content::WebContentsUserData<ChromeAutofillClient>;
-
   Profile* GetProfile() const;
   bool IsMultipleAccountUser();
   std::u16string GetAccountHolderName();
@@ -308,8 +325,6 @@ class ChromeAutofillClient
 
   // True if and only if the associated web_contents() is currently focused.
   bool has_focus_ = false;
-
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 }  // namespace autofill

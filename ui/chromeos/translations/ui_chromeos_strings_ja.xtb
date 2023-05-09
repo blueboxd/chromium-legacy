@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムを圧縮しています...</translation>
 <translation id="1722687688096767818">プロファイルの追加中...</translation>
 <translation id="1726100011689679555">ネームサーバー</translation>
+<translation id="1727562178154619254">同期の準備ができました</translation>
 <translation id="1729953886957086472">ドイツ語（ドイツ）</translation>
 <translation id="1730235522912993863">中国語（倉頡）</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> 件のアイテムをコピーしました</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">画像解像度</translation>
 <translation id="1972984168337863910">ファイルのフィードバック パネルを展開します</translation>
 <translation id="1995337122023280937">ファイルの場所へ移動</translation>
-<translation id="1999709132469742660">すべての URL によるファイル アクセス</translation>
 <translation id="2001796770603320721">ドライブで管理</translation>
 <translation id="2009067268969781306">ドライブをフォーマットすると、そのドライブに保存されているすべてのデータが削除されます。この操作は元に戻せません。</translation>
 <translation id="2025955442973426285">チグリヤナ語</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">ラテン アメリカ</translation>
 <translation id="5330145655348521461">これらのファイルは別のデスクトップで開かれます。表示するには <ph name="USER_NAME" />（<ph name="MAIL_ADDRESS" />）に移動してください。</translation>
 <translation id="5330512191124428349">情報を見る</translation>
-<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" /> を除くすべての URL によるファイル アクセス</translation>
 <translation id="5344246330454251646">Bruschetta の共有を管理</translation>
 <translation id="535792325654997756">猫と一緒にいる人</translation>
 <translation id="5358764674931277">フレームレート</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Linux アプリケーションのインストール中にエラーが発生しました。</translation>
 <translation id="5912396950572065471">形式</translation>
 <translation id="5913638992615760742">コピーできませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">新しい検索機能をご利用いただけます</translation>
 <translation id="5926082595146149752">オランダ語（オランダ）（US インターナショナル PC）キーボード</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" />件）、<ph name="NETWORK_NAME" />、デバイスのセットアップ後に有効化</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">証明書が読み込まれていません</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Bruschetta とのフォルダ共有</translation>
+<translation id="6750737795876287924">現在のディレクトリ</translation>
 <translation id="6751256176799620176">1 個のフォルダを選択しました</translation>
 <translation id="6755827872271341378">ChromeOS Flex デバイス</translation>
 <translation id="6790428901817661496">再生</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">フォルダ</translation>
 <translation id="6976795442547527108">ライオン</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
-<translation id="6979737339423435258">全期間</translation>
 <translation id="6989942356279143254">スウェーデン語</translation>
 <translation id="6990081529015358884">空き容量が不足しています</translation>
 <translation id="6993826899923627728">これらのアイテムはゴミ箱に入っています</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">最近使用した画像はありません</translation>
 <translation id="7460898608667578234">ウクライナ語</translation>
 <translation id="7469894403370665791">このネットワークに自動接続する</translation>
-<translation id="7481358317100446445">準備完了</translation>
 <translation id="7486315294984620427">Parallels Desktop にファイルをドロップするには、[Windows ファイル] にファイルをコピーする必要があります。</translation>
 <translation id="749452993132003881">ひらがな</translation>
 <translation id="7495372004724182530">マラヤーラム語（表音）</translation>

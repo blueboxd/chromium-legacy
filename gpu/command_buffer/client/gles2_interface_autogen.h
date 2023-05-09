@@ -876,6 +876,19 @@ virtual void CopySharedImageINTERNAL(GLint xoffset,
                                      GLsizei height,
                                      GLboolean unpack_flip_y,
                                      const GLbyte* mailboxes) = 0;
+virtual void ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
+                                             const void* dst_color_space,
+                                             GLuint dst_color_space_size,
+                                             GLuint dst_size,
+                                             GLuint dst_width,
+                                             GLuint dst_height,
+                                             GLuint dst_color_type,
+                                             GLuint dst_alpha_type,
+                                             GLuint dst_row_bytes,
+                                             GLint src_x,
+                                             GLint src_y,
+                                             GLint plane_index,
+                                             void* pixels) = 0;
 virtual void EnableiOES(GLenum target, GLuint index) = 0;
 virtual void DisableiOES(GLenum target, GLuint index) = 0;
 virtual void BlendEquationiOES(GLuint buf, GLenum mode) = 0;
@@ -895,4 +908,29 @@ virtual void ColorMaskiOES(GLuint buf,
                            GLboolean a) = 0;
 virtual GLboolean IsEnablediOES(GLenum target, GLuint index) = 0;
 virtual void ProvokingVertexANGLE(GLenum provokeMode) = 0;
+virtual void FramebufferMemorylessPixelLocalStorageANGLE(
+    GLint plane,
+    GLenum internalformat) = 0;
+virtual void FramebufferTexturePixelLocalStorageANGLE(GLint plane,
+                                                      GLuint backingtexture,
+                                                      GLint level,
+                                                      GLint layer) = 0;
+virtual void FramebufferPixelLocalClearValuefvANGLE(GLint plane,
+                                                    const GLfloat* value) = 0;
+virtual void FramebufferPixelLocalClearValueivANGLE(GLint plane,
+                                                    const GLint* value) = 0;
+virtual void FramebufferPixelLocalClearValueuivANGLE(GLint plane,
+                                                     const GLuint* value) = 0;
+virtual void BeginPixelLocalStorageANGLE(GLsizei count,
+                                         const GLenum* loadops) = 0;
+virtual void EndPixelLocalStorageANGLE(GLsizei count,
+                                       const GLenum* storeops) = 0;
+virtual void PixelLocalStorageBarrierANGLE() = 0;
+virtual void GetFramebufferPixelLocalStorageParameterfvANGLE(
+    GLint plane,
+    GLenum pname,
+    GLfloat* params) = 0;
+virtual void GetFramebufferPixelLocalStorageParameterivANGLE(GLint plane,
+                                                             GLenum pname,
+                                                             GLint* params) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

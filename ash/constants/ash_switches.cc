@@ -491,6 +491,15 @@ const char kEnableTouchpadThreeFingerClick[] =
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
 
+// Whether to force manual enrollment instead of trying cert based enrollment.
+// Only works on test builds.
+const char kEnterpriseForceManualEnrollmentInTestBuilds[] =
+    "enterprise-force-manual-enrollment-in-test-builds";
+
+// Whether to enable unified state determination.
+const char kEnterpriseEnableUnifiedStateDetermination[] =
+    "enterprise-enable-unified-state-determination";
+
 // Whether to enable forced enterprise re-enrollment.
 const char kEnterpriseEnableForcedReEnrollment[] =
     "enterprise-enable-forced-re-enrollment";
@@ -518,6 +527,14 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 // - Don't apply new device policy if it would block dev mode.
 // This is only usable on test builds.
 const char kDisallowPolicyBlockDevMode[] = "disallow-policy-block-dev-mode";
+
+// Ignore the profile creation time when determining whether to show the end of
+// life notification incentive. This is meant to make manual testing easier.
+const char kEolIgnoreProfileCreationTime[] = "eol-ignore-profile-creation-time";
+
+// Reset the end of life notification prefs to their default value, at the
+// start of the user session. This is meant to make manual testing easier.
+const char kEolResetDismissedPrefs[] = "eol-reset-dismissed-prefs";
 
 // Write extension install events to chrome log for integration test.
 const char kExtensionInstallEventChromeLogForTests[] =
@@ -809,6 +826,13 @@ const char kHiddenNetworkMigrationInterval[] =
 // follow the format "--hidden-network-migration-age=#", and should be >= 0.
 const char kHiddenNetworkMigrationAge[] = "hidden-network-migration-age";
 
+// Sets the channel from which the PPD files are loaded.
+const char kPrintingPpdChannel[] = "printing-ppd-channel";
+const char kPrintingPpdChannelProduction[] = "production";
+const char kPrintingPpdChannelStaging[] = "staging";
+const char kPrintingPpdChannelDev[] = "dev";
+const char kPrintingPpdChannelLocalhost[] = "localhost";
+
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).
 const char kProfileRequiresPolicy[] = "profile-requires-policy";
@@ -829,6 +853,10 @@ const char kQsAddFakeCastDevices[] = "qs-add-fake-cast-devices";
 // The per-model directories (if there are any) are located under
 // "/usr/share/chromeos-assets/regulatory_labels/".
 const char kRegulatoryLabelDir[] = "regulatory-label-dir";
+
+// Testing timeout for reboot command. Useful for tast tests.
+const char kRemoteRebootCommandTimeoutInSecondsForTesting[] =
+    "remote-reboot-command-timeout-in-seconds-for-testing";
 
 // Indicates that reven UI strings and features should be shown.
 const char kRevenBranding[] = "reven-branding";
@@ -965,6 +993,10 @@ const char kWebUiDataSourcePathForTesting[] =
 // Enable the getAccessToken autotest API which creates access tokens using
 // the internal OAuth client ID.
 const char kGetAccessTokenForTest[] = "get-access-token-for-test";
+
+// Indicates whether camera effects use flag is set in ChromeOS.
+const char kCameraEffectsSupportedByHardware[] =
+    "camera-effects-supported-by-hardware";
 
 bool IsAuthSessionCryptohomeEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1107,6 +1139,11 @@ bool IsSkipRecorderNudgeShowThresholdDurationEnabled() {
 bool IsStabilizeTimeDependentViewForTestsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kStabilizeTimeDependentViewForTests);
+}
+
+bool IsCameraEffectsSupportedByHardware() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kCameraEffectsSupportedByHardware);
 }
 
 }  // namespace switches

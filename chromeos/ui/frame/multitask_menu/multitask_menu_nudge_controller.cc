@@ -4,6 +4,7 @@
 
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_nudge_controller.h"
 
+#include "base/metrics/user_metrics.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "chromeos/ui/wm/features.h"
@@ -20,6 +21,10 @@
 #include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/widget/widget.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_pref_names.h"
+#endif
 
 namespace chromeos {
 
@@ -119,14 +124,20 @@ MultitaskMenuNudgeController::~MultitaskMenuNudgeController() {
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // static
 void MultitaskMenuNudgeController::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(kClamshellShownCountPrefName, 0);
-  registry->RegisterIntegerPref(kTabletShownCountPrefName, 0);
-  registry->RegisterTimePref(kClamshellLastShownPrefName, base::Time());
-  registry->RegisterTimePref(kTabletLastShownPrefName, base::Time());
+  registry->RegisterIntegerPref(
+      ash::prefs::kMultitaskMenuNudgeClamshellShownCount, 0);
+  registry->RegisterIntegerPref(ash::prefs::kMultitaskMenuNudgeTabletShownCount,
+                                0);
+  registry->RegisterTimePref(ash::prefs::kMultitaskMenuNudgeClamshellLastShown,
+                             base::Time());
+  registry->RegisterTimePref(ash::prefs::kMultitaskMenuNudgeTabletLastShown,
+                             base::Time());
 }
+#endif
 
 void MultitaskMenuNudgeController::MaybeShowNudge(aura::Window* window) {
   MaybeShowNudge(window, /*anchor_view=*/nullptr);
@@ -139,10 +150,7 @@ void MultitaskMenuNudgeController::MaybeShowNudge(aura::Window* window,
     return;
   }
 
-  // TODO(sammiequon): Delegate is not available for lacros yet.
-  if (!g_delegate_instance) {
-    return;
-  }
+  DCHECK(g_delegate_instance);
 
   // If the window is not visible, do not show the nudge.
   if (!window->IsVisible()) {
@@ -174,6 +182,14 @@ void MultitaskMenuNudgeController::DismissNudge() {
 }
 
 void MultitaskMenuNudgeController::OnMenuOpened(bool tablet_mode) {
+  // Avoid sending prefs through the cros API or recording user actions if the
+  // nudge isn't shown.
+  if (nudge_widget_ && !nudge_widget_->IsClosed()) {
+    return;
+  }
+
+  base::RecordAction(
+      base::UserMetricsAction("Nudge_Active_When_MultitaskMenu_Opened"));
   DismissNudge();
 
   if (g_delegate_instance) {

@@ -4,13 +4,13 @@
 
 #include "components/password_manager/core/browser/password_form.h"
 
-#include <algorithm>
 #include <ostream>
 #include <sstream>
 #include <string>
 
 #include "base/json/json_writer.h"
 #include "base/json/values_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -107,8 +107,8 @@ std::string ToString(const T& obj) {
 std::u16string ValueElementVectorToString(
     const ValueElementVector& value_element_pairs) {
   std::vector<std::u16string> pairs(value_element_pairs.size());
-  std::transform(
-      value_element_pairs.begin(), value_element_pairs.end(), pairs.begin(),
+  base::ranges::transform(
+      value_element_pairs, pairs.begin(),
       [](const ValueElementPair& p) { return p.first + u"+" + p.second; });
   return base::JoinString(pairs, u", ");
 }
@@ -315,12 +315,10 @@ bool PasswordForm::HasNonEmptyPasswordValue() const {
   return !password_value.empty() || !new_password_value.empty();
 }
 
-absl::optional<std::u16string> PasswordForm::GetNoteWithEmptyUniqueDisplayName()
-    const {
+std::u16string PasswordForm::GetNoteWithEmptyUniqueDisplayName() const {
   const auto& note_itr = base::ranges::find_if(
       notes, &std::u16string::empty, &PasswordNote::unique_display_name);
-  return note_itr != notes.end() ? absl::make_optional(note_itr->value)
-                                 : absl::nullopt;
+  return note_itr != notes.end() ? note_itr->value : std::u16string();
 }
 
 void PasswordForm::SetNoteWithEmptyUniqueDisplayName(

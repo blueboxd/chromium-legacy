@@ -78,9 +78,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
   base::FilePath GetBucketPath(const BucketLocator& bucket);
 
   // Constructs path where `bucket` and `client_type` data is persisted to disk
-  // for partitioned storage. NOTE: this will happily construct a path even for
-  // incognito profiles. It is up to the caller to handle incognito cases
-  // appropriately, i.e. not saving anything to disk at that path.
+  // for partitioned storage.
   base::FilePath GetClientBucketPath(const BucketLocator& bucket,
                                      QuotaClientType client_type);
 
@@ -242,6 +240,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
   // Called right before the QuotaManagerImpl is destroyed.
   // This method may only be called on the QuotaManagerImpl sequence.
   void InvalidateQuotaManagerImpl(base::PassKey<QuotaManagerImpl>);
+
+  // Adds an observer which is notified of changes to the QuotaManager.
+  void AddObserver(
+      mojo::PendingRemote<storage::mojom::QuotaManagerObserver> observer);
 
  protected:
   friend class base::RefCountedThreadSafe<QuotaManagerProxy>;

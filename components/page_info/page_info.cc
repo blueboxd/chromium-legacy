@@ -51,7 +51,6 @@
 #include "components/permissions/permission_recovery_success_rate_tracker.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
-#include "components/permissions/request_type.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_service.h"
@@ -665,7 +664,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
       permissions::PermissionRequestManager::FromWebContents(
           web_contents_.get());
 
-  if (manager && permissions::IsRequestablePermissionType(type)) {
+  if (manager) {
     // Retrieve latest permission action for the current origin and the current
     // content settings type. Note that these values are only kept in memory and
     // not persisted across browser sessions.
@@ -737,7 +736,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
     show_info_bar_ = true;
   }
 
-  if (permissions::IsRequestablePermissionType(type)) {
+  if (permissions::PermissionUtil::IsPermission(type)) {
     auto* permission_tracker =
         permissions::PermissionRecoverySuccessRateTracker::FromWebContents(
             web_contents_.get());
@@ -1581,6 +1580,5 @@ bool PageInfo::IsIsolatedWebApp() const {
 
   return web_contents_ &&
          web_contents_->GetPrimaryMainFrame()->GetWebExposedIsolationLevel() >=
-             content::RenderFrameHost::WebExposedIsolationLevel::
-                 kMaybeIsolatedApplication;
+             content::WebExposedIsolationLevel::kMaybeIsolatedApplication;
 }

@@ -261,11 +261,10 @@ std::vector<ScopeExtensionInfo> CreateRandomScopeExtensions(
 
 std::vector<WebAppShortcutsMenuItemInfo> CreateRandomShortcutsMenuItemInfos(
     const GURL& scope,
-    int num,
     RandomHelper& random) {
   const uint32_t suffix = random.next_uint();
   std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos;
-  for (int i = num - 1; i >= 0; --i) {
+  for (int i = random.next_uint(4) + 1; i >= 0; --i) {
     std::string suffix_str =
         base::NumberToString(suffix) + base::NumberToString(i);
     WebAppShortcutsMenuItemInfo shortcut_info;
@@ -309,15 +308,14 @@ std::vector<WebAppShortcutsMenuItemInfo> CreateRandomShortcutsMenuItemInfos(
 }
 
 std::vector<IconSizes> CreateRandomDownloadedShortcutsMenuIconsSizes(
-    int num,
     RandomHelper& random) {
   std::vector<IconSizes> results;
-  for (int i = 0; i < num; ++i) {
+  for (unsigned int i = 0; i < 3; ++i) {
     IconSizes result;
     std::vector<SquareSizePx> shortcuts_menu_icon_sizes_any;
     std::vector<SquareSizePx> shortcuts_menu_icon_sizes_maskable;
     std::vector<SquareSizePx> shortcuts_menu_icon_sizes_monochrome;
-    for (int j = 0; j < i; ++j) {
+    for (unsigned int j = 0; j < i; ++j) {
       shortcuts_menu_icon_sizes_any.push_back(random.next_uint(256) + 1);
       shortcuts_menu_icon_sizes_maskable.push_back(random.next_uint(256) + 1);
       shortcuts_menu_icon_sizes_monochrome.push_back(random.next_uint(256) + 1);
@@ -695,14 +693,10 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   }
   app->SetAdditionalSearchTerms(std::move(additional_search_terms));
 
-  int num_shortcut_menus = static_cast<int>(random.next_uint(4)) + 1;
   app->SetShortcutsMenuItemInfos(
-      CreateRandomShortcutsMenuItemInfos(scope, num_shortcut_menus, random));
+      CreateRandomShortcutsMenuItemInfos(scope, random));
   app->SetDownloadedShortcutsMenuIconsSizes(
-      CreateRandomDownloadedShortcutsMenuIconsSizes(num_shortcut_menus,
-                                                    random));
-  CHECK_EQ(app->shortcuts_menu_item_infos().size(),
-           app->downloaded_shortcuts_menu_icons_sizes().size());
+      CreateRandomDownloadedShortcutsMenuIconsSizes(random));
   app->SetManifestUrl(base_url.Resolve("/manifest" + seed_str + ".json"));
 
   const int num_allowed_launch_protocols = random.next_uint(8);
@@ -749,7 +743,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
 
   uint32_t install_source =
       random.next_uint(static_cast<int>(webapps::WebappInstallSource::COUNT));
-  app->SetInstallSourceForMetrics(
+  app->SetLatestInstallSource(
       static_cast<webapps::WebappInstallSource>(install_source));
 
   if (IsChromeOsDataMandatory()) {

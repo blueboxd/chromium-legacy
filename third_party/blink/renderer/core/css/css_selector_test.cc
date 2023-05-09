@@ -241,4 +241,67 @@ TEST(CSSSelector, FirstInInvalidList) {
   EXPECT_FALSE(list->First());
 }
 
+TEST(CSSSelector, ImplicitPseudoDescendant) {
+  CSSSelector selector[2] = {
+      CSSSelector(QualifiedName(/* prefix */ g_null_atom, "div",
+                                /* namespace_uri */ g_null_atom),
+                  /* is_implicit */ false),
+      CSSSelector("scope", /* is_implicit */ true)};
+  selector[0].SetRelation(CSSSelector::kDescendant);
+  selector[1].SetLastInTagHistory(true);
+  EXPECT_EQ("div", selector[0].SelectorText());
+}
+
+TEST(CSSSelector, ImplicitPseudoChild) {
+  CSSSelector selector[2] = {
+      CSSSelector(QualifiedName(/* prefix */ g_null_atom, "div",
+                                /* namespace_uri */ g_null_atom),
+                  /* is_implicit */ false),
+      CSSSelector("scope", /* is_implicit */ true)};
+  selector[0].SetRelation(CSSSelector::kChild);
+  selector[1].SetLastInTagHistory(true);
+  EXPECT_EQ("> div", selector[0].SelectorText());
+}
+
+TEST(CSSSelector, NonImplicitPseudoChild) {
+  CSSSelector selector[2] = {
+      CSSSelector(QualifiedName(/* prefix */ g_null_atom, "div",
+                                /* namespace_uri */ g_null_atom),
+                  /* is_implicit */ false),
+      CSSSelector("scope", /* is_implicit */ false)};
+  selector[0].SetRelation(CSSSelector::kChild);
+  selector[1].SetLastInTagHistory(true);
+  EXPECT_EQ(":scope > div", selector[0].SelectorText());
+}
+
+TEST(CSSSelector, PseudoTrueBefore) {
+  CSSSelector selector[2] = {CSSSelector(),
+                             CSSSelector("hover", /* is_implicit */ false)};
+  selector[0].SetTrue();
+  selector[0].SetRelation(CSSSelector::kSubSelector);
+  selector[1].SetLastInTagHistory(true);
+  EXPECT_EQ(":hover", selector[0].SelectorText());
+}
+
+TEST(CSSSelector, PseudoTrueAfter) {
+  CSSSelector selector[2] = {CSSSelector("hover", /* is_implicit */ false),
+                             CSSSelector()};
+  selector[0].SetRelation(CSSSelector::kSubSelector);
+  selector[1].SetTrue();
+  selector[1].SetLastInTagHistory(true);
+  EXPECT_EQ(":hover", selector[0].SelectorText());
+}
+
+TEST(CSSSelector, PseudoTrueChild) {
+  CSSSelector selector[2] = {
+      CSSSelector(QualifiedName(/* prefix */ g_null_atom, "div",
+                                /* namespace_uri */ g_null_atom),
+                  /* is_implicit */ false),
+      CSSSelector()};
+  selector[0].SetRelation(CSSSelector::kChild);
+  selector[1].SetTrue();
+  selector[1].SetLastInTagHistory(true);
+  EXPECT_EQ("> div", selector[0].SelectorText());
+}
+
 }  // namespace blink

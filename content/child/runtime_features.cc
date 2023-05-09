@@ -69,7 +69,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableCompositedSelectionUpdate(true);
 #endif
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS_LACROS)
   const bool enable_canvas_2d_image_chromium =
       command_line.HasSwitch(
           blink::switches::kEnableGpuMemoryBufferCompositorResources) &&
@@ -304,6 +304,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #if BUILDFLAG(IS_ANDROID)
     {wf::EnableWebNFC, raw_ref(features::kWebNfc), kSetOnlyIfOverridden},
 #endif
+    {wf::EnableWebIdentityMDocs, raw_ref(features::kWebIdentityMDocs),
+     kDefault},
     {wf::EnableWebOTP, raw_ref(features::kWebOTP), kSetOnlyIfOverridden},
     {wf::EnableWebOTPAssertionFeaturePolicy,
      raw_ref(features::kWebOTPAssertionFeaturePolicy), kSetOnlyIfOverridden},
@@ -311,6 +313,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXR, raw_ref(features::kWebXr)},
 #if BUILDFLAG(ENABLE_VR)
     {wf::EnableWebXRFrontFacing, raw_ref(device::features::kWebXrIncubations)},
+    {wf::EnableWebXRFrameRate, raw_ref(device::features::kWebXrIncubations)},
     {wf::EnableWebXRHandInput, raw_ref(device::features::kWebXrHandInput)},
     {wf::EnableWebXRImageTracking,
      raw_ref(device::features::kWebXrIncubations)},
@@ -591,16 +594,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
             features::kFedCmIdpSigninStatusFieldTrialParamName, false)) {
       WebRuntimeFeatures::EnableFedCmIdpSigninStatus(true);
     }
-  }
-
-  // (b/239679616) kWebGPUService can be controlled by finch. So switching off
-  // WebGPU based on it can help remotely control origin trial usage. Local
-  // command switches --enable-unsafe-webgpu can still enable WebGPU.
-  if (!base::FeatureList::IsEnabled(features::kWebGPUService)) {
-    WebRuntimeFeatures::EnableWebGPU(false);
-  }
-  if (command_line.HasSwitch(switches::kEnableUnsafeWebGPU)) {
-    WebRuntimeFeatures::EnableWebGPU(true);
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kPendingBeaconAPI)) {

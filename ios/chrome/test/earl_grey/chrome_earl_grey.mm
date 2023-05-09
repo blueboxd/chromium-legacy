@@ -85,13 +85,7 @@ UIWindow* GetAnyKeyWindow() {
   }
   DCHECK(foregroundScenes <= 1);
 
-  NSArray<UIWindow*>* windows =
-      [GREY_REMOTE_CLASS_IN_APP(UIApplication) sharedApplication].windows;
-  for (UIWindow* window in windows) {
-    if (window.isKeyWindow)
-      return window;
-  }
-  return nil;
+  return [ChromeEarlGreyAppInterface keyWindow];
 }
 }  // namespace chrome_test_util
 
@@ -194,6 +188,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 - (void)removeBrowsingCache {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface removeBrowsingCache]);
+}
+
+- (void)saveSessionImmediately {
+  [ChromeEarlGreyAppInterface saveSessionImmediately];
 }
 
 #pragma mark - Navigation Utilities (EG2)
@@ -1326,6 +1324,10 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   return [ChromeEarlGreyAppInterface isSFSymbolEnabled];
 }
 
+- (BOOL)isUIButtonConfigurationEnabled {
+  return [ChromeEarlGreyAppInterface isUIButtonConfigurationEnabled];
+}
+
 #pragma mark - ContentSettings
 
 - (ContentSetting)popupPrefValue {
@@ -1349,6 +1351,13 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 - (void)simulatePhysicalKeyboardEvent:(NSString*)input
                                 flags:(UIKeyModifierFlags)flags {
   [ChromeEarlGreyAppInterface simulatePhysicalKeyboardEvent:input flags:flags];
+}
+
+#pragma mark - Default Utilities (EG2)
+
+- (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName {
+  return [ChromeEarlGreyAppInterface setUserDefaultObject:value
+                                                   forKey:defaultName];
 }
 
 #pragma mark - Pref Utilities (EG2)

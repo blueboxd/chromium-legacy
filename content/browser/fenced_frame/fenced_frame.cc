@@ -73,8 +73,10 @@ FencedFrame::~FencedFrame() {
   frame_tree_.reset();
 }
 
-void FencedFrame::Navigate(const GURL& url,
-                           base::TimeTicks navigation_start_time) {
+void FencedFrame::Navigate(
+    const GURL& url,
+    base::TimeTicks navigation_start_time,
+    const absl::optional<std::u16string>& embedder_shared_storage_context) {
   // We don't need guard against a bad message in the case of prerendering since
   // we wouldn't even establish the mojo connection in that case.
   DCHECK_NE(RenderFrameHost::LifecycleState::kPrerendering,
@@ -100,8 +102,8 @@ void FencedFrame::Navigate(const GURL& url,
 
   FrameTreeNode* inner_root = frame_tree_->root();
 
-  // TODO(crbug.com/1237552): Resolve the discussion around navigations being
-  // treated as downloads, and implement the correct thing.
+  // The download policy will be controlled and modified by `NavigationRequest`,
+  // depending on whether the sandbox flags permit downloads.
   blink::NavigationDownloadPolicy download_policy;
 
   // This method is only invoked in the context of the embedder navigating
@@ -138,7 +140,10 @@ void FencedFrame::Navigate(const GURL& url,
       /*is_form_submission=*/false,
       /*impression=*/absl::nullopt, initiator_activation_and_ad_status,
       navigation_start_time,
-      /*is_embedder_initiated_fenced_frame_navigation=*/true);
+      /*is_embedder_initiated_fenced_frame_navigation=*/true,
+      /*is_unfenced_top_navigation=*/false,
+      /*force_new_browsing_instance=*/false, /*is_container_initiated=*/false,
+      embedder_shared_storage_context);
 }
 
 bool FencedFrame::IsHidden() {

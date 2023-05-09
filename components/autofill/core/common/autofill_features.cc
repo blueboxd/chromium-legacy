@@ -4,6 +4,7 @@
 
 #include "components/autofill/core/common/autofill_features.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -22,10 +23,10 @@ BASE_FEATURE(kAutofillAddressProfileSavePromptAddressVerificationSupport,
              "AutofillAddressProfileSavePromptAddressVerificationSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Use the heuristic parser to detected unfillable numeric types in field labels
+// Use the heuristic parser to detect unfillable numeric types in field labels
 // and grant the heuristic precedence over non-override server predictions.
-BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantitites,
-             "AutofillGivePrecedenceToNumericQuantitites",
+BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantities,
+             "AutofillGivePrecedenceToNumericQuantities",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls if `kAccount` profiles are loaded from AutofillTable and
@@ -67,28 +68,12 @@ BASE_FEATURE(kAutofillAssociateForms,
 const base::FeatureParam<base::TimeDelta> kAutofillAssociateFormsTTL{
     &kAutofillAssociateForms, "associate_forms_ttl", base::Minutes(5)};
 
-// When enabled, Autofill ignores invalid country information on import, which
-// would otherwise prevent an import. Instead, ignoring it will trigger the
-// country complemention logic.
-// TODO(crbug.com/1362472): Cleanup when launched.
-BASE_FEATURE(kAutofillIgnoreInvalidCountryOnImport,
-             "AutofillIgnoreInvalidCountryOnImport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, the country calling code for nationally formatted phone numbers
 // is inferred from the profile's country, if available.
 // TODO(crbug.com/1311937): Cleanup when launched.
 BASE_FEATURE(kAutofillInferCountryCallingCode,
              "AutofillInferCountryCallingCode",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, complementing the country happens before setting the phone number
-// on profile import. This way, the variation country code takes precedence over
-// the app locale.
-// TODO(crbug.com/1295721): Cleanup when launched.
-BASE_FEATURE(kAutofillComplementCountryEarly,
-             "AutofillComplementCountryEarly",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, label inference considers strings entirely made up of  '(', ')'
 // and '-' as valid labels.
@@ -137,7 +122,7 @@ BASE_FEATURE(kAutofillFillAndImportFromMoreFields,
 const base::FeatureParam<bool> kAutofillFillAutocompleteUnrecognized{
     &kAutofillFillAndImportFromMoreFields, "fill_unrecognized_autocomplete",
     false};
-const base::FeatureParam<bool> kAutofillImportFromAutoccompleteUnrecognized{
+const base::FeatureParam<bool> kAutofillImportFromAutocompleteUnrecognized{
     &kAutofillFillAndImportFromMoreFields,
     "import_from_unrecognized_autocomplete", false};
 
@@ -235,16 +220,16 @@ BASE_FEATURE(kAutofillEnableImportWhenMultiplePhoneNumbers,
 // importing from multi-step input flows possible.
 BASE_FEATURE(kAutofillEnableMultiStepImports,
              "AutofillEnableMultiStepImports",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // When enabled, imported profiles are stored as multi-step candidates too,
 // which enables complementing a recently imported profile during later steps of
 // a multi-step input flow.
 const base::FeatureParam<bool> kAutofillEnableMultiStepImportComplements{
-    &kAutofillEnableMultiStepImports, "enable_multistep_complement", false};
+    &kAutofillEnableMultiStepImports, "enable_multistep_complement", true};
 // Configures the TTL of multi-step import candidates.
 const base::FeatureParam<base::TimeDelta> kAutofillMultiStepImportCandidateTTL{
     &kAutofillEnableMultiStepImports, "multistep_candidate_ttl",
-    base::Minutes(30)};
+    base::Minutes(5)};
 
 // When enabled, phone number local heuristics match empty labels when looking
 // for composite phone number inputs. E.g. Phone number <input><input>.
@@ -264,7 +249,7 @@ BASE_FEATURE(kAutofillEnableLabelPrecedenceForTurkishAddresses,
 // startup, once per chrome version.
 BASE_FEATURE(kAutofillEnableProfileDeduplication,
              "AutofillEnableProfileDeduplication",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls if Autofill supports merging subset names.
 // TODO(crbug.com/1098943): Remove once launched.
@@ -308,6 +293,31 @@ BASE_FEATURE(kAutofillExtractAllDatalists,
 BASE_FEATURE(kAutofillFeedback,
              "AutofillFeedback",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
+             "AutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<PrecedenceOverAutocompleteScope>::Option
+    kPrecedenceOverAutocompleteScope[] = {
+        {PrecedenceOverAutocompleteScope::kNone, "none"},
+        {PrecedenceOverAutocompleteScope::kAddressLine1And2,
+         "address_line_1_and_2"},
+        {PrecedenceOverAutocompleteScope::kRecognized, "recognized"},
+        {PrecedenceOverAutocompleteScope::kSpecified, "specified"}};
+
+const base::FeatureParam<PrecedenceOverAutocompleteScope>
+    kAutofillHeuristicPrecedenceScopeOverAutocomplete{
+        &kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
+        "AutofillHeuristicPrecedenceOverAutocompleteScope",
+        PrecedenceOverAutocompleteScope::kAddressLine1And2,
+        &kPrecedenceOverAutocompleteScope};
+
+const base::FeatureParam<PrecedenceOverAutocompleteScope>
+    kAutofillServerPrecedenceScopeOverAutocomplete{
+        &kAutofillStreetNameOrHouseNumberPrecedenceOverAutocomplete,
+        "AutofillServerPrecedenceOverAutocompleteScope",
+        PrecedenceOverAutocompleteScope::kNone,
+        &kPrecedenceOverAutocompleteScope};
 
 // When enabled, HTML autocomplete values that do not map to any known type, but
 // look reasonable (e.g. contain "address") are simply ignored. Without the
@@ -409,6 +419,15 @@ BASE_FEATURE(kAutofillAlwaysParsePlaceholders,
              "AutofillAlwaysParsePlaceholders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, the same 500ms threshold will be applied for accepting keyboard
+// enter strokes that is already applied to mouse and gesture events.
+// It will also be applied to tap events on popup menus on Android (but not the
+// keyboard accessory, at the screen is outside of the render surface).
+// TODO(crbug.com/1418364): Remove once launched.
+BASE_FEATURE(kAutofillPopupUseThresholdForKeyboardAndMobileAccept,
+             "AutofillPopupUseThresholdForKeyboardAndMobileAccept",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If the feature is enabled, FormTracker's probable-form-submission detection
 // is disabled and replaced with browser-side detection.
 // TODO(crbug/1117451): Remove once it works.
@@ -492,12 +511,18 @@ BASE_FEATURE(kAutofillSkipComparingInferredLabels,
              "AutofillSkipComparingInferredLabels",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Stronger conditions for splitting credit card numbers across multiple fields.
+// TODO(crbug.com/1419578): Remove when launched.
+BASE_FEATURE(kAutofillSplitCreditCardNumbersCautiously,
+             "AutofillSplitCreditCardNumbersCautiously",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables support for artificial placeholders, implemented by placing text on
 // top of the input field using CSS.
 // TODO(crbug.com/1396374): Remove when launched.
 BASE_FEATURE(kAutofillSupportPoorMansPlaceholder,
              "AutofillSupportPoorMansPlaceholder",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether Autofill should search prefixes of all words/tokens when
 // filtering profiles, or only on prefixes of the whole string.
@@ -606,11 +631,6 @@ BASE_FEATURE(kAutofillManualFallbackAndroid,
              "AutofillManualFallbackAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether to use modernized style for the Autofill dropdown.
-BASE_FEATURE(kAutofillRefreshStyleAndroid,
-             "AutofillRefreshStyleAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Controls whether the touch to fill surface is shown for credit cards on
 // Android.
 BASE_FEATURE(kAutofillTouchToFillForCreditCardsAndroid,
@@ -689,9 +709,9 @@ BASE_FEATURE(kAutofillCreateAccountProfilesFromSettings,
              "AutofillCreateAccountProfilesFromSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, three address profiles are created for testing.
-BASE_FEATURE(kAutofillCreateDataForTest,
-             "AutofillCreateDataForTest",
+// Enables logging the content of chrome://autofill-internals to the terminal.
+BASE_FEATURE(kAutofillLogToTerminal,
+             "AutofillLogToTerminal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or Disables (mostly for hermetic testing) autofill server

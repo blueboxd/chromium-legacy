@@ -169,6 +169,8 @@ void OsIntegrationManager::SetSubsystems(WebAppSyncBridge* sync_bridge,
                                          WebAppRegistrar* registrar,
                                          WebAppUiManager* ui_manager,
                                          WebAppIconManager* icon_manager) {
+  CHECK(!first_synchronize_called_);
+
   // TODO(estade): fetch the registrar from `sync_bridge` instead of passing
   // both as arguments.
   registrar_ = registrar;
@@ -192,8 +194,8 @@ void OsIntegrationManager::SetSubsystems(WebAppSyncBridge* sync_bridge,
   auto shortcut_menu_handling_sub_manager =
       std::make_unique<ShortcutMenuHandlingSubManager>(
           profile_->GetPath(), *icon_manager, *registrar);
-  auto run_on_os_login_sub_manager =
-      std::make_unique<RunOnOsLoginSubManager>(*registrar);
+  auto run_on_os_login_sub_manager = std::make_unique<RunOnOsLoginSubManager>(
+      *profile_, *registrar, *sync_bridge, *icon_manager);
   auto uninstallation_via_os_settings_sub_manager =
       std::make_unique<UninstallationViaOsSettingsSubManager>(*registrar);
   sub_managers_.push_back(std::move(shortcut_sub_manager));
@@ -203,6 +205,8 @@ void OsIntegrationManager::SetSubsystems(WebAppSyncBridge* sync_bridge,
   sub_managers_.push_back(std::move(run_on_os_login_sub_manager));
   sub_managers_.push_back(
       std::move(uninstallation_via_os_settings_sub_manager));
+
+  set_subsystems_called = true;
 }
 
 void OsIntegrationManager::Start() {
@@ -225,6 +229,13 @@ void OsIntegrationManager::Synchronize(
     const AppId& app_id,
     base::OnceClosure callback,
     absl::optional<SynchronizeOsOptions> options) {
+  first_synchronize_called_ = true;
+  DCHECK(registrar_->GetAppById(app_id))
+      << "Can't perform OS integration without the app existing in the "
+         "registrar.";
+
+  CHECK(set_subsystems_called);
+
   if (!AreOsIntegrationSubManagersEnabled()) {
     std::move(callback).Run();
     return;
@@ -969,6 +980,7 @@ void OsIntegrationManager::WriteStateToDB(
   {
     ScopedRegistryUpdate update(sync_bridge_);
     WebApp* web_app = update->UpdateApp(app_id);
+    DCHECK(web_app);
     web_app->SetCurrentOsIntegrationStates(*desired_states.get());
   }
 
@@ -983,6 +995,10 @@ void OsIntegrationManager::OnShortcutsCreated(
     bool shortcuts_created) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(barrier);
+
+  if (registrar_ && !registrar_->GetAppById(app_id)) {
+    return;
+  }
 
   bool shortcut_creation_failure =
       !shortcuts_created && options.os_hooks[OsHookType::kShortcuts];

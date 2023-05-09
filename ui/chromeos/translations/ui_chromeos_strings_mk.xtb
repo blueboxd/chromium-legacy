@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Се пакуваат <ph name="NUMBER_OF_ITEMS" /> ставки…</translation>
 <translation id="1722687688096767818">Се додава профил…</translation>
 <translation id="1726100011689679555">DNS-сервери</translation>
+<translation id="1727562178154619254">Спремно за синхронизација</translation>
 <translation id="1729953886957086472">германски (Германија)</translation>
 <translation id="1730235522912993863">кинески цанцзе</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> ставки се копирани.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Резолуција на слика</translation>
 <translation id="1972984168337863910">Проширете ги таблите со повратни информации за датотеките</translation>
 <translation id="1995337122023280937">Оди на локацијата на датотеката</translation>
-<translation id="1999709132469742660">Пристап до датотека од сите URL-адреси</translation>
 <translation id="2001796770603320721">Управување во Drive</translation>
 <translation id="2009067268969781306">Форматирањето на USB-дискот ќе ги избрише сите податоци складирани во него. Дејството не може да се врати.</translation>
 <translation id="2025955442973426285">тигрејски</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">Латиноамерикански</translation>
 <translation id="5330145655348521461">Датотеките се отворија на друга работна површина. Поместете ја на <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) за да се прикаже.</translation>
 <translation id="5330512191124428349">Земете информации</translation>
-<translation id="5337538975554986899">Пристап до датотеки од сите URL-адреси, освен <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Управувајте со споделувањето со Bruschetta</translation>
 <translation id="535792325654997756">Човек со мачки</translation>
 <translation id="5358764674931277">Стапка на слики</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">Дојде до грешка при инсталирањето на вашата апликација за Linux.</translation>
 <translation id="5912396950572065471">Формат</translation>
 <translation id="5913638992615760742">Операцијата за копирање не успеа. Неочекувана грешка: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Достапни се нови функции за пребарување</translation>
 <translation id="5926082595146149752">холандски (Холандија) со американска меѓународна компјутерска тастатура</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Активирај по поставувањето на уредот</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">Нема вчитано сертификати</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Споделете папка со Bruschetta</translation>
+<translation id="6750737795876287924">Тековен директориум</translation>
 <translation id="6751256176799620176">Избрана е 1 папка</translation>
 <translation id="6755827872271341378">Уред со ChromeOS Flex</translation>
 <translation id="6790428901817661496">Репродуцирај</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6976795442547527108">Лав</translation>
 <translation id="6979158407327259162">Google Диск</translation>
-<translation id="6979737339423435258">Целосната историја</translation>
 <translation id="6989942356279143254">шведски</translation>
 <translation id="6990081529015358884">Немате веќе простор</translation>
 <translation id="6993826899923627728">Ставкиве се во корпата</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">Нема неодамнешни слики</translation>
 <translation id="7460898608667578234">украинска</translation>
 <translation id="7469894403370665791">Автоматски поврзи се на мрежава</translation>
-<translation id="7481358317100446445">Подготвен</translation>
 <translation id="7486315294984620427">За да пуштите датотеки во Parallels Desktop, датотеката мора да се копира во датотеките на Windows.</translation>
 <translation id="749452993132003881">хирагана</translation>
 <translation id="7495372004724182530">фонетски малајалски</translation>

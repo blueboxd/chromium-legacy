@@ -24,11 +24,8 @@ bool IsPriceTrackingEnabled(ChromeBrowserState* browser_state) {
   }
 
   DCHECK(browser_state);
-  // May be null during testing or if browser state is off-the-record.
-  commerce::ShoppingService* service =
-      commerce::ShoppingServiceFactory::GetForBrowserState(browser_state);
-
-  return service && service->IsShoppingListEligible();
+  return commerce::ShoppingServiceFactory::GetForBrowserState(browser_state)
+      ->IsShoppingListEligible();
 }
 
 bool IsPriceNotificationsEnabled() {

@@ -832,7 +832,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ViewportAddRemoveDeviceEmulationNode) {
   EXPECT_FALSE(visual_viewport.LayerForVerticalScrollbar());
   ASSERT_TRUE(GetLayoutView().GetScrollableArea());
   {
-    auto& chunk = *(ContentPaintChunks().begin() + 1);
+    auto& chunk = ContentPaintChunks()[1];
     EXPECT_EQ(DisplayItem::kScrollbarHorizontal, chunk.id.type);
     EXPECT_EQ(&TransformPaintPropertyNode::Root(),
               &chunk.properties.Transform());
@@ -845,7 +845,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ViewportAddRemoveDeviceEmulationNode) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(visual_viewport.GetDeviceEmulationTransformNode());
   {
-    auto& chunk = *(ContentPaintChunks().begin() + 1);
+    auto& chunk = ContentPaintChunks()[1];
     EXPECT_EQ(DisplayItem::kScrollbarHorizontal, chunk.id.type);
     EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode(),
               &chunk.properties.Transform());
@@ -858,7 +858,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ViewportAddRemoveDeviceEmulationNode) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(visual_viewport.GetDeviceEmulationTransformNode());
   {
-    auto& chunk = *(ContentPaintChunks().begin() + 1);
+    auto& chunk = ContentPaintChunks()[1];
     EXPECT_EQ(DisplayItem::kScrollbarHorizontal, chunk.id.type);
     EXPECT_EQ(&TransformPaintPropertyNode::Root(),
               &chunk.properties.Transform());
@@ -1526,7 +1526,7 @@ TEST_P(PaintPropertyTreeUpdateTest, OverflowClipWithBorderRadiusForVideo) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ChangingClipPath) {
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetPreferCompositingToLCDText(false);
   SetBodyInnerHTML(R"HTML(
     <style>
       #content {
@@ -1633,7 +1633,11 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   builder.SetTransformOrigin(
       TransformOrigin(Length::Fixed(70), Length::Fixed(30), 0));
   target->SetStyle(builder.TakeStyle());
-  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates)) {
+    EXPECT_FALSE(target->NeedsPaintPropertyUpdate());
+  } else {
+    EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  }
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
   {
 #if DCHECK_IS_ON()
@@ -1916,6 +1920,9 @@ TEST_P(PaintPropertyTreeUpdateTest, LocalBorderBoxPropertiesChange) {
 // running the blink property tree builder.
 TEST_P(PaintPropertyTreeUpdateTest,
        DirectTransformUpdateSkipsPropertyTreeBuilder) {
+  if (!base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates)) {
+    return;
+  }
   SetBodyInnerHTML(R"HTML(
       <div id='div' style="transform:translateX(100px)"></div>
   )HTML");
@@ -1977,7 +1984,11 @@ TEST_P(PaintPropertyTreeUpdateTest,
   div->setAttribute(html_names::kStyleAttr, "opacity:0.8");
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
-  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates)) {
+    EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  } else {
+    EXPECT_TRUE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  }
 
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_NEAR(0.8, div_properties->Effect()->Opacity(), 0.001);
@@ -2000,7 +2011,11 @@ TEST_P(PaintPropertyTreeUpdateTest,
                     "opacity:0.8; transform: translateX(200px)");
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
-  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates)) {
+    EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  } else {
+    EXPECT_TRUE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  }
 
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_NEAR(0.8, div_properties->Effect()->Opacity(), 0.001);
@@ -2033,10 +2048,17 @@ TEST_P(PaintPropertyTreeUpdateTest,
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
 
-  EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  if (base::FeatureList::IsEnabled(features::kFastPathPaintPropertyUpdates)) {
+    EXPECT_FALSE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+    EXPECT_FALSE(
+        positioned_ancestor->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  } else {
+    EXPECT_TRUE(div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+    EXPECT_TRUE(
+        positioned_ancestor->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  }
+
   EXPECT_FALSE(dom_ancestor->GetLayoutObject()->NeedsPaintPropertyUpdate());
-  EXPECT_FALSE(
-      positioned_ancestor->GetLayoutObject()->NeedsPaintPropertyUpdate());
 
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_EQ(200, div_properties->Transform()->Get2dTranslation().x());
@@ -2061,4 +2083,31 @@ TEST_P(PaintPropertyTreeUpdateTest, BackdropFilterBounds) {
             properties->Effect()->BackdropFilterBounds());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, UpdatesInLockedDisplayHandledCorrectly) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='locked_display_container' style="content-visibility: hidden;">
+      <div id='locked_display_inner'> Text </div>
+    </div>
+    <div id='regular_update_div' style="background: red;">
+        <div id='fast_path_div' style="opacity: 0.5;"> More text </div>
+    </div>
+  )HTML");
+
+  GetDocument().ElementFromPoint(1, 1);
+  auto* fast_path_div = GetDocument().getElementById("fast_path_div");
+  auto* div_properties = PaintPropertiesForElement("fast_path_div");
+  ASSERT_TRUE(div_properties);
+  EXPECT_NEAR(0.5, div_properties->Effect()->Opacity(), 0.001);
+  EXPECT_FALSE(fast_path_div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  GetDocument()
+      .getElementById("fast_path_div")
+      ->setAttribute(html_names::kStyleAttr, "opacity:0.8");
+  GetDocument()
+      .getElementById("regular_update_div")
+      ->setAttribute(html_names::kStyleAttr, "background:purple");
+  GetDocument().getElementById("locked_display_inner")->getBoundingClientRect();
+  EXPECT_TRUE(fast_path_div->GetLayoutObject()->NeedsPaintPropertyUpdate());
+  GetDocument().ElementFromPoint(1, 1);
+  EXPECT_NEAR(0.8, div_properties->Effect()->Opacity(), 0.001);
+}
 }  // namespace blink

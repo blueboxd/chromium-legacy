@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Compactando <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="1722687688096767818">Adicionando perfil…</translation>
 <translation id="1726100011689679555">Servidores de nomes</translation>
+<translation id="1727562178154619254">Pronto para sincronizar</translation>
 <translation id="1729953886957086472">Alemão (Alemanha)</translation>
 <translation id="1730235522912993863">Chinês (cangjie)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> itens copiados.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Resolução da imagem</translation>
 <translation id="1972984168337863910">Expandir painéis de feedback de arquivos</translation>
 <translation id="1995337122023280937">Acessar local do arquivo</translation>
-<translation id="1999709132469742660">Acessos a um arquivo de todos os URLs</translation>
 <translation id="2001796770603320721">Gerenciar no Drive</translation>
 <translation id="2009067268969781306">A formatação de uma unidade excluirá todos os dados armazenados nela. Esta ação não pode ser desfeita.</translation>
 <translation id="2025955442973426285">Tigrínia</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">América Latina</translation>
 <translation id="5330145655348521461">Estes arquivos estão abertos em uma área de trabalho diferente. Mude para <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para vê-los.</translation>
 <translation id="5330512191124428349">Ver informações</translation>
-<translation id="5337538975554986899">Acessos a um arquivo de todos os URLs, exceto <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Gerenciar o compartilhamento da Bruschetta</translation>
 <translation id="535792325654997756">Pessoa com gatos</translation>
 <translation id="5358764674931277">Frame rate</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Ocorreu um erro durante a instalação do aplicativo Linux.</translation>
 <translation id="5912396950572065471">Formato</translation>
 <translation id="5913638992615760742">Falha na operação de cópia, erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Novos recursos de pesquisa disponíveis</translation>
 <translation id="5926082595146149752">Holandês (Países Baixos) com teclado internacional de PC dos EUA</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ativar após a configuração do dispositivo</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Certificados não carregados</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Compartilhar pasta com a Bruschetta</translation>
+<translation id="6750737795876287924">Diretório atual</translation>
 <translation id="6751256176799620176">1 pasta selecionada</translation>
 <translation id="6755827872271341378">Dispositivo ChromeOS Flex</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6976795442547527108">Leão</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Todo o período</translation>
 <translation id="6989942356279143254">Sueco</translation>
 <translation id="6990081529015358884">Não há espaço suficiente</translation>
 <translation id="6993826899923627728">Esses itens estão na lixeira</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Nenhuma imagem recente</translation>
 <translation id="7460898608667578234">Ucraniano</translation>
 <translation id="7469894403370665791">Conectar automaticamente a esta rede</translation>
-<translation id="7481358317100446445">Pronto</translation>
 <translation id="7486315294984620427">Para arrastar arquivos até o Parallels Desktop, é necessário primeiro copiá-los para a pasta "Arquivos" do Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malaiala (fonético)</translation>
@@ -941,6 +940,7 @@
 <translation id="8492972329130824181">A rede doméstica não está disponível. Ative o roaming de dados móveis para se conectar.</translation>
 <translation id="8499098729323186194">Extraindo <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="8502913769543567768">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, ativar após a configuração do dispositivo, gerenciada pelo administrador</translation>
+<translation id="8512483403832814140">Qualquer horário</translation>
 <translation id="8521441079177373948">Reino Unido</translation>
 <translation id="853494022971700746">Francês (França)</translation>
 <translation id="8540608333167683902">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal em <ph name="SIGNAL_STRENGTH" />%, detalhes</translation>

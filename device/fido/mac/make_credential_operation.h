@@ -45,6 +45,7 @@ class API_AVAILABLE(macosx(10.12.2)) COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentia
 
  private:
   void PromptTouchIdDone(bool success);
+  void CreateCredential(bool has_uv);
 
   const std::unique_ptr<TouchIdContext> touch_id_context_ =
       TouchIdContext::Create();

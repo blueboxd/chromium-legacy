@@ -146,7 +146,7 @@ void ClientSharedImageInterface::CopyToGpuMemoryBuffer(
 #endif
 
 ClientSharedImageInterface::SwapChainMailboxes
-ClientSharedImageInterface::CreateSwapChain(viz::ResourceFormat format,
+ClientSharedImageInterface::CreateSwapChain(viz::SharedImageFormat format,
                                             const gfx::Size& size,
                                             const gfx::ColorSpace& color_space,
                                             GrSurfaceOrigin surface_origin,
@@ -170,6 +170,15 @@ void ClientSharedImageInterface::DestroySharedImage(const SyncToken& sync_token,
     mailboxes_.erase(mailbox);
   }
   proxy_->DestroySharedImage(sync_token, mailbox);
+}
+
+void ClientSharedImageInterface::AddReferenceToSharedImage(
+    const SyncToken& sync_token,
+    const Mailbox& mailbox,
+    uint32_t usage) {
+  DCHECK(!mailbox.IsZero());
+  AddMailbox(mailbox);
+  proxy_->AddReferenceToSharedImage(sync_token, mailbox, usage);
 }
 
 uint32_t ClientSharedImageInterface::UsageForMailbox(const Mailbox& mailbox) {

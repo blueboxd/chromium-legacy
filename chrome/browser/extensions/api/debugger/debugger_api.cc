@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -54,6 +53,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -655,8 +655,8 @@ DebuggerAttachFunction::DebuggerAttachFunction() = default;
 DebuggerAttachFunction::~DebuggerAttachFunction() = default;
 
 ExtensionFunction::ResponseAction DebuggerAttachFunction::Run() {
-  std::unique_ptr<Attach::Params> params(Attach::Params::Create(args()));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  absl::optional<Attach::Params> params = Attach::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   CopyDebuggee(&debuggee_, params->target);
   std::string error;
@@ -703,8 +703,8 @@ DebuggerDetachFunction::DebuggerDetachFunction() = default;
 DebuggerDetachFunction::~DebuggerDetachFunction() = default;
 
 ExtensionFunction::ResponseAction DebuggerDetachFunction::Run() {
-  std::unique_ptr<Detach::Params> params(Detach::Params::Create(args()));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  absl::optional<Detach::Params> params = Detach::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   CopyDebuggee(&debuggee_, params->target);
   std::string error;
@@ -723,9 +723,9 @@ DebuggerSendCommandFunction::DebuggerSendCommandFunction() = default;
 DebuggerSendCommandFunction::~DebuggerSendCommandFunction() = default;
 
 ExtensionFunction::ResponseAction DebuggerSendCommandFunction::Run() {
-  std::unique_ptr<SendCommand::Params> params(
-      SendCommand::Params::Create(args()));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  absl::optional<SendCommand::Params> params =
+      SendCommand::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   CopyDebuggee(&debuggee_, params->target);
   std::string error;
@@ -748,8 +748,8 @@ void DebuggerSendCommandFunction::SendResponseBody(base::Value response) {
   }
 
   SendCommand::Results::Result result;
-  if (base::Value* result_body = response.FindDictKey("result")) {
-    result.additional_properties = std::move(result_body->GetDict());
+  if (base::Value::Dict* result_body = response.GetDict().FindDict("result")) {
+    result.additional_properties = std::move(*result_body);
   }
 
   Respond(ArgumentList(SendCommand::Results::Create(result)));
@@ -788,7 +788,11 @@ base::Value::Dict SerializeTarget(scoped_refptr<DevToolsAgentHost> host) {
   if (type == DevToolsAgentHost::kTypePage) {
     int tab_id =
         extensions::ExtensionTabUtil::GetTabId(host->GetWebContents());
-    dictionary.Set(kTargetTabIdField, tab_id);
+    if (tab_id != api::tabs::TAB_ID_NONE) {
+      dictionary.Set(kTargetTabIdField, tab_id);
+    } else {
+      dictionary.Set(kTargetExtensionIdField, host->GetURL().host());
+    }
     target_type = kTargetTypePage;
   } else if (type == ChromeDevToolsManagerDelegate::kTypeBackgroundPage) {
     dictionary.Set(kTargetExtensionIdField, host->GetURL().host());

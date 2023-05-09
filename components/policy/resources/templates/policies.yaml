@@ -1057,14 +1057,14 @@ policies:
   1056: KioskTroubleshootingToolsEnabled
   1057: ForceEnablePepperVideoDecoderDevAPI
   1058: DomainReliabilityAllowed
-  1059: ScreensaverEnabled
-  1060: ScreensaverIdleTimeoutSeconds
-  1061: ScreensaverImageDisplayIntervalSeconds
-  1062: ScreensaverImages
-  1063: DeviceScreensaverEnabled
-  1064: DeviceScreensaverIdleTimeoutSeconds
-  1065: DeviceScreensaverImageDisplayIntervalSeconds
-  1066: DeviceScreensaverImages
+  1059: ScreensaverLockScreenEnabled
+  1060: ScreensaverLockScreenIdleTimeoutSeconds
+  1061: ScreensaverLockScreenImageDisplayIntervalSeconds
+  1062: ScreensaverLockScreenImages
+  1063: DeviceScreensaverLoginScreenEnabled
+  1064: DeviceScreensaverLoginScreenIdleTimeoutSeconds
+  1065: DeviceScreensaverLoginScreenImageDisplayIntervalSeconds
+  1066: DeviceScreensaverLoginScreenImages
   1067: DefaultWindowManagementSetting
   1068: WindowManagementAllowedForUrls
   1069: WindowManagementBlockedForUrls
@@ -1082,10 +1082,14 @@ policies:
   1081: DeviceSystemAecEnabled
   1082: HttpAllowlist
   1083: HttpsUpgradesEnabled
-  1084: ''
-  1085: ''
+  1084: RealTimeDownloadProtectionRequestAllowed
+  1085: MandatoryExtensionsForIncognitoNavigation
   1086: CredentialProviderPromoEnabled
-
+  1087: RemoteAccessHostAllowEnterpriseRemoteSupportConnections
+  1088: ClientSidePhishingProtectionAllowed
+  1089: UserAvatarCustomizationSelectorsEnabled
+  1090: DefaultThirdPartyStoragePartitioningSetting
+  1091: ThirdPartyStoragePartitioningBlockedForOrigins
 atomic_groups:
   1: Homepage
   2: RemoteAccess
@@ -1133,3 +1137,4 @@ atomic_groups:
   44: BrowserIdle
   45: PrivacySandbox
   46: KerberosPrefilledConfig
+  47: ThirdPartyStoragePartitioningSettings

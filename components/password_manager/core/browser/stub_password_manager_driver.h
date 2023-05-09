@@ -24,8 +24,6 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
 
   // PasswordManagerDriver:
   int GetId() const override;
-  void PasswordFieldHasNoAssociatedUsername(
-      autofill::FieldRendererId password_element_renderer_id) override;
   void SetPasswordFillData(
       const autofill::PasswordFormFillData& form_data) override;
   void GeneratedPasswordAccepted(const std::u16string& password) override;
@@ -47,6 +45,7 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
   bool IsInPrimaryMainFrame() const override;
   bool CanShowAutofillUi() const override;
   ::ui::AXTreeID GetAxTreeId() const override;
+  int GetFrameId() const override;
   const GURL& GetLastCommittedURL() const override;
 };
 

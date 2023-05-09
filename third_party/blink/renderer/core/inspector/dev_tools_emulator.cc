@@ -72,10 +72,8 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
           web_view->GetPage()->GetSettings().GetTextAutosizingEnabled()),
       embedder_device_scale_adjustment_(
           web_view->GetPage()->GetSettings().GetDeviceScaleAdjustment()),
-      embedder_prefer_compositing_to_lcd_text_enabled_(
-          web_view->GetPage()
-              ->GetSettings()
-              .GetPreferCompositingToLCDTextEnabled()),
+      embedder_lcd_text_preference_(
+          web_view->GetPage()->GetSettings().GetLCDTextPreference()),
       embedder_viewport_style_(
           web_view->GetPage()->GetSettings().GetViewportStyle()),
       embedder_plugins_enabled_(
@@ -136,16 +134,16 @@ void DevToolsEmulator::SetDeviceScaleAdjustment(float device_scale_adjustment) {
   }
 }
 
-void DevToolsEmulator::SetPreferCompositingToLCDTextEnabled(bool enabled) {
-  if (embedder_prefer_compositing_to_lcd_text_enabled_ == enabled)
+void DevToolsEmulator::SetLCDTextPreference(LCDTextPreference preference) {
+  if (embedder_lcd_text_preference_ == preference) {
     return;
+  }
 
-  embedder_prefer_compositing_to_lcd_text_enabled_ = enabled;
+  embedder_lcd_text_preference_ = preference;
   bool emulate_mobile_enabled =
       device_metrics_enabled_ && emulate_mobile_enabled_;
   if (!emulate_mobile_enabled) {
-    web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-        enabled);
+    web_view_->GetPage()->GetSettings().SetLCDTextPreference(preference);
   }
 }
 
@@ -267,6 +265,12 @@ void DevToolsEmulator::SetPrimaryHoverType(mojom::blink::HoverType hover_type) {
     web_view_->GetPage()->GetSettings().SetPrimaryHoverType(hover_type);
 }
 
+void DevToolsEmulator::SetOutputDeviceUpdateAbilityType(
+    mojom::blink::OutputDeviceUpdateAbilityType type) {
+  embedder_output_device_update_ability_type_ = type;
+  web_view_->GetPage()->GetSettings().SetOutputDeviceUpdateAbilityType(type);
+}
+
 gfx::Transform DevToolsEmulator::EnableDeviceEmulation(
     const DeviceEmulationParams& params) {
   if (device_metrics_enabled_ &&
@@ -357,8 +361,8 @@ void DevToolsEmulator::EnableMobileEmulation() {
   web_view_->GetPage()->GetSettings().SetViewportMetaEnabled(true);
   web_view_->GetPage()->GetSettings().SetShrinksViewportContentToFit(true);
   web_view_->GetPage()->GetSettings().SetTextAutosizingEnabled(true);
-  web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      true);
+  web_view_->GetPage()->GetSettings().SetLCDTextPreference(
+      LCDTextPreference::kIgnored);
   web_view_->GetPage()->GetSettings().SetPluginsEnabled(false);
   web_view_->GetPage()->GetSettings().SetMainFrameResizesAreOrientationChanges(
       true);
@@ -399,8 +403,8 @@ void DevToolsEmulator::DisableMobileEmulation() {
       embedder_shrink_viewport_content_);
   web_view_->GetPage()->GetSettings().SetTextAutosizingEnabled(
       embedder_text_autosizing_enabled_);
-  web_view_->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      embedder_prefer_compositing_to_lcd_text_enabled_);
+  web_view_->GetPage()->GetSettings().SetLCDTextPreference(
+      embedder_lcd_text_preference_);
   web_view_->GetPage()->GetSettings().SetViewportStyle(
       embedder_viewport_style_);
   web_view_->GetPage()->GetSettings().SetPluginsEnabled(

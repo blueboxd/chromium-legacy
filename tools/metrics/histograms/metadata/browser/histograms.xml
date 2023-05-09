@@ -117,7 +117,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ChromeOS.HatsStatus" enum="HatsStatus"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>aalsum@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
   <summary>
@@ -130,7 +130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.DarkModeStatus" enum="DarkModeStatus"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>lgrey@chromium.org</owner>
   <owner>robliao@chromium.org</owner>
   <summary>
@@ -228,6 +228,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Would only be true. Recorded whenever an unusual timestamp is encountered
     when enqueuing a record, which will be rejected.
+  </summary>
+</histogram>
+
+<histogram name="Browser.ERP.UploadEncryptedReport"
+    enum="EnterpriseDMServerRequestSuccess" expires_after="2024-03-01">
+  <owner>anasr@google.com</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Status of a completed ERP upload request, either successful, with a failure
+    or with a server error.
   </summary>
 </histogram>
 
@@ -478,7 +488,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJanksTotalPerMinute" units="janks"
-    expires_after="2023-04-30">
+    expires_after="2023-08-27">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -492,7 +502,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.IOJankyIntervalsPerMinute"
-    units="janks" expires_after="2023-06-25">
+    units="janks" expires_after="2023-08-27">
   <owner>gab@chromium.org</owner>
   <owner>olivierli@chromium.org</owner>
   <summary>
@@ -534,13 +544,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds3{Phase}"
-    units="janks" expires_after="never">
-<!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
-
+    units="janks" expires_after="M111">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
+    Replaced by Browser.MainThreadsCongestion as a guardrail metric.
+
     This metric is emitted every 30 seconds after main message loop start, when
     there is user activity. Each 30 second duration is divided into 100ms
     intervals. This metric counts the number of these intervals that were
@@ -566,12 +576,14 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds{Phase}"
     units="janks" expires_after="M111">
-<!-- to be replaced by Browser.MainThreadsCongestion as a go/chrome-browser-guiding-metrics) -->
-
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
+    Replaced by Browser.MainThreadsCongestion as a guardrail metric.
+    Browser.MainThreadsCongestion.RunningOnly still represents what this used
+    to.
+
     This metric is emitted every 30 seconds [when there is user activity]. Each
     30 second duration is divided into 100ms intervals. This metric counts the
     number of these intervals that were &quot;janky&quot;. See
@@ -611,7 +623,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.Tabs.SelectionToVisibilityRequestTime"
-    units="microseconds" expires_after="2023-07-09">
+    units="microseconds" expires_after="2023-09-10">
   <owner>jonross@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -678,7 +690,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Guest" units="units"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -690,7 +702,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.WindowCount.Incognito" units="units"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -773,18 +785,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Count of renderer process crashes that we miscounted because we took the
     exit code too early. Grouped by type.
-  </summary>
-</histogram>
-
-<histogram name="BrowserRenderProcessHost.InvisibleMediaStreamFrameDepth"
-    units="frame_depth" expires_after="M72">
-  <owner>boliu@chromium.org</owner>
-  <owner>alexmos@chromium.org</owner>
-  <summary>
-    Recorded at most once per renderer process when it first becomes invisible
-    and has media stream. Record the frame depth of the process. Note this
-    metric is only meaningful when some form of OOPIF is enabled; otherwise
-    frame depth is always 0.
   </summary>
 </histogram>
 

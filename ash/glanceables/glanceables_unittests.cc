@@ -14,14 +14,11 @@
 #include "ash/glanceables/glanceables_restore_view.h"
 #include "ash/glanceables/glanceables_up_next_event_item_view.h"
 #include "ash/glanceables/glanceables_up_next_view.h"
-#include "ash/glanceables/glanceables_util.h"
 #include "ash/glanceables/glanceables_view.h"
 #include "ash/glanceables/glanceables_weather_view.h"
 #include "ash/glanceables/glanceables_welcome_label.h"
-#include "ash/glanceables/signout_screenshot_handler.h"
 #include "ash/glanceables/test_glanceables_delegate.h"
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
-#include "ash/public/cpp/test/in_process_image_decoder.h"
 #include "ash/public/cpp/test/test_system_tray_client.h"
 #include "ash/shell.h"
 #include "ash/style/pill_button.h"
@@ -30,28 +27,17 @@
 #include "ash/system/time/calendar_utils.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/desks/desks_bar_view.h"
-#include "ash/wm/desks/desks_test_util.h"
-#include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/window_state.h"
-#include "base/base_paths.h"
 #include "base/check.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_path_override.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "chromeos/ash/components/settings/scoped_timezone_settings.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 #include "google_apis/common/api_error_codes.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/test/test_event.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/controls/image_view.h"
@@ -60,19 +46,6 @@
 
 namespace ash {
 namespace {
-
-// A SignoutScreenshotHandler that skips taking the screenshot and invokes its
-// done callback immediately.
-class TestSignoutScreenshotHandler : public SignoutScreenshotHandler {
- public:
-  // SignoutScreenshotHandler:
-  void TakeScreenshot(base::OnceClosure done_callback) override {
-    ++take_screenshot_count_;
-    std::move(done_callback).Run();
-  }
-
-  int take_screenshot_count_ = 0;
-};
 
 AmbientWeatherModel* GetWeatherModel() {
   return Shell::Get()->ambient_controller()->GetAmbientWeatherModel();
@@ -187,10 +160,6 @@ class GlanceablesTest : public AshTestBase {
     return controller_->view_->restore_view_;
   }
 
-  views::ImageButton* GetRestoreViewImageButton() {
-    return GetRestoreView()->image_button_;
-  }
-
   PillButton* GetRestoreViewPillButton() {
     return GetRestoreView()->pill_button_;
   }
@@ -248,21 +217,6 @@ TEST_F(GlanceablesTest, GlanceablesViewCreatesChildViews) {
   EXPECT_TRUE(GetUpNextView());
   EXPECT_TRUE(GetRestoreSessionLabel());
   EXPECT_TRUE(GetRestoreView());
-}
-
-TEST_F(GlanceablesTest, ShowFromOverviewDoesNotCreateRestoreViews) {
-  controller_->ShowFromOverview();
-
-  GlanceablesView* view = GetGlanceablesView();
-  ASSERT_TRUE(view);
-  EXPECT_TRUE(GetWelcomeLabel());
-  EXPECT_TRUE(GetWeatherIcon());
-  EXPECT_TRUE(GetWeatherTemperature());
-  EXPECT_TRUE(GetUpNextView());
-
-  // Session restore views are skipped.
-  EXPECT_FALSE(GetRestoreSessionLabel());
-  EXPECT_FALSE(GetRestoreView());
 }
 
 TEST_F(GlanceablesTest, WeatherViewShowsWeather) {
@@ -366,48 +320,10 @@ TEST_F(GlanceablesTest, UpNextEventItemViewRendersCorrectlyWithoutEventTitle) {
   EXPECT_EQ(view.event_title_label_for_test()->GetText(), u"(No title)");
 }
 
-TEST_F(GlanceablesTest, RestoreViewRendersScreenshot) {
-  InProcessImageDecoder data_decoder;
-  const SkColor expected_color = SK_ColorYELLOW;
-
-  // Override home directory.
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::ScopedPathOverride home_dir_override(base::DIR_HOME,
-                                             temp_dir.GetPath());
-
-  // Simulate that shutdown screenshot is there.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(400, 300);
-  bitmap.eraseColor(expected_color);
-  std::vector<unsigned char> png_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data);
-  ASSERT_TRUE(base::WriteFile(
-      temp_dir.GetPath().AppendASCII("signout_screenshot.png"), png_data));
-
-  controller_->CreateUi();
-  GlanceablesRestoreView* restore_view = GetRestoreView();
-  ASSERT_TRUE(restore_view);
-
-  // Wait for GlanceablesRestoreView `image_util::DecodeImageFile` callback.
-  base::RunLoop().RunUntilIdle();
-  views::ImageButton* image_button = GetRestoreViewImageButton();
-  ASSERT_TRUE(image_button);
-  ASSERT_FALSE(GetRestoreViewPillButton());
-  gfx::ImageSkia image = image_button->GetImage(views::Button::STATE_NORMAL);
-  EXPECT_FALSE(image.isNull());
-  EXPECT_GT(image.width(), 0);
-  EXPECT_GT(image.height(), 0);
-  EXPECT_EQ(image.bitmap()->getColor(150, 100), expected_color);
-}
-
 TEST_F(GlanceablesTest, ClickOnSessionRestore) {
   controller_->CreateUi();
   GlanceablesRestoreView* restore_view = GetRestoreView();
   ASSERT_TRUE(restore_view);
-
-  // Wait for GlanceablesRestoreView `image_util::DecodeImageFile` callback.
-  base::RunLoop().RunUntilIdle();
 
   PillButton* restore_button = GetRestoreViewPillButton();
   ASSERT_TRUE(restore_button);
@@ -441,124 +357,6 @@ TEST_F(GlanceablesTest, DismissesOnlyOnAppWindowOpen) {
   // Glanceables stay hidden after the app window is closed.
   app_window.reset();
   EXPECT_FALSE(controller_->IsShowing());
-}
-
-TEST_F(GlanceablesTest, ShowFromOverview) {
-  ASSERT_FALSE(controller_->IsShowing());
-
-  EnterOverview();
-  const DesksBarView* desks_bar_view = GetPrimaryRootDesksBarView();
-  auto* up_next_button = desks_bar_view->up_next_button();
-  ASSERT_TRUE(up_next_button);
-
-  LeftClickOn(up_next_button);
-
-  // Glanceables are showing and overview mode is closed.
-  EXPECT_TRUE(controller_->IsShowing());
-  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-}
-
-TEST_F(GlanceablesTest, OverviewDoesNotHaveUpNextButtonForSecondaryUser) {
-  // Sign in a secondary user.
-  SimulateUserLogin("user@test.com");
-  ASSERT_FALSE(Shell::Get()->session_controller()->IsUserPrimary());
-
-  // Overview mode does not have the "Up next" button.
-  EnterOverview();
-  const DesksBarView* desks_bar_view = GetPrimaryRootDesksBarView();
-  EXPECT_FALSE(desks_bar_view->up_next_button());
-}
-
-TEST_F(GlanceablesTest, ShowFromOverviewHidesAppWindows) {
-  // Create windows, back to front.
-  std::unique_ptr<aura::Window> back_window = CreateAppWindow();
-  std::unique_ptr<aura::Window> middle_window = CreateAppWindow();
-  std::unique_ptr<aura::Window> minimized_window = CreateAppWindow();
-  WindowState::Get(minimized_window.get())->Minimize();
-  std::unique_ptr<aura::Window> front_window = CreateAppWindow();
-
-  controller_->ShowFromOverview();
-
-  // All windows are minimized.
-  EXPECT_TRUE(WindowState::Get(back_window.get())->IsMinimized());
-  EXPECT_TRUE(WindowState::Get(middle_window.get())->IsMinimized());
-  EXPECT_TRUE(WindowState::Get(minimized_window.get())->IsMinimized());
-  EXPECT_TRUE(WindowState::Get(front_window.get())->IsMinimized());
-
-  // Destroy the middle window.
-  middle_window.reset();
-
-  // Hide glanceables.
-  controller_->DestroyUi();
-
-  // Front and back windows are restored.
-  EXPECT_TRUE(WindowState::Get(back_window.get())->IsNormalStateType());
-  EXPECT_TRUE(WindowState::Get(front_window.get())->IsNormalStateType());
-
-  // The originally minimized window is still minimized.
-  EXPECT_TRUE(WindowState::Get(minimized_window.get())->IsMinimized());
-
-  // The front window is still frontmost (at the end of the child list).
-  EXPECT_EQ(front_window->parent()->children().back(), front_window.get());
-}
-
-TEST_F(GlanceablesTest, UnminimizingOneWindowRestoresAllWindows) {
-  std::unique_ptr<aura::Window> back_window = CreateAppWindow();
-  std::unique_ptr<aura::Window> front_window = CreateAppWindow();
-
-  controller_->ShowFromOverview();
-
-  EXPECT_TRUE(WindowState::Get(back_window.get())->IsMinimized());
-  EXPECT_TRUE(WindowState::Get(front_window.get())->IsMinimized());
-
-  // Restore and activate the front window.
-  WindowState::Get(front_window.get())->Unminimize();
-  WindowState::Get(front_window.get())->Activate();
-
-  // Window activation closed glanceables.
-  EXPECT_FALSE(controller_->IsShowing());
-
-  // Both windows are restored.
-  EXPECT_TRUE(WindowState::Get(back_window.get())->IsNormalStateType());
-  EXPECT_TRUE(WindowState::Get(front_window.get())->IsNormalStateType());
-}
-
-TEST_F(GlanceablesTest, RequestRestartForUpdateTakesScreenshot) {
-  GetTestDelegate()->set_should_take_signout_screenshot(true);
-
-  auto* session_controller = Shell::Get()->session_controller();
-  auto screenshot_handler = std::make_unique<TestSignoutScreenshotHandler>();
-  auto* screenshot_handler_ptr = screenshot_handler.get();
-  session_controller->SetSignoutScreenshotHandlerForTest(
-      std::move(screenshot_handler));
-
-  session_controller->RequestRestartForUpdate();
-
-  // Screenshot was taken.
-  EXPECT_EQ(1, screenshot_handler_ptr->take_screenshot_count_);
-
-  // Restart was requested.
-  EXPECT_EQ(1,
-            GetSessionControllerClient()->request_restart_for_update_count());
-}
-
-TEST_F(GlanceablesTest, RecordSignoutScreenshotDurationMetric) {
-  PrefService* local_state = Shell::Get()->local_state();
-
-  // Simulate a previous session that recorded a duration.
-  const base::TimeDelta duration = base::Milliseconds(123);
-  glanceables_util::SaveSignoutScreenshotDuration(local_state, duration);
-
-  // Recording the metric records a histogram.
-  base::HistogramTester histograms;
-  glanceables_util::RecordSignoutScreenshotDurationMetric(local_state);
-  histograms.ExpectUniqueTimeSample("Ash.Glanceables.SignoutScreenshotDuration",
-                                    duration, 1);
-
-  // Pref is reset.
-  const base::TimeDelta updated_duration =
-      glanceables_util::GetSignoutScreenshotDurationForTest(local_state);
-  EXPECT_EQ(0, updated_duration.InMilliseconds());
 }
 
 }  // namespace ash

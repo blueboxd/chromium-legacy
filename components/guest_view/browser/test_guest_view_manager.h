@@ -62,7 +62,7 @@ class TestGuestViewManager : public GuestViewManager {
 
   // Returns the number of guests currently still alive at the time of calling
   // this method.
-  size_t GetNumGuestsActive() const;
+  size_t GetCurrentGuestCount() const;
 
   // Returns the size of the set of removed instance IDs.
   size_t GetNumRemovedInstanceIDs() const;
@@ -101,8 +101,7 @@ class TestGuestViewManager : public GuestViewManager {
   FRIEND_TEST_ALL_PREFIXES(GuestViewManagerTest, ReuseIdForRecreatedGuestPage);
 
   // guest_view::GuestViewManager:
-  void AddGuest(int guest_instance_id,
-                content::WebContents* guest_web_contents) override;
+  void AddGuest(GuestViewBase* guest) override;
   void EmbedderProcessDestroyed(int embedder_process_id) override;
   void ViewGarbageCollected(int embedder_process_id,
                             int view_instance_id) override;

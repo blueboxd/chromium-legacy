@@ -23,7 +23,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
@@ -186,13 +185,13 @@ LocationBarView::LocationBarView(Browser* browser,
              !v->GetOmniboxPopupView()->IsOpen();
     });
     if (features::IsChromeRefresh2023()) {
-      views::FocusRing::Get(this)->SetInnerStrokeDisabled();
+      views::FocusRing::Get(this)->SetOutsetFocusRingDisabled();
     }
     views::InstallPillHighlightPathGenerator(this);
 
 #if BUILDFLAG(IS_MAC)
     geolocation_permission_observation_.Observe(
-        g_browser_process->platform_part()->geolocation_manager());
+        g_browser_process->geolocation_manager());
 #endif
   }
 }
@@ -1096,15 +1095,6 @@ ui::PageTransition LocationBarView::GetPageTransition() const {
 
 base::TimeTicks LocationBarView::GetMatchSelectionTimestamp() const {
   return match_selection_timestamp();
-}
-
-void LocationBarView::AcceptInput() {
-  AcceptInput(base::TimeTicks());
-}
-
-void LocationBarView::AcceptInput(base::TimeTicks match_selection_timestamp) {
-  omnibox_view_->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
-                                      match_selection_timestamp);
 }
 
 void LocationBarView::FocusSearch() {

@@ -179,6 +179,11 @@ bool PresentationRequestNotificationItem::RequestMediaRemoting() {
   return false;
 }
 
+absl::optional<base::UnguessableToken>
+PresentationRequestNotificationItem::GetSourceId() const {
+  return absl::nullopt;
+}
+
 void PresentationRequestNotificationItem::UpdateViewWithMetadata() {
   if (!view_)
     return;

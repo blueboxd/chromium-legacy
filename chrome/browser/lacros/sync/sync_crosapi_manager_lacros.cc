@@ -13,6 +13,7 @@
 #include "chrome/browser/lacros/sync/sync_explicit_passphrase_client_lacros.h"
 #include "chrome/browser/lacros/sync/sync_user_settings_client_lacros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chromeos/crosapi/mojom/sync.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
@@ -89,25 +90,6 @@ std::unique_ptr<SyncUserSettingsClientLacros> MaybeCreateSyncUserSettingsClient(
       std::move(client_remote), sync_user_settings);
 }
 
-// Detects changes in foreign browser sessions and notify
-// CrosapiSessionSyncNotifier
-std::unique_ptr<CrosapiSessionSyncNotifier>
-MaybeCreateCrosapiSessionSyncNotifier() {
-  if (chromeos::LacrosService::Get()
-          ->GetInterfaceVersion<crosapi::mojom::SyncService>() <
-      static_cast<int>(
-          crosapi::mojom::SyncService::kBindSyncedSessionClientMinVersion)) {
-    return nullptr;
-  }
-  // TODO(b/260599791): in a subsequent CL,
-  // - a CrosapiSessionSyncNotifier will be created and its member function
-  // passed as part of the subscription to foreign browser sessions. Upon a
-  // change in foreign browser sessions, all work will be inside of the
-  // CrosapiSessionSyncNotifier object.
-  // - Check that kSyncedSessionClient flag is enabled
-  return nullptr;
-}
-
 }  // namespace
 
 SyncCrosapiManagerLacros::SyncCrosapiManagerLacros() = default;
@@ -127,7 +109,8 @@ void SyncCrosapiManagerLacros::PostProfileInit(Profile* profile) {
   sync_service->AddObserver(this);
 
   DCHECK(!crosapi_session_sync_notifier_);
-  crosapi_session_sync_notifier_ = MaybeCreateCrosapiSessionSyncNotifier();
+  profile->AddObserver(this);
+  MaybeCreateCrosapiSessionSyncNotifier(lacros_service, profile, sync_service);
 
   DCHECK(!sync_explicit_passphrase_client_);
   sync_explicit_passphrase_client_ =
@@ -138,9 +121,62 @@ void SyncCrosapiManagerLacros::PostProfileInit(Profile* profile) {
       lacros_service, sync_service->GetUserSettings());
 }
 
+void SyncCrosapiManagerLacros::OnProfileWillBeDestroyed(Profile* profile) {
+  crosapi_session_sync_notifier_.reset();
+  profile->RemoveObserver(this);
+}
+
 void SyncCrosapiManagerLacros::OnSyncShutdown(
     syncer::SyncService* sync_service) {
   sync_explicit_passphrase_client_.reset();
   sync_user_settings_client_.reset();
   sync_service->RemoveObserver(this);
+}
+
+void SyncCrosapiManagerLacros::MaybeCreateCrosapiSessionSyncNotifier(
+    chromeos::LacrosService* lacros_service,
+    Profile* profile,
+    syncer::SyncService* sync_service) {
+  if (!base::FeatureList::IsEnabled(syncer::kChromeOSSyncedSessionSharing)) {
+    return;
+  }
+
+  if (chromeos::LacrosService::Get()
+          ->GetInterfaceVersion<crosapi::mojom::SyncService>() <
+      static_cast<int>(
+          crosapi::mojom::SyncService::kCreateSyncedSessionClientMinVersion)) {
+    return;
+  }
+
+  sync_sessions::SessionSyncService* session_sync_service =
+      SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  if (!session_sync_service) {
+    return;
+  }
+
+  lacros_service->GetRemote<crosapi::mojom::SyncService>()
+      ->CreateSyncedSessionClient(base::BindOnce(
+          &SyncCrosapiManagerLacros::OnCreateSyncedSessionClient,
+          weak_ptr_factory_.GetWeakPtr(), session_sync_service, sync_service));
+}
+
+void SyncCrosapiManagerLacros::OnCreateSyncedSessionClient(
+    sync_sessions::SessionSyncService* session_sync_service,
+    syncer::SyncService* sync_service,
+    mojo::PendingRemote<crosapi::mojom::SyncedSessionClient> pending_remote) {
+  // TODO(b/260599791): Handle the potential case where the profile or these
+  // passed-in services may be invalid by the time we receive the remote.
+  if (!pending_remote) {
+    return;
+  }
+
+  if (pending_remote.version() <
+      static_cast<int>(crosapi::mojom::SyncedSessionClient::
+                           kOnSessionSyncEnabledChangedMinVersion)) {
+    return;
+  }
+
+  DCHECK(!crosapi_session_sync_notifier_);
+  crosapi_session_sync_notifier_ = std::make_unique<CrosapiSessionSyncNotifier>(
+      session_sync_service, std::move(pending_remote), sync_service);
 }

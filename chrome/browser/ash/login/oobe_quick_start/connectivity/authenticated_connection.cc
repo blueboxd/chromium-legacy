@@ -5,11 +5,16 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/authenticated_connection.h"
 
 #include "base/base64.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
-#include "base/notreached.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
+#include "chrome/browser/ash/login/oobe_quick_start/logging/logging.h"
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
+#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
+#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "crypto/sha2.h"
@@ -39,6 +44,19 @@ constexpr char kSecondDeviceAuthPayloadKey[] = "secondDeviceAuthPayload";
 // GetInfo and GetAssertion.
 constexpr char kFidoMessageKey[] = "fidoMessage";
 
+// Wrapper around Quick Start Payloads
+constexpr char kQuickStartPayload[] = "quickStartPayload";
+
+// Boolean in WifiCredentialsRequest indicating we should request WiFi
+// Credentials
+constexpr char kRequestWifiKey[] = "request_wifi";
+
+// Key in WifiCredentialsRequest including the shared secret
+constexpr char kSharedSecretKey[] = "shared_secret";
+
+// Key in WifiCredentialsRequest for the session ID
+constexpr char kSessionIdKey[] = "SESSION_ID";
+
 // Maps to AccountRequirementSingle enum value for Account Requirement field
 // meaning that at least one account is required on the phone. The user will
 // select the specified account to transfer.
@@ -67,8 +85,13 @@ const char kNotifySourceOfUpdateMessageKey[] = "isForcedUpdateRequired";
 }  // namespace
 
 AuthenticatedConnection::AuthenticatedConnection(
-    NearbyConnection* nearby_connection)
-    : Connection(nearby_connection) {}
+    NearbyConnection* nearby_connection,
+    mojo::SharedRemote<mojom::QuickStartDecoder> remote,
+    RandomSessionId session_id,
+    SharedSecret shared_secret)
+    : Connection(nearby_connection, session_id, shared_secret) {
+  decoder_ = std::move(remote);
+}
 
 AuthenticatedConnection::~AuthenticatedConnection() = default;
 
@@ -101,6 +124,54 @@ void AuthenticatedConnection::NotifySourceOfUpdate() {
   base::Value::Dict message_payload;
   message_payload.Set(kNotifySourceOfUpdateMessageKey, true);
   SendPayload(message_payload);
+}
+
+void AuthenticatedConnection::RequestWifiCredentials(
+    int32_t session_id,
+    RequestWifiCredentialsCallback callback) {
+  // Build the Wifi Credential Request payload
+  base::Value::Dict wifi_credential_request_payload;
+  wifi_credential_request_payload.Set(kRequestWifiKey, true);
+  std::string shared_secret_str(shared_secret_.begin(), shared_secret_.end());
+  std::string shared_secret_base64;
+  base::Base64Encode(shared_secret_str, &shared_secret_base64);
+
+  wifi_credential_request_payload.Set(kSessionIdKey, session_id);
+
+  // TODO (b/234655072): Create a new Shared Secret and persist for Forced
+  // Update
+  wifi_credential_request_payload.Set(kSharedSecretKey, shared_secret_base64);
+
+  // Encode above payload in a Base64 String
+  std::string wifi_credential_request_payload_json;
+  bool json_writer_succeeded = base::JSONWriter::Write(
+      wifi_credential_request_payload, &wifi_credential_request_payload_json);
+
+  if (!json_writer_succeeded) {
+    QS_LOG(ERROR) << "Failed to create Wifi Request payload";
+    return;
+  }
+
+  std::string wifi_credential_request_payload_base64;
+  base::Base64Encode(wifi_credential_request_payload_json,
+                     &wifi_credential_request_payload_base64);
+
+  // Build a QuickStartPayload, with the above Base64 encoded data.
+  base::Value::Dict message_payload;
+  message_payload.Set(kQuickStartPayload,
+                      std::move(wifi_credential_request_payload_base64));
+  SendPayload(message_payload);
+
+  nearby_connection_->Read(
+      base::BindOnce(&AuthenticatedConnection::ParseWifiCredentialsResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void AuthenticatedConnection::ParseWifiCredentialsResponse(
+    RequestWifiCredentialsCallback callback,
+    absl::optional<std::vector<uint8_t>> response_bytes) {
+  // TODO (b/234655072): Implement response parsing.
+  NOTIMPLEMENTED();
 }
 
 void AuthenticatedConnection::SendBootstrapOptions(
@@ -192,7 +263,37 @@ std::string AuthenticatedConnection::CreateFidoClientDataJson(
 void AuthenticatedConnection::ParseAssertionResponse(
     RequestAccountTransferAssertionCallback callback,
     absl::optional<std::vector<uint8_t>> response_bytes) {
-  NOTIMPLEMENTED();
+  if (!response_bytes.has_value()) {
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+
+  auto parse_mojo_response_callback =
+      base::BindOnce(&AuthenticatedConnection::GenerateFidoAssertionInfo,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  decoder_->DecodeGetAssertionResponse(response_bytes.value(),
+                                       std::move(parse_mojo_response_callback));
+}
+
+void AuthenticatedConnection::GenerateFidoAssertionInfo(
+    RequestAccountTransferAssertionCallback callback,
+    ::ash::quick_start::mojom::GetAssertionResponsePtr response) {
+  mojom::GetAssertionResponse::GetAssertionStatus success =
+      mojom::GetAssertionResponse::GetAssertionStatus::kSuccess;
+
+  if (response->status != success) {
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+
+  FidoAssertionInfo assertion_info;
+  assertion_info.email = response->email;
+  assertion_info.credential_id = response->credential_id;
+  assertion_info.authenticator_data = response->auth_data;
+  assertion_info.signature = response->signature;
+
+  std::move(callback).Run(assertion_info);
 }
 
 }  // namespace ash::quick_start

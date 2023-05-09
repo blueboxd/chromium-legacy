@@ -61,8 +61,14 @@ void ThreadController::RunLevelTracker::TimeKeeper::EnableRecording(
       base::HistogramBase::kUmaTargetedHistogramFlag);
 
 #if BUILDFLAG(ENABLE_BASE_TRACING)
-  perfetto_track_.emplace(reinterpret_cast<uint64_t>(this),
-                          perfetto::ThreadTrack::Current());
+  perfetto_track_.emplace(
+      reinterpret_cast<uint64_t>(this),
+      // TODO(crbug.com/1006541): Replace with ThreadTrack::Current() after SDK
+      // migration.
+      // In the non-SDK version, ThreadTrack::Current() returns a different
+      // track id on some platforms (for example Mac OS), which results in
+      // async tracks not being associated with their thread.
+      perfetto::ThreadTrack::ForThread(base::PlatformThread::CurrentId()));
   // TODO(1006541): Use Perfetto library to name this Track.
   // auto desc = perfetto_track_->Serialize();
   // desc.set_name(JoinString({"MessagePumpPhases", thread_name}, " "));
@@ -151,13 +157,15 @@ void ThreadController::RunLevelTracker::OnApplicationTaskSelected(
   time_keeper_.OnApplicationTaskSelected(queue_time, lazy_now);
 }
 
-void ThreadController::RunLevelTracker::OnWorkEnded(LazyNow& lazy_now) {
+void ThreadController::RunLevelTracker::OnWorkEnded(LazyNow& lazy_now,
+                                                    int run_level_depth) {
   DCHECK_CALLED_ON_VALID_THREAD(outer_->associated_thread_->thread_checker);
   if (run_levels_.empty())
     return;
 
-  // #done-work-while-not-running-implies-done-nested
-  if (run_levels_.top().state() != kRunningWorkItem) {
+  // #done-work-at-lower-runlevel-implies-done-nested
+  if (run_level_depth != static_cast<int>(num_run_levels())) {
+    DCHECK_EQ(run_level_depth + 1, static_cast<int>(num_run_levels()));
     run_levels_.top().set_exit_lazy_now(&lazy_now);
     run_levels_.pop();
   } else {

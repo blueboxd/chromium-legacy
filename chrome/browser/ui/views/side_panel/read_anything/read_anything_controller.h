@@ -34,13 +34,15 @@ class Browser;
 //  This class is owned by the ReadAnythingCoordinator and has the same lifetime
 //  as the browser.
 //
-class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
+class ReadAnythingController : public ui::AXActionHandlerObserver,
+                               public ReadAnythingToolbarView::Delegate,
                                public ReadAnythingFontCombobox::Delegate,
                                public ReadAnythingPageHandler::Delegate,
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
                                public screen_ai::ScreenAIInstallState::Observer,
 #endif
-                               public TabStripModelObserver {
+                               public TabStripModelObserver,
+                               public content::WebContentsObserver {
  public:
   ReadAnythingController(ReadAnythingModel* model, Browser* browser);
   ReadAnythingController(const ReadAnythingController&) = delete;
@@ -52,16 +54,11 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   void Activate(bool active);
   bool IsActiveForTesting() { return active_; }
 
-  // Called by ReadAnythingWebContentsObserver. Sends |details| to the WebUI.
-  void AccessibilityEventReceived(
-      const content::AXEventNotificationDetails& details);
-
-  // Called by ReadAnythingWebContentsObserver. Notifies the WebUI that the
-  // AXTree for |web_contents| has been destroyed.
-  void WebContentsDestroyed(content::WebContents* web_contents);
-
  private:
   friend class ReadAnythingControllerTest;
+
+  // ui::AXActionHandlerObserver:
+  void TreeRemoved(ui::AXTreeID ax_tree_id) override;
 
   // ReadAnythingFontCombobox::Delegate:
   void OnFontChoiceChanged(int new_index) override;
@@ -75,6 +72,7 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   ReadAnythingMenuModel* GetLineSpacingModel() override;
   void OnLetterSpacingChanged(int new_index) override;
   ReadAnythingMenuModel* GetLetterSpacingModel() override;
+  void OnSystemThemeChanged() override;
 
   // ReadAnythingPageHandler::Delegate:
   void OnUIReady() override;
@@ -94,17 +92,22 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
       const TabStripSelectionChange& selection) override;
   void OnTabStripModelDestroyed(TabStripModel* tab_strip_model) override;
 
-  // Notifies the model that the AXTreeID has changed.
-  void NotifyActiveAXTreeIDChanged();
+  // content::WebContentsObserver:
+  void AccessibilityEventReceived(
+      const content::AXEventNotificationDetails& details) override;
+  void PrimaryPageChanged(content::Page& page) override;
 
-  // Create a web contents observer for the active tab and enable web
-  // contents-only accessibility. This causes AXTreeSerializer to reset and send
-  // accessibility events of the AXTree when it is re-serialized. The WebUI
-  // receives these events and stores a copy of each web contents' AXTree. If
-  // the UI was destroyed, it stops receiving events. OnUIReady is called when
-  // it is re-created, indicating that it needs to restore its copy of each
-  // web contents' AXTree.
-  void ObserveAccessibilityEventsOnActiveTab();
+  // When the active web contents changes (or the UI becomes active):
+  // 1. Begins observing the web contents of the active tab and enables web
+  //    contents-only accessibility on that web contents. This causes
+  //    AXTreeSerializer to reset and send accessibility events of the AXTree
+  //    when it is re-serialized. The WebUI receives these events and stores a
+  //    copy of the web contents' AXTree.
+  // 2. Notifies the model that the AXTreeID has changed.
+  void OnActiveWebContentsChanged();
+
+  // Notifies the model that the AXTreeID has changed.
+  void OnActiveAXTreeIDChanged();
 
   const raw_ptr<ReadAnythingModel> model_;
 
@@ -119,6 +122,11 @@ class ReadAnythingController : public ReadAnythingToolbarView::Delegate,
   // Whether the Read Anything feature's UI is ready. This is set to true when
   // the UI is constructed and false when it is destroyed.
   bool ui_ready_ = false;
+
+  // Observes the AXActionHandlerRegistry for AXTree removals.
+  base::ScopedObservation<ui::AXActionHandlerRegistry,
+                          ui::AXActionHandlerObserver>
+      ax_action_handler_observer_{this};
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   // screen_ai::ScreenAIInstallState::Observer:

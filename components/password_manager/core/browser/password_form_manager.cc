@@ -18,7 +18,6 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -167,8 +166,10 @@ PasswordFormManager::PasswordFormManager(
                           std::move(password_save_manager),
                           metrics_recorder) {
   driver_ = driver;
-  if (driver_)
+  if (driver_) {
     driver_id_ = driver->GetId();
+    cached_driver_frame_id_ = driver->GetFrameId();
+  }
 
   metrics_recorder_->RecordFormSignature(
       CalculateFormSignature(*observed_form()));
@@ -280,6 +281,15 @@ base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
 std::vector<const PasswordForm*> PasswordFormManager::GetInsecureCredentials()
     const {
   return form_fetcher_->GetInsecureCredentials();
+}
+
+int PasswordFormManager::GetFrameId() {
+  if (driver_) {
+    // When possible, use the most up-to-date frame id, as it can change after
+    // events such as prerender activations.
+    cached_driver_frame_id_ = driver_->GetFrameId();
+  }
+  return cached_driver_frame_id_;
 }
 
 bool PasswordFormManager::IsBlocklisted() const {
@@ -1048,12 +1058,6 @@ std::unique_ptr<PasswordForm> PasswordFormManager::ParseFormAndMakeLogging(
       logger.LogPasswordForm(Logger::STRING_FORM_PARSING_OUTPUT,
                              *password_form);
     }
-  }
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableDevtoolsIssues) &&
-      password_form && password_form->username_element_renderer_id.is_null()) {
-    driver_->PasswordFieldHasNoAssociatedUsername(
-        password_form->password_element_renderer_id);
   }
   return password_form;
 }

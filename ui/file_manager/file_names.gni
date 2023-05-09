@@ -155,7 +155,6 @@ static_js_files = [
   "file_manager/foreground/js/task_history.js",
   "file_manager/foreground/js/thumbnail_loader.js",
   "file_manager/foreground/js/toolbar_controller.js",
-  "file_manager/foreground/js/webui_command_extender.js",
 
   # Metadata:
   "file_manager/foreground/js/metadata/byte_reader.js",
@@ -255,16 +254,27 @@ ts_files = [
   # Actions.
   "file_manager/state/actions.ts",
   "file_manager/state/actions/all_entries.ts",
+  "file_manager/state/actions/android_apps.ts",
   "file_manager/state/actions/current_directory.ts",
+  "file_manager/state/actions/folder_shortcuts.ts",
+  "file_manager/state/actions/navigation.ts",
+  "file_manager/state/actions/ui_entries.ts",
+  "file_manager/state/actions/volumes.ts",
 
   # ActionsProducers.
+  "file_manager/state/actions_producers/all_entries.ts",
   "file_manager/state/actions_producers/current_directory.ts",
 
   # Reducers.
   "file_manager/state/reducers/root.ts",
   "file_manager/state/reducers/all_entries.ts",
+  "file_manager/state/reducers/android_apps.ts",
   "file_manager/state/reducers/current_directory.ts",
+  "file_manager/state/reducers/folder_shortcuts.ts",
+  "file_manager/state/reducers/navigation.ts",
   "file_manager/state/reducers/search.ts",
+  "file_manager/state/reducers/ui_entries.ts",
+  "file_manager/state/reducers/volumes.ts",
 
   # Containers.
   "file_manager/containers/breadcrumb_container.ts",
@@ -274,6 +284,7 @@ ts_files = [
   # Widgets.
   "file_manager/widgets/xf_base.ts",
   "file_manager/widgets/xf_breadcrumb.ts",
+  "file_manager/widgets/xf_bulk_pinning_dialog.ts",
   "file_manager/widgets/xf_conflict_dialog.ts",
   "file_manager/widgets/xf_dlp_restriction_details_dialog.ts",
   "file_manager/widgets/xf_icon.ts",
@@ -284,6 +295,7 @@ ts_files = [
   "file_manager/widgets/xf_splitter.ts",
   "file_manager/widgets/xf_pie_progress.ts",
   "file_manager/foreground/js/ui/search_autocomplete_list.ts",
+  "file_manager/widgets/xf_cloud_panel.ts",
   "file_manager/widgets/xf_tree.ts",
   "file_manager/widgets/xf_tree_item.ts",
 
@@ -319,11 +331,19 @@ ts_test_files = [
   "file_manager/lib/actions_producer_unittest.ts",
   "file_manager/lib/for_tests.ts",
 
+  # Action producers:
+  "file_manager/state/actions_producers/all_entries_unittest.ts",
+
   # Reducers:
   "file_manager/state/for_tests.ts",
   "file_manager/state/reducers/all_entries_unittest.ts",
+  "file_manager/state/reducers/android_apps_unittest.ts",
   "file_manager/state/reducers/current_directory_unittest.ts",
+  "file_manager/state/reducers/folder_shortcuts_unittest.ts",
+  "file_manager/state/reducers/navigation_unittest.ts",
   "file_manager/state/reducers/search_unittest.ts",
+  "file_manager/state/reducers/ui_entries_unittest.ts",
+  "file_manager/state/reducers/volumes_unittest.ts",
 
   # Widgets:
   "file_manager/widgets/xf_breadcrumb_unittest.ts",

@@ -448,6 +448,13 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
         UserMediaRequestResult::kInsecureContext);
     return ScriptPromise();
   }
+
+#if !BUILDFLAG(IS_ANDROID)
+  if (media_type == UserMediaRequestType::kDisplayMedia) {
+    window->ConsumeDisplayCaptureRequestToken();
+  }
+#endif
+
   request->Start();
   return promise;
 }
@@ -513,7 +520,13 @@ ScriptPromise MediaDevices::getDisplayMedia(
     return ScriptPromise();
   }
 
-  if (!LocalFrame::HasTransientUserActivation(window->GetFrame())) {
+  const bool has_transient_user_activation =
+      LocalFrame::HasTransientUserActivation(window->GetFrame()) ||
+      (RuntimeEnabledFeatures::
+           CapabilityDelegationDisplayCaptureRequestEnabled() &&
+       window->IsDisplayCaptureRequestTokenActive());
+
+  if (!has_transient_user_activation) {
     UseCounter::Count(window,
                       WebFeature::kGetDisplayMediaWithoutUserActivation);
     if (RuntimeEnabledFeatures::
@@ -669,7 +682,8 @@ ScriptPromise MediaDevices::ProduceCropTarget(ScriptState* script_state,
   if (old_crop_id) {
     // The Element has a crop-ID which was previously produced.
     DCHECK(!old_crop_id->value().is_zero());
-    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+    auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+        script_state, exception_state.GetContext());
     const ScriptPromise promise = resolver->Promise();
     resolver->Resolve(MakeGarbageCollected<CropTarget>(WTF::String(
         blink::TokenToGUID(old_crop_id->value()).AsLowercaseString())));
@@ -691,7 +705,8 @@ ScriptPromise MediaDevices::ProduceCropTarget(ScriptState* script_state,
 
   // Mints a new crop-ID on the browser process. Resolve when it's produced
   // and ready to be used.
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
+      script_state, exception_state.GetContext());
   crop_id_resolvers_.insert(element, resolver);
   const ScriptPromise promise = resolver->Promise();
   GetDispatcherHost(window->GetFrame())
@@ -1020,7 +1035,6 @@ void MediaDevices::CloseFocusWindowOfOpportunity(
   }
 
   if (capture_controller) {
-    DCHECK(RuntimeEnabledFeatures::ConditionalFocusEnabled(context));
     capture_controller->FinalizeFocusDecision();
   }
 

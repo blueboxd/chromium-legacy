@@ -62,6 +62,11 @@ class SavedTabGroup {
   std::vector<SavedTabGroupTab>& saved_tabs() { return saved_tabs_; }
 
   // Accessors for Tabs based on id.
+  const SavedTabGroupTab* GetTab(const base::GUID& saved_tab_guid) const;
+  const SavedTabGroupTab* GetTab(const base::Token& local_tab_id) const;
+
+  // Non const accessors for tabs based on id. this should only be used inside
+  // of the model methods.
   SavedTabGroupTab* GetTab(const base::GUID& saved_tab_guid);
   SavedTabGroupTab* GetTab(const base::Token& local_tab_id);
 
@@ -116,7 +121,8 @@ class SavedTabGroup {
   // We should merge a group if one of the following is true:
   // 1. The data from `sync_specific` has the most recent (larger) update time.
   // 2. The `sync_specific` has the oldest (smallest) creation time.
-  bool ShouldMergeGroup(const sync_pb::SavedTabGroupSpecifics& sync_specific);
+  bool ShouldMergeGroup(
+      const sync_pb::SavedTabGroupSpecifics& sync_specific) const;
 
   // Insert `tab` into sorted order based on its position compared to already
   // stored tabs in its group. It should be noted that the list of tabs in each

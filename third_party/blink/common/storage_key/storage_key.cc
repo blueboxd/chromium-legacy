@@ -155,6 +155,11 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
 
   switch (first_attribute.value()) {
     case EncodedAttribute::kTopLevelSite: {
+      // Cross-Origin keys cannot be read if partitioning is off.
+      if (!IsThirdPartyStoragePartitioningEnabled()) {
+        return absl::nullopt;
+      }
+
       // A top-level site is serialized and has only one encoded attribute.
       if (pos_second_caret != std::string::npos) {
         return absl::nullopt;
@@ -206,6 +211,11 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
                         IsThirdPartyStoragePartitioningEnabled());
     }
     case EncodedAttribute::kAncestorChainBit: {
+      // Same-Origin kCrossSite keys cannot be read if partitioning is off.
+      if (!IsThirdPartyStoragePartitioningEnabled()) {
+        return absl::nullopt;
+      }
+
       // An ancestor chain bit is serialized and has only one encoded attribute.
       if (pos_second_caret != std::string::npos) {
         return absl::nullopt;
@@ -295,6 +305,12 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
       if (!base::StringToUint64(low_digits, &nonce_low))
         return absl::nullopt;
 
+      // The key is corrupted if there are extra 0s in front of the nonce.
+      if (base::NumberToString(nonce_high) != high_digits ||
+          base::NumberToString(nonce_low) != low_digits) {
+        return absl::nullopt;
+      }
+
       nonce = base::UnguessableToken::Deserialize(nonce_high, nonce_low);
 
       if (!nonce.has_value()) {
@@ -312,6 +328,11 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
     }
     case EncodedAttribute::kTopLevelSiteOpaqueNonceHigh: {
       // An opaque `top_level_site` is serialized.
+
+      // Cross-Origin keys cannot be read if partitioning is off.
+      if (!IsThirdPartyStoragePartitioningEnabled()) {
+        return absl::nullopt;
+      }
 
       // Make sure we found the next separator, it's valid, that it's the
       // correct attribute.
@@ -357,6 +378,12 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
       }
 
       if (!base::StringToUint64(low_digits, &nonce_low)) {
+        return absl::nullopt;
+      }
+
+      // The key is corrupted if there are extra 0s in front of the nonce.
+      if (base::NumberToString(nonce_high) != high_digits ||
+          base::NumberToString(nonce_low) != low_digits) {
         return absl::nullopt;
       }
 
@@ -620,8 +647,7 @@ std::string StorageKey::Serialize() const {
   // Else if storage partitioning is enabled we need to serialize the key to fit
   // one of the following schemes:
   //
-  // Case 1: If the origin matches top_level_site and the ancestor_chain_bit is
-  // kSameSite:
+  // Case 1: If the ancestor_chain_bit is kSameSite or partitioning is disabled:
   //
   // <StorageKey `key`.origin> + "/"
   //
@@ -644,8 +670,7 @@ std::string StorageKey::Serialize() const {
   // `key`.top_level_site.nonce.Low64Bits>  + "^6" + <StorageKey
   // `key`.top_level_site.precursor>
   if (IsThirdPartyStoragePartitioningEnabled() &&
-      (top_level_site_ != net::SchemefulSite(origin_) ||
-       ancestor_chain_bit_ == blink::mojom::AncestorChainBit::kCrossSite)) {
+      ancestor_chain_bit_ == blink::mojom::AncestorChainBit::kCrossSite) {
     if (top_level_site_.opaque()) {
       // Case 4.
       return base::StrCat({

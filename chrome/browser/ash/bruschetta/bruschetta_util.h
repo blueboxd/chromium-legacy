@@ -60,8 +60,11 @@ absl::optional<const base::Value::Dict*> GetInstallableConfig(
     const Profile* profile,
     const std::string& config_id);
 
+base::flat_map<std::string, base::Value::Dict> GetInstallableConfigs(
+    const Profile* profile);
+
 // Returns true if an installable config for Bruschetta is present in the
-// enterprise policy.
+// enterprise policy. (e.g. kBruschettaPolicyId)
 bool HasInstallableConfig(const Profile* profile, const std::string& config_id);
 
 // Returns true if Bruschetta is installed.

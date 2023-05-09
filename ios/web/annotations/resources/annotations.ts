@@ -475,7 +475,6 @@ function replaceNode(
     element.setAttribute('data-index', '' + replacement.index);
     element.setAttribute('data-data', replacement.data);
     element.setAttribute('data-annotation', replacement.annotationText);
-    element.setAttribute('role', 'link');
     element.innerText = replacement.text;
 
     if (replacement.type == 'PHONE_NUMBER' || replacement.type == 'EMAIL') {

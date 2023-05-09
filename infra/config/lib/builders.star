@@ -58,32 +58,23 @@ os_category = struct(
 # The *_DEFAULT members enable distinguishing between a use that runs the
 # "current" version of the OS and a use that runs against a specific version
 # that happens to be the "current" version
-def os_enum(category, dimension, dimension_overrides = None):
-    if dimension_overrides:
-        def get_dimension(bucket, builder):
-            return dimension_overrides.get(bucket, {}).get(builder, dimension)
-    else:
-        def get_dimension(_bucket, _builder):
-            return dimension
-
-    return struct(category = category, get_dimension = get_dimension)
+def os_enum(dimension, category):
+    return struct(dimension = dimension, category = category)
 
 os = struct(
-    ANDROID = os_enum(os_category.ANDROID, "Android"),
-    LINUX_BIONIC = os_enum(os_category.LINUX, "Ubuntu-18.04"),
-    LINUX_FOCAL = os_enum(os_category.LINUX, "Ubuntu-20.04"),
-    # A migration off of bionic is in progress, builders identified in
-    # linux-default.json will have a different os dimension
-    LINUX_DEFAULT = os_enum(os_category.LINUX, "Ubuntu-18.04", json.decode(io.read_file("./linux-default.json"))),
-    MAC_10_15 = os_enum(os_category.MAC, "Mac-10.15"),
-    MAC_12 = os_enum(os_category.MAC, "Mac-12"),
-    MAC_13 = os_enum(os_category.MAC, "Mac-13"),
-    MAC_DEFAULT = os_enum(os_category.MAC, "Mac-12"),
-    MAC_ANY = os_enum(os_category.MAC, "Mac"),
-    WINDOWS_10 = os_enum(os_category.WINDOWS, "Windows-10"),
-    WINDOWS_11 = os_enum(os_category.WINDOWS, "Windows-11"),
-    WINDOWS_DEFAULT = os_enum(os_category.WINDOWS, "Windows-10"),
-    WINDOWS_ANY = os_enum(os_category.WINDOWS, "Windows"),
+    ANDROID = os_enum("Android", os_category.ANDROID),
+    LINUX_BIONIC = os_enum("Ubuntu-18.04", os_category.LINUX),
+    LINUX_FOCAL = os_enum("Ubuntu-20.04", os_category.LINUX),
+    LINUX_DEFAULT = os_enum("Ubuntu-18.04", os_category.LINUX),
+    MAC_10_15 = os_enum("Mac-10.15", os_category.MAC),
+    MAC_12 = os_enum("Mac-12", os_category.MAC),
+    MAC_13 = os_enum("Mac-13", os_category.MAC),
+    MAC_DEFAULT = os_enum("Mac-12", os_category.MAC),
+    MAC_ANY = os_enum("Mac", os_category.MAC),
+    WINDOWS_10 = os_enum("Windows-10", os_category.WINDOWS),
+    WINDOWS_11 = os_enum("Windows-11", os_category.WINDOWS),
+    WINDOWS_DEFAULT = os_enum("Windows-10", os_category.WINDOWS),
+    WINDOWS_ANY = os_enum("Windows", os_category.WINDOWS),
 )
 
 # The constants to be used for the goma_backend and goma_jobs parameters of the
@@ -329,7 +320,6 @@ def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_servi
                      ", ".join(_VALID_REPROXY_ENV_PREFIX_LIST) +
                      "), got '%s'" % k)
         reclient["bootstrap_env"] = bootstrap_env
-    scandeps_server = defaults.get_value("reclient_scandeps_server", scandeps_server)
     if scandeps_server:
         reclient["scandeps_server"] = scandeps_server
     profiler_service = defaults.get_value("reclient_profiler_service", profiler_service)
@@ -418,7 +408,7 @@ defaults = args.defaults(
     reclient_bootstrap_env = None,
     reclient_profiler_service = None,
     reclient_publish_trace = None,
-    reclient_scandeps_server = None,
+    reclient_scandeps_server = args.COMPUTE,
     reclient_cache_silo = None,
     reclient_ensure_verified = None,
     reclient_disable_bq_upload = None,
@@ -704,15 +694,15 @@ def builder(
              "use reclient_instance and reclient_rewrapper_env instead")
     properties = dict(properties)
 
+    os = defaults.get_value("os", os)
+    if os:
+        dimensions["os"] = os.dimension
+
     # bucket might be the args.COMPUTE sentinel value if the caller didn't set
     # bucket in some way, which will result in a weird fully-qualified builder
     # dimension, but it shouldn't matter because the call to luci.builder will
     # fail without bucket being set
     bucket = defaults.get_value("bucket", bucket)
-
-    os = defaults.get_value("os", os)
-    if os:
-        dimensions["os"] = os.get_dimension(bucket, name)
 
     if override_builder_dimension:
         dimensions["builder"] = override_builder_dimension
@@ -808,8 +798,14 @@ def builder(
     if code_coverage != None:
         properties["$build/code_coverage"] = code_coverage
 
-    if reclient_scandeps_server == args.DEFAULT and os and os.category == os_category.MAC:
-        reclient_scandeps_server = True
+    reclient_scandeps_server = defaults.get_value(
+        "reclient_scandeps_server",
+        reclient_scandeps_server,
+    )
+
+    # Enable scandeps_server on Mac by default.
+    if reclient_scandeps_server == args.COMPUTE:
+        reclient_scandeps_server = os and os.category == os_category.MAC
 
     reclient = _reclient_property(
         instance = reclient_instance,
@@ -847,8 +843,6 @@ def builder(
     if triggered_by != args.COMPUTE:
         kwargs["triggered_by"] = triggered_by
 
-    experiments = kwargs.pop("experiments", None) or {}
-
     builder = branches.builder(
         name = name,
         branch_selector = branch_selector,
@@ -859,7 +853,6 @@ def builder(
             resultdb_bigquery_exports = resultdb_bigquery_exports,
             resultdb_index_by_timestamp = resultdb_index_by_timestamp,
         ),
-        experiments = experiments,
         **kwargs
     )
 

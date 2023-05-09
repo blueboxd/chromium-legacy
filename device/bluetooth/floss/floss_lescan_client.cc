@@ -65,7 +65,8 @@ FlossLEScanClient::~FlossLEScanClient() {
 
 void FlossLEScanClient::Init(dbus::Bus* bus,
                              const std::string& service_name,
-                             const int adapter_index) {
+                             const int adapter_index,
+                             base::OnceClosure on_ready) {
   bus_ = bus;
   object_path_ = FlossDBusClient::GenerateGattPath(adapter_index);
   service_name_ = service_name;
@@ -77,7 +78,10 @@ void FlossLEScanClient::Init(dbus::Bus* bus,
   exported_scanner_callback_manager_.AddMethod(
       adapter::kOnScanResult, &ScannerClientObserver::ScanResultReceived);
   exported_scanner_callback_manager_.AddMethod(
-      adapter::kOnScanResultLost, &ScannerClientObserver::ScanResultLost);
+      adapter::kOnAdvertisementFound,
+      &ScannerClientObserver::AdvertisementFound);
+  exported_scanner_callback_manager_.AddMethod(
+      adapter::kOnAdvertisementLost, &ScannerClientObserver::AdvertisementLost);
 
   dbus::ObjectPath callback_path(kScannerCallbackPath);
 
@@ -88,6 +92,8 @@ void FlossLEScanClient::Init(dbus::Bus* bus,
     LOG(ERROR) << "Failed exporting callback " + callback_path.value();
     return;
   }
+
+  on_ready_ = std::move(on_ready);
 }
 
 void FlossLEScanClient::AddObserver(ScannerClientObserver* observer) {
@@ -115,6 +121,11 @@ void FlossLEScanClient::OnRegisterScannerCallback(DBusResult<uint32_t> ret) {
   }
 
   le_scan_callback_id_ = ret.value();
+
+  // Mark client as ready to use.
+  if (on_ready_) {
+    std::move(on_ready_).Run();
+  }
 
   while (!pending_register_scanners_.empty()) {
     CallLEScanMethod<>(std::move(pending_register_scanners_.front()),
@@ -177,9 +188,17 @@ void FlossLEScanClient::ScanResultReceived(ScanResult scan_result) {
   }
 }
 
-void FlossLEScanClient::ScanResultLost(ScanResult scan_result) {
+void FlossLEScanClient::AdvertisementFound(uint8_t scanner_id,
+                                           ScanResult scan_result) {
   for (auto& observer : observers_) {
-    observer.ScanResultLost(scan_result);
+    observer.AdvertisementFound(scanner_id, scan_result);
+  }
+}
+
+void FlossLEScanClient::AdvertisementLost(uint8_t scanner_id,
+                                          ScanResult scan_result) {
+  for (auto& observer : observers_) {
+    observer.AdvertisementLost(scanner_id, scan_result);
   }
 }
 

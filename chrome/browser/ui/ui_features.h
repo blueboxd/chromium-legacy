@@ -39,6 +39,8 @@ BASE_DECLARE_FEATURE(kChromeTipsInMainMenuNewBadge);
 
 BASE_DECLARE_FEATURE(kChromeWhatsNewUI);
 
+BASE_DECLARE_FEATURE(kExtensionsMenuInAppMenu);
+
 #if !defined(ANDROID)
 BASE_DECLARE_FEATURE(kAccessCodeCastUI);
 #endif
@@ -52,8 +54,6 @@ BASE_DECLARE_FEATURE(kLightweightExtensionOverrideConfirmations);
 #endif
 
 BASE_DECLARE_FEATURE(kPowerBookmarksSidePanel);
-
-BASE_DECLARE_FEATURE(kProminentDarkModeActiveTabTitle);
 
 BASE_DECLARE_FEATURE(kQuickCommands);
 
@@ -73,6 +73,11 @@ extern const char kScrollableTabStripOverflowModeName[];
 
 BASE_DECLARE_FEATURE(kSidePanelWebView);
 
+#if !defined(ANDROID)
+BASE_DECLARE_FEATURE(kSidePanelCompanion);
+extern const base::FeatureParam<std::string> kHomepageURLForCompanion;
+#endif
+
 BASE_DECLARE_FEATURE(kSidePanelJourneysQueryless);
 BASE_DECLARE_FEATURE(kSidePanelSearchCompanion);
 
@@ -87,7 +92,7 @@ BASE_DECLARE_FEATURE(kTabGroupsCollapseFreezing);
 BASE_DECLARE_FEATURE(kTabGroupsNewBadgePromo);
 
 BASE_DECLARE_FEATURE(kTabGroupsSave);
-extern const base::FeatureParam<bool> kTabGroupsSaveSyncIntegration;
+BASE_DECLARE_FEATURE(kTabGroupsSaveSyncIntegration);
 
 BASE_DECLARE_FEATURE(kTabHoverCardImages);
 
@@ -117,8 +122,6 @@ extern const char kTabHoverCardAdditionalMaxWidthDelay[];
 // the title and site are on bottom and the tab status and preview image are
 // on top. 0 is the default layout.
 extern const char kTabHoverCardAlternateFormat[];
-
-BASE_DECLARE_FEATURE(kTabOutlinesInLowContrastThemes);
 
 BASE_DECLARE_FEATURE(kTabSearchChevronIcon);
 

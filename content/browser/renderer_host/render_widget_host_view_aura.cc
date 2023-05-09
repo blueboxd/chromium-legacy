@@ -986,6 +986,15 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
     aura::WindowTreeHost* host = top_level->GetHost();
     if (!host)
       return top_level->GetBoundsInScreen();
+
+    // If this is a headless window return the headless window bounds stored in
+    // Aura window properties instead of the actual platform window bounds which
+    // may be different.
+    if (gfx::Rect* headless_bounds =
+            host->window()->GetProperty(aura::client::kHeadlessBoundsKey)) {
+      return *headless_bounds;
+    }
+
     RECT window_rect = {0};
     HWND hwnd = host->GetAcceleratedWidget();
     ::GetWindowRect(hwnd, &window_rect);
@@ -2627,12 +2636,8 @@ void RenderWidgetHostViewAura::CreateSelectionController() {
       ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
   tsc_config.tap_slop = ui::GestureConfiguration::GetInstance()
                             ->max_touch_move_in_pixels_for_click();
-#if BUILDFLAG(IS_CHROMEOS)
   tsc_config.enable_longpress_drag_selection =
       features::IsTouchTextEditingRedesignEnabled();
-#else
-  tsc_config.enable_longpress_drag_selection = false;
-#endif
   selection_controller_ = std::make_unique<ui::TouchSelectionController>(
       selection_controller_client_.get(), tsc_config);
 }

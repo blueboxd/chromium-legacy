@@ -477,7 +477,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OfflinePages.CachedOfflineStatusValid" enum="BooleanMatched"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>pnoland@chromium.org</owner>
   <owner>offline-dev@chromium.org</owner>
   <summary>
@@ -544,36 +544,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="OfflinePages.ConsistencyCheck.Persistent.ExpiredEntryCount"
-    units="entries" expires_after="2021-06-25">
-  <owner>dimich@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Number of DB entries (in persistent namespaces) that have been missing their
-    files for longer than 365 days, and deleted during maintenance task.
-  </summary>
-</histogram>
-
-<histogram name="OfflinePages.ConsistencyCheck.Persistent.MissingFileCount"
-    units="files" expires_after="2021-06-25">
-  <owner>dimich@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Number of files that are found missing during maintenance task, which is
-    also the number of DB entries that are updated with valid file missing time.
-  </summary>
-</histogram>
-
-<histogram name="OfflinePages.ConsistencyCheck.Persistent.ReappearedFileCount"
-    units="files" expires_after="2021-06-25">
-  <owner>dimich@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Number of files that were marked as missing reappeared in the file system,
-    which is also the number of DB entries that removes file missing time.
-  </summary>
-</histogram>
-
 <histogram name="OfflinePages.ConsistencyCheck.Persistent.Result"
     enum="OfflinePagesSyncOperationResult" expires_after="2021-06-25">
   <owner>dimich@chromium.org</owner>
@@ -628,7 +598,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OfflinePages.DidNavigationThrottleCancelNavigation"
-    enum="Boolean" expires_after="2023-07-02">
+    enum="Boolean" expires_after="2023-09-03">
   <owner>curranmax@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -813,16 +783,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="OfflinePages.Prefetching.DownloadedFileSize" units="KiB"
-    expires_after="2021-06-25">
-  <owner>carlosk@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Actual size of archive file successfully downloaded by offline page
-    prefetching.
-  </summary>
-</histogram>
-
 <histogram name="OfflinePages.Prefetching.DownloadExpectedFileSize" units="KiB"
     expires_after="2021-06-25">
   <owner>carlosk@chromium.org</owner>
@@ -832,18 +792,6 @@ chromium-metrics-reviews@google.com.
     started being downloaded by offline page prefetching. Sizes reported in this
     metric are less than the sizes reported in DownloadedFileSize due to content
     gzip encoding.
-  </summary>
-</histogram>
-
-<histogram name="OfflinePages.Prefetching.DownloadFinishedUpdate"
-    enum="OfflinePrefetchDownloadFinishedOutcome" expires_after="2021-06-25">
-  <owner>carlosk@chromium.org</owner>
-  <owner>offline-dev@chromium.org</owner>
-  <summary>
-    Reports the possible outcomes of an archive download finishing and its
-    respective prefetch item being updated in the store. Downloads are expected
-    to succeed or fail but a respective item should always exist and be updated.
-    The &quot;item not found&quot; cases are exceptions.
   </summary>
 </histogram>
 

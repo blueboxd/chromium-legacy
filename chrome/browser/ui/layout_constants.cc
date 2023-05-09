@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/layout_constants.h"
 
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "ui/base/pointer/touch_ui_controller.h"
+#include "ui/base/ui_base_features.h"
 
 int GetLayoutConstant(LayoutConstant constant) {
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
@@ -35,7 +38,12 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_ELEMENT_PADDING:
       return touch_ui ? 3 : 2;
     case LOCATION_BAR_HEIGHT:
-      return touch_ui ? 36 : 28;
+      if (base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateHeight) ||
+          base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+        return touch_ui ? 36 : 34;
+      } else {
+        return touch_ui ? 36 : 28;
+      }
     case LOCATION_BAR_ICON_SIZE:
       return touch_ui ? 20 : 16;
     case TAB_AFTER_TITLE_PADDING:
@@ -68,6 +76,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return 16;
     case DOWNLOAD_ICON_SIZE:
       return 16;
+    case TOOLBAR_CORNER_RADIUS:
+      return 8;
     default:
       break;
   }

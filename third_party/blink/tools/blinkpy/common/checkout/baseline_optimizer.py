@@ -77,8 +77,13 @@ class BaselineLocation(NamedTuple):
         return ':'.join(parts)
 
 
+# Sentinel node to force removal of all-pass nonvirtual baselines without
+# implementing a special case.
+BaselineLocation.ALL_PASS = BaselineLocation(platform='<all-pass>')
 SearchPath = List[BaselineLocation]
 DigestMap = Dict[BaselineLocation, 'ResultDigest']
+# An adjacency list.
+PredecessorMap = Dict[BaselineLocation, Set[BaselineLocation]]
 
 
 class BaselineOptimizer:
@@ -87,14 +92,6 @@ class BaselineOptimizer:
     `run_web_tests.py` has a fallback mechanism to search different locations
     for a test's baseline (i.e., expected text/image dump). The optimizer tries
     to minimize checkout size by removing baselines that would be redundant.
-
-    At a high level, the algorithm works as follows:
-     1. Promote or delete (non)virtual roots.
-     2. Insert each port's search path into a graph data structure, removing
-        any locations where the baseline doesn't exist. This models dependencies
-        between locations, even if they are separated by empty locations (which
-        are effectively no-ops in the port's search).
-     3. For each baseline, remove it if it equals all successors.
 
     See also:
         Fallback visualization: https://docs.google.com/drawings/d/13l3IUlSE99RoKjDwEWuY1O77simAhhF6Wi0fZdkSaMA/
@@ -112,21 +109,21 @@ class BaselineOptimizer:
         self._host = host
         self._ports = []
         for port_name in port_names:
-            self._ports.append(host.port_factory.get(port_name))
-        for flag_specific in host.builders.all_flag_specific_options():
-            port_name = host.builders.port_name_for_flag_specific_option(
-                flag_specific)
-            if port_name in port_names:
-                self._ports.append(
-                    self._make_flag_spec_port(host, flag_specific))
+            self._ports.append(self.port(port_name))
+            flag_spec_options = (
+                host.builders.flag_specific_options_for_port_name(port_name))
+            self._ports.extend(
+                self.port(port_name, flag_specific)
+                for flag_specific in flag_spec_options)
         self._exp_cache = exp_cache or TestExpectationsCache()
 
-    def _make_flag_spec_port(self, host: Host,
-                             flag_specific_config: str) -> Port:
-        port_name = host.builders.port_name_for_flag_specific_option(
-            flag_specific_config)
-        port = host.port_factory.get(port_name)
-        port.set_option_default('flag_specific', flag_specific_config)
+    @memoized
+    def port(self,
+             port_name: str,
+             flag_specific: Optional[str] = None) -> Port:
+        port = self._host.port_factory.get(port_name)
+        if flag_specific:
+            port.set_option_default('flag_specific', flag_specific)
         return port
 
     def optimize(self, test_name: str, suffix: str) -> bool:
@@ -138,10 +135,10 @@ class BaselineOptimizer:
         extension = '.' + suffix
 
         with _indent_log():
-            nonvirtual_test, virtual_tests = self._get_tests_to_optimize(
+            nonvirtual_test, virtual_tests = self.get_tests_to_optimize(
                 test_name)
             paths = list(
-                self._generate_search_paths(nonvirtual_test, virtual_tests))
+                self.generate_search_paths(nonvirtual_test, virtual_tests))
             baseline_name = self._default_port.output_filename(
                 nonvirtual_test, self._default_port.BASELINE_SUFFIX, extension)
             digests = self._digest(frozenset().union(*paths), baseline_name,
@@ -154,21 +151,18 @@ class BaselineOptimizer:
             for root, predecessors in predecessors_by_root.items():
                 self._maybe_promote_root(root, predecessors, digests,
                                          baseline_name)
-            graph = FallbackGraph.from_paths(paths, digests)
-            redundant_locations = graph.find_redundant_locations()
-            for location in redundant_locations:
-                self._filesystem.remove(self._path(location, baseline_name))
-                _log.debug('Removed %s (redundant with %s)', location,
-                           ', '.join(map(str, graph.successors[location])))
+            for location in find_redundant_locations(paths, digests):
+                self._filesystem.remove(self.path(location, baseline_name))
+                _log.debug('Removed %s (redundant)', location)
 
-            _log.debug('Final digests:')
+            _log.debug('Digests:')
             with _indent_log():
                 for location in sorted(digests):
-                    if location != FallbackGraph.ALL_PASS:
+                    if location != BaselineLocation.ALL_PASS:
                         _log.debug('%s -> %s', location, digests[location])
         return True
 
-    def _get_tests_to_optimize(self, test_name: str) -> Tuple[str, List[str]]:
+    def get_tests_to_optimize(self, test_name: str) -> Tuple[str, List[str]]:
         """Translate a test name into all associated tests to optimize.
 
         For convenience, we optimize nonvirtual and virtual tests together.
@@ -191,10 +185,10 @@ class BaselineOptimizer:
             virtual_tests.append(test_name)
         return nonvirtual_test, virtual_tests
 
-    def _generate_search_paths(
-            self,
-            nonvirtual_test: str,
-            virtual_tests: List[str],
+    def generate_search_paths(
+        self,
+        nonvirtual_test: str,
+        virtual_tests: List[str],
     ) -> Iterator[SearchPath]:
         """Generate search paths taken by each port on each provided test.
 
@@ -212,7 +206,7 @@ class BaselineOptimizer:
                 continue
             search_path = self._baseline_search_path(port)
             nonvirtual_locations = [
-                self._location(path) for path in search_path
+                self.location(path) for path in search_path
             ]
             yield nonvirtual_locations
             for virtual_test in virtual_tests:
@@ -220,7 +214,7 @@ class BaselineOptimizer:
                     skipped_ports_by_test[virtual_test].append(port)
                     continue
                 virtual_locations = [
-                    self._location(self._filesystem.join(path, virtual_test))
+                    self.location(self._filesystem.join(path, virtual_test))
                     for path in search_path
                 ]
                 yield virtual_locations + nonvirtual_locations
@@ -240,7 +234,7 @@ class BaselineOptimizer:
     def write_by_directory(self, results_by_directory, writer, indent):
         """Logs results_by_directory in a pretty format."""
         for path in sorted(results_by_directory):
-            writer('%s%s: %s' % (indent, self._location(path).platform
+            writer('%s%s: %s' % (indent, self.location(path).platform
                                  or '(generic)', results_by_directory[path]))
 
     def read_results_by_directory(self, test_name, baseline_name):
@@ -252,12 +246,12 @@ class BaselineOptimizer:
         locations = set()
         for port in self._ports.values():
             locations.update(
-                map(self._location, self._baseline_search_path(port)))
+                map(self.location, self._baseline_search_path(port)))
 
         digests = self._digest(locations, baseline_name,
                                self._is_reftest(test_name))
         return {
-            self._path(location, baseline_name): digest
+            self.path(location, baseline_name): digest
             for location, digest in digests.items()
         }
 
@@ -269,10 +263,10 @@ class BaselineOptimizer:
     ) -> DigestMap:
         digests = {}
         for location in locations:
-            path = self._path(location, baseline_name)
+            path = self.path(location, baseline_name)
             if self._filesystem.exists(path):
-                digests[location] = ResultDigest(self._filesystem, path,
-                                                 is_reftest)
+                digests[location] = ResultDigest.from_file(
+                    self._filesystem, path, is_reftest)
         return digests
 
     def _maybe_promote_root(
@@ -291,8 +285,8 @@ class BaselineOptimizer:
             # predecessors will be removed later in the redundant baseline
             # removal phase.
             predecessor, *_ = predecessors
-            source = self._path(predecessor, baseline_name)
-            dest = self._path(root, baseline_name)
+            source = self.path(predecessor, baseline_name)
+            dest = self.path(root, baseline_name)
             self._filesystem.maybe_make_directory(
                 self._filesystem.dirname(dest))
             self._filesystem.copyfile(source, dest)
@@ -305,11 +299,11 @@ class BaselineOptimizer:
             # Remove the root if it can never (and should never) be reached.
             # If at least one predecessor has the same digest, that
             # predecessor will be deleted later instead of the root.
-            self._filesystem.remove(self._path(root, baseline_name))
+            self._filesystem.remove(self.path(root, baseline_name))
             _log.debug('Removed %s (unreachable)', root)
 
     @memoized
-    def _path(self, location: BaselineLocation, baseline_name: str) -> str:
+    def path(self, location: BaselineLocation, baseline_name: str) -> str:
         """Build an absolute path from a baseline location and name.
 
         This is the inverse of `_location(...)`. The path has the format:
@@ -331,7 +325,7 @@ class BaselineOptimizer:
         return bool(self._default_port.reference_files(test_name))
 
     @memoized
-    def _location(self, filename: str) -> BaselineLocation:
+    def location(self, filename: str) -> BaselineLocation:
         """Guess a baseline location's parameters from a path.
 
         Arguments:
@@ -390,7 +384,16 @@ class ResultDigest:
     # thus will be removed.
     _IMPLICIT_EXTRA_RESULT = '<EXTRA>'
 
-    def __init__(self, fs, path, is_reftest=False):
+    def __init__(self,
+                 sha: str = _IMPLICIT_EXTRA_RESULT,
+                 path: Optional[str] = None,
+                 is_extra_result: bool = False):
+        self.sha = sha
+        self.path = path
+        self.is_extra_result = is_extra_result
+
+    @classmethod
+    def from_file(cls, fs, path, is_reftest=False) -> 'ResultDigest':
         """Constructs the digest for a result.
 
         Args:
@@ -399,32 +402,27 @@ class ResultDigest:
                 an *implicit* extra result.
             is_reftest: Whether the test is a reftest.
         """
-        self.path = path
         if path is None:
-            self.sha = self._IMPLICIT_EXTRA_RESULT
-            self.is_extra_result = True
-            return
+            return cls(cls._IMPLICIT_EXTRA_RESULT, path, is_extra_result=True)
 
         assert fs.exists(path), path + " does not exist"
         if path.endswith('.txt'):
             try:
                 content = fs.read_text_file(path)
-                self.is_extra_result = not content or is_all_pass_testharness_result(
+                is_extra_result = not content or is_all_pass_testharness_result(
                     content)
             except UnicodeDecodeError as e:
-                self.is_extra_result = False
+                is_extra_result = False
             # Unfortunately, we may read the file twice, once in text mode
             # and once in binary mode.
-            self.sha = fs.sha1(path)
-            return
+            return cls(fs.sha1(path), path, is_extra_result)
 
         if path.endswith('.png') and is_reftest:
-            self.is_extra_result = True
-            self.sha = ''
-            return
+            return cls('', path, is_extra_result=True)
 
-        self.is_extra_result = not fs.read_binary_file(path)
-        self.sha = fs.sha1(path)
+        return cls(fs.sha1(path),
+                   path,
+                   is_extra_result=(not fs.read_binary_file(path)))
 
     def __eq__(self, other):
         if other is None:
@@ -449,83 +447,143 @@ class ResultDigest:
                                            self.path)
 
 
-class FallbackGraph:
-    """A graph representing locations that baseline search can pass through."""
-    # Sentinel node to track starting locations of baseline searches.
-    _START = BaselineLocation(platform='<start>')
-    # Sentinel node to force removal of all-pass nonvirtual baselines without
-    # implementing a special case.
-    ALL_PASS = BaselineLocation(platform='<all-pass>')
-
-    def __init__(self, digests: DigestMap):
-        # Contains digests of baselines that exist on disk.
-        self._digests = digests
-        self._digests.setdefault(self.ALL_PASS, ResultDigest(None, None))
-        # This is an adjacency list.
-        self.successors: Dict[BaselineLocation, Set[BaselineLocation]]
-        self.successors = collections.defaultdict(set)
-
-    @classmethod
-    def from_paths(cls, paths: List[SearchPath],
-                   digests: DigestMap) -> 'FallbackGraph':
-        graph = cls(digests)
-        for path in paths:
-            graph.add_search_path(path)
-        return graph
-
-    def _add_edge(self, predecessor: BaselineLocation,
-                  successor: BaselineLocation) -> None:
-        self.successors[predecessor].add(successor)
-
-    def add_search_path(self, path: SearchPath) -> None:
-        # Filter out locations that do not correspond to a file on disk. Such
-        # locations are irrelevant to baseline resolution, so the shortened path
-        # should be equivalent.
-        path = [location for location in path if location in self._digests]
-        if not path:
-            return
-        path = [self._START, *path, self.ALL_PASS]
-        if len(set(path)) < len(path):
-            raise ValueError('path will create a cycle')
-        for predecessor, successor in zip(path[:-1], path[1:]):
-            self._add_edge(predecessor, successor)
-
-    def find_redundant_locations(
-            self,
-            current: BaselineLocation = _START,
-            visited: Optional[Set[BaselineLocation]] = None,
-    ) -> Set[BaselineLocation]:
-        """Find baseline locations that are redundant with depth-first search.
-
-        A location is considered redundant when it has the same digest as all
-        possible successors. All predecessors that fall back to a redundant
-        location will still receive an equivalent baseline from one of the
-        redundant location's successors, so redundant locations are safe to
-        remove.
-        """
-        visited = visited or set()
-        if current in visited or current == self.ALL_PASS:
-            return frozenset()
-        visited.add(current)
-        redundant = set()
-        if current != self._START:
-            locations = [current, *self.successors[current]]
-            if _value_if_same(map(self._digests.get, locations)):
-                redundant.add(current)
-        for successor in self.successors[current]:
-            redundant.update(self.find_redundant_locations(successor, visited))
-        return redundant
+ResultDigest.ALL_PASS = ResultDigest(is_extra_result=True)
 
 
-def _predecessors_by_root(paths: List[SearchPath]
-                          ) -> Dict[BaselineLocation, Set[BaselineLocation]]:
-    """Map baseline roots (virtual or nonvirtual) to their predecessors."""
-    predecessors_by_root = collections.defaultdict(set)
+def find_redundant_locations(paths: List[SearchPath],
+                             digests: DigestMap) -> Set[BaselineLocation]:
+    """Find baseline locations that are redundant and can be safely removed.
+
+    At a high level, this is done by checking for baselines that, if deleted,
+    would not affect the resolution of any path (see Example 1). This procedure
+    repeats for as long as there were new baselines to delete because deleting a
+    baseline can enable further deletions (see Example 2).
+
+    Arguments:
+        paths: A list of paths to check against.
+        digests: Maps baseline locations that exist as files to their values.
+
+    Example 1:
+
+        (generic): a -:-> linux: a -> win: a -> (generic): a
+                 \    :  /           /
+        Virtual   +---:-+-----------+    Nonvirtual
+
+        * Virtual root has nonvirtual 'linux' and 'win' as successors. All have
+          value 'a', so the virtual root is removed. Virtual 'linux' and 'win'
+          still resolve to 'a'.
+        * Nonvirtual 'linux' and 'win' are removed similarly, leaving only the
+          nonvirtual root.
+
+    Example 2:
+
+        linux: a -> win: b -:-> linux: a -> win: b
+                       \    :              /
+        Virtual         +---:-------------+    Nonvirtual
+
+        * Virtual 'win' is removed because it only has nonvirtual 'win' as a
+          successor (virtual 'linux' provides its own baseline).
+        * Virtual 'linux' is removed on the next iteration because it now has
+          nonvirtual 'linux' as a successor.
+    """
+    redundant_locations, digests, converged = set(), dict(digests), False
+    removal_order = list(_visit_in_removal_order(_predecessors(paths)))
+    # Because `_find_new_redundant_location(...)` returns a member of `digests`,
+    # and that member is removed from `digests` to simulate file removal,
+    # `digests` can only shrink in each iteration. At some point, the map will
+    # stop shrinking, possibly becoming empty, which guarantees termination.
+    while not converged:
+        new_redundant_location = _find_new_redundant_location(
+            paths, digests, removal_order)
+        if new_redundant_location:
+            digests.pop(new_redundant_location)
+            redundant_locations.add(new_redundant_location)
+        else:
+            converged = True
+    return redundant_locations
+
+
+def _find_new_redundant_location(
+    paths: List[SearchPath],
+    digests: DigestMap,
+    removal_order: List[BaselineLocation],
+) -> Optional[BaselineLocation]:
+    """Find a baseline location to remove, if available.
+
+    Baselines are removed one at a time to avoid incompatible removals.
+    Consider:
+
+        linux: a -> win: a -:-> linux: b -> win: a
+                            :
+        Virtual             :   Nonvirtual
+
+    Either virtual baseline may be removed, but not both. As soon as one is
+    removed, the other one will no longer be considered redundant on the next
+    iteration.
+
+    When multiple baselines can be removed, as in this example, remove those
+    for older OSes before newer OSes and the generic baseline.
+    """
+    digests.setdefault(BaselineLocation.ALL_PASS, ResultDigest.ALL_PASS)
+    # Maps a location that exists as a file to successor files it can fall back
+    # to if that location were removed.
+    dependencies: Dict[BaselineLocation, Set[BaselineLocation]]
+    dependencies = collections.defaultdict(set)
     for path in paths:
-        for predecessor, maybe_root in zip(path[:-1], path[1:]):
-            if maybe_root.root:
-                predecessors_by_root[maybe_root].add(predecessor)
-    return predecessors_by_root
+        path = [*path, BaselineLocation.ALL_PASS]
+        assert len(set(path)) == len(path), ('duplicate location in path %s' %
+                                             path)
+        with contextlib.suppress(ValueError):
+            # Get the resolved location (i.e., `source`), and the file the
+            # path would fall back to next if `source` were deleted. When only
+            # one source is present, this path resolves to the implicit
+            # all-pass, in which case there is no file removal to contemplate.
+            source, next_source, *_ = filter(digests.get, path)
+            dependencies[source].add(next_source)
+
+    # A location is considered redundant when, for all paths that resolve to it,
+    # the next file in each search has the same digest. All predecessors that
+    # fall back to a redundant location will still receive an equivalent
+    # baseline from one of the redundant location's successors.
+    for location in removal_order:
+        successors = dependencies.get(location)
+        if successors and _value_if_same(
+                map(digests.get, [location, *successors])):
+            return location
+    return None
+
+
+def _visit_in_removal_order(
+    predecessors: PredecessorMap,
+    current: BaselineLocation = BaselineLocation.ALL_PASS,
+    visited: Optional[Set[BaselineLocation]] = None,
+) -> Iterator[BaselineLocation]:
+    visited = visited or set()
+    if current in visited:
+        return
+    visited.add(current)
+    for predecessor in predecessors[current]:
+        yield from _visit_in_removal_order(predecessors, predecessor, visited)
+    yield current
+
+
+def _predecessors(paths: List[SearchPath]) -> PredecessorMap:
+    """Map each location to its immediate predecessors."""
+    predecessors = collections.defaultdict(set)
+    for path in paths:
+        path = [*path, BaselineLocation.ALL_PASS]
+        for predecessor, successor in zip(path[:-1], path[1:]):
+            predecessors[successor].add(predecessor)
+    return predecessors
+
+
+def _predecessors_by_root(paths: List[SearchPath]) -> PredecessorMap:
+    """Map baseline roots (virtual or not) to their immediate predecessors."""
+    return {
+        maybe_root: predecessors
+        for maybe_root, predecessors in _predecessors(paths).items()
+        if maybe_root.root
+    }
 
 
 def _value_if_same(digests: Collection[Optional[ResultDigest]]

@@ -9,9 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/observer_list_types.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_ash.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/apps/app_platform_metrics_retriever.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/reporting/metrics/metric_event_observer.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -20,53 +20,33 @@
 
 namespace reporting {
 
-bool AppEventsObserver::Delegate::IsAppServiceAvailableForProfile(
-    Profile* profile) {
-  return ::apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
-      profile);
-}
-
-::apps::AppPlatformMetrics*
-AppEventsObserver::Delegate::GetAppPlatformMetricsForProfile(Profile* profile) {
-  return ::apps::AppServiceProxyFactory::GetForProfile(profile)
-      ->AppPlatformMetrics();
-}
-
 // static
 std::unique_ptr<AppEventsObserver> AppEventsObserver::CreateForProfile(
     Profile* profile) {
-  auto delegate = std::make_unique<AppEventsObserver::Delegate>();
-  return base::WrapUnique(new AppEventsObserver(profile, std::move(delegate)));
+  auto app_platform_metrics_retriever =
+      std::make_unique<AppPlatformMetricsRetriever>(profile);
+  return base::WrapUnique(
+      new AppEventsObserver(std::move(app_platform_metrics_retriever)));
 }
 
 // static
 std::unique_ptr<AppEventsObserver> AppEventsObserver::CreateForTest(
-    Profile* profile,
-    std::unique_ptr<AppEventsObserver::Delegate> delegate) {
-  return base::WrapUnique(new AppEventsObserver(profile, std::move(delegate)));
+    std::unique_ptr<AppPlatformMetricsRetriever>
+        app_platform_metrics_retriever) {
+  return base::WrapUnique(
+      new AppEventsObserver(std::move(app_platform_metrics_retriever)));
 }
 
 AppEventsObserver::AppEventsObserver(
-    Profile* profile,
-    std::unique_ptr<AppEventsObserver::Delegate> delegate)
-    : profile_(profile), delegate_(std::move(delegate)) {
-  if (!delegate_->IsAppServiceAvailableForProfile(profile)) {
-    // Profile cannot run apps, so we just return.
-    return;
-  }
-
-  // Register instance so we can start observing app events.
-  auto* const app_platform_metrics =
-      delegate_->GetAppPlatformMetricsForProfile(profile);
-  app_platform_metrics->AddObserver(this);
+    std::unique_ptr<AppPlatformMetricsRetriever> app_platform_metrics_retriever)
+    : app_platform_metrics_retriever_(
+          std::move(app_platform_metrics_retriever)) {
+  DCHECK(app_platform_metrics_retriever_);
+  app_platform_metrics_retriever_->GetAppPlatformMetrics(base::BindOnce(
+      &AppEventsObserver::InitEventObserver, weak_ptr_factory_.GetWeakPtr()));
 }
 
-AppEventsObserver::~AppEventsObserver() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (IsInObserverList()) {
-    delegate_->GetAppPlatformMetricsForProfile(profile_)->RemoveObserver(this);
-  }
-}
+AppEventsObserver::~AppEventsObserver() = default;
 
 void AppEventsObserver::SetOnEventObservedCallback(
     MetricRepeatingCallback callback) {
@@ -77,6 +57,20 @@ void AppEventsObserver::SetOnEventObservedCallback(
 void AppEventsObserver::SetReportingEnabled(bool is_enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_enabled_ = is_enabled;
+}
+
+void AppEventsObserver::InitEventObserver(
+    ::apps::AppPlatformMetrics* app_platform_metrics) {
+  // Runs on the same sequence as the `AppPlatformMetricsRetriever` because they
+  // both use the UI thread.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!app_platform_metrics) {
+    // This can happen if the `AppPlatformMetrics` component initialization
+    // failed (for example, component was destructed). We just abort
+    // initialization of the event observer when this happens.
+    return;
+  }
+  observer_.Observe(app_platform_metrics);
 }
 
 void AppEventsObserver::OnAppInstalled(const std::string& app_id,
@@ -158,6 +152,11 @@ void AppEventsObserver::OnAppUninstalled(
           app_uninstall_source));
 
   on_metric_observed_.Run(std::move(metric_data));
+}
+
+void AppEventsObserver::OnAppPlatformMetricsDestroyed() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  observer_.Reset();
 }
 
 }  // namespace reporting

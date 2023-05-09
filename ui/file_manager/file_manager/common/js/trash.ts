@@ -22,6 +22,8 @@
  * TrashEntry combines both files for display.
  */
 
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
+
 import {VolumeManager} from '../../externs/volume_manager.js';
 
 import {parseTrashInfoFiles, startIOTask} from './api.js';
@@ -42,7 +44,8 @@ export class TrashConfig {
 
   constructor(
       readonly volumeType: VolumeManagerCommon.VolumeType,
-      readonly topDir: string, readonly trashDir: string) {
+      readonly topDir: string, readonly trashDir: string,
+      readonly deleteIsForever: boolean) {
     this.id = `${volumeType}-${topDir}`;
   }
 }
@@ -57,9 +60,17 @@ const TRASH_CONFIG = [
   // copy across volumes, so we have a dedicated MyFiles/Downloads/.Trash.
   new TrashConfig(
       VolumeManagerCommon.VolumeType.DOWNLOADS, '/Downloads/',
-      '/Downloads/.Trash/'),
-  new TrashConfig(VolumeManagerCommon.VolumeType.DOWNLOADS, '/', '/.Trash/'),
+      '/Downloads/.Trash/', /*deleteIsForever=*/ true),
+  new TrashConfig(
+      VolumeManagerCommon.VolumeType.DOWNLOADS, '/', '/.Trash/',
+      /*deleteIsForever=*/ true),
 ];
+
+if (loadTimeData.getBoolean('FILES_TRASH_DRIVE_ENABLED')) {
+  TRASH_CONFIG.push(new TrashConfig(
+      VolumeManagerCommon.VolumeType.DRIVE, '/', '/.Trash-1000/',
+      /*deleteIsForever=*/ false));
+}
 
 /**
  * Interval (ms) until items in trash are permanently deleted. 30 days.
@@ -77,11 +88,15 @@ const STALE_TRASHINFO_INTERVAL_MS = 60 * 60 * 1000;
  * Used to validate drag drop data without resolving the URLs to Entry's.
  */
 export function getEnabledTrashVolumeURLs(
-    volumeManager: VolumeManager, includeTrashPath = false) {
+    volumeManager: VolumeManager, includeTrashPath = false,
+    deleteIsForeverOnly = false) {
   const urls: string[] = [];
   for (let i = 0; i < volumeManager.volumeInfoList.length; i++) {
     const volumeInfo = volumeManager.volumeInfoList.item(i);
     for (const config of TRASH_CONFIG) {
+      if (deleteIsForeverOnly && !config.deleteIsForever) {
+        continue;
+      }
       if (volumeInfo.volumeType === config.volumeType) {
         if (!includeTrashPath) {
           urls.push(volumeInfo.fileSystem.root.toURL() as string);
@@ -117,12 +132,14 @@ export function isAllTrashEntries(
 }
 
 /**
- * Returns true if all supplied entries are on a volume that has trash enabled.
+ * Returns true if all supplied entries are on a volume where delete or empty
+ * from trash will delete forever.
  */
-export function isAllEntriesOnTrashEnabledVolumes(
+export function deleteIsForever(
     entries: FileSystemEntry[], volumeManager: VolumeManager): boolean {
-  const enabledTrashVolumeURLs =
-      getEnabledTrashVolumeURLs(volumeManager, /*includeTrashPath=*/ false);
+  const enabledTrashVolumeURLs = getEnabledTrashVolumeURLs(
+      volumeManager, /*includeTrashPath=*/ false,
+      /*deleteIsForeverOnly=*/ true);
   return entries.every((e: FileSystemEntry) => {
     for (const volumeURL of enabledTrashVolumeURLs) {
       if (e.toURL().startsWith(volumeURL)) {

@@ -289,7 +289,6 @@ struct SameSizeAsDocumentLoader
   CommitReason commit_reason;
   uint64_t main_resource_identifier;
   mojom::blink::ResourceTimingInfoPtr resource_timing_info_for_parent;
-  base::TimeTicks last_redirect_end_time;
   WebScopedVirtualTimePauser virtual_time_pauser;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager;
   ukm::SourceId ukm_source_id;
@@ -306,7 +305,6 @@ struct SameSizeAsDocumentLoader
   std::unique_ptr<CodeCacheHost> code_cache_host;
   HashMap<KURL, EarlyHintsPreloadEntry> early_hints_preloaded_resources;
   absl::optional<Vector<KURL>> ad_auction_components;
-  bool has_fenced_frame_reporting_;
   std::unique_ptr<ExtraData> extra_data;
   AtomicString reduced_accept_language;
   network::mojom::NavigationDeliveryType navigation_delivery_type;
@@ -314,6 +312,7 @@ struct SameSizeAsDocumentLoader
   absl::optional<FencedFrame::RedactedFencedFrameProperties>
       fenced_frame_properties;
   bool has_storage_access;
+  mojom::blink::ParentResourceTimingAccess parent_resource_timing_access;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -359,7 +358,7 @@ void WarnIfSandboxIneffective(LocalDOMWindow* window) {
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kWarning,
         "An iframe which has both allow-scripts and allow-same-origin for its "
-        "sandbox attribute can remove its sandboxing."));
+        "sandbox attribute can escape its sandboxing."));
     window->CountUse(WebFeature::kSandboxIneffectiveAllowOriginAllowScript);
   }
 
@@ -508,7 +507,6 @@ DocumentLoader::DocumentLoader(
           params_->is_cross_site_cross_browsing_context_group),
       navigation_api_back_entries_(params_->navigation_api_back_entries),
       navigation_api_forward_entries_(params_->navigation_api_forward_entries),
-      has_fenced_frame_reporting_(params_->has_fenced_frame_reporting),
       extra_data_(std::move(extra_data)),
       reduced_accept_language_(params_->reduced_accept_language),
       navigation_delivery_type_(params_->navigation_delivery_type),
@@ -533,6 +531,8 @@ DocumentLoader::DocumentLoader(
   document_policy_ = CreateDocumentPolicy();
 
   WebNavigationTimings& timings = params_->navigation_timings;
+  parent_resource_timing_access_ = timings.parent_resource_timing_access;
+
   if (!timings.input_start.is_null())
     document_load_timing_.SetInputStart(timings.input_start);
   if (timings.navigation_start.is_null()) {
@@ -647,7 +647,6 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
       params->ad_auction_components->emplace_back(KURL(url));
     }
   }
-  params->has_fenced_frame_reporting = has_fenced_frame_reporting_;
   params->reduced_accept_language = reduced_accept_language_;
   params->navigation_delivery_type = navigation_delivery_type_;
   params->has_storage_access = has_storage_access_;
@@ -717,13 +716,12 @@ void DocumentLoader::SetServiceWorkerNetworkProvider(
 
 void DocumentLoader::DispatchLinkHeaderPreloads(
     const ViewportDescription* viewport,
-    PreloadHelper::MediaPreloadPolicy media_policy) {
+    PreloadHelper::LoadLinksFromHeaderMode mode) {
   DCHECK_GE(state_, kCommitted);
   PreloadHelper::LoadLinksFromHeader(
       GetResponse().HttpHeaderField(http_names::kLink),
-      GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(),
-      PreloadHelper::kOnlyLoadResources, media_policy, viewport,
-      nullptr /* alternate_resource_info */,
+      GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(), mode,
+      viewport, nullptr /* alternate_resource_info */,
       nullptr /* recursive_prefetch_token */);
 }
 
@@ -826,7 +824,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       DCHECK(frame_->DomWindow());
       SoftNavigationHeuristics* heuristics =
           SoftNavigationHeuristics::From(*frame_->DomWindow());
-      heuristics->SetBackForwardNavigationURL(script_state, new_url);
+      heuristics->SetAsyncSoftNavigationURL(script_state, new_url);
     }
   }
   SinglePageAppNavigationType single_page_app_navigation_type =
@@ -1099,6 +1097,7 @@ void DocumentLoader::BodyLoadingFinished(
     const absl::optional<WebURLError>& error) {
   TRACE_EVENT0("loading", "DocumentLoader::BodyLoadingFinished");
 
+  DCHECK(frame_);
   if (!error) {
     GetFrameLoader().Progress().CompleteProgress(main_resource_identifier_);
     probe::DidFinishLoading(
@@ -1245,10 +1244,6 @@ void DocumentLoader::HandleRedirect(
   probe::WillSendNavigationRequest(
       probe::ToCoreProbeSink(GetFrame()), main_resource_identifier_, this,
       url_after_redirect, http_method_, http_body_.get());
-
-  if (ResourceLoadTiming* timing = redirect_response.GetResourceLoadTiming()) {
-    redirect_end_time_ = timing->ReceiveHeadersEnd();
-  }
 
   DCHECK(!GetTiming().FetchStart().is_null());
   GetTiming().AddRedirect(url_before_redirect, url_after_redirect);
@@ -1730,7 +1725,7 @@ void DocumentLoader::StartLoadingInternal() {
   PreloadHelper::LoadLinksFromHeader(
       response_.HttpHeaderField(http_names::kLink),
       response_.CurrentRequestUrl(), *GetFrame(), nullptr,
-      PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll,
+      PreloadHelper::LoadLinksFromHeaderMode::kDocumentBeforeCommit,
       nullptr /* viewport_description */, nullptr /* alternate_resource_info */,
       nullptr /* recursive_prefetch_token */);
   GetFrameLoader().Progress().IncrementProgress(main_resource_identifier_,
@@ -1884,11 +1879,7 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
 
   WarnIfSandboxIneffective(document->domWindow());
 
-  if (view_transition_state_) {
-    ViewTransitionSupplement::CreateFromSnapshotForNavigation(
-        *document, std::move(*view_transition_state_));
-    view_transition_state_.reset();
-  }
+  StartViewTransitionIfNeeded(*document);
 }
 
 void DocumentLoader::WillCommitNavigation() {
@@ -2453,8 +2444,8 @@ void DocumentLoader::CommitNavigation() {
   // since the latter isn't populated in unit tests.
   if (frame_->IsOutermostMainFrame()) {
     auto address_space = response_.AddressSpace();
-    if ((address_space == network::mojom::blink::IPAddressSpace::kPrivate ||
-         address_space == network::mojom::blink::IPAddressSpace::kLocal) &&
+    if ((address_space == network::mojom::blink::IPAddressSpace::kLocal ||
+         address_space == network::mojom::blink::IPAddressSpace::kLoopback) &&
         !frame_->DomWindow()->IsSecureContext()) {
       CountUse(WebFeature::kMainFrameNonSecurePrivateAddressSpace);
     }
@@ -2518,6 +2509,12 @@ void DocumentLoader::CommitNavigation() {
   if (!response_.HttpHeaderField(http_names::kExpectCT).empty()) {
     Deprecation::CountDeprecation(frame_->DomWindow(),
                                   mojom::blink::WebFeature::kExpectCTHeader);
+  }
+  for (const auto& policy : security_init.PermissionsPolicyHeader()) {
+    if (policy.deprecated_feature.has_value()) {
+      Deprecation::CountDeprecation(frame_->DomWindow(),
+                                    *policy.deprecated_feature);
+    }
   }
 
   // Clear the user activation state.
@@ -2630,27 +2627,32 @@ void DocumentLoader::CommitNavigation() {
 
   if (response_.ShouldPopulateResourceTiming() ||
       is_error_page_for_failed_navigation_) {
-    // We only report resource timing to the parent if:
-    // 1. We have a parent (owner)
-    // 2. Timing Allow Passed - otherwise we report fallback timing.
-    // 3. It's an external navigation (kWebNavigationTypeOther)
-    // TODO (crbug.com/1410705): Using navigation_type_ for this covers
-    // most cases but might still have very rare racy edge cases, such as
-    // extension or window.open with target cancelling an ongoing navigation
-    // and start a new navigation to the same URL.
-    if (frame_->Owner() && response_.TimingAllowPassed() &&
-        navigation_type_ == WebNavigationType::kWebNavigationTypeOther) {
-      resource_timing_info_for_parent_ = CreateResourceTimingInfo(
-          GetTiming().NavigationStart(), original_url_, &response_);
-      if (!is_same_origin_initiator ||
-          document_load_timing_.HasCrossOriginRedirect()) {
-        resource_timing_info_for_parent_->content_type = g_empty_string;
-        resource_timing_info_for_parent_->response_status = 0;
+    // We only report resource timing info to the parent if:
+    // 1. The navigation is container-initiated (e.g. iframe changed src)
+    // 2. TAO passed.
+    if (parent_resource_timing_access_ !=
+            mojom::blink::ParentResourceTimingAccess::kDoNotReport &&
+        response_.TimingAllowPassed()) {
+      ResourceResponse response_for_parent(response_);
+      if (parent_resource_timing_access_ ==
+          mojom::blink::ParentResourceTimingAccess::
+              kReportWithoutResponseDetails) {
+        response_for_parent.SetType(network::mojom::FetchResponseType::kOpaque);
       }
+
+      DCHECK(frame_->Owner());
+      DCHECK(GetRequestorOrigin());
+      resource_timing_info_for_parent_ = CreateResourceTimingInfo(
+          GetTiming().NavigationStart(), original_url_, &response_for_parent);
+
       resource_timing_info_for_parent_->last_redirect_end_time =
-          redirect_end_time_;
+          document_load_timing_.RedirectEnd();
     }
 
+    // TimingAllowPassed only applies to resource
+    // timing reporting. Navigation timing is always same-origin with the
+    // document that holds to the timing entry, as navigation timing represents
+    // the timing of that document itself.
     response_.SetTimingAllowPassed(true);
     mojom::blink::ResourceTimingInfoPtr navigation_timing_info =
         CreateResourceTimingInfo(base::TimeTicks(),
@@ -2658,8 +2660,9 @@ void DocumentLoader::CommitNavigation() {
                                      ? pre_redirect_url_for_failed_navigations_
                                      : url_,
                                  &response_);
-    navigation_timing_info->last_redirect_end_time = redirect_end_time_;
-    DCHECK(frame_);
+    navigation_timing_info->last_redirect_end_time =
+        document_load_timing_.RedirectEnd();
+
     DCHECK(frame_->DomWindow());
     DOMWindowPerformance::performance(*frame_->DomWindow())
         ->CreateNavigationTimingInstance(std::move(navigation_timing_info));
@@ -2735,7 +2738,8 @@ void DocumentLoader::CreateParserPostCommit() {
   // Links with media values need more information (like viewport information).
   // This happens after the first chunk is parsed in HTMLDocumentParser.
   DispatchLinkHeaderPreloads(nullptr /* viewport */,
-                             PreloadHelper::kOnlyLoadNonMedia);
+                             PreloadHelper::LoadLinksFromHeaderMode::
+                                 kDocumentAfterCommitWithoutViewport);
 
   // Initializing origin trials might force window proxy initialization,
   // which later triggers CHECK when swapping in via WebFrame::Swap().
@@ -3091,6 +3095,10 @@ void DocumentLoader::NotifyPrerenderingDocumentActivated(
   }
 
   GetTiming().SetActivationStart(params.activation_start);
+
+  DCHECK(!view_transition_state_);
+  view_transition_state_ = std::move(params.view_transition_state);
+  StartViewTransitionIfNeeded(*frame_->GetDocument());
 }
 
 HashMap<KURL, EarlyHintsPreloadEntry>
@@ -3260,6 +3268,14 @@ WebArchiveInfo DocumentLoader::GetArchiveInfo() const {
       WebURL(),
       base::Time(),
   };
+}
+
+void DocumentLoader::StartViewTransitionIfNeeded(Document& document) {
+  if (view_transition_state_) {
+    ViewTransitionSupplement::CreateFromSnapshotForNavigation(
+        document, std::move(*view_transition_state_));
+    view_transition_state_.reset();
+  }
 }
 
 // static

@@ -68,7 +68,7 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/os_crypt/os_crypt_mocker.h"
+#include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/sync/base/command_line_switches.h"
@@ -551,6 +551,17 @@ bool SyncTest::UseVerifier() {
   return false;
 }
 
+bool SyncTest::UseArcPackage() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // ARC_PACKAGE do not support supervised users, switches::kSupervisedUserId
+  // need to be set in SetUpCommandLine() when a test will use supervise users.
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSupervisedUserId);
+#else   // BUILDFLAG(IS_CHROMEOS_ASH)
+  return false;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
 bool SyncTest::SetupClients() {
   previous_profile_ =
       g_browser_process->profile_manager()->GetLastUsedProfile();
@@ -578,9 +589,7 @@ bool SyncTest::SetupClients() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // ARC_PACKAGE do not support supervised users, switches::kSupervisedUserId
-  // need to be set in SetUpCommandLine() when a test will use supervise users.
-  if (!cl->HasSwitch(switches::kSupervisedUserId)) {
+  if (UseArcPackage()) {
     // Sets Arc flags, need to be called before create test profiles.
     ArcAppListPrefsFactory::SetFactoryForSyncTest();
   }

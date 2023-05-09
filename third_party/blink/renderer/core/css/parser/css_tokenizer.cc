@@ -36,6 +36,11 @@ CSSTokenizer::CSSTokenizer(const String& string, wtf_size_t offset)
   input_.Advance(offset);
 }
 
+CSSTokenizer::CSSTokenizer(StringView string, wtf_size_t offset)
+    : input_(string) {
+  input_.Advance(offset);
+}
+
 Vector<CSSParserToken, 32> CSSTokenizer::TokenizeToEOF() {
   Vector<CSSParserToken, 32> tokens;
   tokens.ReserveInitialCapacity((input_.length() - Offset()) /
@@ -63,6 +68,12 @@ CSSParserToken CSSTokenizer::TokenizeSingle() {
 
 CSSParserToken CSSTokenizer::TokenizeSingleWithComments() {
   return NextToken</*SkipComments=*/false, /*StoreOffset=*/true>();
+}
+
+void CSSTokenizer::PersistStrings(CSSTokenizer& destination) {
+  for (String& s : string_pool_) {
+    destination.string_pool_.push_back(std::move(s));
+  }
 }
 
 wtf_size_t CSSTokenizer::TokenCount() {

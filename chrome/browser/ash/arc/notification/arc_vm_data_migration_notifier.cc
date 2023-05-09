@@ -7,14 +7,21 @@
 #include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/arc_util.h"
-#include "ash/components/arc/session/arc_vm_data_migration_confirmation_dialog.h"
 #include "ash/components/arc/session/arc_vm_data_migration_status.h"
 #include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/time/time.h"
+#include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/arc/policy/arc_policy_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/ui/ash/arc_vm_data_migration_confirmation_dialog.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/public/cpp/notification_types.h"
@@ -28,6 +35,11 @@ constexpr char kNotifierId[] = "arc_vm_data_migration_notifier";
 constexpr char kNotificationId[] = "arc_vm_data_migration_notification";
 
 bool ShouldShowNotification(Profile* profile) {
+  // Do not show a notification for managed users.
+  if (policy_util::IsAccountManaged(profile)) {
+    return false;
+  }
+
   switch (GetArcVmDataMigrationStatus(profile->GetPrefs())) {
     case ArcVmDataMigrationStatus::kUnnotified:
     case ArcVmDataMigrationStatus::kNotified:
@@ -37,6 +49,17 @@ bool ShouldShowNotification(Profile* profile) {
     case ArcVmDataMigrationStatus::kFinished:
       return false;
   }
+}
+
+void ReportNotificationShownForTheFirstTime() {
+  base::UmaHistogramBoolean(
+      "Arc.VmDataMigration.NotificationShownForTheFirstTime", true);
+}
+
+void ReportNotificationShown(int days_until_deadline) {
+  base::UmaHistogramExactLinear(
+      "Arc.VmDataMigration.RemainingDays.NotificationShown",
+      days_until_deadline, kArcVmDataMigrationNumberOfDismissibleDays);
 }
 
 }  // namespace
@@ -54,18 +77,35 @@ void ArcVmDataMigrationNotifier::OnArcStarted() {
   if (!base::FeatureList::IsEnabled(kEnableArcVmDataMigration))
     return;
 
+  // Report the migration status at the beginning of each ARC session.
+  // The status might have been changed to kFinished by ArcSessionManager in its
+  // initialization step when there is no Android /data to migrate.
+  // The status might be changed to kNotified within this function call when the
+  // notification is shown.
+  base::UmaHistogramEnumeration(
+      GetHistogramNameByUserType(
+          kArcVmDataMigrationStatusOnArcStartedHistogramName, profile_),
+      GetArcVmDataMigrationStatus(profile_->GetPrefs()));
+
   // Do not show a notification if virtio-blk /data is forcibly enabled, in
   // which case the migration is not needed.
   if (base::FeatureList::IsEnabled(kEnableVirtioBlkForData))
     return;
 
-  // TODO(b/258278176): Check policies and eligibility (e.g. whether LVM
-  // application containers are enabled) before showing a notification.
-  if (ShouldShowNotification(profile_)) {
-    SetArcVmDataMigrationStatus(profile_->GetPrefs(),
-                                ArcVmDataMigrationStatus::kNotified);
-    ShowNotification();
+  if (!ShouldShowNotification(profile_)) {
+    return;
   }
+
+  if (GetArcVmDataMigrationStatus(profile_->GetPrefs()) ==
+      ArcVmDataMigrationStatus::kUnnotified) {
+    ReportNotificationShownForTheFirstTime();
+    profile_->GetPrefs()->SetTime(
+        prefs::kArcVmDataMigrationNotificationFirstShownTime,
+        base::Time::Now());
+  }
+  SetArcVmDataMigrationStatus(profile_->GetPrefs(),
+                              ArcVmDataMigrationStatus::kNotified);
+  ShowNotification();
 }
 
 void ArcVmDataMigrationNotifier::OnArcSessionStopped(ArcStopReason reason) {
@@ -73,12 +113,18 @@ void ArcVmDataMigrationNotifier::OnArcSessionStopped(ArcStopReason reason) {
 }
 
 void ArcVmDataMigrationNotifier::ShowNotification() {
-  // TODO(b/258278176): Replace strings with l10n ones.
-  // TODO(b/258278176): Replace icons once the final design decision is made.
+  const int days_until_deadline =
+      GetDaysUntilArcVmDataMigrationDeadline(profile_->GetPrefs());
+  ReportNotificationShown(days_until_deadline);
+
   message_center::Notification notification = ash::CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
-      u"Update ChromeOS" /* title */, u"Up to 10 minutes needed" /* message */,
-      u"ChromeOS" /* display_source */, GURL() /* origin_url */,
+      l10n_util::GetStringUTF16(IDS_ARC_VM_DATA_MIGRATION_NOTIFICATION_TITLE),
+      l10n_util::GetPluralStringFUTF16(
+          IDS_ARC_VM_DATA_MIGRATION_NOTIFICATION_DAYS_UNTIL_DEADLINE,
+          days_until_deadline),
+      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_SYSTEM_APP_NAME),
+      GURL() /* origin_url */,
       message_center::NotifierId(
           message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId,
           ash::NotificationCatalogName::kArcVmDataMigration),
@@ -89,12 +135,19 @@ void ArcVmDataMigrationNotifier::ShowNotification() {
               weak_ptr_factory_.GetWeakPtr())),
       ash::kSystemMenuUpdateIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
-  notification.set_buttons({message_center::ButtonInfo(u"Update")});
+  notification.set_buttons(
+      {message_center::ButtonInfo(l10n_util::GetStringUTF16(
+          IDS_ARC_VM_DATA_MIGRATION_NOTIFICATION_ACCEPT_BUTTON_LABEL))});
 
-  // Make the notification persist.
-  // TODO(b/259278176): Check and decide what is an appropriate behavior here.
+  // Set the highest (system) priority.
+  notification.SetSystemPriority();
+  // Set no timeout so that the notification never disappears spontaneously.
   notification.set_never_timeout(true);
-  notification.set_pinned(true);
+  if (!ArcVmDataMigrationShouldBeDismissible(days_until_deadline)) {
+    // Pin the notification so that it is moved from the desktop to the
+    // notification list when the close button is clicked.
+    notification.set_pinned(true);
+  }
 
   NotificationDisplayService::GetForProfile(profile_)->Display(
       NotificationHandler::Type::TRANSIENT, notification,
@@ -120,6 +173,7 @@ void ArcVmDataMigrationNotifier::OnNotificationClicked(
   CloseNotification();
 
   ShowArcVmDataMigrationConfirmationDialog(
+      profile_->GetPrefs(),
       base::BindOnce(&ArcVmDataMigrationNotifier::OnRestartAccepted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -130,7 +184,6 @@ void ArcVmDataMigrationNotifier::OnRestartAccepted(bool accepted) {
                                 ArcVmDataMigrationStatus::kConfirmed);
     chrome::AttemptRestart();
   }
-  // TODO(b/258278176): Report when the confirmation dialog is canceled.
 }
 
 }  // namespace arc

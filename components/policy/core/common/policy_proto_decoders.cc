@@ -227,7 +227,7 @@ void DecodeProtoFields(
   }
 }
 
-bool ParseComponentPolicy(base::Value json,
+bool ParseComponentPolicy(base::Value::Dict json_dict,
                           PolicyScope scope,
                           PolicySource source,
                           PolicyMap* policy,
@@ -237,9 +237,7 @@ bool ParseComponentPolicy(base::Value json,
   // Each description is an object that contains the policy value under the
   // "Value" key. The optional "Level" key is either "Mandatory" (default) or
   // "Recommended".
-  for (auto it : json.GetDict()) {
-    const std::string& policy_name = it.first;
-    base::Value description = std::move(it.second);
+  for (auto [policy_name, description] : json_dict) {
     if (!description.is_dict()) {
       *error = "The JSON blob dictionary value is not a dictionary.";
       return false;

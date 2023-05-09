@@ -10,6 +10,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
 #include "base/mac/scoped_nsobject.h"
+#import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom-shared.h"
 
@@ -38,6 +39,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   virtual ~ImmersiveModeController();
 
   virtual void Enable();
+  virtual void FullscreenTransitionCompleted();
   virtual void OnTopViewBoundsChanged(const gfx::Rect& bounds);
   virtual void UpdateToolbarVisibility(mojom::ToolbarVisibilityStyle style);
   mojom::ToolbarVisibilityStyle last_used_style() { return last_used_style_; }
@@ -61,12 +63,23 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   virtual void RevealUnlock();
   int reveal_lock_count() { return reveal_lock_count_; }
 
+  // Called when the NSTitlebarContainerView frame changes.
+  virtual void OnTitlebarFrameDidChange(NSRect frame);
+
+  // Called when a child window is added to the overlay_window_.
+  virtual void OnChildWindowAdded(NSWindow* child);
+
   NSWindow* browser_window() { return browser_window_; }
   NSWindow* overlay_window() { return overlay_window_; }
+  BridgedContentView* overlay_content_view() { return overlay_content_view_; }
+
+  // Caled when `immersive_mode_titlebar_view_controller_`'s view is moved to
+  // a different window.
+  void ImmersiveModeViewWillMoveToWindow(NSWindow* window);
 
   // When true the titlebar is assumed to be fully visible. For testing only.
   void SetTitlebarFullyVisibleForTesting(bool fully_visible) {
-    titlebar_fully_visible_for_testing_ = fully_visible;
+    titlebar_fully_visible_ = fully_visible;
   }
 
  private:
@@ -83,6 +96,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
 
   NSWindow* const browser_window_;
   NSWindow* const overlay_window_;
+  BridgedContentView* overlay_content_view_;
 
   // A controller for top chrome.
   base::scoped_nsobject<ImmersiveModeTitlebarViewController>
@@ -111,6 +125,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   base::scoped_nsobject<ImmersiveModeMapper> immersive_mode_mapper_;
   base::scoped_nsobject<ImmersiveModeWindowObserver>
       immersive_mode_window_observer_;
+  base::scoped_nsobject<ImmersiveModeTitlebarObserver>
+      immersive_mode_titlebar_observer_;
 
   int titlebar_lock_count_ = 0;
   int reveal_lock_count_ = 0;
@@ -118,7 +134,12 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   mojom::ToolbarVisibilityStyle last_used_style_ =
       mojom::ToolbarVisibilityStyle::kAutohide;
 
-  bool titlebar_fully_visible_for_testing_ = false;
+  bool titlebar_fully_visible_ = false;
+  bool titlebar_frame_change_barrier_ = false;
+
+  // Keeps the view controllers hidden until the fullscreen transition is
+  // complete.
+  bool fullscreen_transition_complete_ = false;
 
   base::WeakPtrFactory<ImmersiveModeController> weak_ptr_factory_;
 };
@@ -142,7 +163,7 @@ REMOTE_COCOA_APP_SHIM_EXPORT @interface ImmersiveModeTitlebarObserver : NSObject
 - (instancetype)initWithController:
                     (base::WeakPtr<remote_cocoa::ImmersiveModeController>)
                         controller
-                       overlayView:(NSView*)overlay_view;
+             titlebarContainerView:(NSView*)titlebarContainerView;
 
 @end
 

@@ -25,7 +25,7 @@
 <translation id="1190144681599273207">इस फ़ाइल को लाने में मोबाइल डेटा का करीब <ph name="FILE_SIZE" /> उपयोग होगा.</translation>
 <translation id="1194390763418645112">फ़ाइल का ऐक्सेस <ph name="RESTRICTED_DESTINATIONS" /> ने दिया है</translation>
 <translation id="1201402288615127009">अगला</translation>
-<translation id="1209796539517632982">ऑटोमैटिक (अपने-आप कॉन्फ़िगर होने वाला) नेम सर्वर</translation>
+<translation id="1209796539517632982">स्वचालित नाम सर्वर</translation>
 <translation id="1210831758834677569">लाओ</translation>
 <translation id="1221555006497674479">आपके <ph name="TOTAL_SPACE" /> की शेयर की गई ड्राइव में सिर्फ़ <ph name="REMAINING_PERCENTAGE" />% स्टोरेज बचा है.</translation>
 <translation id="1243314992276662751">अपलोड करें</translation>
@@ -83,7 +83,8 @@
 <translation id="1715848075824334077">व्यक्ति साइकल चला रहा है</translation>
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> आइटम ज़िप किए जा रहे हैं...</translation>
 <translation id="1722687688096767818">प्रोफ़ाइल जोड़ी जा रही है...</translation>
-<translation id="1726100011689679555">नेम सर्वर</translation>
+<translation id="1726100011689679555">नाम सर्वर</translation>
+<translation id="1727562178154619254">सिंक किया जा सकता है</translation>
 <translation id="1729953886957086472">जर्मन (जर्मनी)</translation>
 <translation id="1730235522912993863">चाइनीज़ शांग्जी</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> आइटम कॉपी किए गए.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">इमेज रिज़ॉल्यूशन</translation>
 <translation id="1972984168337863910">फ़ाइल के लिए सुझाव पैनल को बड़ा करें</translation>
 <translation id="1995337122023280937">फ़ाइल की जगह पर जाएं</translation>
-<translation id="1999709132469742660">सभी यूआरएल, फ़ाइल ऐक्सेस कर सकते हैं</translation>
 <translation id="2001796770603320721">डिस्क में प्रबंधित करें</translation>
 <translation id="2009067268969781306">किसी डिस्क को फ़ॉर्मैट करने से उस पर सेव किया गया पूरा डेटा मिट जाएगा. यह कार्रवाई वापस नहीं ली जा सकती.</translation>
 <translation id="2025955442973426285">टिगरिन्या</translation>
@@ -356,7 +356,7 @@
 <translation id="3973925058222872294">अंग्रेज़ी (यूके)</translation>
 <translation id="3975895378829046965">बांग्ला फ़ोनेटिक</translation>
 <translation id="3999574733850440202">हाल ही में खोली गई Microsoft फ़ाइलों को OneDrive में भेज दिया गया है</translation>
-<translation id="4002066346123236978">टाइटल</translation>
+<translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4017788180641807848">वर्कमैन कीबोर्ड के साथ अंग्रेज़ी (यूएस)</translation>
 <translation id="4019998208269143058">क्विक फ़ाइलों में पिन करें</translation>
 <translation id="4040753847560036377">PUK गलत है</translation>
@@ -418,7 +418,7 @@
 <translation id="4477219268485577442">बुल्गारियाई फ़ोनेटिक</translation>
 <translation id="4508265954913339219">सक्रियण विफल</translation>
 <translation id="4509667233588080747">वर्कमैन इंटरनैशनल कीबोर्ड के साथ अंग्रेज़ी (यूएस)</translation>
-<translation id="4522570452068850558">ब्यौरा</translation>
+<translation id="4522570452068850558">विवरण</translation>
 <translation id="4527800702232535228">यह फ़ोल्डर Parallels Desktop के साथ शेयर किया गया है</translation>
 <translation id="4552678318981539154">ज़्यादा स्टोरेज खरीदें</translation>
 <translation id="4552759165874948005"><ph name="NETWORK_TYPE" /> नेटवर्क, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">लैटिन अमेरिकी</translation>
 <translation id="5330145655348521461">ये फ़ाइलें किसी अलग डेस्कटॉप पर खुली हैं. उसे देखने के लिए <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)  पर जाएं.</translation>
 <translation id="5330512191124428349">जानकारी पाएं</translation>
-<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" /> को छोड़कर सभी यूआरएल, फ़ाइल ऐक्सेस कर सकते हैं</translation>
 <translation id="5344246330454251646">Bruschetta के साथ फ़ाइलें और फ़ोल्डर शेयर करने की सुविधा मैनेज करें</translation>
 <translation id="535792325654997756">बिल्लियों के साथ व्यक्ति</translation>
 <translation id="5358764674931277">फ़्रेम दर</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">आपका Linux ऐप्लिकेशन इंस्टॉल करते समय कोई गड़बड़ी हुई.</translation>
 <translation id="5912396950572065471">फ़ॉर्मैट</translation>
 <translation id="5913638992615760742">कॉपी बनाने में अनचाही गड़बड़ी : <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">खोज के नतीजे पाने की नई सुविधाएं उपलब्ध हैं</translation>
 <translation id="5926082595146149752">यूएस इंटरनैशनल पीसी कीबोर्ड के साथ डच (नीदरलैंड्स)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063"><ph name="NETWORK_COUNT" /> में से नेटवर्क <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" /> को डिवाइस सेटअप होने के बाद चालू करें</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">प्रमाणपत्र लोड नहीं किए गए हैं</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Bruschetta के साथ फ़ोल्डर को शेयर करें</translation>
+<translation id="6750737795876287924">मौजूदा डायरेक्ट्री</translation>
 <translation id="6751256176799620176">1 फ़ोल्डर चयनित</translation>
 <translation id="6755827872271341378">ChromeOS Flex वाला डिवाइस</translation>
 <translation id="6790428901817661496">चलाएं</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">फ़ोल्डर</translation>
 <translation id="6976795442547527108">शेर</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">हमेशा</translation>
 <translation id="6989942356279143254">स्वीडिश</translation>
 <translation id="6990081529015358884">अब आपके पास और स्‍थान शेष नहीं है</translation>
 <translation id="6993826899923627728">ये आइटम आपके ट्रैश में हैं</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">हाल ही की कोई इमेज नहीं मिली</translation>
 <translation id="7460898608667578234">उक्रेनियाई</translation>
 <translation id="7469894403370665791">इस नेटवर्क से अपने आप कनेक्ट करें</translation>
-<translation id="7481358317100446445">तैयार</translation>
 <translation id="7486315294984620427">फाइलों को Parallels Desktop में डालने के लिए, Windows की फ़ाइलों में कॉपी किया जाना ज़रूरी है.</translation>
 <translation id="749452993132003881">हिरागाना</translation>
 <translation id="7495372004724182530">मलयालम फ़ोनेटिक</translation>
@@ -941,6 +940,7 @@
 <translation id="8492972329130824181">होम नेटवर्क उपलब्ध नहीं है. कनेक्ट करने के लिए, मोबाइल डेटा रोमिंग को चालू करना ज़रूरी है.</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> आइटम ढूंढे जा रहे हैं...</translation>
 <translation id="8502913769543567768"><ph name="NETWORK_COUNT" /> में से नेटवर्क <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> को डिवाइस सेटअप होने के बाद चालू करें. सेटअप आपका एडमिन मैनेज करता है</translation>
+<translation id="8512483403832814140">किसी भी समय</translation>
 <translation id="8521441079177373948">यूके</translation>
 <translation id="853494022971700746">फ़्रेंच (फ़्रांस)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, जानकारी</translation>

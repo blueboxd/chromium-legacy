@@ -25,7 +25,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioServiceLaunchOnStartup);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioServiceOutOfProcess);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAudioServiceSandbox);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAvoidUnnecessaryBeforeUnloadCheckSync);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kAvoidUnnecessaryNavigationCancellations);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackgroundFetch);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackForwardCache);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
@@ -96,6 +95,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmRpContext);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmUserInfo);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmSelectiveDisclosure);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFedCmLoginHint);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebIdentityMDocs);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kFirstPartySets);
 CONTENT_EXPORT extern const base::FeatureParam<bool>
     kFirstPartySetsClearSiteDataOnChangedSets;
@@ -251,10 +251,14 @@ enum class ServiceWorkerBypassFetchHandlerTarget {
   // handlers will be bypassed regardless of the current ServiceWorker running
   // status.
   kMainResource,
-  // TODO(crbug.com/1371756) We will add following enum values.
-  // kMainResourceOnlyIfServiceWorkerNotStarted,
-  // kSubResource,
-  // kBoth
+  // If the ServiceWorker is not started yet when the main resource request
+  // happens, it bypasses fetch handlers for the main resource and subsequent
+  // subresources. If the ServiceWorker is running, it invokes fetch handlers as
+  // usual.
+  kAllOnlyIfServiceWorkerNotStarted,
+  // Bypass fetch handlers for subresource requests. Fetch handlers will be
+  // bypassed regardless of the current ServiceWorker running status.
+  kSubResource,
 };
 CONTENT_EXPORT extern const base::FeatureParam<
     ServiceWorkerBypassFetchHandlerTarget>
@@ -299,6 +303,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kEnableExperimentalWebAssemblyJSPI);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyGarbageCollection);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyLazyCompilation);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyRelaxedSimd);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyStringref);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyTiering);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyTrapHandler);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebAuthnTouchToFillCredentialSelection);
@@ -319,7 +324,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kAccessibilityPageZoom);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kAutoDisableAccessibilityV2);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackgroundMediaRendererHasModerateBinding);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBindingManagerConnectionLimit);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kBindingManagerUseNotPerceptibleBinding);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kReduceGpuPriorityOnBackground);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kOnDemandAccessibilityEvents);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kRequestDesktopSiteAdditions);

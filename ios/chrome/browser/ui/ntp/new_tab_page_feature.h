@@ -54,6 +54,13 @@ BASE_DECLARE_FEATURE(kEnableFeedImageCaching);
 // Feature flag to enable synthentic capabilities.
 BASE_DECLARE_FEATURE(kEnableFeedSyntheticCapabilities);
 
+// Feature flag to enable sending discover feedback to an updated target
+BASE_DECLARE_FEATURE(kWebFeedFeedbackReroute);
+
+// Feature flag to enable follow management page instant reload when being
+// opened.
+BASE_DECLARE_FEATURE(kEnableFollowManagementInstantReload);
+
 #pragma mark - Feature parameters
 
 // A parameter to indicate whether Reconstructed Templates is enabled for static
@@ -146,5 +153,11 @@ bool IsFeedSyntheticCapabilitiesEnabled();
 // Returns a custom height for the Following feed header if it is overridden
 // from the server, or returns the default value.
 int FollowingFeedHeaderHeight();
+
+// YES if discover feedback is going to be sent to the updated target.
+bool IsWebFeedFeedbackRerouteEnabled();
+
+// Yes when enabling follow management page instant reload when being opened.
+bool IsFollowManagementInstantReloadEnabled();
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_FEATURE_H_

@@ -23,12 +23,12 @@
 #include "build/buildflag.h"
 #include "components/attribution_reporting/os_support.mojom.h"
 #include "content/browser/attribution_reporting/attribution_constants.h"
-#include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/test/mock_attribution_observer.h"
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/private_aggregation/private_aggregation_manager.h"
@@ -77,6 +77,10 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/attribution_os_level_manager_android.h"
+#endif
 
 namespace content {
 
@@ -1585,6 +1589,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsCrossAppWebEnabledBrowserTest,
             "web");
 }
 
+#if BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(
     AttributionsCrossAppWebEnabledBrowserTest,
     AttributionEligibleNavigationOsLevelEnabled_SetsSupportHeader) {
@@ -1596,12 +1601,13 @@ IN_PROC_BROWSER_TEST_F(
           https_server(), "/register_source_redirect2");
   ASSERT_TRUE(https_server()->Start());
 
+  AttributionOsLevelManagerAndroid::ScopedOsSupportForTesting
+      scoped_os_support_setting(
+          attribution_reporting::mojom::OsSupport::kEnabled);
+
   GURL impression_url = https_server()->GetURL(
       "a.test", "/attribution_reporting/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), impression_url));
-
-  AttributionManagerImpl::ScopedOsSupportForTesting scoped_os_support_setting(
-      attribution_reporting::mojom::OsSupport::kEnabled);
 
   GURL register_source_url =
       https_server()->GetURL("d.test", "/register_source_redirect");
@@ -1634,6 +1640,7 @@ IN_PROC_BROWSER_TEST_F(
                 "Attribution-Reporting-Support"),
             "web, os");
 }
+#endif  // BUILDFLAG(IS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
                        NoMatchingSourceDebugReporting_DebugReportSent) {
@@ -1720,7 +1727,7 @@ class AttributionsFencedFrameBrowserTest : public AttributionsBrowserTest {
             ->GetPrimaryMainFrame()
             ->GetStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcess(),
-        AttributionDataHostManager::FromBrowserContext(
+        AttributionManager::FromBrowserContext(
             web_contents()->GetBrowserContext()),
         /*direct_seller_is_seller=*/false,
         PrivateAggregationManager::GetManager(

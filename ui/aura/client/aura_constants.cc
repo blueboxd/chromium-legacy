@@ -55,6 +55,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kConstrainedWindowKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCreatedByUserGesture, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kDrawAttentionKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(FocusClient*, kFocusClientKey, nullptr)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kHeadlessBoundsKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(Window*, kHostWindowKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::MenuType,
                              kMenuType,
@@ -83,6 +84,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int64_t,
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
                              kRestoreShowStateKey,
                              ui::SHOW_STATE_NORMAL)
+DEFINE_UI_CLASS_PROPERTY_KEY(float, kRasterScale, 1.0f)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsRestoringKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSkipImeProcessing, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::u16string, kTitleKey, nullptr)

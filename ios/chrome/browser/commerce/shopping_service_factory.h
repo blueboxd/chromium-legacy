@@ -33,6 +33,9 @@ class ShoppingServiceFactory : public BrowserStateKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* state) const override;
+  web::BrowserState* GetBrowserStateToUse(
+      web::BrowserState* state) const override;
+  bool ServiceIsCreatedWithBrowserState() const override;
   bool ServiceIsNULLWhileTesting() const override;
 };
 

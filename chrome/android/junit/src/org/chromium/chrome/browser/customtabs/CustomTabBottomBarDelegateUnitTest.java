@@ -33,7 +33,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsSizer;
@@ -57,8 +56,6 @@ public class CustomTabBottomBarDelegateUnitTest {
     private WindowAndroid mWindowAndroid;
     @Mock
     private BrowserControlsSizer mBrowserControlsSizer;
-    @Mock
-    private ObservableSupplier<Integer> mAutofillUiBottomInsetSupplier;
     @Mock
     private CustomTabNightModeStateController mNightModeStateController;
     @Mock
@@ -99,13 +96,12 @@ public class CustomTabBottomBarDelegateUnitTest {
         when(mIntent.getParcelableExtra(
                      CustomTabIntentDataProvider.EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION))
                 .thenReturn(mSwipeUpPendingIntent);
-        when(mWindowAndroid.getApplicationBottomInsetProvider()).thenReturn(mViewportInsetSupplier);
+        when(mWindowAndroid.getApplicationBottomInsetSupplier()).thenReturn(mViewportInsetSupplier);
         mIntentDataProvider = new CustomTabIntentDataProvider(
                 mIntent, mActivity, CustomTabsIntent.COLOR_SCHEME_LIGHT);
         mBottomBarDelegate = new CustomTabBottomBarDelegate(mActivity, mWindowAndroid,
-                mIntentDataProvider, mBrowserControlsSizer, mAutofillUiBottomInsetSupplier,
-                mNightModeStateController, mSystemNightModeMonitor, mTabProvider,
-                mCompositorContentInitializer);
+                mIntentDataProvider, mBrowserControlsSizer, mNightModeStateController,
+                mSystemNightModeMonitor, mTabProvider, mCompositorContentInitializer);
         when(mBottomBarView.findViewById(eq(R.id.bottombar_shadow))).thenReturn(mShadowView);
         mBottomBarDelegate.setBottomBarViewForTesting(mBottomBarView);
     }
@@ -130,7 +126,8 @@ public class CustomTabBottomBarDelegateUnitTest {
         mBottomBarDelegate.onSwipeStarted(
                 ScrollDirection.UP, MotionEvent.obtain(0, 10, MotionEvent.ACTION_MOVE, 0f, 10f, 0));
         // Verify the intent is sent.
-        verify(mSwipeUpPendingIntent).send(eq(mActivity), anyInt(), any(), any(), any());
+        verify(mSwipeUpPendingIntent)
+                .send(eq(mActivity), anyInt(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -142,7 +139,7 @@ public class CustomTabBottomBarDelegateUnitTest {
         mBottomBarDelegate.onSwipeStarted(
                 ScrollDirection.UP, MotionEvent.obtain(0, 10, MotionEvent.ACTION_MOVE, 0f, 10f, 0));
         // Verify the intent is sent.
-        verify(pendingIntent).send(eq(mActivity), anyInt(), any(), any(), any());
+        verify(pendingIntent).send(eq(mActivity), anyInt(), any(), any(), any(), any(), any());
     }
 
     @Test

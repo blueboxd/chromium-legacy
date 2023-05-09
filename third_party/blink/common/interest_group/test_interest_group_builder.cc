@@ -36,7 +36,7 @@ TestInterestGroupBuilder::TestInterestGroupBuilder(url::Origin owner,
           blink::InterestGroup::ExecutionMode::kCompatibilityMode,
           /*bidding_url=*/absl::nullopt,
           /*bidding_wasm_helper_url=*/absl::nullopt,
-          /*daily_update_url=*/absl::nullopt,
+          /*update_url=*/absl::nullopt,
           /*trusted_bidding_signals_url=*/absl::nullopt,
           /*trusted_bidding_signals_keys=*/absl::nullopt,
           /*user_bidding_signals=*/absl::nullopt,
@@ -117,9 +117,9 @@ TestInterestGroupBuilder& TestInterestGroupBuilder::SetBiddingWasmHelperUrl(
   return *this;
 }
 
-TestInterestGroupBuilder& TestInterestGroupBuilder::SetDailyUpdateUrl(
-    absl::optional<GURL> daily_update_url) {
-  interest_group_.daily_update_url = std::move(daily_update_url);
+TestInterestGroupBuilder& TestInterestGroupBuilder::SetUpdateUrl(
+    absl::optional<GURL> update_url) {
+  interest_group_.update_url = std::move(update_url);
   return *this;
 }
 
@@ -153,6 +153,19 @@ TestInterestGroupBuilder& TestInterestGroupBuilder::SetAds(
 TestInterestGroupBuilder& TestInterestGroupBuilder::SetAdComponents(
     absl::optional<std::vector<InterestGroup::Ad>> ad_components) {
   interest_group_.ad_components = std::move(ad_components);
+  return *this;
+}
+
+TestInterestGroupBuilder& TestInterestGroupBuilder::SetAdSizes(
+    absl::optional<base::flat_map<std::string, blink::AdSize>> ad_sizes) {
+  interest_group_.ad_sizes = std::move(ad_sizes);
+  return *this;
+}
+
+TestInterestGroupBuilder& TestInterestGroupBuilder::SetSizeGroups(
+    absl::optional<base::flat_map<std::string, std::vector<std::string>>>
+        size_groups) {
+  interest_group_.size_groups = std::move(size_groups);
   return *this;
 }
 

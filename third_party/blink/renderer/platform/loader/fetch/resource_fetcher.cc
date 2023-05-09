@@ -29,6 +29,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -36,6 +37,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -116,29 +118,33 @@ static constexpr char kCrossDocumentCachedResource[] =
 
 #define RESOURCE_HISTOGRAM_PREFIX "Blink.MemoryCache.RevalidationPolicy."
 
-#define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                         \
-  case ResourceType::k##name: {                                                \
-    UMA_HISTOGRAM_ENUMERATION(RESOURCE_HISTOGRAM_PREFIX prefix #name, policy); \
-    break;                                                                     \
+#define RESOURCE_TYPE_NAME(name) \
+  case ResourceType::k##name: {  \
+    return #name;                \
+    break;                       \
   }
 
-#define DEFINE_RESOURCE_HISTOGRAM(prefix)                      \
-  switch (factory.GetType()) {                                 \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, CSSStyleSheet)    \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Font)             \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Image)            \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)     \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)         \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Audio)            \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Video)            \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Mock)             \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Raw)              \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Script)           \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SVGDocument)      \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, TextTrack)        \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SpeculationRules) \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet)    \
+const std::string ResourceTypeName(ResourceType type) {
+  // `ResourceType` variants in
+  // tools/metrics/histograms/metadata/blink/histograms.xml
+  // should be updated when you update the followings.
+  switch (type) {
+    RESOURCE_TYPE_NAME(Image)             // 1
+    RESOURCE_TYPE_NAME(CSSStyleSheet)     // 2
+    RESOURCE_TYPE_NAME(Script)            // 3
+    RESOURCE_TYPE_NAME(Font)              // 4
+    RESOURCE_TYPE_NAME(Raw)               // 5
+    RESOURCE_TYPE_NAME(SVGDocument)       // 6
+    RESOURCE_TYPE_NAME(XSLStyleSheet)     // 7
+    RESOURCE_TYPE_NAME(LinkPrefetch)      // 8
+    RESOURCE_TYPE_NAME(TextTrack)         // 9
+    RESOURCE_TYPE_NAME(Audio)             // 10
+    RESOURCE_TYPE_NAME(Video)             // 11
+    RESOURCE_TYPE_NAME(Manifest)          // 12
+    RESOURCE_TYPE_NAME(SpeculationRules)  // 13
+    RESOURCE_TYPE_NAME(Mock)              // 14
   }
+}
 
 ResourceLoadPriority TypeToPriority(ResourceType type) {
   switch (type) {
@@ -178,6 +184,31 @@ bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
          params.GetResourceRequest().HttpMethod() == http_names::kGET &&
          params.Options().data_buffering_policy != kDoNotBufferData &&
          !IsRawResource(*resource);
+}
+
+bool ShouldResourceBeKeptStrongReferenceByType(Resource* resource) {
+  // Image, fonts, stylesheets and scripts are the most commonly reused scripts.
+  return (resource->GetType() == ResourceType::kImage ||
+          resource->GetType() == ResourceType::kFont ||
+          resource->GetType() == ResourceType::kCSSStyleSheet ||
+          resource->GetType() == ResourceType::kScript);
+}
+
+bool ShouldResourceBeKeptStrongReference(Resource* resource) {
+  return IsMainThread() && resource->IsLoaded() &&
+         resource->GetResourceRequest().HttpMethod() == http_names::kGET &&
+         resource->Options().data_buffering_policy != kDoNotBufferData &&
+         ShouldResourceBeKeptStrongReferenceByType(resource) &&
+         !resource->GetResponse().CacheControlContainsNoCache() &&
+         !resource->GetResponse().CacheControlContainsNoStore();
+}
+
+base::TimeDelta GetResourceStrongReferenceTimeout(Resource* resource) {
+  base::TimeDelta lifetime = resource->FreshnessLifetime();
+  if (resource->GetResponse().ResponseTime() + lifetime < base::Time::Now()) {
+    return base::TimeDelta();
+  }
+  return resource->GetResponse().ResponseTime() + lifetime - base::Time::Now();
 }
 
 static ResourceFetcher::ResourceFetcherSet& MainThreadFetchersSet() {
@@ -420,6 +451,7 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     FetchParameters::DeferOption defer_option,
     FetchParameters::SpeculativePreloadType speculative_preload_type,
     RenderBlockingBehavior render_blocking_behavior,
+    mojom::blink::ScriptType script_type,
     bool is_link_preload) {
   DCHECK(!resource_request.PriorityHasBeenSet() ||
          type == ResourceType::kImage);
@@ -457,15 +489,17 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   if (FetchParameters::kIdleLoad == defer_option) {
     priority = ResourceLoadPriority::kVeryLow;
   } else if (type == ResourceType::kScript) {
-    // Special handling for scripts.
+    // Special handling for classic scripts.
     // Default/Parser-Blocking/Preload early in document: High (set in
     // typeToPriority)
     // Async/Defer: Low Priority (applies to both preload and parser-inserted)
     // Preload late in document: Medium
-    if (FetchParameters::kLazyLoad == defer_option) {
-      priority = ResourceLoadPriority::kLow;
-    } else if (late_document_from_preload_scanner) {
-      priority = ResourceLoadPriority::kMedium;
+    if (script_type == mojom::blink::ScriptType::kClassic) {
+      if (FetchParameters::kLazyLoad == defer_option) {
+        priority = ResourceLoadPriority::kLow;
+      } else if (late_document_from_preload_scanner) {
+        priority = ResourceLoadPriority::kMedium;
+      }
     }
   } else if (type == ResourceType::kCSSStyleSheet &&
              late_document_from_preload_scanner) {
@@ -577,8 +611,12 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       image_fetched_(false) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
 
-  if (IsMainThread())
+  if (IsMainThread()) {
     MainThreadFetchersSet().insert(this);
+    if (MemoryPressureListenerRegistry::IsLowEndDevice()) {
+      MemoryPressureListenerRegistry::Instance().RegisterClient(this);
+    }
+  }
 }
 
 ResourceFetcher::~ResourceFetcher() {
@@ -820,14 +858,14 @@ void ResourceFetcher::UpdateMemoryCacheStats(
     return;
 
   if (params.IsSpeculativePreload() || params.IsLinkPreload()) {
-    DEFINE_RESOURCE_HISTOGRAM("Preload.");
+    RecordResourceHistogram("Preload.", factory.GetType(), policy);
   } else {
-    DEFINE_RESOURCE_HISTOGRAM("");
+    RecordResourceHistogram("", factory.GetType(), policy);
 
     // Log metrics to evaluate effectiveness of the memory cache if it was
     // partitioned by the top-frame site.
     if (same_top_frame_site_resource_cached)
-      DEFINE_RESOURCE_HISTOGRAM("PerTopFrameSite.");
+      RecordResourceHistogram("PerTopFrameSite.", factory.GetType(), policy);
   }
 
   // Aims to count Resource only referenced from MemoryCache (i.e. what would be
@@ -835,7 +873,7 @@ void ResourceFetcher::UpdateMemoryCacheStats(
   // references to Resource from ResourceClient and `preloads_` only, because
   // they are major sources of references.
   if (resource && !resource->IsAlive() && !ContainsAsPreload(resource)) {
-    DEFINE_RESOURCE_HISTOGRAM("Dead.");
+    RecordResourceHistogram("Dead.", factory.GetType(), policy);
   }
 
   // Async (and defer) scripts may have more cache misses, track them
@@ -953,7 +991,7 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_type, params.GetResourceRequest(),
         ResourcePriority::kNotVisible, params.Defer(),
         params.GetSpeculativePreloadType(), params.GetRenderBlockingBehavior(),
-        params.IsLinkPreload());
+        params.GetScriptType(), params.IsLinkPreload());
   }
 
   DCHECK_NE(computed_load_priority, ResourceLoadPriority::kUnresolved);
@@ -1265,6 +1303,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     String resource_url =
         MemoryCache::RemoveFragmentIdentifierIfNeeded(params.Url());
     cached_resources_map_.Set(resource_url, resource);
+    MaybeSaveResourceToStrongReference(resource);
     if (PriorityObserverMapCreated() &&
         PriorityObservers()->Contains(resource_url)) {
       // Resolve the promise.
@@ -1314,6 +1353,10 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   }
 
   return resource;
+}
+
+void ResourceFetcher::RemoveImageStrongReference(Resource* image_resource) {
+  document_resource_strong_refs_.erase(image_resource);
 }
 
 void ResourceFetcher::ResourceTimingReportTimerFired(TimerBase* timer) {
@@ -2128,6 +2171,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
         resource->GetResponse().DecodedBodyLength(),
         should_report_corb_blocking);
   }
+  MaybeSaveResourceToStrongReference(resource);
 }
 
 void ResourceFetcher::HandleLoaderError(Resource* resource,
@@ -2613,6 +2657,27 @@ void ResourceFetcher::CancelWebBundleSubresourceLoadersFor(
   }
 }
 
+void ResourceFetcher::MaybeSaveResourceToStrongReference(Resource* resource) {
+  if (base::FeatureList::IsEnabled(features::kMemoryCacheStrongReference) &&
+      ShouldResourceBeKeptStrongReference(resource)) {
+    if (resource->GetType() != ResourceType::kImage ||
+        !base::FeatureList::IsEnabled(
+            features::kMemoryCacheStrongReferenceFilterImages)) {
+      document_resource_strong_refs_.insert(resource);
+      freezable_task_runner_->PostDelayedTask(
+          FROM_HERE,
+          WTF::BindOnce(&ResourceFetcher::RemoveImageStrongReference,
+                        WrapWeakPersistent(this), WrapWeakPersistent(resource)),
+          GetResourceStrongReferenceTimeout(resource));
+    }
+  }
+}
+
+void ResourceFetcher::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  document_resource_strong_refs_.clear();
+}
+
 void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(context_);
   visitor->Trace(properties_);
@@ -2634,12 +2699,25 @@ void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(resource_timing_info_map_);
   visitor->Trace(blob_registry_remote_);
   visitor->Trace(subresource_web_bundles_);
+  visitor->Trace(document_resource_strong_refs_);
+  MemoryPressureListener::Trace(visitor);
 }
 
 // static
 const ResourceFetcher::ResourceFetcherSet&
 ResourceFetcher::MainThreadFetchers() {
   return MainThreadFetchersSet();
+}
+
+// The followings should match with `ResourceType` in
+// `third_party/blink/renderer/platform/loader/fetch/resource.h`
+void ResourceFetcher::RecordResourceHistogram(
+    base::StringPiece prefix,
+    ResourceType type,
+    RevalidationPolicyForMetrics policy) const {
+  base::UmaHistogramEnumeration(
+      base::StrCat({RESOURCE_HISTOGRAM_PREFIX, prefix, ResourceTypeName(type)}),
+      policy);
 }
 
 }  // namespace blink

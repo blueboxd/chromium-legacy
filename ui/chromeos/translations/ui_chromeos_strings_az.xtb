@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> element sıxılır...</translation>
 <translation id="1722687688096767818">Profil əlavə edilir...</translation>
 <translation id="1726100011689679555">Ad serverləri</translation>
+<translation id="1727562178154619254">Sinxronizasiyaya hazırdır</translation>
 <translation id="1729953886957086472">Alman (Almaniya)</translation>
 <translation id="1730235522912993863">Çin dili (Cangjie)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> element kopyalanıb.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Şəkil dəqiqliyi</translation>
 <translation id="1972984168337863910">Faylların rəy panelini genişləndirin</translation>
 <translation id="1995337122023280937">Faylın yerinə keçin</translation>
-<translation id="1999709132469742660">Bütün keçidlər üzrə fayl girişi</translation>
 <translation id="2001796770603320721">Diskdə idarə edin</translation>
 <translation id="2009067268969781306">Formatdan sonra diskdə saxlanılan bütün data silinəcək. Bu əməliyyat geri qaytarıla bilməz.</translation>
 <translation id="2025955442973426285">Tiqrin</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">Latın Amerikası</translation>
 <translation id="5330145655348521461">Bu fayllar başqa masa üstündə açıldı. Ona baxmaq üçün <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) üzərinə köçürün.</translation>
 <translation id="5330512191124428349">Məlumatı əldə edin</translation>
-<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" /> istisna olmaqla bütün keçidlər üzrə fayl girişi</translation>
 <translation id="5344246330454251646">Bruschetta paylaşımını idarəedin</translation>
 <translation id="535792325654997756">Pişiklərin əhatəsində olan adam</translation>
 <translation id="5358764674931277">Çərçivə nisbəti</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">Linux tətbiqi quraşdırılan zaman xəta baş verdi.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Kopyalamaq alınmadı, gözlənilməz xəta:<ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Yeni axtarış funksiyaları var</translation>
 <translation id="5926082595146149752">ABŞ Beynəlxalq kompüter klaviaturası ilə Holland dili (Niderland)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Cihaz ayarlamasından sonra aktiv edin</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">Sertifikatlar yüklənilmədi</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Bruschetta ilə qovluq paylaşın</translation>
+<translation id="6750737795876287924">Cari kataloq</translation>
 <translation id="6751256176799620176">1 qovluq seçildi</translation>
 <translation id="6755827872271341378">ChromeOS Flex cihazı</translation>
 <translation id="6790428901817661496">Oxudun</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">Qovluqlar</translation>
 <translation id="6976795442547527108">Aslan</translation>
 <translation id="6979158407327259162">Google Disk</translation>
-<translation id="6979737339423435258">Hər zaman</translation>
 <translation id="6989942356279143254">İsveç</translation>
 <translation id="6990081529015358884">Boş yer bitdi</translation>
 <translation id="6993826899923627728">Bu elementlər zibil qutunuzdadır</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">Son şəkillər yoxdur</translation>
 <translation id="7460898608667578234">Ukrayna</translation>
 <translation id="7469894403370665791">Bu şəbəkəyə avtomatik olaraq qoşulun</translation>
-<translation id="7481358317100446445">Hazırdır</translation>
 <translation id="7486315294984620427">Paralellər Masaüstünə faylları əlavə etmək üçün fayl Windows fayllarına kopyalanmalıdır.</translation>
 <translation id="749452993132003881">Hiraqana</translation>
 <translation id="7495372004724182530">Malayalam Fonetikası</translation>
@@ -938,6 +937,7 @@
 <translation id="8492972329130824181">Ev şəbəkəsi əlçatan deyil. Qoşulmaq üçün mobil data rouminqi aktiv edilməlidir.</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> element çıxarılır...</translation>
 <translation id="8502913769543567768">Şəbəkə <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Cihaz ayarlamasından sonra aktiv edin, Administrator idarə edir</translation>
+<translation id="8512483403832814140">İstənilən vaxt</translation>
 <translation id="8521441079177373948">Böyük Britaniya</translation>
 <translation id="853494022971700746">Fransız (Fransa)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Detallar</translation>

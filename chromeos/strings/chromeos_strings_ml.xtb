@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">ഫയര്‍വാള്‍ കണ്ടെത്തി</translation>
 <translation id="1075811647922107217">പേജിന്റെ വലുപ്പം</translation>
+<translation id="1082009148392559545">സ്ക്രീൻ സേവർ ഡൗൺലോഡ് ചെയ്യുന്നു</translation>
 <translation id="1094693127011229778">IP വിലാസം ലഭ്യമല്ല</translation>
 <translation id="1113892970288677790">ക്യുറേറ്റ് ചെയ്‌ത കലാസൃഷ്‌ടിയും ചിത്രങ്ങളും തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1119447706177454957">ആന്തരിക പിശക്</translation>
@@ -79,6 +80,7 @@
 <translation id="1641857168437328880">ഡോക്യുമെന്റ് ഫീഡർ (ഒരു വശമുള്ളത്)</translation>
 <translation id="1643449475550628585">വാൾപേപ്പർ ചിത്രം ദിവസേന മാറ്റുക</translation>
 <translation id="1644574205037202324">ചരിത്രം</translation>
+<translation id="1651925268237749928">നിങ്ങളൊരു പങ്കിട്ട ആൽബം തിരഞ്ഞെടുത്തു. മറ്റ് ആളുകൾക്ക് ഫോട്ടോകൾ ചേർക്കാനോ മാറ്റം വരുത്താനോ കഴിയും. നിങ്ങളുടെ വാൾപേപ്പർ നിലവിൽ ഈ ആൽബത്തിൽ ഇല്ലാത്ത ഫോട്ടോകൾ ഉപയോഗിച്ചേക്കാം.</translation>
 <translation id="1662989795263954667">പ്രിന്റ് ജോലി നിർത്തി - മഷിയില്ല</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" /> പ്രിവ്യൂ ചെയ്യുക</translation>
 <translation id="1668469839109562275">ബിൽറ്റ് ഇൻ VPN</translation>
@@ -90,6 +92,7 @@
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" />, <ph name="SECOND_MANAGER" /> എന്നിവ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="1726100011689679555">നെയിം സെർവറുകൾ</translation>
 <translation id="1731082422893354635">Bluetooth ടച്ച്പാഡ്</translation>
+<translation id="1738949837603788263">മേഖല <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">ചിത്രങ്ങൾ ലോഡ് ചെയ്യാനാകുന്നില്ല. നിങ്ങളുടെ നെറ്റ്‌വർക്ക് കണക്ഷൻ പരിശോധിക്കുകയോ ചിത്രങ്ങൾ വീണ്ടും ലോഡ് ചെയ്യാൻ ശ്രമിക്കുകയോ ചെയ്യുക.</translation>
 <translation id="1751249301761991853">വ്യക്തിപരമാക്കൽ</translation>
 <translation id="1753496554272155572">വാൾപേപ്പർ പ്രിവ്യൂവിൽ നിന്ന് പുറത്ത് കടക്കുക</translation>
@@ -163,6 +166,7 @@
 <translation id="2346474577291266260">വളരെ മികച്ചത് (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2359808026110333948">തുടരുക</translation>
 <translation id="2364498172489649528">വിജയിച്ചു</translation>
+<translation id="2367335866686097760">കീമാപ്പിംഗ് കീ</translation>
 <translation id="2380886658946992094">നിയമപരം</translation>
 <translation id="2391082728065870591">ഫീഡ്‌ബാക്ക് റിപ്പോർട്ട് അയയ്‌ക്കുക</translation>
 <translation id="2407209115954268704">സിം ലോക്ക് നില</translation>
@@ -235,10 +239,12 @@
 <translation id="319101249942218879">അവതാർ ചിത്രം മാറ്റി</translation>
 <translation id="3192947282887913208">ഓഡിയോ ഫയലുകള്‍</translation>
 <translation id="3199982728237701504">ഡോക്യുമെന്റ് ഫീഡർ (രണ്ട് വശമുള്ളത്)</translation>
+<translation id="3201315366910775591">പങ്കിട്ട ആൽബങ്ങൾ മറ്റ് ആളുകൾക്ക് അപ്ഡേറ്റ് ചെയ്യാനാകും</translation>
+<translation id="3211671540163313381">കീമാപ്പിംഗ് ഡി-പാഡ്</translation>
 <translation id="3226405216343213872">സ്‌കാനറുകൾ തിരയുന്നു</translation>
+<translation id="3226657629376379887">ലേഔട്ട് പ്രവർത്തന മെനു</translation>
 <translation id="3246869037381808805">1 ദിവസം മുമ്പുള്ള പ്രിന്റ് ജോലികൾ നീക്കം ചെയ്യും</translation>
 <translation id="3268178239013324452">പ്രിന്റ് ചെയ്യാനായില്ല - വാതിൽ തുറന്നിരിക്കുന്നു</translation>
-<translation id="3275506277319227640"><ph name="DIRECTION" /> ഭാഗത്ത് ഡോക്ക് ചെയ്യുക</translation>
 <translation id="3275729367986477355">അവതാർ ചിത്രം</translation>
 <translation id="3283504360622356314">{0,plural, =1{ഫയൽ എഡിറ്റ് ചെയ്യുക}other{ഫയലുകൾ എഡിറ്റ് ചെയ്യുക}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" />GHz</translation>
@@ -275,7 +281,6 @@
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="3600339377155080675">സ്‌ക്രീൻ മിറർ</translation>
 <translation id="3602290021589620013">പ്രിവ്യൂ</translation>
-<translation id="360282891121575443">പങ്കിട്ട ആൽബങ്ങളിലെ ഫോട്ടോകൾ മറ്റ് ഉപയോക്താക്കൾക്ക് അപ്‌ഡേറ്റ് ചെയ്യാനാകും. ദിവസേന മാറ്റുന്നത്, ആൽബത്തിൽ നിലവിൽ ഇല്ലാത്ത വാൾപേപ്പറുകൾ കാണിച്ചേക്കാം.</translation>
 <translation id="3603829704940252505">അവതാർ</translation>
 <translation id="3604713164406837697">വാൾപേപ്പർ മാറ്റുക</translation>
 <translation id="360565022852130722">ദുർബലമായ WEP 802.1x പ്രോട്ടോക്കോൾ ഉപയോഗിച്ചാണ് വെെഫെെ നെറ്റ്‌വർക്ക് സുരക്ഷിതമാക്കിയിരിക്കുന്നത്</translation>
@@ -357,7 +362,6 @@
 <translation id="4311195029067684288">പൂർണ്ണം</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> കീ അമർത്തി</translation>
 <translation id="435692326371619097">നെറ്റ്‌വർക്ക് APN ക്രമീകരണം മാനേജ് ചെയ്യുക. സെല്ലുലാർ നെറ്റ്‌വർക്കും ഇന്റർനെറ്റും തമ്മിൽ APN-കൾ കണക്ഷൻ സ്ഥാപിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">ചെറിയ ഭാഗത്ത് ഡോക്ക് ചെയ്യുക</translation>
 <translation id="4378373042927530923">റൺ ചെയ്‌തിട്ടില്ല</translation>
 <translation id="4378551569595875038">കണക്റ്റിംഗ്...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -568,6 +572,7 @@
 <translation id="6117895505466548728"><ph name="TITLE" /> എന്നതും മറ്റ് <ph name="NUMBER" /> ആൽബങ്ങളും</translation>
 <translation id="6122191549521593678">ഓൺലൈൻ</translation>
 <translation id="6122277663991249694">ChromeOS ഇൻപുട്ട് രീതി ലഭ്യമാക്കുന്ന സേവനം</translation>
+<translation id="6136285399872347291">backspace</translation>
 <translation id="6137767437444130246">ഉപയോക്തൃ സർട്ടിഫിക്കറ്റ്</translation>
 <translation id="6146993107019042706">പൂർത്തിയാക്കാൻ നിങ്ങളുടെ പുതിയ പാസ്‌വേഡ് നൽകുക</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -597,6 +602,7 @@
 <translation id="636850387210749493">സംരംഭ വിവരപ്പട്ടിക</translation>
 <translation id="6379086450106841622">ടച്ച്സ്ക്രീൻ</translation>
 <translation id="6381741036071372448">നിങ്ങളുടെ കീബോർഡ് പരീക്ഷിക്കുക</translation>
+<translation id="6382182670717268353">സ്ക്രീൻ സേവർ പ്രിവ്യൂ</translation>
 <translation id="6388847657025262518">ഈ സ്‌കാനറിന്റെ ഡോക്യുമെന്റ് ഫീഡർ ജാമായി. ഫീഡർ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="6394634179843537518">ഫയൽ ചേർക്കുക</translation>
 <translation id="6410257289063177456">ചിത്ര ഫയലുകള്‍</translation>
@@ -615,6 +621,7 @@
 <translation id="650266656685499220">ആൽബങ്ങൾ സൃഷ്ടിക്കാൻ Google Photos-ലേക്ക് പോകുക</translation>
 <translation id="6516990319416533844">ബാറ്ററിയുടെ ചാർജ് ചെയ്യൽ റേറ്റ് പരിശോധിക്കാൻ, അൽപ്പനേരം ബാറ്ററി ചാർജ് കുറയുന്നത് വരെ കാത്തിരിക്കുക</translation>
 <translation id="6517239166834772319">അടുത്തറിയുക</translation>
+<translation id="6526200165918397681">വാൾപേപ്പർ പൊരുത്തപ്പെടുത്തുക</translation>
 <translation id="6527081081771465939">അജ്ഞാതമായ വെെഫെെ സുരക്ഷാ പ്രോട്ടോക്കോൾ</translation>
 <translation id="6535178685492749208">നിങ്ങൾ ഓഫ്‌ലൈനാണ്. ഫീഡ്‌ബാക്ക് പിന്നീട് അയയ്ക്കും.</translation>
 <translation id="65587193855025101">ഫ്ലാറ്റ്ബെഡ്</translation>
@@ -634,7 +641,6 @@
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
 <translation id="6659594942844771486">ബ്രൗസർ ടാബ്</translation>
 <translation id="6692996468359469499">നിങ്ങളുടെ തിരഞ്ഞെടുക്കലുമായി ബന്ധപ്പെട്ട വിവരങ്ങൾ നേടുക</translation>
-<translation id="6698459586333070823">പങ്കിട്ട ആൽബങ്ങൾ മറ്റ് ഉപയോക്താക്കൾക്ക് അപ്ഡേറ്റ് ചെയ്യാനാകും</translation>
 <translation id="6704062477274546131">DNS റെസല്യൂഷൻ</translation>
 <translation id="6723839937902243910">പവർ</translation>
 <translation id="6723847290197874913">കീബോർഡ് ബാക്ക്‌ലൈറ്റ്</translation>
@@ -652,6 +658,7 @@
 <translation id="6838167112108853532">ഈ APN പ്രവർത്തനരഹിതമാക്കാനോ നീക്കം ചെയ്യാനോ കഴിയില്ല. പ്രവർത്തനക്ഷമമാക്കിയ, അറ്റാച്ച് ചെയ്ത APN-കൾ പ്രവർത്തനരഹിതമാക്കുകയോ നീക്കം ചെയ്യുകയോ ചെയ്തിട്ടുണ്ടെന്ന് ഉറപ്പാക്കുക.</translation>
 <translation id="6853312040151791195">ഡിസ്‌ചാർജ് ചെയ്യൽ റേറ്റ്</translation>
 <translation id="6889786074662672253">റീസ്റ്റാർട്ട് ചെയ്തുകൊണ്ടിരിക്കുമ്പോൾ, ഈ ബാഹ്യ ഉപകരണം അൺപ്ലഗ് ചെയ്യാനോ നിങ്ങളുടെ കമ്പ്യൂട്ടർ ഷട്ട് ഡൗൺ ചെയ്യാനോ പാടില്ല. നിങ്ങൾക്ക് ഈ വിൻഡോ ചെറുതാക്കാം. ഇത് പൂർത്തിയാകാൻ ഏതാനും മിനിറ്റുകൾ എടുത്തേക്കാം, അതുവരെ നിങ്ങളുടെ ബാഹ്യ ഉപകരണം പ്രവർത്തിക്കില്ല.</translation>
+<translation id="6900701049656042631">ഈ ആൽബത്തിൽ ഫോട്ടോകളൊന്നുമില്ല. ഫോട്ടോകൾ ചേർക്കാൻ, <ph name="LINK" /> -ലേക്ക് പോകുക</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> എന്ന പേജിലേക്ക് മടങ്ങുക</translation>
 <translation id="6910312834584889076">സ്‌കാനറിന്റെ കവർ തുറന്നിരിക്കുന്നു. കവർ അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="6911383237894364323">മീഡിയ സെർവറുകളിലേക്ക് കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
@@ -671,6 +678,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">പരാജയപ്പെട്ടു - അംഗീകരിക്കൽ പ്രക്രിയ നടന്നില്ല</translation>
 <translation id="7103252855940681301"><ph name="INDEX" />-ൽ <ph name="COUNT" />-ാമത്തെ ഉപകരണം, പേര് <ph name="NAME" />.</translation>
+<translation id="7108668606237948702">നല്‍കുക</translation>
 <translation id="7130438335435247835">ആക്സസ്സ് പോയിന്റിന്റെ പേര് (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{നെയിം സെർവർ}other{നെയിം സെർവറുകൾ}}</translation>
 <translation id="7143207342074048698">കണക്റ്റിംഗ്</translation>
@@ -685,6 +693,7 @@
 <translation id="7177485034254901881">ഈ <ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER" /> ആണ്. അഡ്മിൻമാർ ഉപകരണം വിദൂരമായി കോൺഫിഗർ ചെയ്‌തേക്കാം.</translation>
 <translation id="7180611975245234373">റീഫ്രഷ് ചെയ്യുക</translation>
 <translation id="7180865173735832675">ഇച്ഛാനുസൃതമാക്കുക</translation>
+<translation id="7184043045742675738">നിങ്ങളുടെ ബട്ടൺ ഇഷ്ടാനുസൃതമാക്കാൻ ഏതെങ്കിലും കീയിൽ ക്ലിക്ക് ചെയ്യുക. മൗസ് അല്ലെങ്കിൽ അമ്പടയാള കീകൾ ഉപയോഗിച്ച് കീയുടെ സ്ഥാനം മാറ്റുക.</translation>
 <translation id="7212734716605298123">ബാഹ്യ ഉപകരണങ്ങൾക്കുള്ള ഫേംവെയർ അപ്ഡേറ്റുകൾ</translation>
 <translation id="7216409898977639127">സെല്ലുലാര്‍‌ സേവനദാതാവ്</translation>
 <translation id="725133483556299729">ഇമെയിൽ തിരഞ്ഞെടുക്കുക</translation>
@@ -726,6 +735,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">USB ടച്ച്സ്ക്രീൻ</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> ശേഷിക്കുന്നു</translation>
+<translation id="7613724632293948900">മൗസ് അല്ലെങ്കിൽ അമ്പടയാള കീകൾ ഉപയോഗിച്ച് സ്ഥാനം മാറ്റുക.</translation>
 <translation id="7620771111601174153">സഹായകേന്ദ്രത്തിൽ കൂടുതലറിയുക</translation>
 <translation id="763165478673169849">അവസാനം റീസെറ്റ് ചെയ്‌ത സമയം</translation>
 <translation id="7648838807254605802">ഉയർന്ന HTTPS പ്രതികരണ സമയം</translation>
@@ -789,7 +799,6 @@
 <translation id="8226628635270268143">നിങ്ങളുടെ പ്രിയപ്പെട്ട ഫോട്ടോകളും ആൽബങ്ങളും തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8227119283605456246">ഫയൽ അറ്റാച്ചുചെയ്യുക</translation>
 <translation id="8230672074305416752">ഡിഫോൾട്ട് നെറ്റ്‌വർക്ക് ഗേറ്റ്‍വേ പിംഗ് ചെയ്യാനായില്ല</translation>
-<translation id="8242426110754782860">തുടരുക</translation>
 <translation id="8246209727385807362">അജ്ഞാത സേവനദാതാവ്</translation>
 <translation id="827422111966801947">ഇൻഡിഗോ</translation>
 <translation id="8286154143153872371">വാൾപേപ്പർ കാണാൻ ഒരു നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്‌ത് പേജ് റീലോഡ് ചെയ്യുക.</translation>
@@ -800,6 +809,7 @@
 <translation id="8318753676953949627">ഇമേജുകളൊന്നുമില്ല</translation>
 <translation id="8336739000755212683">ഉപകരണ അക്കൗണ്ട് ചിത്രം മാറ്റുക</translation>
 <translation id="8347227221149377169">പ്രിന്റ് ജോലികൾ</translation>
+<translation id="8351855506390808906">കീമാപ്പിംഗ് ടച്ച് പോയിന്റ്</translation>
 <translation id="8352772353338965963">ഒന്നിലധികം സൈൻ-ഇന്നിനായി ഒരു അക്കൗണ്ട് ചേർക്കുക. സൈൻ-ഇൻ ചെയ്‌ത അക്കൗണ്ടുകളെല്ലാം ഒരു പാസ്‌വേഡില്ലാതെ ആക്‌സസ് ചെയ്യാനാകുമെന്നതിനാൽ ഈ സവിശേഷത പരിചയമുള്ള അക്കൗണ്ടുകളിൽ മാത്രമേ ഉപയോഗിക്കാവൂ.</translation>
 <translation id="8364946094152050673">ശൂന്യമായ നെയിം സെർവറുകൾ</translation>
 <translation id="8372477600026034341">അധിക ഹോസ്‌റ്റുകൾ</translation>
@@ -848,6 +858,7 @@
 <translation id="8798441408945964110">പ്രൊവൈഡറിന്റെ പേര്</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">വാൾപേപ്പർ</translation>
+<translation id="8820457400746201697">നീല ടച്ച് പോയിന്റ് ഒരു പ്രവർത്തനത്തിലേക്ക് നീക്കുക. ഇഷ്‌ടാനുസൃതമാക്കാൻ അനുബന്ധ കീ തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="8834539327799336565">നിലവിൽ കണക്റ്റ് ചെയ്‌തവ</translation>
 <translation id="8845001906332463065">സഹായം നേടുക</translation>
 <translation id="8855781559874488009">HTTP വെബ്സൈറ്റുകളിലേക്ക് ഫയര്‍വാള്‍ മുഖേന കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
@@ -896,7 +907,7 @@
 <translation id="9137526406337347448">Google സേവനങ്ങൾ</translation>
 <translation id="9138630967333032450">ഇടത് Shift കീ</translation>
 <translation id="9149391708638971077">മെമ്മറി ടെസ്റ്റ് റണ്‍ ചെയ്യുക</translation>
-<translation id="9157515863513902090">വലിയ വശത്ത് ഡോക്ക് ചെയ്യുക</translation>
+<translation id="9161276708550942948">space</translation>
 <translation id="9173638680043580060">ഒരു മിനിറ്റിലും താഴെ ശേഷിക്കുന്നു</translation>
 <translation id="917720651393141712">ടെസ്‌റ്റ്</translation>
 <translation id="9188992814426075118">നിങ്ങളുടെ കീബോർഡിന് വാൾപേപ്പറുമായി സ്വയമേവ പൊരുത്തപ്പെടാനാകും</translation>

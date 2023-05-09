@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,7 +18,6 @@
 #include "components/attribution_reporting/registration_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
-#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
@@ -39,7 +39,6 @@
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-shared.h"
-#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -90,8 +89,7 @@ AttributionHost::AttributionHost(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       WebContentsUserData<AttributionHost>(*web_contents),
       receivers_(web_contents, this) {
-  // TODO(csharrison): When https://crbug.com/1051334 is resolved, add a DCHECK
-  // that the kConversionMeasurement feature is enabled.
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kConversionMeasurement));
 
 #if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(
@@ -180,15 +178,10 @@ void AttributionHost::DidRedirectNavigation(
     return;
   }
 
-  DCHECK(navigation_handle->GetImpression());
+  const auto impression = navigation_handle->GetImpression();
+  DCHECK(impression.has_value());
 
-  std::string source_header;
-  if (!navigation_handle->GetResponseHeaders()->GetNormalizedHeader(
-          kAttributionReportingRegisterSourceHeader, &source_header)) {
-    return;
-  }
-
-  AttributionManager* attribution_manager =
+  auto* attribution_manager =
       AttributionManager::FromWebContents(web_contents());
   if (!attribution_manager) {
     return;
@@ -201,7 +194,6 @@ void AttributionHost::DidRedirectNavigation(
 
   const std::vector<GURL>& redirect_chain =
       navigation_handle->GetRedirectChain();
-
   if (redirect_chain.size() < 2) {
     return;
   }
@@ -212,15 +204,13 @@ void AttributionHost::DidRedirectNavigation(
   // redirect chain.
   absl::optional<SuitableOrigin> reporting_origin =
       SuitableOrigin::Create(redirect_chain[redirect_chain.size() - 2]);
-
   if (!reporting_origin) {
     return;
   }
 
-  auto impression = navigation_handle->GetImpression();
   data_host_manager->NotifyNavigationRedirectRegistration(
-      navigation_handle->GetImpression()->attribution_src_token,
-      std::move(source_header), std::move(*reporting_origin),
+      impression->attribution_src_token,
+      navigation_handle->GetResponseHeaders(), std::move(*reporting_origin),
       it->second.source_origin, it->second.input_event, impression->nav_type,
       it->second.is_within_fenced_frame, it->second.initiator_root_frame_id);
 }
@@ -261,12 +251,9 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   }
 
-  const absl::optional<blink::Impression>& impression =
-      navigation_handle->GetImpression();
-
   // If we were not able to access the impression origin, ignore the
   // navigation.
-  if (impression && !navigation_source_origin_it) {
+  if (!navigation_source_origin_it) {
     MaybeNotifyFailedSourceNavigation(navigation_handle);
     return;
   }
@@ -276,17 +263,12 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   }
 
-  data_host_manager->NotifyNavigationSuccess(
-      navigation_handle->GetNavigationId());
-
-  if (!navigation_source_origin_it) {
-    return;
-  }
-
   const NavigationInfo& navigation_info =
       (*navigation_source_origin_it.get())->second;
   const SuitableOrigin& source_origin = navigation_info.source_origin;
 
+  const absl::optional<blink::Impression>& impression =
+      navigation_handle->GetImpression();
   DCHECK(impression);
 
   data_host_manager->NotifyNavigationForDataHost(
@@ -308,14 +290,13 @@ void AttributionHost::MaybeNotifyFailedSourceNavigation(
     return;
   }
 
-  absl::optional<blink::AttributionSrcToken> attribution_src_token;
-  if (absl::optional<blink::Impression> impression =
-          navigation_handle->GetImpression()) {
-    attribution_src_token = impression->attribution_src_token;
+  absl::optional<blink::Impression> impression =
+      navigation_handle->GetImpression();
+  if (!impression) {
+    return;
   }
 
-  data_host_manager->NotifyNavigationFailure(
-      attribution_src_token, navigation_handle->GetNavigationId());
+  data_host_manager->NotifyNavigationFailure(impression->attribution_src_token);
 }
 
 absl::optional<SuitableOrigin>
@@ -331,12 +312,23 @@ AttributionHost::TopFrameOriginForSecureContext() {
   // `is_web_secure_context` would allow opaque origins to pass through, but
   // they cannot be handled by the storage layer.
 
+  auto dump_without_crashing = [render_frame_host, &top_frame_origin]() {
+    SCOPED_CRASH_KEY_STRING1024("", "top_frame_url",
+                                render_frame_host->GetOutermostMainFrame()
+                                    ->GetLastCommittedURL()
+                                    .spec());
+    SCOPED_CRASH_KEY_STRING256("", "top_frame_origin",
+                               top_frame_origin.Serialize());
+    base::debug::DumpWithoutCrashing();
+  };
+
   absl::optional<SuitableOrigin> suitable_top_frame_origin =
       SuitableOrigin::Create(top_frame_origin);
 
   // TODO(crbug.com/1378749): Invoke mojo::ReportBadMessage here when we can be
   // sure honest renderers won't hit this path.
   if (!suitable_top_frame_origin) {
+    dump_without_crashing();
     return absl::nullopt;
   }
 
@@ -346,6 +338,7 @@ AttributionHost::TopFrameOriginForSecureContext() {
       !render_frame_host->policy_container_host()
            ->policies()
            .is_web_secure_context) {
+    dump_without_crashing();
     return absl::nullopt;
   }
 
@@ -472,11 +465,7 @@ void AttributionHost::NotifyFencedFrameReportingBeaconStarted(
     return;
   }
 
-  GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-      initiator_frame_host,
-      blink::mojom::WebFeature::kAttributionFencedFrameReportingBeacon);
-
-  absl::optional<AttributionInputEvent> input_event;
+  AttributionInputEvent input_event;
   if (absl::holds_alternative<NavigationBeaconId>(beacon_id)) {
     input_event = AttributionHost::FromWebContents(
                       WebContents::FromRenderFrameHost(initiator_frame_host))

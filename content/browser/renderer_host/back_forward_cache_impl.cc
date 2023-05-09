@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
+#include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
@@ -867,16 +868,16 @@ void BackForwardCacheImpl::NotRestoredReasonBuilder::
     result.No(BackForwardCacheMetrics::NotRestoredReason::kHaveInnerContents);
   }
 
-#if !BUILDFLAG(IS_ANDROID)
-  const bool has_unload_handler = rfh->has_unload_handler();
-  if (has_unload_handler) {
-    // Note that pages with unload handlers are cached on android.
-    result.No(rfh->GetParent() ? BackForwardCacheMetrics::NotRestoredReason::
-                                     kUnloadHandlerExistsInSubFrame
-                               : BackForwardCacheMetrics::NotRestoredReason::
-                                     kUnloadHandlerExistsInMainFrame);
+  if (!IsUnloadAllowed()) {
+    const bool has_unload_handler = rfh->has_unload_handler();
+    if (has_unload_handler) {
+      // Note that pages with unload handlers are cached on android.
+      result.No(rfh->GetParent() ? BackForwardCacheMetrics::NotRestoredReason::
+                                       kUnloadHandlerExistsInSubFrame
+                                 : BackForwardCacheMetrics::NotRestoredReason::
+                                       kUnloadHandlerExistsInMainFrame);
+    }
   }
-#endif
 
   // When it's not the final decision for putting a page in the back-forward
   // cache, we should only consider "sticky" features here - features that
@@ -1216,6 +1217,16 @@ void BackForwardCache::DisableForRenderFrameHost(
     rfh->DisableBackForwardCache(reason, source_id);
 }
 
+// static
+void BackForwardCache::SetHadFormDataAssociated(Page& page) {
+  BackForwardCacheMetrics* metrics =
+      static_cast<RenderFrameHostImpl*>(&page.GetMainDocument())
+          ->GetBackForwardCacheMetrics();
+  if (metrics) {
+    metrics->SetHadFormDataAssociated(true);
+  }
+}
+
 void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {
   is_disabled_for_testing_ = true;
 
@@ -1365,14 +1376,8 @@ void BackForwardCacheImpl::WillCommitNavigationToCachedEntry(
   // we've received confirmation that eviction is disabled from renderers.
   auto cb = base::BarrierClosure(
       bfcache_entry.render_view_hosts().size(),
-      base::BindOnce(
-          [](base::TimeTicks ipc_start_time, base::OnceClosure cb) {
-            std::move(cb).Run();
-            base::UmaHistogramTimes(
-                "BackForwardCache.Restore.DisableEvictionDelay",
-                base::TimeTicks::Now() - ipc_start_time);
-          },
-          base::TimeTicks::Now(), std::move(done_callback)));
+      base::BindOnce([](base::OnceClosure cb) { std::move(cb).Run(); },
+                     std::move(done_callback)));
 
   for (const auto& rvh : bfcache_entry.render_view_hosts()) {
     rvh->PrepareToLeaveBackForwardCache(cb);
@@ -1417,6 +1422,11 @@ bool BackForwardCacheImpl::IsMediaSessionServiceAllowed() {
 bool BackForwardCacheImpl::IsScreenReaderAllowed() {
   return base::FeatureList::IsEnabled(
       features::kEnableBackForwardCacheForScreenReader);
+}
+
+// Static
+bool BackForwardCacheImpl::IsUnloadAllowed() {
+  return base::FeatureList::IsEnabled(kBackForwardCacheUnloadAllowed);
 }
 
 // static

@@ -260,9 +260,8 @@ class CleanerTestBase : public ::testing::Test {
         startup_dir.Append(chrome_cleaner::kTestUwsBFilename));
 
     // Always create scan-only UwS. Only some tests will have removable UwS.
-    ASSERT_NE(-1, base::WriteFile(scan_only_test_uws_,
-                                  chrome_cleaner::kTestUwsAFileContents,
-                                  chrome_cleaner::kTestUwsAFileContentsSize));
+    ASSERT_TRUE(base::WriteFile(scan_only_test_uws_,
+                                chrome_cleaner::kTestUwsAFileContents));
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     InitializeRemovableUwSArchivePath();
@@ -291,9 +290,8 @@ class CleanerTestBase : public ::testing::Test {
   }
 
   void CreateRemovableUwS() {
-    ASSERT_NE(-1, base::WriteFile(removable_test_uws_,
-                                  chrome_cleaner::kTestUwsBFileContents,
-                                  chrome_cleaner::kTestUwsBFileContentsSize));
+    ASSERT_TRUE(base::WriteFile(removable_test_uws_,
+                                chrome_cleaner::kTestUwsBFileContents));
   }
 
   void LockRemovableUwS() {
@@ -449,16 +447,14 @@ class CleanerTest : public CleanerTestBase,
   TestFeatures test_features_;
 };
 
-// Disabled to support shipping a no-op build of the software reporter.
-TEST_P(CleanerTest, DISABLED_Scanner_ScanOnly) {
+TEST_P(CleanerTest, Scanner_ScanOnly) {
   base::CommandLine command_line = BuildCommandLine(kScannerExecutable);
   ExpectExitCode(command_line,
                  chrome_cleaner::RESULT_CODE_REPORT_ONLY_PUPS_FOUND);
   EXPECT_TRUE(base::PathExists(scan_only_test_uws_));
 }
 
-// Disabled to support shipping a no-op build of the software reporter.
-TEST_P(CleanerTest, DISABLED_Scanner_Removable) {
+TEST_P(CleanerTest, Scanner_Removable) {
   CreateRemovableUwS();
   base::CommandLine command_line = BuildCommandLine(kScannerExecutable);
 

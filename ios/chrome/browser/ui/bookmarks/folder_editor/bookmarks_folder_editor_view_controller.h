@@ -7,16 +7,21 @@
 #import <UIKit/UIKit.h>
 #import <set>
 
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller.h"
 
 @class BookmarksFolderEditorViewController;
 class Browser;
 @protocol SnackbarCommands;
+class SyncSetupService;
 
 namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
+
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 @protocol BookmarksFolderEditorViewControllerDelegate
 
@@ -71,7 +76,9 @@ class BookmarkNode;
 + (instancetype)
     folderCreatorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                       parentFolder:(const bookmarks::BookmarkNode*)parentFolder
-                           browser:(Browser*)browser;
+                           browser:(Browser*)browser
+                  syncSetupService:(SyncSetupService*)syncSetupService
+                       syncService:(syncer::SyncService*)syncService;
 
 // `bookmarkModel` must not be null and must be loaded.
 // `folder` must not be NULL and be editable.
@@ -79,7 +86,9 @@ class BookmarkNode;
 + (instancetype)
     folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                            folder:(const bookmarks::BookmarkNode*)folder
-                          browser:(Browser*)browser;
+                          browser:(Browser*)browser
+                 syncSetupService:(SyncSetupService*)syncSetupService
+                      syncService:(syncer::SyncService*)syncService;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
@@ -90,6 +99,8 @@ class BookmarkNode;
 // TODO(crbug.com/1402758): Remove this method after model code is moved to the
 // mediator.
 - (void)updateParentFolder:(const bookmarks::BookmarkNode*)parent;
+// Stops listening to update to the bookmarks model and the sync model
+- (void)disconnect;
 
 @end
 

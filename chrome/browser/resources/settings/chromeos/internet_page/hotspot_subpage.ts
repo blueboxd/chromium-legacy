@@ -12,9 +12,9 @@ import '../../controls/settings_toggle_button.js';
 import '../../prefs/prefs.js';
 
 import {getHotspotConfig} from 'chrome://resources/ash/common/hotspot/cros_hotspot_config.js';
+import {HotspotAllowStatus, HotspotInfo, HotspotState, SetHotspotConfigResult} from 'chrome://resources/ash/common/hotspot/cros_hotspot_config.mojom-webui.js';
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {HotspotAllowStatus, HotspotInfo, HotspotState, SetHotspotConfigResult} from 'chrome://resources/mojo/chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-webui.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {castExists} from '../assert_extras.js';
@@ -45,7 +45,7 @@ class SettingsHotspotSubpageElement extends SettingsHotspotSubpageElementBase {
        */
       isHotspotToggleOn_: {
         type: Boolean,
-        observer: 'onHotspotToggleChanged_',
+        value: false,
       },
 
       /**
@@ -73,25 +73,6 @@ class SettingsHotspotSubpageElement extends SettingsHotspotSubpageElementBase {
     this.isHotspotToggleOn_ = newValue.state === HotspotState.kEnabled ||
         newValue.state === HotspotState.kEnabling;
     this.updateAutoDisablePref_();
-  }
-
-  /**
-   * Observer for isHotspotToggleOn_ that returns early until the previous
-   * value was not undefined to avoid wrongly toggling the HotspotInfo state.
-   */
-  private onHotspotToggleChanged_(
-      newValue: boolean, oldValue: boolean|undefined): void {
-    if (oldValue === undefined) {
-      return;
-    }
-    // If the toggle value changed but the toggle is disabled, the change came
-    // from CrosHotspotConfig, not the user. Don't attempt to turn the hotspot
-    // on or off.
-    if (this.isToggleDisabled_()) {
-      return;
-    }
-
-    this.setHotspotEnabledState_(newValue);
   }
 
   private updateAutoDisablePref_(): void {
@@ -130,7 +111,8 @@ class SettingsHotspotSubpageElement extends SettingsHotspotSubpageElementBase {
     getHotspotConfig().disableHotspot();
   }
 
-  private announceHotspotToggleChange_(): void {
+  private onHotspotToggleChange_(): void {
+    this.setHotspotEnabledState_(this.isHotspotToggleOn_);
     getAnnouncerInstance().announce(
         this.isHotspotToggleOn_ ? this.i18n('hotspotEnabledA11yLabel') :
                                   this.i18n('hotspotDisabledA11yLabel'));

@@ -236,6 +236,14 @@ namespace container_internal {
 // We use uint8_t so we don't need to worry about padding.
 using GenerationType = uint8_t;
 
+// A sentinel value for empty generations. Using 0 makes it easy to constexpr
+// initialize an array of this value.
+constexpr GenerationType SentinelEmptyGeneration() { return 0; }
+
+constexpr GenerationType NextGeneration(GenerationType generation) {
+  return ++generation == SentinelEmptyGeneration() ? ++generation : generation;
+}
+
 #ifdef ABSL_SWISSTABLE_ENABLE_GENERATIONS
 constexpr bool SwisstableGenerationsEnabled() { return true; }
 constexpr size_t NumGenerationBytes() { return sizeof(GenerationType); }
@@ -476,7 +484,7 @@ static_assert(ctrl_t::kDeleted == static_cast<ctrl_t>(-2),
               "ctrl_t::kDeleted must be -2 to make the implementation of "
               "ConvertSpecialToEmptyAndFullToDeleted efficient");
 
-ABSL_DLL extern const ctrl_t kEmptyGroup[17];
+ABSL_DLL extern const ctrl_t kEmptyGroup[16];
 
 // Returns a pointer to a control byte group that can be used by empty tables.
 inline ctrl_t* EmptyGroup() {
@@ -485,10 +493,13 @@ inline ctrl_t* EmptyGroup() {
   return const_cast<ctrl_t*>(kEmptyGroup);
 }
 
-// Returns a pointer to the generation byte at the end of the empty group, if it
-// exists.
-inline GenerationType* EmptyGeneration() {
-  return reinterpret_cast<GenerationType*>(EmptyGroup() + 16);
+// Returns a pointer to a generation to use for an empty hashtable.
+GenerationType* EmptyGeneration();
+
+// Returns whether `generation` is a generation for an empty hashtable that
+// could be returned by EmptyGeneration().
+inline bool IsEmptyGeneration(const GenerationType* generation) {
+  return *generation == SentinelEmptyGeneration();
 }
 
 // Mixes a randomly generated per-process seed with `hash` and `ctrl` to
@@ -675,9 +686,10 @@ struct GroupAArch64Impl {
   void ConvertSpecialToEmptyAndFullToDeleted(ctrl_t* dst) const {
     uint64_t mask = vget_lane_u64(vreinterpret_u64_u8(ctrl), 0);
     constexpr uint64_t msbs = 0x8080808080808080ULL;
-    constexpr uint64_t lsbs = 0x0101010101010101ULL;
-    auto x = mask & msbs;
-    auto res = (~x + (x >> 7)) & ~lsbs;
+    constexpr uint64_t slsbs = 0x0202020202020202ULL;
+    constexpr uint64_t midbs = 0x7e7e7e7e7e7e7e7eULL;
+    auto x = slsbs & (mask >> 6);
+    auto res = (x + midbs) | msbs;
     little_endian::Store64(dst, res);
   }
 
@@ -789,7 +801,7 @@ class CommonFieldsGenerationInfoEnabled {
     if (reserved_growth_ > 0) {
       if (--reserved_growth_ == 0) reserved_growth_ = kReservedGrowthJustRanOut;
     } else {
-      ++*generation_;
+      *generation_ = NextGeneration(*generation_);
     }
   }
   void reset_reserved_growth(size_t reservation, size_t size) {
@@ -817,10 +829,6 @@ class CommonFieldsGenerationInfoEnabled {
   // the code more complicated, and there's a benefit in having the sizes of
   // raw_hash_set in sanitizer mode and non-sanitizer mode a bit more different,
   // which is that tests are less likely to rely on the size remaining the same.
-  // TODO(b/254649633): Currently, we can't detect when end iterators from
-  // different empty tables are compared. If we allocate generations separately
-  // from control bytes, then we could do so. Another option would be to have N
-  // empty generations and use a random one for empty hashtables.
   GenerationType* generation_ = EmptyGeneration();
 };
 
@@ -1151,13 +1159,18 @@ inline void AssertSameContainer(const ctrl_t* ctrl_a, const ctrl_t* ctrl_b,
 
   if (SwisstableGenerationsEnabled()) {
     if (generation_ptr_a == generation_ptr_b) return;
-    const bool a_is_empty = generation_ptr_a == EmptyGeneration();
-    const bool b_is_empty = generation_ptr_b == EmptyGeneration();
+    const bool a_is_empty = IsEmptyGeneration(generation_ptr_a);
+    const bool b_is_empty = IsEmptyGeneration(generation_ptr_b);
     if (a_is_empty != b_is_empty) {
       ABSL_INTERNAL_LOG(FATAL,
                         "Invalid iterator comparison. Comparing iterator from "
                         "a non-empty hashtable with an iterator from an empty "
                         "hashtable.");
+    }
+    if (a_is_empty && b_is_empty) {
+      ABSL_INTERNAL_LOG(FATAL,
+                        "Invalid iterator comparison. Comparing iterators from "
+                        "different empty hashtables.");
     }
     const bool a_is_end = ctrl_a == nullptr;
     const bool b_is_end = ctrl_b == nullptr;
@@ -1331,7 +1344,7 @@ ABSL_ATTRIBUTE_NOINLINE void InitializeSlots(CommonFields& c, Alloc alloc) {
   const GenerationType old_generation = c.generation();
   c.set_generation_ptr(
       reinterpret_cast<GenerationType*>(mem + GenerationOffset(cap)));
-  c.set_generation(old_generation + 1);
+  c.set_generation(NextGeneration(old_generation));
   c.control_ = reinterpret_cast<ctrl_t*>(mem);
   c.slots_ = mem + SlotOffset(cap, AlignOfSlot);
   ResetCtrl(c, SizeOfSlot);
@@ -1889,11 +1902,8 @@ class raw_hash_set {
   //   const char* p = "hello";
   //   s.insert(p);
   //
-  // TODO(romanp): Once we stop supporting gcc 5.1 and below, replace
-  // RequiresInsertable<T> with RequiresInsertable<const T&>.
-  // We are hitting this bug: https://godbolt.org/g/1Vht4f.
   template <
-      class T, RequiresInsertable<T> = 0,
+      class T, RequiresInsertable<const T&> = 0,
       typename std::enable_if<IsDecomposable<const T&>::value, int>::type = 0>
   std::pair<iterator, bool> insert(const T& value) {
     return emplace(value);
@@ -1917,11 +1927,8 @@ class raw_hash_set {
     return insert(std::forward<T>(value)).first;
   }
 
-  // TODO(romanp): Once we stop supporting gcc 5.1 and below, replace
-  // RequiresInsertable<T> with RequiresInsertable<const T&>.
-  // We are hitting this bug: https://godbolt.org/g/1Vht4f.
   template <
-      class T, RequiresInsertable<T> = 0,
+      class T, RequiresInsertable<const T&> = 0,
       typename std::enable_if<IsDecomposable<const T&>::value, int>::type = 0>
   iterator insert(const_iterator, const T& value) {
     return insert(value).first;

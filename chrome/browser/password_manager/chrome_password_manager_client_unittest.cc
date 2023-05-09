@@ -223,9 +223,6 @@ class FakePasswordAutofillAgent
   void SetPasswordFillData(
       const autofill::PasswordFormFillData& form_data) override {}
 
-  void PasswordFieldHasNoAssociatedUsername(
-      ::autofill::FieldRendererId password_element_renderer_id) override {}
-
   void InformNoSavedCredentials(
       bool should_show_popup_without_passwords) override {}
 
@@ -420,13 +417,8 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
   EXPECT_EQ(password_manager::SyncState::kSyncingNormalEncryption,
             client->GetPasswordSyncState());
 
-  // Sync paused due to a persistent auth error other than web signout.
-  sync_service_->SetPersistentAuthErrorOtherThanWebSignout();
-  EXPECT_EQ(password_manager::SyncState::kNotSyncing,
-            client->GetPasswordSyncState());
-
-  // Sync paused due to web signout.
-  sync_service_->SetPersistentAuthErrorWithWebSignout();
+  // Sync paused due to a persistent auth error.
+  sync_service_->SetPersistentAuthError();
   EXPECT_EQ(password_manager::SyncState::kNotSyncing,
             client->GetPasswordSyncState());
 

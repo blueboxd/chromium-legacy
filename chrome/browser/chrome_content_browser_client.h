@@ -57,6 +57,10 @@ class StorageKey;
 class URLLoaderThrottle;
 }  // namespace blink
 
+namespace blocked_content {
+class PopupNavigationDelegate;
+}  // namespace blocked_content
+
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
@@ -104,6 +108,7 @@ class ChromeHidDelegate;
 class ChromeSerialDelegate;
 class ChromeUsbDelegate;
 class ChromeWebAuthenticationDelegate;
+struct NavigateParams;
 
 #if BUILDFLAG(ENABLE_VR)
 namespace vr {
@@ -113,6 +118,13 @@ class ChromeXrIntegrationClient;
 
 class ChromeContentBrowserClient : public content::ContentBrowserClient {
  public:
+  using PopupNavigationDelegateFactory =
+      std::unique_ptr<blocked_content::PopupNavigationDelegate> (*)(
+          NavigateParams);
+
+  static PopupNavigationDelegateFactory&
+  GetPopupNavigationDelegateFactoryForTesting();
+
   ChromeContentBrowserClient();
 
   ChromeContentBrowserClient(const ChromeContentBrowserClient&) = delete;
@@ -340,7 +352,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   GetSystemSharedURLLoaderFactory() override;
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
   std::string GetGeolocationApiKey() override;
+
+#if BUILDFLAG(IS_MAC)
   device::GeolocationManager* GetGeolocationManager() override;
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
   bool ShouldUseGmsCoreGeolocationProvider() override;
@@ -456,7 +471,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::PosixFileDescriptorInfo* mappings) override;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 #if BUILDFLAG(IS_WIN)
-  bool PreSpawnChild(sandbox::TargetPolicy* policy,
+  bool PreSpawnChild(sandbox::TargetConfig* config,
                      sandbox::mojom::Sandbox sandbox_type,
                      ChildSpawnFlags flags) override;
   std::wstring GetAppContainerSidForSandboxType(
@@ -771,7 +786,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url) override;
   bool ShouldServiceWorkerInheritPolicyContainerFromCreator(
       const GURL& url) override;
-  bool ShouldAllowInsecurePrivateNetworkRequests(
+  bool ShouldAllowInsecureLocalNetworkRequests(
       content::BrowserContext* browser_context,
       const url::Origin& origin) override;
   bool IsJitDisabledForSite(content::BrowserContext* browser_context,
@@ -849,6 +864,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool AreIsolatedWebAppsEnabled(
       content::BrowserContext* browser_context) override;
+
+  bool IsThirdPartyStoragePartitioningAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_level_origin) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

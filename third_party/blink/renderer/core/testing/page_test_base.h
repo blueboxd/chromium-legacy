@@ -47,6 +47,8 @@ class PageTestBase : public testing::Test, public ScopedMockOverlayScrollbars {
     // |interface_broker| argument.
     void Install(blink::BrowserInterfaceBrokerProxy& interface_broker);
 
+    MockClipboardHost* clipboard_host() { return &host_; }
+
    private:
     void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
@@ -110,6 +112,8 @@ class PageTestBase : public testing::Test, public ScopedMockOverlayScrollbars {
   static void LoadNoto(LocalFrame&);
 
   static std::string ToSimpleLayoutTree(const LayoutObject& layout_object);
+
+  void SetPreferCompositingToLCDText(bool enable);
 
  protected:
   void LoadAhem();

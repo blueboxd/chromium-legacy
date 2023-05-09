@@ -14,22 +14,10 @@ bool StructTraits<
     blink::InterestGroup::Ad>::Read(blink::mojom::InterestGroupAdDataView data,
                                     blink::InterestGroup::Ad* out) {
   if (!data.ReadRenderUrl(&out->render_url) ||
+      !data.ReadSizeGroup(&out->size_group) ||
       !data.ReadMetadata(&out->metadata)) {
     return false;
   }
-  return true;
-}
-
-bool StructTraits<blink::mojom::InterestGroupSizeDataView,
-                  blink::InterestGroup::Size>::
-    Read(blink::mojom::InterestGroupSizeDataView data,
-         blink::InterestGroup::Size* out) {
-  if (!data.ReadWidthUnits(&out->width_units) ||
-      !data.ReadHeightUnits(&out->height_units)) {
-    return false;
-  }
-  out->width = data.width();
-  out->height = data.height();
   return true;
 }
 
@@ -58,7 +46,7 @@ bool StructTraits<blink::mojom::InterestGroupDataView, blink::InterestGroup>::
       !data.ReadAllSellersCapabilities(&out->all_sellers_capabilities) ||
       !data.ReadBiddingUrl(&out->bidding_url) ||
       !data.ReadBiddingWasmHelperUrl(&out->bidding_wasm_helper_url) ||
-      !data.ReadDailyUpdateUrl(&out->daily_update_url) ||
+      !data.ReadUpdateUrl(&out->update_url) ||
       !data.ReadTrustedBiddingSignalsUrl(&out->trusted_bidding_signals_url) ||
       !data.ReadTrustedBiddingSignalsKeys(&out->trusted_bidding_signals_keys) ||
       !data.ReadUserBiddingSignals(&out->user_bidding_signals) ||

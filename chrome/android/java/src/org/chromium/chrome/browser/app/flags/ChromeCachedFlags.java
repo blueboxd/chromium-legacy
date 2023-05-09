@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
@@ -92,7 +93,6 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.sEarlyLibraryLoad,
                 ChromeFeatureList.sFeedLoadingPlaceholder,
                 ChromeFeatureList.sFoldableJankFix,
-                ChromeFeatureList.sGridTabSwitcherForTablets,
                 ChromeFeatureList.sHideNonDisplayableAccountEmail,
                 ChromeFeatureList.sIncognitoReauthenticationForAndroid,
                 ChromeFeatureList.sInstanceSwitcher,
@@ -103,7 +103,6 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.sOmniboxMostVisitedTilesAddRecycledViewPool,
                 ChromeFeatureList.sOmniboxRemoveExcessiveRecycledViewClearCalls,
                 ChromeFeatureList.sOptimizationGuidePushNotifications,
-                ChromeFeatureList.sOSKResizesVisualViewportByDefault,
                 ChromeFeatureList.sPaintPreviewDemo,
                 ChromeFeatureList.sQueryTiles,
                 ChromeFeatureList.sQueryTilesOnStart,
@@ -113,6 +112,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.sStartSurfaceReturnTime,
                 ChromeFeatureList.sStartSurfaceRefactor,
                 ChromeFeatureList.sStartSurfaceOnTablet,
+                ChromeFeatureList.sStartSurfaceWithAccessibility,
                 ChromeFeatureList.sStoreHoursAndroid,
                 ChromeFeatureList.sSwapPixelFormatToFixConvertFromTranslucent,
                 ChromeFeatureList.sTabGridLayoutAndroid,
@@ -136,6 +136,8 @@ public class ChromeCachedFlags {
                 BrandingController.USE_TEMPORARY_STORAGE,
                 BrandingController.ANIMATE_TOOLBAR_ICON_TRANSITION,
                 ChimeFeatures.ALWAYS_REGISTER,
+                DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT,
+                DeviceClassManager.GTS_LOW_END_SUPPORT,
                 StartSurfaceConfiguration.BEHAVIOURAL_TARGETING,
                 FeedPlaceholderLayout.ENABLE_INSTANT_START_ANIMATION,
                 FilePersistedTabDataStorage.DELAY_SAVES_UNTIL_DEFERRED_STARTUP_PARAM,
@@ -163,26 +165,20 @@ public class ChromeCachedFlags {
                 StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START,
                 StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE,
                 StartSurfaceConfiguration.START_SURFACE_VARIATION,
-                StartSurfaceConfiguration.SUPPORT_ACCESSIBILITY,
                 StartSurfaceConfiguration.TAB_COUNT_BUTTON_ON_START_SURFACE,
                 StartSurfaceConfiguration.USER_CLICK_THRESHOLD,
                 TabContentManager.ALLOW_TO_REFETCH_TAB_THUMBNAIL_VARIATION,
                 TabPersistentStore.CRITICAL_PERSISTED_TAB_DATA_SAVE_ONLY_PARAM,
-                TabUiFeatureUtilities.ENABLE_LAUNCH_BUG_FIX,
-                TabUiFeatureUtilities.ENABLE_LAUNCH_POLISH,
-                TabUiFeatureUtilities.DELAY_GTS_CREATION,
                 TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION,
+                TabUiFeatureUtilities.GTS_ACCESSIBILITY_LIST_MODE,
                 TabUiFeatureUtilities.SHOW_OPEN_IN_TAB_GROUP_MENU_ITEM_FIRST,
-                TabUiFeatureUtilities.ENABLE_TAB_GROUP_SHARING,
                 TabUiFeatureUtilities.ZOOMING_MIN_MEMORY,
                 TabUiFeatureUtilities.SKIP_SLOW_ZOOMING,
                 TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO,
-                TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH,
                 TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH,
                 TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY,
                 TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_SHARE,
                 TabUiFeatureUtilities.ENABLE_TAB_SELECTION_EDITOR_V2_BOOKMARKS,
-                TabUiFeatureUtilities.ENABLE_DEFERRED_FAVICON,
                 TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO,
                 TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED,
                 VersionNumberGetter.MIN_SDK_VERSION,

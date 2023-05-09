@@ -17,6 +17,7 @@
 namespace blink {
 
 class ComputedStyle;
+class NGInlineBreakToken;
 class NGInlineNode;
 struct NGInlineItemsData;
 
@@ -86,6 +87,11 @@ class CORE_EXPORT NGLineInfo {
   NGInlineItemResults* MutableResults() { return &results_; }
   const NGInlineItemResults& Results() const { return results_; }
 
+  const NGInlineBreakToken* BreakToken() const { return break_token_; }
+  void SetBreakToken(const NGInlineBreakToken* break_token) {
+    break_token_ = break_token;
+  }
+
   void SetTextIndent(LayoutUnit indent) { text_indent_ = indent; }
   LayoutUnit TextIndent() const { return text_indent_; }
 
@@ -132,6 +138,9 @@ class CORE_EXPORT NGLineInfo {
   void SetHasOverflow(bool value = true) { has_overflow_ = value; }
 
   void SetBfcOffset(const NGBfcOffset& bfc_offset) { bfc_offset_ = bfc_offset; }
+  void SetAvailableWidth(LayoutUnit available_width) {
+    available_width_ = available_width;
+  }
   void SetWidth(LayoutUnit available_width, LayoutUnit width) {
     available_width_ = available_width;
     width_ = width;
@@ -224,6 +233,8 @@ class CORE_EXPORT NGLineInfo {
   NGInlineItemResults results_;
 
   NGBfcOffset bfc_offset_;
+
+  const NGInlineBreakToken* break_token_ = nullptr;
 
   const NGLayoutResult* block_in_inline_layout_result_ = nullptr;
 

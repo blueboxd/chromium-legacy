@@ -38,7 +38,7 @@ suite('PerDeviceMouseSubsection', function() {
     setInputDeviceSettingsProviderForTesting(provider);
     subsection = document.createElement('settings-per-device-mouse-subsection');
     assertTrue(subsection != null);
-    subsection.mouse = fakeMice[0];
+    subsection.mouse = {...fakeMice[0]};
     subsection.allowScrollSettings_ = true;
     document.body.appendChild(subsection);
     return flushTasks();
@@ -55,6 +55,11 @@ suite('PerDeviceMouseSubsection', function() {
     return flushTasks();
   }
 
+  async function getConnectedMouseSettings() {
+    const mice = await provider.getConnectedMouseSettings();
+    return mice;
+  }
+
   // Test that API are updated when mouse settings change.
   test('Update API when mouse settings change', async () => {
     await initializePerDeviceMouseSubsection();
@@ -65,7 +70,7 @@ suite('PerDeviceMouseSubsection', function() {
       value: false,
     };
     await flushTasks();
-    let updatedMice = await provider.getConnectedMouseSettings();
+    let updatedMice = await getConnectedMouseSettings();
     assertEquals(
         updatedMice[0].settings.swapRight, mouseSwapButtonDropdown.pref.value);
 
@@ -73,7 +78,7 @@ suite('PerDeviceMouseSubsection', function() {
         subsection.shadowRoot.querySelector('#mouseAcceleration');
     mouseAccelerationToggleButton.click();
     await flushTasks();
-    updatedMice = await provider.getConnectedMouseSettings();
+    updatedMice = await getConnectedMouseSettings();
     assertEquals(
         updatedMice[0].settings.accelerationEnabled,
         mouseAccelerationToggleButton.pref.value);
@@ -84,7 +89,7 @@ suite('PerDeviceMouseSubsection', function() {
         mouseSpeedSlider.shadowRoot.querySelector('cr-slider'), 39 /* right */,
         [], 'ArrowRight');
     await flushTasks();
-    updatedMice = await provider.getConnectedMouseSettings();
+    updatedMice = await getConnectedMouseSettings();
     assertEquals(
         updatedMice[0].settings.sensitivity, mouseSpeedSlider.pref.value);
 
@@ -92,16 +97,16 @@ suite('PerDeviceMouseSubsection', function() {
         subsection.shadowRoot.querySelector('#mouseReverseScroll');
     mouseReverseScrollToggleButton.click();
     await flushTasks();
-    updatedMice = await provider.getConnectedMouseSettings();
+    updatedMice = await getConnectedMouseSettings();
     assertEquals(
         updatedMice[0].settings.reverseScrolling,
-        subsection.reverseScrollValue);
+        mouseReverseScrollToggleButton.checked);
 
     const mouseScrollAccelerationToggleButton =
         subsection.shadowRoot.querySelector('#mouseScrollAcceleration');
     mouseScrollAccelerationToggleButton.click();
     await flushTasks();
-    updatedMice = await provider.getConnectedMouseSettings();
+    updatedMice = await getConnectedMouseSettings();
     assertEquals(
         updatedMice[0].settings.scrollAcceleration,
         mouseScrollAccelerationToggleButton.pref.value);
@@ -112,7 +117,7 @@ suite('PerDeviceMouseSubsection', function() {
         mouseScrollSpeedSlider.shadowRoot.querySelector('cr-slider'),
         39 /* right */, [], 'ArrowRight');
     await flushTasks();
-    updatedMice = await provider.getConnectedMouseSettings();
+    updatedMice = await getConnectedMouseSettings();
     assertEquals(
         updatedMice[0].settings.scrollSensitivity,
         mouseScrollSpeedSlider.pref.value);
@@ -167,7 +172,7 @@ suite('PerDeviceMouseSubsection', function() {
         subsection.shadowRoot.querySelector('#mouseScrollAcceleration');
     assertFalse(isVisible(mouseScrollAccelerationToggleButton));
     mouseScrollSpeedSlider =
-        assert(subsection.shadowRoot.querySelector('#mouseScrollSpeedSlider'));
+        subsection.shadowRoot.querySelector('#mouseScrollSpeedSlider');
     assertFalse(isVisible(mouseScrollSpeedSlider));
   });
 });

@@ -7,7 +7,38 @@
 #include "chrome/browser/dips/dips_cleanup_service_factory.h"
 #include "chrome/browser/dips/dips_features.h"
 #include "chrome/browser/dips/dips_service_factory.h"
+#include "content/public/browser/web_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+using content::CookieAccessDetails;
+using content::NavigationHandle;
+using content::RenderFrameHost;
+using content::WebContents;
+
+URLCookieAccessObserver::URLCookieAccessObserver(WebContents* web_contents,
+                                                 const GURL& url,
+                                                 Type access_type)
+    : WebContentsObserver(web_contents), url_(url), access_type_(access_type) {}
+
+void URLCookieAccessObserver::Wait() {
+  run_loop_.Run();
+}
+
+void URLCookieAccessObserver::OnCookiesAccessed(
+    RenderFrameHost* render_frame_host,
+    const CookieAccessDetails& details) {
+  if (details.type == access_type_ && details.url == url_) {
+    run_loop_.Quit();
+  }
+}
+
+void URLCookieAccessObserver::OnCookiesAccessed(
+    NavigationHandle* navigation_handle,
+    const CookieAccessDetails& details) {
+  if (details.type == access_type_ && details.url == url_) {
+    run_loop_.Quit();
+  }
+}
 
 RedirectChainObserver::RedirectChainObserver(DIPSService* service,
                                              GURL final_url)
@@ -26,6 +57,23 @@ void RedirectChainObserver::OnChainHandled(
 
 void RedirectChainObserver::Wait() {
   run_loop_.Run();
+}
+
+UserActivationObserver::UserActivationObserver(
+    WebContents* web_contents,
+    RenderFrameHost* render_frame_host)
+    : WebContentsObserver(web_contents),
+      render_frame_host_(render_frame_host) {}
+
+void UserActivationObserver::Wait() {
+  run_loop_.Run();
+}
+
+void UserActivationObserver::FrameReceivedUserActivation(
+    RenderFrameHost* render_frame_host) {
+  if (render_frame_host_ == render_frame_host) {
+    run_loop_.Quit();
+  }
 }
 
 EntryUrlsAre::EntryUrlsAre(std::string entry_name,

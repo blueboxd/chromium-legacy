@@ -5,6 +5,7 @@
 #include "components/attribution_reporting/test_utils.h"
 
 #include <ostream>
+#include <string>
 #include <tuple>
 
 #include "base/values.h"
@@ -16,6 +17,8 @@
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
+#include "components/attribution_reporting/source_type.h"
+#include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "net/base/schemeful_site.h"
@@ -23,6 +26,14 @@
 #include "url/origin.h"
 
 namespace attribution_reporting {
+
+FiltersDisjunction FiltersForSourceType(mojom::SourceType source_type) {
+  return {{
+      {
+          {FilterData::kSourceTypeFilterKey, {SourceTypeName(source_type)}},
+      },
+  }};
+}
 
 bool operator==(const AggregationKeys& a, const AggregationKeys& b) {
   return a.keys() == b.keys();
@@ -49,14 +60,6 @@ std::ostream& operator<<(std::ostream& out, const FilterPair& filters) {
   base::Value::Dict dict;
   filters.SerializeIfNotEmpty(dict);
   return out << dict;
-}
-
-bool operator==(const Filters& a, const Filters& b) {
-  return a.filter_values() == b.filter_values();
-}
-
-std::ostream& operator<<(std::ostream& out, const Filters& filters) {
-  return out << filters.ToJson();
 }
 
 bool operator==(const DestinationSet& a, const DestinationSet& b) {

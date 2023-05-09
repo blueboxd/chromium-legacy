@@ -207,8 +207,6 @@
 #include "chromeos/ash/components/timezone/timezone_provider.h"
 #include "chromeos/ash/components/timezone/timezone_request.h"
 #include "chromeos/ash/services/rollback_network_config/public/mojom/rollback_network_config.mojom.h"
-#include "components/crash/core/app/breakpad_linux.h"
-#include "components/crash/core/app/crashpad.h"
 #include "components/metrics/structured/neutrino_logging.h"
 #include "components/metrics/structured/neutrino_logging_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -1121,7 +1119,6 @@ void WizardController::ShowConsolidatedConsentScreen() {
 
 void WizardController::ShowChoobeScreen() {
   DCHECK(features::IsOobeChoobeEnabled());
-  GetChoobeFlowController()->Start();
   SetCurrentScreen(GetScreen(ChoobeScreenView::kScreenId));
 }
 
@@ -1459,10 +1456,15 @@ void WizardController::OnThemeSelectionScreenExit(
   OnScreenExit(ThemeSelectionScreenView::kScreenId,
                ThemeSelectionScreen::GetResultString(result));
 
-  // Stop CHOOBE after exiting the last optional screen.
+  // Since ThemeSelectionScreen is the last optional screen, either return to
+  // CHOOBE screen if return_to_choobe_screen is true, or reset
+  // choobe_flow_controller_.
   if (features::IsOobeChoobeEnabled()) {
-    GetChoobeFlowController()->Stop(
-        *ProfileManager::GetActiveUserProfile()->GetPrefs());
+    if (wizard_context_->return_to_choobe_screen) {
+      ShowChoobeScreen();
+      return;
+    }
+    choobe_flow_controller_.reset();
   }
 
   ShowMarketingOptInScreen();
@@ -1488,6 +1490,7 @@ void WizardController::OnCryptohomeRecoveryScreenExit(
       break;
     case CryptohomeRecoveryScreen::Result::kManualRecovery:
     case CryptohomeRecoveryScreen::Result::kNoRecoveryFactor:
+    case CryptohomeRecoveryScreen::Result::kNotApplicable:
       ShowGaiaPasswordChangedScreen(std::move(wizard_context_->user_context));
       break;
   }
@@ -1503,6 +1506,7 @@ void WizardController::OnChoobeScreenExit(ChoobeScreen::Result result) {
       ShowThemeSelectionScreen();
       break;
     case ChoobeScreen::Result::SKIPPED:
+      choobe_flow_controller_.reset();
       ShowMarketingOptInScreen();
       break;
   }
@@ -2085,10 +2089,11 @@ void WizardController::OnOobeFlowFinished() {
   known_user.RemovePendingOnboardingScreen(account_id);
 
   if (features::IsOobeChoobeEnabled()) {
-    // Additional cleanup of the pref kChoobeSelectedScreens in case it was not
-    // already cleared.
+    // Additional cleanup of CHOOBE prefs in case it was not already cleared.
     ProfileManager::GetActiveUserProfile()->GetPrefs()->ClearPref(
         prefs::kChoobeSelectedScreens);
+    ProfileManager::GetActiveUserProfile()->GetPrefs()->ClearPref(
+        prefs::kChoobeCompletedScreens);
   }
 
   // Launch browser and delete login host controller.
@@ -2460,6 +2465,10 @@ void WizardController::StartDemoModeSetup() {
   ShowNetworkScreen();
 }
 
+void WizardController::CreateChoobeFlowController() {
+  choobe_flow_controller_ = std::make_unique<ChoobeFlowController>();
+}
+
 void WizardController::SimulateDemoModeSetupForTesting(
     absl::optional<DemoSession::DemoModeConfig> demo_config) {
   if (!demo_setup_controller_) {
@@ -2767,13 +2776,6 @@ WizardController::GetAutoEnrollmentController() {
         std::make_unique<policy::AutoEnrollmentController>();
   }
   return auto_enrollment_controller_.get();
-}
-
-ChoobeFlowController* WizardController::GetChoobeFlowController() {
-  if (!choobe_flow_controller_) {
-    choobe_flow_controller_ = std::make_unique<ChoobeFlowController>();
-  }
-  return choobe_flow_controller_.get();
 }
 
 void WizardController::MaybeTakeTPMOwnership() {

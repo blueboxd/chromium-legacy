@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Արխիվացվում է <ph name="NUMBER_OF_ITEMS" /> տարր…</translation>
 <translation id="1722687688096767818">Պրոֆիլն ավելացվում է…</translation>
 <translation id="1726100011689679555">Անունների սերվերներ</translation>
+<translation id="1727562178154619254">Պատրաստ են համաժամացման</translation>
 <translation id="1729953886957086472">գերմաներեն (Գերմանիա)</translation>
 <translation id="1730235522912993863">չինարեն (ցանցզե)</translation>
 <translation id="1731889557567069540">Պատճենվեց <ph name="NUMBER_OF_ITEMS" /> տարր։</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Պատկերի լուծաչափը</translation>
 <translation id="1972984168337863910">Ծավալել ֆայլերի մասին կարծիք հայտնելու վահանակները</translation>
 <translation id="1995337122023280937">Անցնել ֆայլի տեղադրություն</translation>
-<translation id="1999709132469742660">Ֆայլի հասանելիություն բոլոր URL-ների միջոցով</translation>
 <translation id="2001796770603320721">Կառավարել Drive-ում</translation>
 <translation id="2009067268969781306">Ֆորմատավորման արդյունքում կրիչի վրա պահված բոլոր տվյալները կջնջվեն: Այս գործողությունը հնարավոր չէ հետարկել:</translation>
 <translation id="2025955442973426285">թիգրինյա</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">Լատինամերիկյան</translation>
 <translation id="5330145655348521461">Այս ֆայլերը բացված են այլ աշխատասեղանի վրա: Դիտելու համար տեղափոխվեք <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />):</translation>
 <translation id="5330512191124428349">Ստանալ տեղեկություններ</translation>
-<translation id="5337538975554986899">Ֆայլի հասանելիություն բոլոր URL-ների միջոցով (բացառությամբ հետևյալների՝ <ph name="NON_RESTRICTED_DESTINATIONS" />)</translation>
 <translation id="5344246330454251646">Կառավարել հասանելիության պարամետրերը Bruschetta-ի համար</translation>
 <translation id="535792325654997756">Կատուներով մարդ</translation>
 <translation id="5358764674931277">Կադրերի արագությունը</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">Լինուքսի հավելվածը տեղադրելիս սխալ առաջացավ:</translation>
 <translation id="5912396950572065471">Ձևաչափ</translation>
 <translation id="5913638992615760742">Չհաջողվեց պատճենել։ Անսպասելի սխալ առաջացավ՝ <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Հասանելի են որոնման նոր գործառույթներ</translation>
 <translation id="5926082595146149752">հոլանդերեն (Նիդեռլանդներ)՝ ԱՄՆ միջազգային համակարգչային ստեղնաշարով</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />։ Ակտիվացրեք՝ սարքը կարգավորելուց հետո</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">Վկայագրերը չեն բեռնվել</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Պանակի հասանելիության տրամադրում Bruschetta-ին</translation>
+<translation id="6750737795876287924">Ընթացիկ գրացուցակ</translation>
 <translation id="6751256176799620176">Ընտրված է 1 պանակ</translation>
 <translation id="6755827872271341378">ChromeOS Flex սարք</translation>
 <translation id="6790428901817661496">Նվագարկել</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">Պանակներ</translation>
 <translation id="6976795442547527108">Առյուծ</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Ամբողջ ժամանակաշրջանի</translation>
 <translation id="6989942356279143254">շվեդերեն</translation>
 <translation id="6990081529015358884">Ազատ տարածք չունեք</translation>
 <translation id="6993826899923627728">Այս տարրերը ձեր աղբարկղում են</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">Վերջերս դիտված պատկերներ չկան</translation>
 <translation id="7460898608667578234">Ուկրաինական</translation>
 <translation id="7469894403370665791">Ավտոմատ միանալ այս ցանցին</translation>
-<translation id="7481358317100446445">Պատրաստ է</translation>
 <translation id="7486315294984620427">Ֆայլերը Parallels Desktop քաշելու և թողնելու համար նախ պատճենեք դրանք «Windows-ի ֆայլեր» պանակում։</translation>
 <translation id="749452993132003881">հիրագանա</translation>
 <translation id="7495372004724182530">մալայալամ (հնչյունային)</translation>

@@ -152,16 +152,6 @@ void TabUsageRecorderBrowserAgent::RecordTabSwitched(
   if (!old_web_state || !new_web_state)
     return;
 
-  // Before knowledge of the previous tab, `old_web_state`, is lost, see if it
-  // is a previously-evicted tab still reloading.  If it is, record that the
-  // user did not wait for the evicted tab to finish reloading.
-  if (old_web_state == evicted_web_state_ && old_web_state != new_web_state &&
-      evicted_web_state_reload_start_time_ != base::TimeTicks()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-        tab_usage_recorder::USER_DID_NOT_WAIT,
-        tab_usage_recorder::USER_BEHAVIOR_COUNT);
-  }
   ResetEvictedTab();
 
   if (ShouldIgnoreWebState(new_web_state) || was_just_created)
@@ -219,38 +209,15 @@ void TabUsageRecorderBrowserAgent::RecordPageLoadStart(
         RecordRestoreStartTime();
     }
   } else {
-    // If there is a currently-evicted tab reloading, make sure it is recorded
-    // that the user did not wait for it to load.
-    if (evicted_web_state_ &&
-        evicted_web_state_reload_start_time_ != base::TimeTicks()) {
-      UMA_HISTOGRAM_ENUMERATION(
-          tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-          tab_usage_recorder::USER_DID_NOT_WAIT,
-          tab_usage_recorder::USER_BEHAVIOR_COUNT);
-    }
     ResetEvictedTab();
   }
 }
 
-void TabUsageRecorderBrowserAgent::RecordPageLoadDone(web::WebState* web_state,
-                                                      bool success) {
+void TabUsageRecorderBrowserAgent::RecordPageLoadDone(
+    web::WebState* web_state) {
   if (!web_state)
     return;
   if (web_state == evicted_web_state_) {
-    if (success) {
-      LOCAL_HISTOGRAM_TIMES(
-          tab_usage_recorder::kEvictedTabReloadTime,
-          base::TimeTicks::Now() - evicted_web_state_reload_start_time_);
-    }
-    UMA_HISTOGRAM_ENUMERATION(tab_usage_recorder::kEvictedTabReloadSuccessRate,
-                              success ? tab_usage_recorder::LOAD_SUCCESS
-                                      : tab_usage_recorder::LOAD_FAILURE,
-                              tab_usage_recorder::LOAD_DONE_STATE_COUNT);
-
-    UMA_HISTOGRAM_ENUMERATION(
-        tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-        tab_usage_recorder::USER_WAITED,
-        tab_usage_recorder::USER_BEHAVIOR_COUNT);
     ResetEvictedTab();
   }
 }
@@ -297,9 +264,6 @@ void TabUsageRecorderBrowserAgent::RendererTerminated(
   BOOL saw_memory_warning =
       [defaults boolForKey:previous_session_info_constants::
                                kDidSeeMemoryWarningShortlyBeforeTerminating];
-  UMA_HISTOGRAM_BOOLEAN(
-      tab_usage_recorder::kRendererTerminationSawMemoryWarning,
-      saw_memory_warning);
 
   // Log number of live tabs after the renderer termination. This count does not
   // include `terminated_web_state`.
@@ -347,10 +311,6 @@ void TabUsageRecorderBrowserAgent::AppDidEnterBackground() {
                         time_now - restore_start_time_);
   if (evicted_web_state_ &&
       evicted_web_state_reload_start_time_ != base::TimeTicks()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        tab_usage_recorder::kDidUserWaitForEvictedTabReload,
-        tab_usage_recorder::USER_LEFT_CHROME,
-        tab_usage_recorder::USER_BEHAVIOR_COUNT);
     ResetEvictedTab();
   }
 }
@@ -534,8 +494,7 @@ void TabUsageRecorderBrowserAgent::DidStartNavigation(
 void TabUsageRecorderBrowserAgent::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
-  RecordPageLoadDone(web_state, load_completion_status ==
-                                    web::PageLoadCompletionStatus::SUCCESS);
+  RecordPageLoadDone(web_state);
 }
 
 void TabUsageRecorderBrowserAgent::RenderProcessGone(web::WebState* web_state) {

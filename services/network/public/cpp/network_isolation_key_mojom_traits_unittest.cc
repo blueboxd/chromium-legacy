@@ -38,7 +38,10 @@ TEST(NetworkIsolationKeyMojomTraitsTest, SerializeAndDeserialize) {
                 network::mojom::NetworkIsolationKey>(original, copied));
     EXPECT_EQ(original, copied);
     EXPECT_EQ(original.GetTopFrameSite(), copied.GetTopFrameSite());
-    EXPECT_EQ(original.GetFrameSite(), copied.GetFrameSite());
+    if (net::NetworkIsolationKey::GetMode() ==
+        net::NetworkIsolationKey::Mode::kFrameSiteEnabled) {
+      EXPECT_EQ(original.GetFrameSite(), copied.GetFrameSite());
+    }
     EXPECT_EQ(original.IsTransient(), copied.IsTransient());
   }
 }

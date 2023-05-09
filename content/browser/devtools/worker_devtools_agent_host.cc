@@ -87,7 +87,7 @@ void WorkerDevToolsAgentHost::ChildWorkerCreated(
 }
 
 void WorkerDevToolsAgentHost::Disconnected() {
-  auto retain_this = ForceDetachAllSessionsImpl();
+  ForceDetachAllSessions();
   GetRendererChannel()->SetRenderer(mojo::NullRemote(), mojo::NullReceiver(),
                                     ChildProcessHost::kInvalidUniqueID);
   std::move(destroyed_callback_).Run(this);

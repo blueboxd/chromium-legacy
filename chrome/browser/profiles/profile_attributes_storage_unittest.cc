@@ -36,6 +36,7 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "profile_attributes_storage.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1487,7 +1488,7 @@ TEST_F(ProfileAttributesStorageTest, LoadAvatarFromDiskTest) {
       "\x24\x00\x00\x00\x0A\x49\x44\x41\x54\x08\x1D\x63\x60\x00\x00\x00"
       "\x02\x00\x01\xCF\xC8\x35\xE5\x00\x00\x00\x00\x49\x45\x4E\x44\xAE"
       "\x42\x60\x82";
-  base::WriteFile(icon_path, bitmap, sizeof(bitmap));
+  base::WriteFile(icon_path, base::StringPiece(bitmap, sizeof(bitmap)));
   ASSERT_TRUE(base::PathExists(icon_path));
 
   // Add a new profile.
@@ -1797,6 +1798,20 @@ TEST_F(ProfileAttributesStorageTest, EmptyGAIAInfo) {
   // Verify that the profile name and picture are not empty.
   EXPECT_EQ(profile_name, entry->GetName());
   EXPECT_TRUE(gfx::test::AreImagesEqual(profile_image, entry->GetAvatarIcon()));
+}
+
+TEST_F(ProfileAttributesStorageTest, GetAllProfilesKeys) {
+  PrefService* local_state = g_browser_process->local_state();
+
+  // Check there are initially no profiles.
+  EXPECT_EQ(ProfileAttributesStorage::GetAllProfilesKeys(local_state),
+            base::flat_set<std::string>());
+
+  // Add a profile, and check that it is returned.
+  AddTestingProfile();
+  EXPECT_EQ(ProfileAttributesStorage::GetAllProfilesKeys(local_state),
+            base::flat_set<std::string>({base::StringPrintf(
+                "testing_profile_path%" PRIuS, (size_t)0U)}));
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)

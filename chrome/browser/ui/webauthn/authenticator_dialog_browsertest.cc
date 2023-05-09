@@ -28,7 +28,7 @@
 // Run with:
 //
 //   --gtest_filter=BrowserUiTest.Invoke --test-launcher-interactive \
-//   --ui=All/AuthenticatorDialogTest.InvokeUi_${test_name}
+//   --ui=AuthenticatorDialogTest.InvokeUi_${test_name}
 //
 // where test_name is the second arg to IN_PROC_BROWSER_TEST_F().
 
@@ -98,6 +98,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "key_already_registered") {
       model_->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kKeyAlreadyRegistered);
+    } else if (name == "windows_hello_not_enabled") {
+      model_->SetCurrentStepForTesting(
+          AuthenticatorRequestDialogModel::Step::kErrorWindowsHelloNotEnabled);
     } else if (name == "internal_unrecognized_error") {
       model_->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kErrorInternalUnrecognized);
@@ -302,6 +305,12 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "create_passkey") {
       model_->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kCreatePasskey);
+    } else if (name == "phone_confirmation") {
+      model_->set_cable_transport_info(
+          /*extension_is_v2=*/true, /*paired_phones=*/{phone},
+          /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
+      model_->SetCurrentStepForTesting(
+          AuthenticatorRequestDialogModel::Step::kPhoneConfirmationSheet);
     }
 #if BUILDFLAG(IS_MAC)
     else if (name == "ble_permission_mac") {  // NOLINT
@@ -311,7 +320,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
 #endif
 
     model_->StartFlow(std::move(transport_availability),
-                      /*use_location_bar_bubble=*/false,
+                      /*is_conditional_mediation=*/false,
                       /*prefer_native_api=*/false);
   }
 
@@ -357,6 +366,11 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_key_not_registered) {
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_key_already_registered) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_windows_hello_not_enabled) {
   ShowAndVerifyUi();
 }
 
@@ -502,5 +516,9 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_permission_mac) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_create_passkey) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_phone_confirmation) {
   ShowAndVerifyUi();
 }

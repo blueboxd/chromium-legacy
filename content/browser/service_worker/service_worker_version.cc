@@ -33,7 +33,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
-#include "content/browser/renderer_host/private_network_access_util.h"
+#include "content/browser/renderer_host/local_network_access_util.h"
 #include "content/browser/service_worker/payment_handler_support.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -2126,7 +2126,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
         policy_container_host_->ip_address_space();
     client_security_state_->is_web_secure_context =
         policy_container_host_->policies().is_web_secure_context;
-    client_security_state_->private_network_request_policy =
+    client_security_state_->local_network_request_policy =
         DerivePrivateNetworkRequestPolicy(
             policy_container_host_->policies(),
             PrivateNetworkRequestContext::kWorker);
@@ -2231,8 +2231,9 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     return;
   }
 
-  // Requests have not finished before their expiration.
-  bool stop_for_timeout = false;
+  // Are there requests that have not finished before their expiration.
+  bool has_kill_on_timeout = false;
+  bool has_continue_on_timeout = false;
   // In case, `request_timeouts_` can be modified in the callbacks initiated
   // in `MaybeTimeoutRequest`, we keep its contents locally during the
   // following while loop.
@@ -2245,8 +2246,14 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
       break;
     }
     if (MaybeTimeoutRequest(info)) {
-      stop_for_timeout =
-          stop_for_timeout || info.timeout_behavior == KILL_ON_TIMEOUT;
+      switch (info.timeout_behavior) {
+        case KILL_ON_TIMEOUT:
+          has_kill_on_timeout = true;
+          break;
+        case CONTINUE_ON_TIMEOUT:
+          has_continue_on_timeout = true;
+          break;
+      }
     }
     timeout_iter = request_timeouts.erase(timeout_iter);
   }
@@ -2256,13 +2263,23 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // TODO(crbug.com/1363504): remove the following DCHECK when the cause
   // identified.
   DCHECK_EQ(request_timeouts_.size(), inflight_requests_.size());
-  if (stop_for_timeout && running_status() != EmbeddedWorkerStatus::STOPPING)
+
+  if (has_kill_on_timeout &&
+      running_status() != EmbeddedWorkerStatus::STOPPING) {
     embedded_worker_->Stop();
+  }
 
   // For the timeouts below, there are no callbacks to timeout so there is
   // nothing more to do if the worker is already stopping.
   if (running_status() == EmbeddedWorkerStatus::STOPPING)
     return;
+
+  // If an request is expired and there is no other requests, we ask event
+  // queue to check if idle timeout should be scheduled. Event queue may
+  // schedule idle timeout if there is no events at the time.
+  if (has_continue_on_timeout && !HasWorkInBrowser()) {
+    endpoint()->ClearKeepAlive();
+  }
 
   // Check ping status.
   ping_controller_.CheckPingStatus();

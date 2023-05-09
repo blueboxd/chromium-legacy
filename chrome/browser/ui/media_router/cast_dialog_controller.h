@@ -26,6 +26,8 @@ class CastDialogController {
 
     virtual void OnModelUpdated(const CastDialogModel& model) {}
 
+    virtual void OnCastingStarted() {}
+
     // Notifies observers that the observed object is being destroyed. Observers
     // MUST NOT try to destroy the observed object in response - to manage the
     // lifetime of a CastDialogController, use RegisterDestructor() below.
@@ -50,6 +52,12 @@ class CastDialogController {
 
   // Removes the specified issue. No-op if the ID is invalid.
   virtual void ClearIssue(const Issue::Id& issue_id) = 0;
+
+  // Freezes and unfreezes the route given by |route_id|. No-op if the ID is
+  // invalid, if the route is not currently mirroring, or if the mirroring route
+  // does not support freezing.
+  virtual void FreezeRoute(const MediaRoute::Id& route_id) = 0;
+  virtual void UnfreezeRoute(const MediaRoute::Id& route_id) = 0;
 
   // Returns the MediaRouteStarter that this dialog was going to use to create
   // the mirroring or presentation routes. The dialog box is relinquishing

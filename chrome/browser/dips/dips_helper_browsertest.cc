@@ -53,29 +53,6 @@ using testing::Pair;
 
 namespace {
 
-class UserActivationObserver : public content::WebContentsObserver {
- public:
-  explicit UserActivationObserver(content::WebContents* web_contents,
-                                  content::RenderFrameHost* render_frame_host)
-      : WebContentsObserver(web_contents),
-        render_frame_host_(render_frame_host) {}
-
-  // Wait until the frame receives user activation.
-  void Wait() { run_loop_.Run(); }
-
-  // WebContentsObserver override
-  void FrameReceivedUserActivation(
-      content::RenderFrameHost* render_frame_host) override {
-    if (render_frame_host_ == render_frame_host) {
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  raw_ptr<content::RenderFrameHost> const render_frame_host_;
-  base::RunLoop run_loop_;
-};
-
 class FrameCookieAccessObserver : public content::WebContentsObserver {
  public:
   explicit FrameCookieAccessObserver(WebContents* web_contents,
@@ -96,38 +73,6 @@ class FrameCookieAccessObserver : public content::WebContentsObserver {
 
  private:
   const raw_ptr<content::RenderFrameHost> render_frame_host_;
-  base::RunLoop run_loop_;
-};
-
-class URLCookieAccessObserver : public content::WebContentsObserver {
- public:
-  explicit URLCookieAccessObserver(WebContents* web_contents,
-                                   const GURL& url,
-                                   CookieAccessDetails::Type access_type)
-      : WebContentsObserver(web_contents),
-        url_(url),
-        access_type_(access_type) {}
-
-  // Wait until the frame accesses cookies.
-  void Wait() { run_loop_.Run(); }
-
-  // WebContentsObserver overrides
-  void OnCookiesAccessed(RenderFrameHost* render_frame_host,
-                         const CookieAccessDetails& details) override {
-    if (details.type == access_type_ && details.url == url_) {
-      run_loop_.Quit();
-    }
-  }
-  void OnCookiesAccessed(NavigationHandle* navigation_handle,
-                         const CookieAccessDetails& details) override {
-    if (details.type == access_type_ && details.url == url_) {
-      run_loop_.Quit();
-    }
-  }
-
- private:
-  GURL url_;
-  CookieAccessDetails::Type access_type_;
   base::RunLoop run_loop_;
 };
 
@@ -293,7 +238,7 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
 
   // Click on the b.test iframe.
   base::Time frame_interaction_time =
-      time + DIPSBounceDetector::kInteractionUpdateInterval;
+      time + DIPSBounceDetector::kTimestampUpdateInterval;
   SetDIPSTime(frame_interaction_time);
   UserActivationObserver observer_b(web_contents, iframe);
 
@@ -345,7 +290,7 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
   EXPECT_EQ(state_1->user_interaction_times->first,
             state_1->user_interaction_times->second);
 
-  SetDIPSTime(time + DIPSBounceDetector::kInteractionUpdateInterval +
+  SetDIPSTime(time + DIPSBounceDetector::kTimestampUpdateInterval +
               base::Seconds(10));
   UserActivationObserver observer_2(web_contents, frame);
   SimulateMouseClick(web_contents, 0, blink::WebMouseEvent::Button::kLeft);
@@ -359,10 +304,10 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
   EXPECT_NE(state_2->user_interaction_times->second,
             state_2->user_interaction_times->first);
   EXPECT_EQ(absl::make_optional(time), state_2->user_interaction_times->first);
-  EXPECT_EQ(absl::make_optional(time +
-                                DIPSBounceDetector::kInteractionUpdateInterval +
-                                base::Seconds(10)),
-            state_2->user_interaction_times->second);
+  EXPECT_EQ(
+      absl::make_optional(time + DIPSBounceDetector::kTimestampUpdateInterval +
+                          base::Seconds(10)),
+      state_2->user_interaction_times->second);
 }
 
 IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest, StorageRecordedInSingleFrame) {
@@ -659,7 +604,7 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
   BlockUntilHelperProcessesPendingRequests();
 
   // Click a second time.
-  SetDIPSTime(time + DIPSBounceDetector::kInteractionUpdateInterval +
+  SetDIPSTime(time + DIPSBounceDetector::kTimestampUpdateInterval +
               base::Seconds(3));
   UserActivationObserver click_observer_2(web_contents, frame);
   SimulateMouseClick(web_contents, 0, blink::WebMouseEvent::Button::kLeft);
@@ -672,17 +617,17 @@ IN_PROC_BROWSER_TEST_P(DIPSTabHelperBrowserTest,
   EXPECT_NE(state->user_interaction_times->first,
             state->user_interaction_times->second);
   EXPECT_EQ(absl::make_optional(time), state->user_interaction_times->first);
-  EXPECT_EQ(absl::make_optional(time +
-                                DIPSBounceDetector::kInteractionUpdateInterval +
-                                base::Seconds(3)),
-            state->user_interaction_times->second);
+  EXPECT_EQ(
+      absl::make_optional(time + DIPSBounceDetector::kTimestampUpdateInterval +
+                          base::Seconds(3)),
+      state->user_interaction_times->second);
   EXPECT_FALSE(state->site_storage_times.has_value());
 
   histograms.ExpectTotalCount(kTimeToInteraction, 0);
   histograms.ExpectTotalCount(kTimeToStorage, 0);
 
   // Write a cookie now that both clicks have been handled.
-  SetDIPSTime(time + DIPSBounceDetector::kInteractionUpdateInterval +
+  SetDIPSTime(time + DIPSBounceDetector::kTimestampUpdateInterval +
               base::Seconds(10));
   FrameCookieAccessObserver cookie_observer(web_contents, frame);
   ASSERT_TRUE(content::ExecJs(frame, "document.cookie = 'foo=bar';",
@@ -800,8 +745,8 @@ class DIPSPrepopulateTest : public PlatformBrowserTest {
         ->FlushLossyWebsiteSettings();
   }
 
-  raw_ptr<DIPSService> dips_service;
-  raw_ptr<base::SequenceBound<DIPSStorage>> storage;
+  raw_ptr<DIPSService, DanglingUntriaged> dips_service;
+  raw_ptr<base::SequenceBound<DIPSStorage>, DanglingUntriaged> storage;
 
  private:
   base::test::ScopedFeatureList feature_list_;

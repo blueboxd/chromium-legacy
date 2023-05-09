@@ -7,11 +7,14 @@
 #import <ostream>
 
 #import "base/check_op.h"
+#import "base/ios/ios_util.h"
 #import "base/notreached.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/alert_view/alert_action.h"
 #import "ios/chrome/browser/ui/elements/gray_highlight_button.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
@@ -123,7 +126,28 @@ void AddSeparatorToStackView(UIStackView* stackView) {
 
 // Returns a GrayHighlightButton to be added to the alert for `action`.
 GrayHighlightButton* GetButtonForAction(AlertAction* action) {
-  GrayHighlightButton* button = [[GrayHighlightButton alloc] init];
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+  // iOS 15.
+  GrayHighlightButton* button = nil;
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets =
+          NSDirectionalEdgeInsetsMake(kButtonInsetTop, kButtonInsetLeading,
+                                      kButtonInsetBottom, kButtonInsetTrailing);
+      button = [GrayHighlightButton buttonWithConfiguration:buttonConfiguration
+                                              primaryAction:nil];
+    }
+  } else {
+    button = [[GrayHighlightButton alloc] init];
+    UIEdgeInsets contentEdgeInsets =
+        UIEdgeInsetsMake(kButtonInsetTop, kButtonInsetLeading,
+                         kButtonInsetBottom, kButtonInsetTrailing);
+    SetContentEdgeInsets(button, contentEdgeInsets);
+  }
+
   UIFont* font = nil;
   UIColor* textColor = nil;
   if (action.style == UIAlertActionStyleDefault) {
@@ -144,18 +168,6 @@ GrayHighlightButton* GetButtonForAction(AlertAction* action) {
 
   button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
   button.translatesAutoresizingMaskIntoConstraints = NO;
-
-  // TODO(crbug.com/1418068): Remove after minimum version required is >=
-  // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-  button.configuration.contentInsets =
-      NSDirectionalEdgeInsetsMake(kButtonInsetTop, kButtonInsetLeading,
-                                  kButtonInsetBottom, kButtonInsetTrailing);
-#else
-  button.contentEdgeInsets =
-      UIEdgeInsetsMake(kButtonInsetTop, kButtonInsetLeading, kButtonInsetBottom,
-                       kButtonInsetTrailing);
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
 
   button.tag = action.uniqueIdentifier;
   return button;

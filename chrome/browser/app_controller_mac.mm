@@ -220,7 +220,8 @@ void AttemptSessionRestore(Profile* profile) {
   }
 
   // No session to restore, proceed with normal startup.
-  if (ProfilePicker::ShouldShowAtLaunch()) {
+  if (StartupProfileModeFromReason(ProfilePicker::GetStartupModeReason()) ==
+      StartupProfileMode::kProfilePicker) {
     ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
         ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
   } else {
@@ -355,11 +356,11 @@ base::FilePath GetStartupProfilePathMac() {
   // should not default to Guest when the profile picker is shown.
   // TODO(https://crbug.com/1155158): Remove the ignore_profile_picker parameter
   // once the picker supports opening URLs.
-  StartupProfilePathInfo profile_path_info =
-      GetStartupProfilePath(/*current_directory=*/base::FilePath(),
-                            *base::CommandLine::ForCurrentProcess(),
-                            /*ignore_profile_picker=*/true);
-  DCHECK_EQ(profile_path_info.mode, StartupProfileMode::kBrowserWindow);
+  StartupProfilePathInfo profile_path_info = GetStartupProfilePath(
+      /*cur_dir=*/base::FilePath(), *base::CommandLine::ForCurrentProcess(),
+      /*ignore_profile_picker=*/true);
+  DCHECK_EQ(StartupProfileModeFromReason(profile_path_info.reason),
+            StartupProfileMode::kBrowserWindow);
   return profile_path_info.path;
 }
 
@@ -1484,7 +1485,8 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   }
 
   // Open the profile picker (for multi-profile users) or a new window.
-  if (ProfilePicker::ShouldShowAtLaunch()) {
+  if (StartupProfileModeFromReason(ProfilePicker::GetStartupModeReason()) ==
+      StartupProfileMode::kProfilePicker) {
     ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
         ProfilePicker::EntryPoint::kNewSessionOnExistingProcess));
   } else {

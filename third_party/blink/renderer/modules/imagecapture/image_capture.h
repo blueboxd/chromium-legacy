@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "media/capture/mojom/image_capture.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -37,6 +38,8 @@ class MODULES_EXPORT ImageCapture final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  enum class MediaTrackConstraintSetType;
+
   static ImageCapture* Create(ExecutionContext*,
                               MediaStreamTrack*,
                               ExceptionState&);
@@ -59,10 +62,14 @@ class MODULES_EXPORT ImageCapture final
   ScriptPromise takePhoto(ScriptState*, const PhotoSettings*);
   ScriptPromise grabFrame(ScriptState*);
 
+  bool CheckAndApplyMediaTrackConstraintsToSettings(
+      media::mojom::blink::PhotoSettings*,
+      const MediaTrackConstraints*,
+      ScriptPromiseResolver*) const;
   void GetMediaTrackCapabilities(MediaTrackCapabilities*) const;
   void SetMediaTrackConstraints(ScriptPromiseResolver*,
                                 const MediaTrackConstraints* constraints);
-  const MediaTrackConstraintSet* GetMediaTrackConstraints() const;
+  MediaTrackConstraints* GetMediaTrackConstraints() const;
   void ClearMediaTrackConstraints();
   void GetMediaTrackSettings(MediaTrackSettings*) const;
 
@@ -79,9 +86,33 @@ class MODULES_EXPORT ImageCapture final
 
   void Trace(Visitor*) const override;
 
+  void SetCapabilitiesForTesting(MediaTrackCapabilities* capabilities) {
+    capabilities_ = capabilities;
+  }
+  void SetSettingsForTesting(MediaTrackSettings* settings) {
+    settings_ = settings;
+  }
+
  private:
   using PromiseResolverFunction =
       base::OnceCallback<void(ScriptPromiseResolver*)>;
+
+  // Called by `CheckAndApplyMediaTrackConstraintsToSettings()` to apply
+  // a single constraint set to photo settings and to effective capabilities.
+  void ApplyMediaTrackConstraintSetToSettings(
+      media::mojom::blink::PhotoSettings*,
+      MediaTrackCapabilities* effective_capabilities,
+      MediaTrackSettings* effective_settings,
+      const MediaTrackConstraintSet*,
+      MediaTrackConstraintSetType) const;
+  // Called by `CheckAndApplyMediaTrackConstraintsToSettings()` check if
+  // effective capabilities satisfy a single constraint set.
+  bool CheckMediaTrackConstraintSet(
+      const MediaTrackCapabilities* effective_capabilities,
+      const MediaTrackSettings* effective_settings,
+      const MediaTrackConstraintSet*,
+      MediaTrackConstraintSetType,
+      ScriptPromiseResolver*) const;
 
   // mojom::blink::PermissionObserver implementation.
   // Called when we get an updated PTZ permission value from the browser.
@@ -116,12 +147,15 @@ class MODULES_EXPORT ImageCapture final
 
   void OnServiceConnectionError();
 
+  void MaybeRejectWithOverconstrainedError(ScriptPromiseResolver*,
+                                           const char* constraint,
+                                           const char* message) const;
   void ResolveWithNothing(ScriptPromiseResolver*);
   void ResolveWithPhotoSettings(ScriptPromiseResolver*);
   void ResolveWithPhotoCapabilities(ScriptPromiseResolver*);
 
   // Returns true if page is visible. Otherwise returns false.
-  bool IsPageVisible();
+  bool IsPageVisible() const;
 
   // Call UpdateMediaTrackSettingsAndCapabilities with |photo_state| and call
   // |callback| with whether local changes to background blur settings and
@@ -131,10 +165,12 @@ class MODULES_EXPORT ImageCapture final
 
   const String& SourceId() const;
 
-  // Get the name a constraint for which there are no corresponding
-  // capabilities or permission to access them.
-  const absl::optional<String> GetConstraintWithNonExistingCapability(
-      const MediaTrackConstraintSet* constraints);
+  // Get the name a constraint for which the existence of the capability or
+  // the permission to access the capability does not match the constraint.
+  const absl::optional<const char*>
+  GetConstraintWithCapabilityExistenceMismatch(
+      const MediaTrackConstraintSet* constraint_set,
+      MediaTrackConstraintSetType) const;
 
   Member<MediaStreamTrack> stream_track_;
   std::unique_ptr<ImageCaptureFrameGrabber> frame_grabber_;
@@ -149,7 +185,7 @@ class MODULES_EXPORT ImageCapture final
 
   Member<MediaTrackCapabilities> capabilities_;
   Member<MediaTrackSettings> settings_;
-  Member<MediaTrackConstraintSet> current_constraints_;
+  Member<MediaTrackConstraints> current_constraints_;
   Member<PhotoSettings> photo_settings_;
 
   Member<PhotoCapabilities> photo_capabilities_;

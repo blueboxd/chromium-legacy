@@ -75,6 +75,7 @@ class AuthenticatorRequestDialogModel {
     kErrorNoAvailableTransports,
     kErrorNoPasskeys,
     kErrorInternalUnrecognized,
+    kErrorWindowsHelloNotEnabled,
 
     // The request is already complete, but the error dialog should wait
     // until user acknowledgement.
@@ -104,6 +105,7 @@ class AuthenticatorRequestDialogModel {
     kOffTheRecordInterstitial,
 
     // Phone as a security key.
+    kPhoneConfirmationSheet,
     kCableActivate,
     kAndroidAccessory,
     kCableV2QRCode,
@@ -263,6 +265,7 @@ class AuthenticatorRequestDialogModel {
            current_step() == Step::kKeyNotRegistered ||
            current_step() == Step::kKeyAlreadyRegistered ||
            current_step() == Step::kMissingCapability ||
+           current_step() == Step::kErrorWindowsHelloNotEnabled ||
            current_step() == Step::kClosed;
   }
 
@@ -517,6 +520,10 @@ class AuthenticatorRequestDialogModel {
   // current_mechanism returns the index into |mechanisms| of the most recently
   // activated mechanism, or nullopt if there isn't one.
   absl::optional<size_t> current_mechanism() const;
+
+  // Contacts the "priority" paired phone. This is only valid to call when there
+  // is a single phone paired.
+  void ContactPriorityPhone();
 
   // ContactPhoneForTesting triggers a contact for a phone with the given name.
   // Only for unittests. UI should use |mechanisms()| to enumerate the

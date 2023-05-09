@@ -65,82 +65,13 @@ TEST_F_WITH_PREAMBLE(
     'OSSettingsDevicePageV3Test', 'MAYBE_All',
     () => mocha.grep('/^((?!arrow_key_arrangement_disabled).)*$/').run());
 
-// TODO(crbug.com/1347746): move this to the generic test lists below after the
-// feature is launched.
-var OSSettingsPeoplePageAccountManagerV3Test =
-    class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      disabled: [
-        'ash::features::kLacrosSupport',
-      ],
-    };
-  }
-};
-
-TEST_F('OSSettingsPeoplePageAccountManagerV3Test', 'All', () => mocha.run());
-
-var OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test =
-    class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: [
-        'ash::features::kLacrosSupport',
-      ],
-    };
-  }
-};
-
-TEST_F(
-    'OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test',
-    'All', () => mocha.run());
-
-var OSSettingsNearbyShareSubPageV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/nearby_share_subpage_tests.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(['features::kNearbySharing']),
-    };
-  }
-};
-
-TEST_F('OSSettingsNearbyShareSubPageV3Test', 'All', () => mocha.run());
-
-var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_sync_controls_test.js';
-  }
-};
-
-TEST_F('OSSettingsPeoplePageOsSyncV3Test', 'AllJsTests', () => {
-  mocha.run();
-});
-
 // TODO(crbug.com/1234871) Move this test back into the list of tests below once
 // Fast pair is launched.
 var OSSettingsOsBluetoothDevicesSubpageV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_devices_subpage_tests.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/os_bluetooth_page/os_bluetooth_devices_subpage_tests.js';
   }
 
   /** @override */
@@ -227,66 +158,6 @@ var OSSettingsAppManagementAppDetailsV3Test =
   }
 };
 
-// TODO(b/162365553) Move this test back into the list of tests below once
-// APN revamp is launched.
-var OSSettingsApnSubpageV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/apn_subpage_tests.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(['ash::features::kApnRevamp'])
-    };
-  }
-};
-
-TEST_F('OSSettingsApnSubpageV3Test', 'AllJsTests', () => {
-  mocha.run();
-});
-
-// TODO(b/162365553) Move this test back into the list of tests below once
-// APN revamp is launched.
-var OSSettingsInternetDetailPageV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/internet_detail_page_tests.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(['ash::features::kApnRevamp'])
-    };
-  }
-};
-
-TEST_F('OSSettingsInternetDetailPageV3Test', 'AllJsTests', () => {
-  mocha.run();
-});
-
-// TODO(b/162365553) Move this test back into the list of tests below once
-// APN revamp is launched.
-var OSSettingsInternetPageV3Test = class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/internet_page_tests.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(['ash::features::kApnRevamp'])
-    };
-  }
-};
-
-TEST_F('OSSettingsInternetPageV3Test', 'AllJsTests', () => {
-  mocha.run();
-});
-
 function crostiniTestGenPreamble() {
   GEN('crostini::FakeCrostiniFeatures fake_crostini_features;');
   GEN('fake_crostini_features.SetAll(true);');
@@ -331,8 +202,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
 
 [['AccessibilityPage', 'os_a11y_page_tests.js'],
  ['AboutPage', 'os_about_page_tests.js'],
- ['AccountsPage', 'add_users_tests.js'],
  ['ApnDetailDialog', 'apn_detail_dialog_tests.js'],
+ [
+   'ApnSubpage', 'apn_subpage_tests.js',
+   {enabled: ['ash::features::kApnRevamp']}
+ ],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
  ['AppManagementAppDetailsItem', 'app_management/app_details_item_test.js'],
@@ -365,13 +239,14 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'app_management/supported_links_item_test.js',
  ],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
- [
-   'AudioAndCaptionsPage',
-   'audio_and_captions_page_tests.js',
- ],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
  ['CellularSetupDialog', 'cellular_setup_dialog_test.js'],
+ [
+   'ChromeVoxSubpage',
+   'chromevox_subpage_tests.js',
+   {enabled: ['features::kAccessibilityChromeVoxPageMigration']},
+ ],
  [
    'DictationChangeLanguageLocaleDialogTest',
    'change_dictation_locale_dialog_test.js',
@@ -384,6 +259,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'cursor_and_touchpad_page_tests.js',
  ],
  ['DateTimePage', 'date_time_page_tests.js'],
+ ['DateTimePageTimezoneSelector', 'date_time_page/timezone_selector_test.js'],
+ ['DateTimePageTimezoneSubpage', 'date_time_page/timezone_subpage_test.js'],
  [
    'DisplayAndMagnificationPage',
    'display_and_magnification_page_tests.js',
@@ -394,8 +271,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['FakeCrosAudioConfig', 'fake_cros_audio_config_test.js'],
  ['FakeInputDeviceSettings', 'fake_input_device_settings_provider_test.js'],
  ['FilesPage', 'os_files_page_test.js'],
- ['FingerprintPage', 'fingerprint_browsertest_chromeos.js'],
- ['GoogleAssistantPage', 'google_assistant_page_test.js'],
+ ['FingerprintListSubpage', 'fingerprint_list_subpage_test.js'],
+ ['GoogleAssistantSubpage', 'google_assistant_subpage_test.js'],
  ['GuestOsSharedPaths', 'guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.js'],
  [
@@ -415,13 +292,26 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ],
  [
    'InputDeviceMojoInterfaceProvider',
-   'input_device_mojo_interface_provider_test.js'
+   'input_device_mojo_interface_provider_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']},
  ],
  ['InputMethodOptionPage', 'input_method_options_page_test.js'],
  ['InputPage', 'input_page_test.js'],
  ['InternetConfig', 'internet_config_test.js'],
  ['InternetDetailMenu', 'internet_detail_menu_test.js'],
- ['InternetKnownNetworksPage', 'internet_known_networks_page_tests.js'],
+ [
+   'InternetDetailSubpage', 'internet_detail_subpage_tests.js',
+   {enabled: ['ash::features::kApnRevamp']}
+ ],
+ ['InternetKnownNetworksSubpage', 'internet_known_networks_subpage_tests.js'],
+ [
+   'InternetPage', 'internet_page_tests.js',
+   {enabled: ['ash::features::kApnRevamp']}
+ ],
+ [
+   'InternetPageTetherConnectionDialog',
+   'internet_page/tether_connection_dialog_test.js'
+ ],
  ['InternetSubpage', 'internet_subpage_tests.js'],
  ['KerberosAccounts', 'kerberos_accounts_test.js'],
  ['KerberosPage', 'kerberos_page_test.js'],
@@ -430,9 +320,9 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'keyboard_and_text_input_page_tests.js',
  ],
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.js'],
- ['LockScreenPage', 'lock_screen_tests.js'],
+ ['LockScreenSubpage', 'lock_screen_subpage_tests.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.js'],
- ['ManageUsersPage', 'manage_users_page_tests.js'],
+ ['ManageUsersSubpage', 'manage_users_subpage_tests.js'],
  ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.js'],
  // TODO(b/208932892): Re-enable once flakiness is fixed.
  // ['MultideviceFeatureItem', 'multidevice_feature_item_tests.js'],
@@ -464,35 +354,56 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['NearbyShareConfirmPage', 'nearby_share_confirm_page_test.js'],
  ['NearbyShareHighVisibilityPage', 'nearby_share_high_visibility_page_test.js'],
  ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.js'],
+ [
+   'NearbyShareSubpage',
+   'nearby_share_subpage_tests.js',
+   {enabled: ['features::kNearbySharing']},
+ ],
  ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.js'],
  ['NetworkProxySection', 'network_proxy_section_test.js'],
  ['NetworkSummary', 'network_summary_test.js'],
  ['NetworkSummaryItem', 'network_summary_item_test.js'],
- ['OfficeFilesPage', 'office_page_test.js'],
  ['OncMojoTest', 'onc_mojo_test.js'],
- ['OsBluetoothPage', 'os_bluetooth_page_tests.js'],
- ['OsBluetoothPairingDialog', 'os_bluetooth_pairing_dialog_tests.js'],
- ['OsBluetoothSummary', 'os_bluetooth_summary_tests.js'],
  [
-   'OsBluetoothChangeDeviceNameDialog',
-   'os_bluetooth_change_device_name_dialog_tests.js',
+   'OsA11yPageAudioAndCaptionsPage',
+   'os_a11y_page/audio_and_captions_page_tests.js',
+ ],
+ [
+   'OsA11yPageTextToSpeechPage',
+   'os_a11y_page/text_to_speech_page_tests.js',
+ ],
+ ['OsA11yPageTtsSubpage', 'os_a11y_page/tts_subpage_test.js'],
+ ['OsBluetoothPage', 'os_bluetooth_page/os_bluetooth_page_tests.js'],
+ [
+   'OsBluetoothPageOsBluetoothChangeDeviceNameDialog',
+   'os_bluetooth_page/os_bluetooth_change_device_name_dialog_tests.js',
+ ],
+ [
+   'OsBluetoothPageOsBluetoothDeviceDetailSubpage',
+   'os_bluetooth_page/os_bluetooth_device_detail_subpage_tests.js',
+ ],
+ [
+   'OsBluetoothPageOsBluetoothPairingDialog',
+   'os_bluetooth_page/os_bluetooth_pairing_dialog_tests.js'
+ ],
+ [
+   'OsBluetoothPageOsBluetoothSummary',
+   'os_bluetooth_page/os_bluetooth_summary_tests.js'
+ ],
+ [
+   'OsBluetoothPageOsBluetoothTrueWirelessImages',
+   'os_bluetooth_page/os_bluetooth_true_wireless_images_tests.js',
  ],
  ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.js'],
  [
    'OsClearPersonalizationDataPage',
    'os_clear_personalization_data_page_test.js'
  ],
+ ['OsFilesPageOfficePage', 'os_files_page/office_page_test.js'],
  ['OsLanguagesPageV2', 'os_languages_page_v2_tests.js'],
  ['OsPairedBluetoothList', 'os_paired_bluetooth_list_tests.js'],
- [
-   'OsBluetoothDeviceDetailSubpage',
-   'os_bluetooth_device_detail_subpage_tests.js',
- ],
- [
-   'OsBluetoothTrueWirelessImages',
-   'os_bluetooth_true_wireless_images_tests.js',
- ],
  ['OsPairedBluetoothListItem', 'os_paired_bluetooth_list_item_tests.js'],
+ ['OsPeoplePageAddUserDialog', 'os_people_page/add_user_dialog_tests.js'],
  ['OsSettingsPage', 'os_settings_page_test.js'],
  ['OsSettingsUi', 'os_settings_ui_test.js'],
  /*
@@ -503,8 +414,22 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['OsSearchPage', 'os_search_page_test.js'],
  ['OsSettingsSearchBox', 'os_settings_search_box_test.js'],
  ['OSSettingsMenu', 'os_settings_menu_test.js'],
- ['ParentalControlsPage', 'parental_controls_page_test.js'],
+ ['OsSyncControlsSubpage', 'os_sync_controls_subpage_test.js'],
+ [
+   'ParentalControlsPage',
+   'parental_controls_page/parental_controls_page_test.js'
+ ],
  ['PeoplePage', 'os_people_page_test.js'],
+ [
+   'PeoplePageAccountManagerSubpage',
+   'people_page_account_manager_subpage_test.js',
+   {disabled: ['ash::features::kLacrosSupport']},
+ ],
+ [
+   'PeoplePageAccountManagerSubpageWithArcAccountRestrictionsEnabled',
+   'people_page_account_manager_subpage_test.js',
+   {enabled: ['ash::features::kLacrosSupport']},
+ ],
  ['PeoplePageQuickUnlock', 'quick_unlock_authenticate_browsertest_chromeos.js'],
  [
    'PerDeviceKeyboard', 'per_device_keyboard_test.js',
@@ -519,11 +444,14 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'per_device_keyboard_subsection_test.js',
    {enabled: ['ash::features::kInputDeviceSettingsSplit']},
  ],
+ ['PerDeviceMouse', 'per_device_mouse_test.js'],
  ['PerDeviceMouseSubsection', 'per_device_mouse_subsection_test.js'],
+ ['PerDevicePointingStick', 'per_device_pointing_stick_test.js'],
  [
    'PerDevicePointingStickSubsection',
    'per_device_pointing_stick_subsection_test.js'
  ],
+ ['PerDeviceTouchpad', 'per_device_touchpad_test.js'],
  ['PerDeviceTouchpadSubsection', 'per_device_touchpad_subsection_test.js'],
  [
    'PersonalizationPageWithPersonalizationHub',
@@ -554,15 +482,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ],
  ['SwitchAccessSetupGuideDialog', 'switch_access_setup_guide_dialog_test.js'],
  ['SwitchAccessSubpage', 'switch_access_subpage_tests.js'],
- ['TetherConnectionDialog', 'tether_connection_dialog_test.js'],
- [
-   'TextToSpeechPage',
-   'text_to_speech_page_tests.js',
- ],
  ['TextToSpeechSubpage', 'text_to_speech_subpage_tests.js'],
- ['TimezoneSelector', 'timezone_selector_test.js'],
- ['TimezoneSubpage', 'timezone_subpage_test.js'],
- ['TtsSubpage', 'tts_subpage_test.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, featureList) {

@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کو زِپ کیا جا رہا ہے...</translation>
 <translation id="1722687688096767818">پروفائل شامل کی جا رہی ہے...</translation>
 <translation id="1726100011689679555">نام سرورز</translation>
+<translation id="1727562178154619254">مطابقت پذیری کے لیے تیار ہے</translation>
 <translation id="1729953886957086472">جرمن (جرمنی)</translation>
 <translation id="1730235522912993863">‏چینی Cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کاپی ہو گئے۔</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">تصویر کا ریزولیوشن</translation>
 <translation id="1972984168337863910">فائلز کے تاثرات کے پینلز کو پھیلائیں</translation>
 <translation id="1995337122023280937">فائل کے مقام پر جائیں</translation>
-<translation id="1999709132469742660">‏تمام urls کے ذریعے فائل تک رسائی</translation>
 <translation id="2001796770603320721">‏Drive میں نظم کریں</translation>
 <translation id="2009067268969781306">ڈرائیو کو فارمیٹ کرنے سے اس پر اسٹور کردہ تمام ڈیٹا حذف ہو جائے گا۔ اس کارروائی کو کالعدم نہیں کیا جا سکتا۔</translation>
 <translation id="2025955442973426285">تگرینی</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">لاطینی امریکی</translation>
 <translation id="5330145655348521461">یہ فائلیں ایک مختلف ڈیسک ٹاپ پر کھولی گئیں۔ اسے دیکھنے کیلئے <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) پر جائیں۔</translation>
 <translation id="5330512191124428349">معلومات حاصل کریں</translation>
-<translation id="5337538975554986899">‏سوائے <ph name="NON_RESTRICTED_DESTINATIONS" /> کے تمام urls کے ذریعے فائل تک رسائی</translation>
 <translation id="5344246330454251646">‏Bruschetta کے اشتراک کرنے کا نظم کریں</translation>
 <translation id="535792325654997756">بلیوں کے ساتھ شخص</translation>
 <translation id="5358764674931277">فریم ریٹ</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">‏آپ کی Linux ایپلیکیشن انسٹال کرنے کے دوران ایک خرابی پیش آ گئی۔</translation>
 <translation id="5912396950572065471">فارمیٹ</translation>
 <translation id="5913638992615760742">کاپی کرنے کی کارروائی ناکام ہو گئی، غیر متوقع خرابی: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">تلاش کی نئی خصوصیات دستیاب ہیں</translation>
 <translation id="5926082595146149752">‏امریکی بین الاقوامی PC کی بورڈ کے ساتھ ڈچ (نیدرلینڈز)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، آلے کے سیٹ اپ ہونے کے بعد فعال کریں</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">سرٹیفکیٹس لوڈ نہیں ہوئے</translation>
 <translation id="6736329909263487977">‎<ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]‎</translation>
 <translation id="6740270213273127264">‏Bruschetta کے ساتھ فولڈر کا اشتراک کریں</translation>
+<translation id="6750737795876287924">موجودہ ڈائریکٹری</translation>
 <translation id="6751256176799620176">1 فولڈر منتخب کیا گیا</translation>
 <translation id="6755827872271341378">‏ChromeOS Flex آلہ</translation>
 <translation id="6790428901817661496">چلائیں</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">فولڈرز</translation>
 <translation id="6976795442547527108">شیر</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">ہر وقت</translation>
 <translation id="6989942356279143254">سویڈش</translation>
 <translation id="6990081529015358884">آپ کے پاس جگہ ختم ہو گئی ہے</translation>
 <translation id="6993826899923627728">یہ آئٹمز آپ کے کوڑے دان میں ہیں</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">حالیہ کوئی تصویر نہیں ہے</translation>
 <translation id="7460898608667578234">يُوکرينی</translation>
 <translation id="7469894403370665791">اس نیٹ ورک سے خودکار طور پر منسلک ہوں</translation>
-<translation id="7481358317100446445">تیار ہے</translation>
 <translation id="7486315294984620427">‏فائلز کو Parallels Desktop میں ڈراپ کرنے کے لیے، فائل کو Windows کی فائلز میں کاپی کرنا ضروری ہے۔</translation>
 <translation id="749452993132003881">ہیراگنا</translation>
 <translation id="7495372004724182530">ملیالم فونیٹک</translation>
@@ -940,6 +939,7 @@
 <translation id="8492972329130824181">ہوم نیٹ ورک دستیاب نہیں ہے۔ منسلک ہونے کیلئے موبائل ڈیٹا رومنگ کو فعال کرنا ہوگا۔</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کو اخذ کیا جا رہا ہے…</translation>
 <translation id="8502913769543567768"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" />، آلے کے سیٹ اپ ہونے کے بعد فعال کریں، اپنے منتظم کے زیر انتظام</translation>
+<translation id="8512483403832814140">کسی بھی وقت</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="853494022971700746">فرانسیسی (فرانس)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" /> نیٹ ورک، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی<ph name="SIGNAL_STRENGTH" />%، تفصیلات</translation>

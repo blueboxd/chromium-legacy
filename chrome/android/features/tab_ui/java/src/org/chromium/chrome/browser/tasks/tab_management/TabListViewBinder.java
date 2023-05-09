@@ -35,13 +35,16 @@ class TabListViewBinder {
             String title = model.get(TabProperties.TITLE);
             ((TextView) fastView.findViewById(R.id.title)).setText(title);
         } else if (TabProperties.FAVICON == propertyKey) {
-            if (TabUiFeatureUtilities.ENABLE_DEFERRED_FAVICON.getValue()) return;
+            if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(view.getContext())) {
+                return;
+            }
 
             Drawable favicon = model.get(TabProperties.FAVICON).getDefaultDrawable();
             setFavicon(fastView, favicon);
         } else if (TabProperties.FAVICON_FETCHER == propertyKey) {
-            if (!TabUiFeatureUtilities.ENABLE_DEFERRED_FAVICON.getValue()) return;
-
+            if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(view.getContext())) {
+                return;
+            }
             final TabListFaviconProvider.TabFaviconFetcher fetcher =
                     model.get(TabProperties.FAVICON_FETCHER);
             if (fetcher == null) {
@@ -62,6 +65,10 @@ class TabListViewBinder {
                     model.get(TabProperties.TAB_CLOSED_LISTENER).run(tabId);
                 });
             }
+        } else if (TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING == propertyKey) {
+            fastView.findViewById(R.id.end_button)
+                    .setContentDescription(
+                            model.get(TabProperties.CLOSE_BUTTON_DESCRIPTION_STRING));
         } else if (TabProperties.IS_SELECTED == propertyKey) {
             int selectedTabBackground =
                     model.get(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID);

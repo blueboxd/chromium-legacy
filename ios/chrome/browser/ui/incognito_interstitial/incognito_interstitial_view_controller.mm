@@ -5,13 +5,16 @@
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_view_controller.h"
 #import "base/check.h"
 #import "base/cxx17_backports.h"
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/attributed_string_util.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/ui/ntp/incognito/incognito_view.h"
 #import "ios/chrome/browser/ui/ntp/incognito/revamped_incognito_view.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -37,6 +40,9 @@ NSString* const kIncognitoInterstitialBannerName =
 
 // Maximum number of lines for the URL label, before the user unfolds it.
 const int kURLLabelDefaultNumberOfLines = 3;
+
+// Line height multiple for the title label.
+const CGFloat kTitleLabelLineHeightMultiple = 1.3;
 
 }  // namespace
 
@@ -91,6 +97,9 @@ const int kURLLabelDefaultNumberOfLines = 3;
   // constraints can only be activated once the complete view hierarchy has been
   // constructed and relevant views belong to the same hierarchy.
   [super viewDidLoad];
+
+  // Fix the line height multiple of `self.titleLabel`.
+  [self fixTitleLabelLineHeightMultiple];
 
   self.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
   self.modalInPresentation = YES;
@@ -277,17 +286,23 @@ const int kURLLabelDefaultNumberOfLines = 3;
     [_expandURLButton setAttributedTitle:readMoreString
                                 forState:UIControlStateNormal];
 
-    // TODO(crbug.com/1418068): Remove after minimum version required is >=
+    // TODO(crbug.com/1418068): Simplify after minimum version required is >=
     // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-    _expandURLButton.configuration.contentInsets = NSDirectionalEdgeInsetsMake(
-        CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON);
-#else
-    _expandURLButton.titleEdgeInsets = UIEdgeInsetsMake(
-        CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON);
-    _expandURLButton.contentEdgeInsets = UIEdgeInsetsMake(
-        CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON);
-#endif
+    if (base::ios::IsRunningOnIOS15OrLater() &&
+        IsUIButtonConfigurationEnabled()) {
+      if (@available(iOS 15, *)) {
+        UIButtonConfiguration* buttonConfiguration =
+            [UIButtonConfiguration plainButtonConfiguration];
+        buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+            CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON, CGFLOAT_EPSILON);
+        _expandURLButton.configuration = buttonConfiguration;
+      }
+    } else {
+      UIEdgeInsets insets = UIEdgeInsetsMake(CGFLOAT_EPSILON, CGFLOAT_EPSILON,
+                                             CGFLOAT_EPSILON, CGFLOAT_EPSILON);
+      SetTitleEdgeInsets(_expandURLButton, insets);
+      SetContentEdgeInsets(_expandURLButton, insets);
+    }
 
     _expandURLButton.backgroundColor = self.view.backgroundColor;
     _expandURLButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -366,6 +381,25 @@ const int kURLLabelDefaultNumberOfLines = 3;
 - (void)expandURLButtonWasTapped {
   self.URLIsExpanded = YES;
   [self.view setNeedsLayout];
+}
+
+// Set the `attributedText` attribute of `self.titleLabel` to customize the line
+// height multiple.
+- (void)fixTitleLabelLineHeightMultiple {
+  NSMutableAttributedString* titleAttributedText =
+      [NSAttributedStringFromUILabel(self.titleLabel) mutableCopy];
+  NSMutableDictionary* attributes = [NSMutableDictionary
+      dictionaryWithDictionary:[titleAttributedText attributesAtIndex:0
+                                                       effectiveRange:nil]];
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
+  [paragraphStyle setParagraphStyle:attributes[NSParagraphStyleAttributeName]];
+  paragraphStyle.lineHeightMultiple = kTitleLabelLineHeightMultiple;
+  attributes[NSParagraphStyleAttributeName] = paragraphStyle;
+  [titleAttributedText
+      setAttributes:attributes
+              range:NSMakeRange(0, titleAttributedText.length)];
+  self.titleLabel.attributedText = titleAttributedText;
 }
 
 @end

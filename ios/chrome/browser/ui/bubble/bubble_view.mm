@@ -7,11 +7,14 @@
 #import <ostream>
 
 #import "base/check.h"
+#import "base/ios/ios_util.h"
 #import "base/notreached.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
-#import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -160,29 +163,33 @@ UIButton* BubbleCloseButton() {
                                             kCloseButtonTopTrailingPadding -
                                             buttonImage.size.width;
   UIButton* button;
-  // setImageEdgeInsets from UIButton is deprecated since iOS 15.0, the new
-  // API uses UIButtonConfiguration to set the image inset.
-  if (@available(iOS 15.0, *)) {
-    UIButtonConfiguration* buttonConfiguration =
-        UIButtonConfiguration.plainButtonConfiguration;
-    [buttonConfiguration setImage:buttonImage];
-    [buttonConfiguration setContentInsets:NSDirectionalEdgeInsetsMake(
-                                              kCloseButtonTopTrailingPadding,
-                                              closeButtonLeadingPadding,
-                                              closeButtonBottomPadding,
-                                              kCloseButtonTopTrailingPadding)];
-    button = [UIButton buttonWithConfiguration:buttonConfiguration
-                                 primaryAction:nil];
+
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+  // iOS 15.
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      [buttonConfiguration setImage:buttonImage];
+      [buttonConfiguration
+          setContentInsets:NSDirectionalEdgeInsetsMake(
+                               kCloseButtonTopTrailingPadding,
+                               closeButtonLeadingPadding,
+                               closeButtonBottomPadding,
+                               kCloseButtonTopTrailingPadding)];
+      button = [UIButton buttonWithConfiguration:buttonConfiguration
+                                   primaryAction:nil];
+    }
   } else {
     button = [UIButton buttonWithType:UIButtonTypeSystem];
     [button setImage:buttonImage forState:UIControlStateNormal];
     [button.imageView setBounds:CGRectZero];
     [button.imageView setContentMode:UIViewContentModeScaleAspectFit];
-    [button setImageEdgeInsets:UIEdgeInsetsMakeDirected(
-                                   kCloseButtonTopTrailingPadding,
-                                   closeButtonLeadingPadding,
-                                   closeButtonBottomPadding,
-                                   kCloseButtonTopTrailingPadding)];
+    UIEdgeInsets contentEdgeInsets = UIEdgeInsetsMakeDirected(
+        kCloseButtonTopTrailingPadding, closeButtonLeadingPadding,
+        closeButtonBottomPadding, kCloseButtonTopTrailingPadding);
+    SetImageEdgeInsets(button, contentEdgeInsets);
   }
   [button setTintColor:[UIColor colorNamed:kSolidButtonTextColor]];
   [button setAccessibilityLabel:l10n_util::GetNSString(IDS_IOS_ICON_CLOSE)];

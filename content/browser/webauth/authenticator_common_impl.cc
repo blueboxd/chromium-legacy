@@ -18,7 +18,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
-#include "content/browser/webauth/authenticator_environment_impl.h"
+#include "content/browser/webauth/authenticator_environment.h"
 #include "content/browser/webauth/client_data_json.h"
 #include "content/browser/webauth/virtual_authenticator_manager_impl.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
@@ -208,10 +208,9 @@ base::TimeDelta AdjustTimeout(absl::optional<base::TimeDelta> timeout,
     return kAdjustedTimeoutUpper;
   }
   const bool testing_api_enabled =
-      AuthenticatorEnvironmentImpl::GetInstance()
-          ->IsVirtualAuthenticatorEnabledFor(
-              static_cast<RenderFrameHostImpl*>(render_frame_host)
-                  ->frame_tree_node());
+      AuthenticatorEnvironment::GetInstance()->IsVirtualAuthenticatorEnabledFor(
+          static_cast<RenderFrameHostImpl*>(render_frame_host)
+              ->frame_tree_node());
   if (testing_api_enabled) {
     return *timeout;
   }
@@ -281,7 +280,7 @@ base::flat_set<device::FidoTransportProtocol> GetWebAuthnTransports(
 std::unique_ptr<device::FidoDiscoveryFactory> MakeDiscoveryFactory(
     RenderFrameHost* render_frame_host) {
   VirtualAuthenticatorManagerImpl* virtual_authenticator_manager =
-      AuthenticatorEnvironmentImpl::GetInstance()
+      AuthenticatorEnvironment::GetInstance()
           ->MaybeGetVirtualAuthenticatorManager(
               static_cast<RenderFrameHostImpl*>(render_frame_host)
                   ->frame_tree_node());
@@ -300,7 +299,7 @@ std::unique_ptr<device::FidoDiscoveryFactory> MakeDiscoveryFactory(
 #if BUILDFLAG(IS_WIN)
   if (base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi)) {
     discovery_factory->set_win_webauthn_api(
-        AuthenticatorEnvironmentImpl::GetInstance()->win_webauthn_api());
+        AuthenticatorEnvironment::GetInstance()->win_webauthn_api());
   }
 #endif  // BUILDFLAG(IS_WIN)
 
@@ -420,7 +419,7 @@ AuthenticatorCommonImpl::MaybeCreateRequestDelegate() {
     return nullptr;
   }
   VirtualAuthenticatorManagerImpl* virtual_authenticator_manager =
-      AuthenticatorEnvironmentImpl::GetInstance()
+      AuthenticatorEnvironment::GetInstance()
           ->MaybeGetVirtualAuthenticatorManager(
               render_frame_host_impl->frame_tree_node());
   if (virtual_authenticator_manager) {
@@ -1217,7 +1216,7 @@ void AuthenticatorCommonImpl::IsConditionalMediationAvailable(
   std::move(callback).Run(true);
 #elif BUILDFLAG(IS_WIN)
   device::WinWebAuthnApiAuthenticator::IsConditionalMediationAvailable(
-      AuthenticatorEnvironmentImpl::GetInstance()->win_webauthn_api(),
+      AuthenticatorEnvironment::GetInstance()->win_webauthn_api(),
       std::move(callback));
 #else
   std::move(callback).Run(false);
@@ -1262,7 +1261,6 @@ void AuthenticatorCommonImpl::OnRegisterResponse(
             nullptr, Focus::kDoCheck);
       } else {
         SignalFailureToRequestDelegate(
-            authenticator,
             AuthenticatorRequestClientDelegate::InterestingFailureReason::
                 kKeyAlreadyRegistered,
             blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED);
@@ -1276,70 +1274,60 @@ void AuthenticatorCommonImpl::OnRegisterResponse(
       return;
     case device::MakeCredentialStatus::kUserConsentDenied:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kUserConsentDenied,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kSoftPINBlock:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kSoftPINBlock,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kHardPINBlock:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kHardPINBlock,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kAuthenticatorRemovedDuringPINEntry:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorRemovedDuringPINEntry,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kAuthenticatorMissingResidentKeys:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingResidentKeys,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kAuthenticatorMissingUserVerification:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingUserVerification,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kAuthenticatorMissingLargeBlob:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingLargeBlob,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kNoCommonAlgorithms:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kNoCommonAlgorithms,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kStorageFull:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kStorageFull,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::MakeCredentialStatus::kWinNotAllowedError:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kWinUserCancelled,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
@@ -1350,8 +1338,8 @@ void AuthenticatorCommonImpl::OnRegisterResponse(
 
 #if BUILDFLAG(IS_WIN)
       GetWebAuthenticationDelegate()->OperationSucceeded(
-          GetBrowserContext(), authenticator->GetType() ==
-                                   device::FidoAuthenticator::Type::kWinNative);
+          GetBrowserContext(),
+          authenticator->GetType() == device::AuthenticatorType::kWinNative);
 #endif
 
       absl::optional<device::FidoTransportProtocol> transport =
@@ -1510,7 +1498,6 @@ void AuthenticatorCommonImpl::OnSignResponse(
   switch (status_code) {
     case device::GetAssertionStatus::kUserConsentButCredentialNotRecognized:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kKeyNotRegistered,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
@@ -1522,49 +1509,42 @@ void AuthenticatorCommonImpl::OnSignResponse(
       return;
     case device::GetAssertionStatus::kUserConsentDenied:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kUserConsentDenied,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::GetAssertionStatus::kSoftPINBlock:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kSoftPINBlock,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::GetAssertionStatus::kHardPINBlock:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kHardPINBlock,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::GetAssertionStatus::kAuthenticatorRemovedDuringPINEntry:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorRemovedDuringPINEntry,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::GetAssertionStatus::kAuthenticatorMissingResidentKeys:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingResidentKeys,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::GetAssertionStatus::kAuthenticatorMissingUserVerification:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingUserVerification,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
     case device::GetAssertionStatus::kWinNotAllowedError:
       SignalFailureToRequestDelegate(
-          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kWinUserCancelled,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
@@ -1580,7 +1560,7 @@ void AuthenticatorCommonImpl::OnSignResponse(
 #if BUILDFLAG(IS_WIN)
   GetWebAuthenticationDelegate()->OperationSucceeded(
       GetBrowserContext(),
-      authenticator->GetType() == device::FidoAuthenticator::Type::kWinNative);
+      authenticator->GetType() == device::AuthenticatorType::kWinNative);
 #endif
 
   // Show an account picker for discoverable credential requests (empty allow
@@ -1626,7 +1606,6 @@ void AuthenticatorCommonImpl::OnAccountSelected(
 }
 
 void AuthenticatorCommonImpl::SignalFailureToRequestDelegate(
-    const ::device::FidoAuthenticator* authenticator,
     AuthenticatorRequestClientDelegate::InterestingFailureReason reason,
     blink::mojom::AuthenticatorStatus status) {
   error_awaiting_user_acknowledgement_ = status;
@@ -1664,7 +1643,6 @@ void AuthenticatorCommonImpl::OnTimeout() {
 
   DCHECK(request_delegate_);
   SignalFailureToRequestDelegate(
-      /*authenticator=*/nullptr,
       AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout,
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
@@ -2070,7 +2048,7 @@ void AuthenticatorCommonImpl::InitDiscoveryFactory() {
   // stick a short-lived instance into |discovery_factory_| and eliminate
   // |discovery_factory_testing_override_|.
   discovery_factory_testing_override_ =
-      AuthenticatorEnvironmentImpl::GetInstance()
+      AuthenticatorEnvironment::GetInstance()
           ->MaybeGetDiscoveryFactoryTestOverride();
 }
 

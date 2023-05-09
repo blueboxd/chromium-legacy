@@ -550,6 +550,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method entries
 [Worker]     method forEach
 [Worker]     method get
+[Worker]     method getSetCookie
 [Worker]     method has
 [Worker]     method keys
 [Worker]     method set
@@ -1223,6 +1224,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker]     method postTask
+[Worker]     method yield
 [Worker] interface SecurityPolicyViolationEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter blockedURI
@@ -1470,6 +1472,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method test
 [Worker] interface URLSearchParams
 [Worker]     attribute @@toStringTag
+[Worker]     getter size
 [Worker]     method @@iterator
 [Worker]     method append
 [Worker]     method constructor

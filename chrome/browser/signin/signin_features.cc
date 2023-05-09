@@ -9,7 +9,14 @@
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 // Enables the new style, "For You" First Run Experience
-BASE_FEATURE(kForYouFre, "ForYouFre", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kForYouFre,
+             "ForYouFre",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Whether the browser should be opened when the user closes the FRE window. If
@@ -46,6 +53,10 @@ const base::FeatureParam<std::string> kForYouFreStudyGroup{
     &kForYouFreSyntheticTrialRegistration, /*name=*/"group_name",
     /*default_value=*/""};
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+BASE_FEATURE(kEnterpriseWelcomeTangibleSyncStyle,
+             "EnterpriseWelcomeTangibleSyncStyle",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 
 // Enables the client-side processing of the HTTP response header
@@ -75,3 +86,7 @@ BASE_FEATURE(kShowEnterpriseDialogForAllManagedAccountsSignin,
 BASE_FEATURE(kDisallowManagedProfileSignout,
              "DisallowManagedProfileSignout",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Makes the profile creation flow use the "promo" flow version of the Gaia
+// sign-in page instead of one that mentions the Chrome sync benefits.
+BASE_FEATURE(kPromoGaiaFlow, "PromoGaiaFlow", base::FEATURE_ENABLED_BY_DEFAULT);

@@ -18,9 +18,6 @@ public class UiThreadTaskTraitsImpl {
         // Corresponds to content::BrowserTaskTraitsExtension.
         private static final byte EXTENSION_ID = 1;
 
-        // Keep in sync with content::BrowserTaskTraitsExtension::Serialize.
-        private static final byte NESTING_INDEX = 2;
-
         @Override
         public int getId() {
             return EXTENSION_ID;
@@ -39,9 +36,6 @@ public class UiThreadTaskTraitsImpl {
             // initialized to zero.
 
             // Similarly we don't specify BrowserTaskType.Default its ID is also 0.
-
-            // TODO(crbug.com/876272) Remove this if possible.
-            extensionData[NESTING_INDEX] = 1; // Allow the task to run in a nested RunLoop.
             return extensionData;
         }
     }
@@ -49,11 +43,15 @@ public class UiThreadTaskTraitsImpl {
     public static final TaskTraitsExtensionDescriptor<UiThreadTaskTraitsImpl> DESCRIPTOR =
             new Descriptor();
 
-    public static final TaskTraits DEFAULT =
-            TaskTraits.USER_VISIBLE.withExtension(DESCRIPTOR, new UiThreadTaskTraitsImpl());
-    public static final TaskTraits BEST_EFFORT = DEFAULT.taskPriority(TaskPriority.BEST_EFFORT);
-    public static final TaskTraits USER_VISIBLE = DEFAULT.taskPriority(TaskPriority.USER_VISIBLE);
-    public static final TaskTraits USER_BLOCKING = DEFAULT.taskPriority(TaskPriority.USER_BLOCKING);
+    private static final UiThreadTaskTraitsImpl IMPL = new UiThreadTaskTraitsImpl();
+
+    public static final TaskTraits BEST_EFFORT =
+            TaskTraits.forExtension(TaskPriority.BEST_EFFORT, DESCRIPTOR, IMPL);
+    public static final TaskTraits USER_VISIBLE =
+            TaskTraits.forExtension(TaskPriority.USER_VISIBLE, DESCRIPTOR, IMPL);
+    public static final TaskTraits USER_BLOCKING =
+            TaskTraits.forExtension(TaskPriority.USER_BLOCKING, DESCRIPTOR, IMPL);
+    public static final TaskTraits DEFAULT = USER_VISIBLE;
 
     static {
         BrowserTaskExecutor.register();

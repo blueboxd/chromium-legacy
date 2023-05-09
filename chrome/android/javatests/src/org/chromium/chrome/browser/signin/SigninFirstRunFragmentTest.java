@@ -1038,9 +1038,9 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
-    public void testFragment_WelcomeToChrome_StrongestSecurity() {
+    public void testFragment_WelcomeToChrome_AdditionalFeatures() {
         FREMobileIdentityConsistencyFieldTrial.setFirstRunVariationsTrialGroupForTesting(
-                VariationsGroup.WELCOME_TO_CHROME_STRONGEST_SECURITY);
+                VariationsGroup.WELCOME_TO_CHROME_ADDITIONAL_FEATURES);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mNativeInitializationPromise = new Promise<>(); });
         launchActivityWithFragment();
@@ -1108,6 +1108,20 @@ public class SigninFirstRunFragmentTest {
 
         onView(withText(R.string.signin_fre_title_variation_2)).check(matches(isDisplayed()));
         onView(withId(R.id.subtitle)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    public void testFragmentWithChildAccount_doesNotApplyFREStringVariation() {
+        FREMobileIdentityConsistencyFieldTrial.setFirstRunVariationsTrialGroupForTesting(
+                VariationsGroup.MAKE_CHROME_YOUR_OWN);
+        mSigninTestRule.addAccount(
+                CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
+        when(mPolicyLoadListenerMock.get()).thenReturn(true);
+
+        launchActivityWithFragment();
+        checkFragmentWithChildAccount(
+                /* hasDisplayableFullName= */ true, /* hasDisplayableEmail= */ true);
     }
 
     private void checkFragmentWithSelectedAccount(String email, String fullName, String givenName) {

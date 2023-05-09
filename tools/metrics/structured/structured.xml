@@ -10,6 +10,41 @@
     Metrics for the ChromeOS Fast Pair implementation.
   </summary>
 
+  <event name="DiscoveryNotificationShown">
+    <summary>
+      The user is shown a notification which can start the pairing process.
+    </summary>
+    <metric name="Protocol" type="int">
+      <summary>
+        The pairing protocol of the discovered device.
+      </summary>
+    </metric>
+    <metric name="FastPairVersion" type="int">
+      <summary>
+        The Fast Pair spec version the device implements.
+      </summary>
+    </metric>
+    <metric name="ModelId" type="int">
+      <summary>
+        The model ID of the discovered device.
+      </summary>
+    </metric>
+    <metric name="RSSI" type="int">
+      <summary>
+        The inquiry RSSI of the discovered device, recorded at the time of metrics
+        emission, with a range of -128 to 127. If inquiry RSSI is unknown,
+        we report -129.
+      </summary>
+    </metric>
+    <metric name="TxPower" type="int">
+      <summary>
+        The inquiry TxPower of the discovered device, recorded at the time of
+        metrics emission, with a range of -128 to 127. If inquiry TxPower is
+        unknown, we report -129.
+      </summary>
+    </metric>
+  </event>
+
   <event name="PairingStart">
     <summary>
       The starting of the pairing process.
@@ -27,6 +62,20 @@
     <metric name="ModelId" type="int">
       <summary>
         The model ID of the device being paired.
+      </summary>
+    </metric>
+    <metric name="RSSI" type="int">
+      <summary>
+        The inquiry RSSI of the pairing device, recorded at the time of metrics
+        emission, with a range of -128 to 127. If inquiry RSSI is unknown,
+        we report -129.
+      </summary>
+    </metric>
+    <metric name="TxPower" type="int">
+      <summary>
+        The inquiry TxPower of the pairing device, recorded at the time of metrics
+        emission, with a range of -128 to 127. If inquiry TxPower is
+        unknown, we report -129.
       </summary>
     </metric>
   </event>
@@ -48,6 +97,20 @@
     <metric name="ModelId" type="int">
       <summary>
         The model ID of the device being paired.
+      </summary>
+    </metric>
+    <metric name="RSSI" type="int">
+      <summary>
+        The inquiry RSSI of the paired device, recorded at the time of metrics
+        emission, with a range of -128 to 127. If inquiry RSSI is unknown,
+        we report -129.
+      </summary>
+    </metric>
+    <metric name="TxPower" type="int">
+      <summary>
+        The inquiry TxPower of the paired device, recorded at the time of metrics
+        emission, with a range of -128 to 127. If inquiry TxPower is
+        unknown, we report -129.
       </summary>
     </metric>
   </event>
@@ -613,6 +676,13 @@
   <event name="UserLogin">
     <summary>
       An event to signify a user is using the system.
+    </summary>
+
+  </event>
+
+  <event name="UserLogout">
+    <summary>
+      An event to signify a user explicity logged out of the system.
     </summary>
 
   </event>

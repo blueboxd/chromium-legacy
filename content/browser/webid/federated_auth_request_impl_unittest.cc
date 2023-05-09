@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -502,7 +503,8 @@ class TestDialogController
 
   void ShowAccountsDialog(
       WebContents* rp_web_contents,
-      const std::string& rp_for_display,
+      const std::string& top_frame_for_display,
+      const absl::optional<std::string>& iframe_url_for_display,
       const std::vector<IdentityProviderData>& identity_provider_data,
       IdentityRequestAccount::SignInMode sign_in_mode,
       bool show_auto_reauthn_checkbox,
@@ -533,7 +535,7 @@ class TestDialogController
       case AccountsDialogAction::kClose:
         base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, base::BindOnce(std::move(dismiss_callback),
-                                      DismissReason::CLOSE_BUTTON));
+                                      DismissReason::kCloseButton));
         break;
       case AccountsDialogAction::kNone:
         break;
@@ -541,7 +543,7 @@ class TestDialogController
   }
 
   void ShowFailureDialog(content::WebContents* rp_web_contents,
-                         const std::string& rp_for_display,
+                         const std::string& top_frame_for_display,
                          const std::string& idp_for_display,
                          IdentityRequestDialogController::DismissCallback
                              dismiss_callback) override {
@@ -554,7 +556,7 @@ class TestDialogController
       case IdpSigninStatusMismatchDialogAction::kClose:
         base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, base::BindOnce(std::move(dismiss_callback),
-                                      DismissReason::CLOSE_BUTTON));
+                                      DismissReason::kCloseButton));
         break;
       case IdpSigninStatusMismatchDialogAction::kNone:
         break;
@@ -719,16 +721,18 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
     std::vector<blink::mojom::IdentityProviderGetParametersPtr> idp_get_params;
     for (const auto& identity_provider :
          request_parameters.identity_providers) {
-      std::vector<blink::mojom::IdentityProviderConfigPtr> idp_ptrs;
+      std::vector<blink::mojom::IdentityProviderPtr> idp_ptrs;
       blink::mojom::IdentityProviderLoginHintPtr login_hint_ptr =
           blink::mojom::IdentityProviderLoginHint::New(
               identity_provider.login_hint.email,
               identity_provider.login_hint.id,
               identity_provider.login_hint.is_required);
-      blink::mojom::IdentityProviderConfigPtr idp_ptr =
+      blink::mojom::IdentityProviderConfigPtr config =
           blink::mojom::IdentityProviderConfig::New(
               GURL(identity_provider.provider), identity_provider.client_id,
               identity_provider.nonce, std::move(login_hint_ptr));
+      blink::mojom::IdentityProviderPtr idp_ptr =
+          blink::mojom::IdentityProvider::NewFederated(std::move(config));
       idp_ptrs.push_back(std::move(idp_ptr));
       blink::mojom::IdentityProviderGetParametersPtr get_params =
           blink::mojom::IdentityProviderGetParameters::New(
@@ -2275,7 +2279,8 @@ class DisableApiWhenDialogShownDialogController : public TestDialogController {
 
   void ShowAccountsDialog(
       content::WebContents* rp_web_contents,
-      const std::string& rp_for_display,
+      const std::string& top_frame_for_display,
+      const absl::optional<std::string>& iframe_url_for_display,
       const std::vector<IdentityProviderData>& identity_provider_data,
       SignInMode sign_in_mode,
       bool show_auto_reauthn_checkbox,
@@ -2288,8 +2293,9 @@ class DisableApiWhenDialogShownDialogController : public TestDialogController {
 
     // Call parent class method in order to store callback parameters.
     TestDialogController::ShowAccountsDialog(
-        rp_web_contents, rp_for_display, std::move(identity_provider_data),
-        sign_in_mode, show_auto_reauthn_checkbox, std::move(on_selected),
+        rp_web_contents, top_frame_for_display, iframe_url_for_display,
+        std::move(identity_provider_data), sign_in_mode,
+        show_auto_reauthn_checkbox, std::move(on_selected),
         std::move(dismiss_callback));
   }
 
@@ -2442,10 +2448,10 @@ void NavigateToUrl(content::WebContents* web_contents, const GURL& url) {
 TEST_F(FederatedAuthRequestImplTest,
        NavigateDuringClientMetadataFetchBFCacheEnabled) {
   base::test::ScopedFeatureList list;
-  list.InitWithFeatures(
-      /*enabled_features=*/{features::kBackForwardCache},
-      /*disabled_features=*/{features::kBackForwardCacheMemoryControls});
-  ASSERT_TRUE(content::IsBackForwardCacheEnabled());
+  list.InitWithFeaturesAndParameters(
+      GetBasicBackForwardCacheFeatureForTesting(),
+      GetDefaultDisabledBackForwardCacheFeaturesForTesting());
+  ASSERT_TRUE(IsBackForwardCacheEnabled());
 
   SetNetworkRequestManager(
       std::make_unique<IdpNetworkRequestManagerClientMetadataTaskRunner>(
@@ -2466,7 +2472,7 @@ TEST_F(FederatedAuthRequestImplTest,
        NavigateDuringClientMetadataFetchBFCacheDisabled) {
   base::test::ScopedFeatureList list;
   list.InitAndDisableFeature(features::kBackForwardCache);
-  ASSERT_FALSE(content::IsBackForwardCacheEnabled());
+  ASSERT_FALSE(IsBackForwardCacheEnabled());
 
   SetNetworkRequestManager(
       std::make_unique<IdpNetworkRequestManagerClientMetadataTaskRunner>(

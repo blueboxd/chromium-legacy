@@ -13,8 +13,6 @@
 
 namespace apps {
 
-class AppUpdate;
-
 // The default app's histogram name. This is used for logging so do
 // not change the order of this enum.
 // https://docs.google.com/document/d/1WJ-BjlVOM87ygIsdDBCyXxdKw3iS5EtNGm1fWiWhfIs
@@ -70,9 +68,14 @@ enum class DefaultAppName {
   kCalculator = 50,
   kFirmwareUpdateApp = 51,
   kGoogleTv = 52,
+  kGoogleCalendar = 53,
+  kGoogleChat = 54,
+  kGoogleMeet = 55,
+  kGoogleMaps = 56,
+  kGoogleMessages = 57,
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kGoogleTv,
+  kMaxValue = kGoogleMessages,
 };
 
 // The built-in app's histogram name. This is used for logging so do not change
@@ -95,9 +98,19 @@ void RecordAppLaunch(const std::string& app_id,
 void RecordBuiltInAppSearchResult(const std::string& app_id);
 #endif
 
-void RecordAppBounce(const apps::AppUpdate& app);
-
 void RecordAppsPerNotification(int count);
+
+// Converts a preinstalled web app ID to the corresponding `DefaultAppName`, or
+// nullopt if it doesn't match a known ID.
+const absl::optional<apps::DefaultAppName> PreinstalledWebAppIdToName(
+    const std::string& app_id);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Converts a system web app ID to the corresponding `DefaultAppName`, or
+// nullopt if it doesn't match a known ID.
+const absl::optional<apps::DefaultAppName> SystemWebAppIdToName(
+    const std::string& app_id);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace apps
 

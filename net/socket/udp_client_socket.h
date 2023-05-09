@@ -73,13 +73,13 @@ class NET_EXPORT_PRIVATE UDPClientSocket : public DatagramClientSocket {
 
   int SetMulticastInterface(uint32_t interface_index) override;
   void SetIOSNetworkServiceType(int ios_network_service_type) override;
-  void SetDontClose(bool dont_close) override;
 
   // Takes ownership of an opened but unconnected and unbound `socket`.
   void AdoptOpenedSocket(AddressFamily address_family, SocketDescriptor socket);
 
  private:
   UDPSocket socket_;
+  bool connect_called_ = false;
   // The network the socket is currently bound to.
   handles::NetworkHandle network_;
   handles::NetworkHandle connect_using_network_;

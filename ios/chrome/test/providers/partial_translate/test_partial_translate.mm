@@ -4,20 +4,58 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/test/providers/partial_translate/test_partial_translate.h"
+
 #import "ios/public/provider/chrome/browser/partial_translate/partial_translate_api.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+namespace {
+id<PartialTranslateControllerFactory> g_partial_translate_controller_factory;
+}
+
+namespace ios {
+namespace provider {
+
 id<PartialTranslateController> NewPartialTranslateController(
     NSString* source_text,
     const CGRect& anchor,
     BOOL incognito) {
-  // Partial translate is not supported in tests.
-  return nil;
+  return [g_partial_translate_controller_factory
+      createTranslateControllerForSourceText:source_text
+                                  anchorRect:anchor
+                                 inIncognito:incognito];
 }
 
 NSUInteger PartialTranslateLimitMaxCharacters() {
-  return 0;
+  return [g_partial_translate_controller_factory maximumCharacterLimit];
+}
+
+namespace test {
+void SetPartialTranslateControllerFactory(
+    id<PartialTranslateControllerFactory> factory) {
+  g_partial_translate_controller_factory = factory;
+}
+}  // namespace test
+
+}  // namespace provider
+}  // namespace ios
+
+id<PartialTranslateController> NewPartialTranslateController(
+    NSString* source_text,
+    const CGRect& anchor,
+    BOOL incognito) {
+  return ios::provider::NewPartialTranslateController(source_text, anchor,
+                                                      incognito);
+}
+
+NSUInteger PartialTranslateLimitMaxCharacters() {
+  return ios::provider::PartialTranslateLimitMaxCharacters();
+}
+
+void SetPartialTranslateControllerFactory(
+    id<PartialTranslateControllerFactory> factory) {
+  ios::provider::test::SetPartialTranslateControllerFactory(factory);
 }

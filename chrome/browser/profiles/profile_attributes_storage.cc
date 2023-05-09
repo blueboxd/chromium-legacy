@@ -128,8 +128,7 @@ bool SaveBitmap(std::unique_ptr<ImageData> data,
     return false;
   }
 
-  if (base::WriteFile(image_path, reinterpret_cast<char*>(&(*data)[0]),
-                      data->size()) == -1) {
+  if (!base::WriteFile(image_path, *data)) {
     LOG(ERROR) << "Failed to save image to file.";
     return false;
   }
@@ -342,6 +341,21 @@ void ProfileAttributesStorage::RegisterPrefs(PrefRegistrySimple* registry) {
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterBooleanPref(kLegacyProfileNameMigrated, false);
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+// static
+base::flat_set<std::string> ProfileAttributesStorage::GetAllProfilesKeys(
+    PrefService* local_prefs) {
+  base::flat_set<std::string> profile_keys;
+
+  const base::Value::Dict& attribute_storage =
+      local_prefs->GetDict(prefs::kProfileAttributes);
+  for (std::pair<const std::string&, const base::Value&> attribute_entry :
+       attribute_storage) {
+    profile_keys.insert(attribute_entry.first);
+  }
+
+  return profile_keys;
 }
 
 void ProfileAttributesStorage::AddProfile(ProfileAttributesInitParams params) {

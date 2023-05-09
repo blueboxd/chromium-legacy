@@ -8,9 +8,9 @@
 #import "components/prefs/pref_member.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/translate/core/browser/translate_pref_names.h"
+#import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/browser_container/edit_menu_alert_delegate.h"
-#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web_selection/web_selection_response.h"
 #import "ios/chrome/browser/web_selection/web_selection_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -72,6 +72,10 @@ void ReportErrorOutcome(PartialTranslateError error, bool went_full) {
       break;
   }
 }
+
+// Character limit for the partial translate feature.
+// A string longer than that will trigger a full page translate.
+const NSUInteger kPartialTranslateCharactersLimit = 500;
 
 }  // anonymous namespace
 
@@ -184,7 +188,8 @@ void ReportErrorOutcome(PartialTranslateError error, bool went_full) {
                  action:^{
                    ReportErrorOutcome(error, false);
                  }
-                  style:UIAlertActionStyleCancel];
+                  style:UIAlertActionStyleCancel
+              preferred:NO];
   EditMenuAlertDelegateAction* translateAction = [[EditMenuAlertDelegateAction
       alloc]
       initWithTitle:l10n_util::GetNSString(
@@ -193,7 +198,8 @@ void ReportErrorOutcome(PartialTranslateError error, bool went_full) {
                ReportErrorOutcome(error, true);
                [weakSelf triggerFullTranslate];
              }
-              style:UIAlertActionStyleDefault];
+              style:UIAlertActionStyleDefault
+          preferred:YES];
 
   [self.alertDelegate
       showAlertWithTitle:
@@ -205,7 +211,11 @@ void ReportErrorOutcome(PartialTranslateError error, bool went_full) {
 
 - (void)receivedWebSelectionResponse:(WebSelectionResponse*)response {
   DCHECK(response);
-  if (response.selectedText.length > PartialTranslateLimitMaxCharacters()) {
+  base::UmaHistogramCounts10000("IOS.PartialTranslate.SelectionLength",
+                                response.selectedText.length);
+  if (response.selectedText.length >
+      std::min(PartialTranslateLimitMaxCharacters(),
+               kPartialTranslateCharactersLimit)) {
     return [self switchToFullTranslateWithError:PartialTranslateError::
                                                     kSelectionTooLong];
   }

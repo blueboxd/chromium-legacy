@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> файл кысылууда…</translation>
 <translation id="1722687688096767818">Профиль кошулууда...</translation>
 <translation id="1726100011689679555">Ысым серверлери</translation>
+<translation id="1727562178154619254">Шайкештирүүгө даяр</translation>
 <translation id="1729953886957086472">Немисче (Германия)</translation>
 <translation id="1730235522912993863">Кытайча (цанцзе)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> нерсе көчүрүлдү.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Сүрөттүн чечилиши</translation>
 <translation id="1972984168337863910">Файлдардын маалымат камтылган панелдерин жайып көрсөтүү</translation>
 <translation id="1995337122023280937">Файл жайгашкан папкага өтүү</translation>
-<translation id="1999709132469742660">Файлга бардык URL даректеринен кирүү мүмкүнчүлүгү</translation>
 <translation id="2001796770603320721">Google Drive'да ачуу</translation>
 <translation id="2009067268969781306">Дискти форматтасаңыз, анда сакталган бардык маалыматтар өчүрүлөт. Бул аракетти артка кайтаруу мүмкүн эмес.</translation>
 <translation id="2025955442973426285">Тигринче</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">Латын Америкалыкча</translation>
 <translation id="5330145655348521461">Бул файлдар башка иш тактада ачылды. Аларды карап көрүү үчүн бул жерге жылдырыңыз <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="5330512191124428349">Маалымат алуу</translation>
-<translation id="5337538975554986899">Файлга <ph name="NON_RESTRICTED_DESTINATIONS" /> башка бардык URL даректеринен кирүү мүмкүнчүлүгү</translation>
 <translation id="5344246330454251646">Bruschetta аркылуу бөлүшүүнү тескөө</translation>
 <translation id="535792325654997756">Мышыктар менен адам</translation>
 <translation id="5358764674931277">Кадрлардын жыштыгы</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">Linux колдонмосун орнотуу учурунда ката кетти.</translation>
 <translation id="5912396950572065471">Формат</translation>
 <translation id="5913638992615760742">Көчүрүлбөй калды, күтүүсүз ката кетти: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Жаңы издөө функциялары жеткиликтүү</translation>
 <translation id="5926082595146149752">Голландча (Голландия) жана эл аралык АКШ баскычтобу (жеке компьютерлер үчүн)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="NETWORK_NAME" />, Түзмөктү тууралагандан кийин иштетиңиз</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">Тастыктамалар жүктөлгөн жок</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Bruschetta менен папка бөлүшүү</translation>
+<translation id="6750737795876287924">Учурдагы каталог</translation>
 <translation id="6751256176799620176">1 куржун тандалды</translation>
 <translation id="6755827872271341378">ChromeOS Flex түзмөгү</translation>
 <translation id="6790428901817661496">Ойнотуу</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">Куржундар</translation>
 <translation id="6976795442547527108">Арстан</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Бардыгы</translation>
 <translation id="6989942356279143254">Шведче</translation>
 <translation id="6990081529015358884">Бош орун калбай калды</translation>
 <translation id="6993826899923627728">Бул нерселер таштандыда</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">Жаңы сүрөттөр жок</translation>
 <translation id="7460898608667578234">Украинче</translation>
 <translation id="7469894403370665791">Бул тармакка автоматтык түрдө туташуу</translation>
-<translation id="7481358317100446445">Даяр</translation>
 <translation id="7486315294984620427">Parallels Desktop'ко файлды көчүрүү үчүн файл Windows файлдарына көчүрүлүшү керек.</translation>
 <translation id="749452993132003881">Хираганача</translation>
 <translation id="7495372004724182530">Малайаламча, фонетикалык</translation>
@@ -940,6 +939,7 @@
 <translation id="8492972329130824181">Үйдөгү тармак жеткиликсиз. Туташуу үчүн мобилдик интернет-роуминг иштетилиши керек.</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> нерсе чыгарылууда...</translation>
 <translation id="8502913769543567768"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Түзмөктү тууралагандан кийин иштетиңиз, Администраторуңуз тарабынан тескелет</translation>
+<translation id="8512483403832814140">Бардык убакыт</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="853494022971700746">Французча (Франция)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" />%, Чоо-жайы</translation>

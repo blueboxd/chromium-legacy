@@ -314,7 +314,7 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     if (!RuntimeEnabledFeatures::StorageAccessAPIEnabled() ||
         !RuntimeEnabledFeatures::StorageAccessAPIForOriginExtensionEnabled()) {
       exception_state.ThrowTypeError(
-          "The requestStorageAccessForOrigin API is not enabled.");
+          "The requestStorageAccessFor API is not enabled.");
       return nullptr;
     }
     TopLevelStorageAccessPermissionDescriptor*
@@ -344,8 +344,9 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     return CreatePermissionDescriptor(PermissionName::WINDOW_MANAGEMENT);
   }
   if (name == "window-placement") {
-    UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
-                      WebFeature::kWindowPlacementPermissionDescriptorUsed);
+    Deprecation::CountDeprecation(
+        CurrentExecutionContext(script_state->GetIsolate()),
+        WebFeature::kWindowPlacementPermissionDescriptorUsed);
     return CreatePermissionDescriptor(PermissionName::WINDOW_MANAGEMENT);
   }
   if (name == "local-fonts") {

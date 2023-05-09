@@ -14,9 +14,12 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service_test_base.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/reporting/metric_default_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/metrics/collector_base.h"
@@ -184,6 +187,11 @@ class MockDelegate : public MetricReportingManager::Delegate {
               GetNetworkTelemetrySampler,
               (),
               (const, override));
+
+  MOCK_METHOD(bool,
+              IsAppServiceAvailableForProfile,
+              (Profile * profile),
+              (const, override));
 };
 
 struct MetricReportingSettingData {
@@ -251,10 +259,22 @@ test::FakeMetricReportQueue* CreateMockMetricReportQueueHelper(
   return metric_report_queue_ptr;
 }
 
+// Base class used to test scenarios for the `MetricReportingManager`. We extend
+// `AppPlatformMetricsServiceTestBase` for relevant setup of the
+// `AppPlatformMetrics` component.
 class MetricReportingManagerTest
-    : public ::testing::TestWithParam<MetricReportingManagerTestCase> {
+    : public ::apps::AppPlatformMetricsServiceTestBase,
+      public ::testing::WithParamInterface<MetricReportingManagerTestCase> {
  protected:
   void SetUp() override {
+    // Set up `AppServiceProxy` with the stubbed `AppPlatformMetricsService`.
+    // Needed to ensure downstream components have the necessary setup for
+    // initialization.
+    ::apps::AppPlatformMetricsServiceTestBase::SetUp();
+    ::apps::AppServiceProxyFactory::GetForProfile(profile())
+        ->SetAppPlatformMetricsServiceForTesting(
+            GetAppPlatformMetricsService());
+
     mock_delegate_ = std::make_unique<::testing::NiceMock<MockDelegate>>();
     info_queue_ptr_ = CreateMockMetricReportQueueHelper(
         mock_delegate_.get(), EventType::kDevice, Destination::INFO_METRIC,
@@ -279,9 +299,6 @@ class MetricReportingManagerTest
         .WillByDefault(Return(ByMove(std::move(telemetry_queue))));
   }
 
-  base::test::SingleThreadTaskEnvironment task_environment_{
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-
   test::FakeMetricReportQueue* info_queue_ptr_;
   test::FakeMetricReportQueue* telemetry_queue_ptr_;
   test::FakeMetricReportQueue* event_queue_ptr_;
@@ -302,6 +319,8 @@ TEST_F(MetricReportingManagerTest, InitiallyDeprovisioned) {
 
   ON_CALL(*mock_delegate_, IsDeprovisioned).WillByDefault(Return(true));
   ON_CALL(*mock_delegate_, IsAffiliated).WillByDefault(Return(true));
+  ON_CALL(*mock_delegate_, IsAppServiceAvailableForProfile)
+      .WillByDefault(Return(true));
 
   ON_CALL(*mock_delegate_, CreateOneShotCollector).WillByDefault([&]() {
     return std::make_unique<FakeCollector>(&one_shot_collector_count);
@@ -352,13 +371,15 @@ TEST_P(MetricReportingManagerInfoTest, Default) {
               test_case.setting_data.setting_enabled_default_value, init_delay))
       .WillByDefault(
           [&]() { return std::make_unique<FakeCollector>(&collector_count); });
+  ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
+      .WillByDefault(Return(true));
 
   auto metric_reporting_manager = MetricReportingManager::CreateForTesting(
       std::move(mock_delegate_), nullptr);
 
   EXPECT_EQ(collector_count, test_case.expected_count_before_login);
 
-  metric_reporting_manager->OnLogin(nullptr);
+  metric_reporting_manager->OnLogin(profile());
 
   EXPECT_EQ(collector_count, test_case.expected_count_after_login);
 
@@ -426,6 +447,8 @@ TEST_P(MetricReportingManagerEventTest, Default) {
   int observer_manager_count = 0;
   ON_CALL(*mock_delegate_ptr, IsAffiliated)
       .WillByDefault(Return(test_case.is_affiliated));
+  ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
+      .WillByDefault(Return(true));
   ON_CALL(
       *mock_delegate_ptr,
       CreateEventObserverManager(
@@ -451,13 +474,58 @@ TEST_P(MetricReportingManagerEventTest, Default) {
 
   EXPECT_EQ(observer_manager_count, test_case.expected_count_before_login);
 
-  metric_reporting_manager->OnLogin(nullptr);
+  metric_reporting_manager->OnLogin(profile());
 
   EXPECT_EQ(observer_manager_count, test_case.expected_count_after_login);
 
   ON_CALL(*mock_delegate_ptr, IsDeprovisioned).WillByDefault(Return(true));
   metric_reporting_manager->DeviceSettingsUpdated();
 
+  EXPECT_EQ(observer_manager_count, 0);
+}
+
+TEST_F(MetricReportingManagerEventTest,
+       ShouldNotCreateAppEventObserverWhenAppServiceUnavailable) {
+  // Enable app metrics reporting feature flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kEnableAppMetricsReporting);
+
+  // Setup appropriate mocks and stubs.
+  auto fake_reporting_settings =
+      std::make_unique<test::FakeReportingSettings>();
+  auto* const mock_delegate_ptr = mock_delegate_.get();
+  int observer_manager_count = 0;
+  ON_CALL(*mock_delegate_ptr, IsAffiliated).WillByDefault(Return(true));
+  ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
+      .WillByDefault(Return(false));
+  ON_CALL(*mock_delegate_ptr,
+          CreateEventObserverManager(
+              _, event_queue_ptr_, _, app_event_settings.enable_setting_path,
+              app_event_settings.setting_enabled_default_value, _, _))
+      .WillByDefault([&]() {
+        return std::make_unique<FakeMetricEventObserverManager>(
+            fake_reporting_settings.get(), &observer_manager_count);
+      });
+  ON_CALL(
+      *mock_delegate_ptr,
+      CreateEventObserverManager(
+          _, user_event_queue_ptr_, _, app_event_settings.enable_setting_path,
+          app_event_settings.setting_enabled_default_value, _, _))
+      .WillByDefault([&]() {
+        return std::make_unique<FakeMetricEventObserverManager>(
+            fake_reporting_settings.get(), &observer_manager_count);
+      });
+
+  // Create a metric reporting manager and ensure observer manager count is 0
+  // before and after login.
+  auto metric_reporting_manager = MetricReportingManager::CreateForTesting(
+      std::move(mock_delegate_), nullptr);
+  EXPECT_EQ(observer_manager_count, 0);
+  metric_reporting_manager->OnLogin(profile());
+  EXPECT_EQ(observer_manager_count, 0);
+
+  ON_CALL(*mock_delegate_ptr, IsDeprovisioned).WillByDefault(Return(true));
+  metric_reporting_manager->DeviceSettingsUpdated();
   EXPECT_EQ(observer_manager_count, 0);
 }
 
@@ -548,6 +616,8 @@ TEST_P(MetricReportingManagerPeripheralTest, Default) {
   int observer_manager_count = 0;
   ON_CALL(*mock_delegate_ptr, IsAffiliated)
       .WillByDefault(Return(test_case.is_affiliated));
+  ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
+      .WillByDefault(Return(true));
   ON_CALL(
       *mock_delegate_ptr,
       CreateEventObserverManager(
@@ -564,7 +634,7 @@ TEST_P(MetricReportingManagerPeripheralTest, Default) {
 
   EXPECT_EQ(observer_manager_count, test_case.expected_count_before_login);
 
-  metric_reporting_manager->OnLogin(nullptr);
+  metric_reporting_manager->OnLogin(profile());
 
   EXPECT_EQ(observer_manager_count, test_case.expected_count_after_login);
 
@@ -641,6 +711,8 @@ TEST_P(MetricReportingManagerTelemetryTest, Default) {
   int collector_count = 0;
   ON_CALL(*mock_delegate_ptr, IsAffiliated)
       .WillByDefault(Return(test_case.is_affiliated));
+  ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
+      .WillByDefault(Return(true));
   ON_CALL(*mock_delegate_ptr,
           CreatePeriodicCollector(
               _, telemetry_queue_ptr_, _,
@@ -670,7 +742,7 @@ TEST_P(MetricReportingManagerTelemetryTest, Default) {
 
   EXPECT_EQ(telemetry_queue_ptr_->GetNumFlush(), 1);
 
-  metric_reporting_manager->OnLogin(nullptr);
+  metric_reporting_manager->OnLogin(profile());
 
   EXPECT_EQ(collector_count, test_case.expected_count_after_login);
 
@@ -832,6 +904,8 @@ TEST_P(EventDrivenTelemetryCollectorPoolTest,
 
   ON_CALL(*mock_delegate_, IsDeprovisioned).WillByDefault(Return(false));
   ON_CALL(*mock_delegate_, IsAffiliated).WillByDefault(Return(true));
+  ON_CALL(*mock_delegate_, IsAppServiceAvailableForProfile)
+      .WillByDefault(Return(true));
 
   auto metric_reporting_manager = MetricReportingManager::CreateForTesting(
       std::move(mock_delegate_), nullptr);
@@ -854,10 +928,10 @@ INSTANTIATE_TEST_SUITE_P(
     EventDrivenTelemetryCollectorPoolTests,
     EventDrivenTelemetryCollectorPoolTest,
     ::testing::ValuesIn<EventDrivenTelemetryCollectorPoolTestCase>(
-        {{"SignalStrengthLow", MetricEventType::NETWORK_SIGNAL_STRENGTH_LOW,
+        {{"SignalStrengthLow", MetricEventType::WIFI_SIGNAL_STRENGTH_LOW,
           ash::kReportDeviceSignalStrengthEventDrivenTelemetry},
          {"SignalStrengthRecovered",
-          MetricEventType::NETWORK_SIGNAL_STRENGTH_RECOVERED,
+          MetricEventType::WIFI_SIGNAL_STRENGTH_RECOVERED,
           ash::kReportDeviceSignalStrengthEventDrivenTelemetry}}),
     [](const testing::TestParamInfo<
         EventDrivenTelemetryCollectorPoolTest::ParamType>& info) {

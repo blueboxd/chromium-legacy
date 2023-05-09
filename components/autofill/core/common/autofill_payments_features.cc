@@ -35,18 +35,6 @@ BASE_FEATURE(kAutofillAutoTriggerManualFallbackForCards,
              "AutofillAutoTriggerManualFallbackForCards",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the use of platform authenticators through WebAuthn to retrieve
-// credit cards from Google payments.
-BASE_FEATURE(kAutofillCreditCardAuthentication,
-             "AutofillCreditCardAuthentication",
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_ANDROID)
-             // Better Auth project is fully launched on Win/Mac/Clank.
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
-
 // When enabled, card art images (instead of network icons) will be shown in
 // Payments Autofill UI.
 BASE_FEATURE(kAutofillEnableCardArtImage,
@@ -91,6 +79,13 @@ BASE_FEATURE(kAutofillEnableIbanClientSideUrlFiltering,
 BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
              "AutofillEnableManualFallbackForVirtualCards",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, client side URL filtering will be triggered for the merchant
+// opt-out use-case, so that virtual card suggestions are not shown on websites
+// that are opted-out of virtual cards.
+BASE_FEATURE(kAutofillEnableMerchantOptOutClientSideUrlFiltering,
+             "AutofillEnableMerchantOptOutClientSideUrlFiltering",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, the user will see a new banner logo and text in the bubble
 // offering to Upstream their cards onto Google Pay.
@@ -242,12 +237,14 @@ BASE_FEATURE(kAutofillUpstreamAllowAdditionalEmailDomains,
 // the user's email domain.
 BASE_FEATURE(kAutofillUpstreamAllowAllEmailDomains,
              "AutofillUpstreamAllowAllEmailDomains",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, sets the OAuth2 token in GetUploadDetails requests to Google
+// Payments, in order to provide a better experience for users with server-side
+// features disabled but not client-side features.
+BASE_FEATURE(kAutofillUpstreamAuthenticatePreflightCall,
+             "AutofillUpstreamAuthenticatePreflightCall",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, the secure data type for cards sent during credit card upload
 // save is updated to match newer server requirements.

@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/fast_checkout/fast_checkout_controller.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_router.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -383,7 +384,7 @@ class FastCheckoutClientImplTest : public ChromeRenderViewHostTestHarness {
 
  private:
   // Required for using some `autofill::test` functions inside the test class.
-  autofill::test::AutofillEnvironment autofill_environment_;
+  autofill::test::AutofillUnitTestEnvironment autofill_test_environment_;
   std::unique_ptr<MockAutofillClient> autofill_client_;
   raw_ptr<MockFastCheckoutController> fast_checkout_controller_;
   std::unique_ptr<autofill::TestAutofillDriver> autofill_driver_;
@@ -590,7 +591,7 @@ TEST_F(FastCheckoutClientImplTest,
   auto browser_autofill_manager =
       std::make_unique<autofill::BrowserAutofillManager>(
           autofill_driver.get(),
-          autofill::ChromeAutofillClient::FromWebContents(web_contents()),
+          autofill::ContentAutofillClient::FromWebContents(web_contents()),
           "en-US");
   autofill::BrowserAutofillManager* autofill_manager =
       browser_autofill_manager.get();

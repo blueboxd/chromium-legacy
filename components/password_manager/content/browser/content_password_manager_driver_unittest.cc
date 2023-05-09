@@ -90,10 +90,6 @@ class FakePasswordAutofillAgent
               SetPasswordFillData,
               (const PasswordFormFillData&),
               (override));
-  MOCK_METHOD(void,
-              PasswordFieldHasNoAssociatedUsername,
-              (autofill::FieldRendererId password_element_renderer_id),
-              (override));
   MOCK_METHOD(void, InformNoSavedCredentials, (bool), (override));
   MOCK_METHOD(void,
               FillIntoFocusedField,
@@ -179,14 +175,15 @@ PasswordFormFillData GetTestPasswordFormFillData() {
 }
 
 MATCHER(WerePasswordsCleared, "Passwords not cleared") {
-  if (!arg.preferred_login.password.empty()) {
+  if (!arg.preferred_login.password_value.empty()) {
     return false;
   }
 
-  for (auto& credentials : arg.additional_logins)
-    if (!credentials.password.empty())
+  for (auto& credentials : arg.additional_logins) {
+    if (!credentials.password_value.empty()) {
       return false;
-
+    }
+  }
   return true;
 }
 

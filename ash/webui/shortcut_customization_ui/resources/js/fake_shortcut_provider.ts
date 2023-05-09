@@ -6,7 +6,7 @@ import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_reso
 import {FakeObservables} from 'chrome://resources/ash/common/fake_observables.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
-import {AcceleratorsUpdatedObserverRemote} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
+import {AcceleratorResultData, AcceleratorsUpdatedObserverRemote} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 
 import {AcceleratorConfigResult, AcceleratorSource, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface} from './shortcut_types.js';
 
@@ -26,6 +26,7 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
   private acceleratorsUpdatedRemote: AcceleratorsUpdatedObserverRemote|null =
       null;
   private acceleratorsUpdatedPromise: Promise<void>|null = null;
+  private restoreDefaultCallCount: number = 0;
 
   constructor() {
     this.methods = new FakeMethodResolver();
@@ -37,8 +38,8 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
     this.methods.register('addUserAccelerator');
     this.methods.register('replaceAccelerator');
     this.methods.register('removeAccelerator');
+    this.methods.register('restoreDefault');
     this.methods.register('restoreAllDefaults');
-    this.methods.register('restoreActionDefaults');
     this.methods.register('addObserver');
     this.registerObservables();
   }
@@ -90,36 +91,41 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
   addUserAccelerator(): Promise<AcceleratorConfigResult> {
     // Always return kSuccess in this fake.
     this.methods.setResult(
-        'addUserAccelerator', AcceleratorConfigResult.SUCCESS);
+        'addUserAccelerator', AcceleratorConfigResult.kSuccess);
     return this.methods.resolveMethod('addUserAccelerator');
   }
 
   replaceAccelerator(): Promise<AcceleratorConfigResult> {
     // Always return kSuccess in this fake.
     this.methods.setResult(
-        'replaceAccelerator', AcceleratorConfigResult.SUCCESS);
+        'replaceAccelerator', AcceleratorConfigResult.kSuccess);
     return this.methods.resolveMethod('replaceAccelerator');
   }
 
-  removeAccelerator(): Promise<AcceleratorConfigResult> {
+  removeAccelerator(): Promise<{result: AcceleratorResultData}> {
     // Always return kSuccess in this fake.
-    this.methods.setResult(
-        'removeAccelerator', AcceleratorConfigResult.SUCCESS);
+    const result = new AcceleratorResultData();
+    result.result = AcceleratorConfigResult.kSuccess;
+    this.methods.setResult('removeAccelerator', {result});
     return this.methods.resolveMethod('removeAccelerator');
   }
 
-  restoreAllDefaults(): Promise<AcceleratorConfigResult> {
+  restoreDefault(_source: AcceleratorSource, _actionId: number):
+      Promise<{result: AcceleratorResultData}> {
+    ++this.restoreDefaultCallCount;
     // Always return kSuccess in this fake.
-    this.methods.setResult(
-        'restoreAllDefaults', AcceleratorConfigResult.SUCCESS);
-    return this.methods.resolveMethod('restoreAllDefaults');
+    const result = new AcceleratorResultData();
+    result.result = AcceleratorConfigResult.kSuccess;
+    this.methods.setResult('restoreDefault', {result});
+    return this.methods.resolveMethod('restoreDefault');
   }
 
-  restoreActionDefaults(): Promise<AcceleratorConfigResult> {
+  restoreAllDefaults(): Promise<{result: AcceleratorResultData}> {
     // Always return kSuccess in this fake.
-    this.methods.setResult(
-        'restoreActionDefaults', AcceleratorConfigResult.SUCCESS);
-    return this.methods.resolveMethod('restoreActionDefaults');
+    const result = new AcceleratorResultData();
+    result.result = AcceleratorConfigResult.kSuccess;
+    this.methods.setResult('restoreAllDefaults', {result});
+    return this.methods.resolveMethod('restoreAllDefaults');
   }
 
   /**
@@ -136,6 +142,10 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
    */
   setFakeAcceleratorLayoutInfos(layoutInfos: MojoLayoutInfo[]): void {
     this.methods.setResult('getAcceleratorLayoutInfos', {layoutInfos});
+  }
+
+  getRestoreDefaultCallCount(): number {
+    return this.restoreDefaultCallCount;
   }
 
   // Sets up an observer for methodName.

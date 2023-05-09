@@ -53,7 +53,6 @@ export class SettingsAddressRemoveConfirmationDialogElement extends
       isProfileSyncEnabled_: {
         type: Boolean,
         computed: 'computeIsProfileSyncEnabled_(accountInfo)',
-        value: false,
       },
     };
   }

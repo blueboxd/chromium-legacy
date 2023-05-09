@@ -61,6 +61,10 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
     virtual std::unique_ptr<Sampler> GetHttpsLatencySampler() const;
 
     virtual std::unique_ptr<Sampler> GetNetworkTelemetrySampler() const;
+
+    // Returns app service availability for the given profile. Not all profiles
+    // can run apps (for example, non-guest incognito profiles).
+    virtual bool IsAppServiceAvailableForProfile(Profile* profile) const;
   };
 
   static std::unique_ptr<MetricReportingManager> Create(

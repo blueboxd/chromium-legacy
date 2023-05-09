@@ -7,6 +7,7 @@
 #include "base/check_is_test.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/ownership/ownership_histograms.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/net/nss_service.h"
 #include "chrome/browser/net/nss_service_factory.h"
@@ -127,8 +128,9 @@ void GetCertDbAndPostOnWorkerThreadOnIO(
 
   net::NSSCertDatabase* database =
       std::move(nss_getter).Run(std::move(callback_split.first));
-  if (database)
+  if (database) {
     std::move(callback_split.second).Run(database);
+  }
 }
 
 void GetCertDbAndPostOnWorkerThread(
@@ -195,9 +197,12 @@ void OwnerKeyLoader::Run() {
   }
 
   // Try loading the public key first. Most of the time it should already exist.
+  // Use TaskPriority::USER_VISIBLE priority because some user visible features
+  // need to know whether the current user is the owner or not (e.g.
+  // UsersPrivate API).
   base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&LoadPublicKeyOnlyOnWorkerThread, owner_key_util_,
                      base::BindOnce(&OwnerKeyLoader::OnPublicKeyLoaded,
@@ -253,21 +258,9 @@ void OwnerKeyLoader::OnPrivateKeyLoaded(
 }
 
 void OwnerKeyLoader::MaybeGenerateNewKey() {
-  // device_settings_service_ indicates that the current user should become the
-  // owner, generate a new owner key pair for them.
-  if (device_settings_service_->GetWillEstablishConsumerOwnership()) {
-    // This should only happen on the first sign in when there's no previous
-    // public key.
-    RecordOwnerKeyEvent(OwnerKeyEvent::kEstablishingConsumerOwnership,
-                        /*success=*/!IsKeyPresent(public_key_));
-    LOG(WARNING) << "Establishing consumer ownership.";
-    return GenerateNewKey();
-  }
-
-  // Otherwise maybe it's not the first sign in. Check device policies.
-  // If the owner key was never generated before, the policies will be empty.
-  // Also, in theory ChromeOS is allowed to lose the policies and recover, so
-  // be prepared for them to still be empty.
+  // Check device policies. If the owner key was never generated before, the
+  // policies will be empty. Also, in theory ChromeOS is allowed to lose the
+  // policies and recover, so be prepared for them to still be empty.
   const enterprise_management::PolicyData* policy_data =
       device_settings_service_->policy_data();
   if (policy_data && policy_data->has_username()) {
@@ -305,6 +298,20 @@ void OwnerKeyLoader::MaybeGenerateNewKey() {
     RecordOwnerKeyEvent(OwnerKeyEvent::kUserNotAnOwnerBasedOnLocalState,
                         /*success=*/IsKeyPresent(public_key_));
     return std::move(callback_).Run(std::move(public_key_), nullptr);
+    // `this` might be deleted here.
+  }
+
+  // If everything else is empty, check DeviceSettingsService. It remembers from
+  // the login screen whether this is the first user. It's checked after
+  // policies because it relies on local state (same as `GetOwnerEmail()`) and
+  // is less trustworthy.
+  if (device_settings_service_->GetWillEstablishConsumerOwnership()) {
+    // This should only happen on the first sign in when there's no previous
+    // public key.
+    RecordOwnerKeyEvent(OwnerKeyEvent::kEstablishingConsumerOwnership,
+                        /*success=*/!IsKeyPresent(public_key_));
+    LOG(WARNING) << "Establishing consumer ownership.";
+    return GenerateNewKey();
   }
 
   RecordOwnerKeyEvent(OwnerKeyEvent::kUnsureUserNotAnOwner,
@@ -316,6 +323,13 @@ void OwnerKeyLoader::MaybeGenerateNewKey() {
 }
 
 void OwnerKeyLoader::GenerateNewKey() {
+  // Ensure owner account id is stored for the next time.
+  if (!user_manager::UserManager::Get()->GetOwnerEmail().has_value()) {
+    user_manager::User* user =
+        ash::ProfileHelper::Get()->GetUserByProfile(profile_);
+    user_manager::UserManager::Get()->RecordOwner(user->GetAccountId());
+  }
+
   GetCertDbAndPostOnWorkerThread(
       profile_,
       base::BindOnce(&GenerateNewOwnerKeyOnWorkerThread, owner_key_util_,

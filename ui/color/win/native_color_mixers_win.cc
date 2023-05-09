@@ -88,7 +88,8 @@ void AddNativeCoreColorMixer(ColorProvider* provider,
 
   // Window Text
   mixer[kColorAlertLowSeverity] = {kColorNativeWindowText};
-  mixer[kColorAlertMediumSeverity] = {kColorNativeWindowText};
+  mixer[kColorAlertMediumSeverityIcon] = {kColorNativeWindowText};
+  mixer[kColorAlertMediumSeverityText] = {kColorNativeWindowText};
   mixer[kColorAlertHighSeverity] = {kColorNativeWindowText};
   mixer[kColorIcon] = {kColorNativeWindowText};
   mixer[kColorMidground] = {kColorNativeWindowText};
@@ -144,7 +145,7 @@ void AddNativeUiColorMixer(ColorProvider* provider,
   if (key.contrast_mode == ColorProviderManager::ContrastMode::kNormal)
     return;
 
-  mixer[kColorButtonForegroundChecked] = {
+  mixer[kColorRadioButtonForegroundChecked] = {
       key.color_mode == ColorProviderManager::ColorMode::kDark
           ? gfx::kGoogleBlue100
           : gfx::kGoogleBlue900};

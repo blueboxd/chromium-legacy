@@ -8,10 +8,14 @@
 #include <stdint.h>
 
 #include "gpu/gpu_gles2_export.h"
-#include "ui/gfx/color_space.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
+
+namespace media {
+class GenericV4L2Device;
+class VaapiPictureNativePixmapOzone;
+}  // namespace media
 
 namespace ui {
 class NativePixmapGLBinding;
@@ -19,10 +23,16 @@ class NativePixmapGLBinding;
 
 namespace gpu {
 
+namespace gles2 {
+class GLES2DecoderImpl;
+}
+
 class GPU_GLES2_EXPORT GLImageNativePixmap : public gl::GLImage {
- public:
+ private:
   // Create an EGLImage from a given NativePixmap and bind |texture_id| to
   // |target| following by binding the image to |target|.
+  // NOTE: As we are in the process of eliminating this class, there should be
+  // no new usages of it introduced.
   static scoped_refptr<GLImageNativePixmap> Create(
       const gfx::Size& size,
       gfx::BufferFormat format,
@@ -30,33 +40,33 @@ class GPU_GLES2_EXPORT GLImageNativePixmap : public gl::GLImage {
       GLenum target,
       GLuint texture_id);
 
-  // Create an EGLImage from a given NativePixmap and plane and bind
-  // |texture_id| to |target| followed by binding the image to |target|. The
-  // color space is for the external sampler: When we sample the YUV buffer as
-  // RGB, we need to tell it the encoding (BT.601, BT.709, or BT.2020) and range
-  // (limited or null), and |color_space| conveys this.
-  static scoped_refptr<GLImageNativePixmap> CreateForPlane(
+ public:
+  // Wrapper to allow for creation in testing contexts that are difficult to
+  // friend.
+  static scoped_refptr<GLImageNativePixmap> CreateForTesting(
       const gfx::Size& size,
       gfx::BufferFormat format,
-      gfx::BufferPlane plane,
       scoped_refptr<gfx::NativePixmap> pixmap,
-      const gfx::ColorSpace& color_space,
       GLenum target,
-      GLuint texture_id);
+      GLuint texture_id) {
+    return Create(size, format, pixmap, target, texture_id);
+  }
+
+ private:
+  friend class gles2::GLES2DecoderImpl;
+  friend class media::GenericV4L2Device;
+  friend class media::VaapiPictureNativePixmapOzone;
 
   // Overridden from GLImage:
   gfx::Size GetSize() override;
 
- private:
   explicit GLImageNativePixmap(const gfx::Size& size);
   ~GLImageNativePixmap() override;
 
   // Create a NativePixmapGLBinding from a given NativePixmap. Returns true iff
   // the binding was successfully created.
   bool InitializeFromNativePixmap(gfx::BufferFormat format,
-                                  gfx::BufferPlane plane,
                                   scoped_refptr<gfx::NativePixmap> pixmap,
-                                  const gfx::ColorSpace& color_space,
                                   GLenum target,
                                   GLuint texture_id);
 

@@ -9,6 +9,10 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/omnibox/common/omnibox_features.h"
+#import "ios/chrome/browser/shared/ui/util/attributed_string_util.h"
+#import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
+#import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/elements/fade_truncating_label.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
@@ -16,10 +20,6 @@
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_icon_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
-#import "ios/chrome/browser/ui/util/attributed_string_util.h"
-#import "ios/chrome/browser/ui/util/layout_guide_names.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
@@ -177,7 +177,10 @@ BOOL IsMultilineSearchSuggestionEnabled() {
     if (self.contentView.subviews.count == 0) {
       [self setupLayout];
     }
-    if (self.suggestion.isAppendable || self.suggestion.isTabMatch) {
+    BOOL suggestionNeedsTrailingButton =
+        self.suggestion.isAppendable || self.suggestion.isTabMatch;
+
+    if (suggestionNeedsTrailingButton && !self.trailingButton.superview) {
       [self setupTrailingButtonLayout];
     }
     [self attachToLayoutGuides];
@@ -518,8 +521,6 @@ BOOL IsMultilineSearchSuggestionEnabled() {
     self.textTruncatingLabel.lineBreakMode = NSLineBreakByClipping;
     self.textTruncatingLabel.numberOfLines = 1;
   }
-  [self updateTextConstraints:IsMultilineSearchSuggestionEnabled() &&
-                              suggestion.isWrapping];
 
   // URLs have have special layout requirements.
   self.detailTruncatingLabel.displayAsURL = suggestion.isURL;
@@ -541,6 +542,8 @@ BOOL IsMultilineSearchSuggestionEnabled() {
   if (suggestion.isAppendable || suggestion.isTabMatch) {
     [self setupTrailingButton];
   }
+  [self updateTextConstraints:IsMultilineSearchSuggestionEnabled() &&
+                              suggestion.isWrapping];
 
   self.leadingIconView.highlighted = self.highlighted;
   self.trailingButton.tintColor =
@@ -550,7 +553,7 @@ BOOL IsMultilineSearchSuggestionEnabled() {
 /// Setup the trailing button. This includes both setting up the button's layout
 /// and popuplating it with the correct image and color.
 - (void)setupTrailingButton {
-  if (self.window) {
+  if (self.window && !self.trailingButton.superview) {
     [self setupTrailingButtonLayout];
   }
   // Show append button for search history/search suggestions or
@@ -588,7 +591,7 @@ BOOL IsMultilineSearchSuggestionEnabled() {
       int trailingButtonResourceID = 0;
       trailingButtonResourceID = IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
       trailingButtonImage =
-          NativeReversableImage(trailingButtonResourceID, YES);
+          NativeReversibleImage(trailingButtonResourceID, YES);
     }
   }
 

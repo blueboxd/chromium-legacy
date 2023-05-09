@@ -149,6 +149,7 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/resources/grit/webui_resources.h"
+#include "ui/webui/color_change_listener/color_change_handler.h"
 
 namespace ash {
 
@@ -267,7 +268,10 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
   const bool is_oobe_flow = display_type == OobeUI::kOobeDisplay;
   source->AddBoolean("isOsInstallAllowed", switches::IsOsInstallAllowed());
   source->AddBoolean("isOobeFlow", is_oobe_flow);
-  source->AddBoolean("isOobeJelly", features::IsOobeJellyEnabled());
+  // TODO (b/268463435) Cleanup OobeJelly
+  source->AddBoolean("isOobeJellyEnabled", features::IsOobeJellyEnabled());
+  // TODO (b/269117729) Cleanup OobeSimon
+  source->AddBoolean("isOobeSimonEnabled", features::IsOobeSimonEnabled());
   source->AddBoolean("isChoobeEnabled", features::IsOobeChoobeEnabled());
   source->AddBoolean(
       "isArcVmDataMigrationEnabled",
@@ -551,6 +555,17 @@ void OobeUI::BindInterface(
   GetESimManager(std::move(receiver));
 }
 
+void OobeUI::BindInterface(
+    mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
+  if (!features::IsOobeJellyEnabled()) {
+    mojo::ReportBadMessage(
+        "Jelly not enabled: OOBE should not listen to color changes.");
+    return;
+  }
+  color_provider_handler_ = std::make_unique<ui::ColorChangeHandler>(
+      web_ui()->GetWebContents(), std::move(receiver));
+}
+
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
   LOG(WARNING) << "OobeUI created";
@@ -637,6 +652,17 @@ base::Value::Dict OobeUI::GetLocalizedStrings() {
 #else
   localized_strings.Set("buildType", "chromium");
 #endif
+
+  std::string oobeClasses = "";
+  // TODO (b/268463435) Cleanup OobeJelly
+  if (features::IsOobeJellyEnabled()) {
+    oobeClasses += "jelly-enabled ";
+  }
+  // TODO (b/269117729) Cleanup OobeSimon
+  if (features::IsOobeSimonEnabled()) {
+    oobeClasses += "simon-enabled ";
+  }
+  localized_strings.Set("oobeClasses", oobeClasses);
 
   bool keyboard_driven_oobe = ash::system::InputDeviceSettings::Get()
                                   ->ForceKeyboardDrivenUINavigation();

@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">მიმდინარეობს <ph name="NUMBER_OF_ITEMS" /> ერთეულის დაარქივება…</translation>
 <translation id="1722687688096767818">მიმდინარეობს პროფილის დამატება...</translation>
 <translation id="1726100011689679555">სახელთა სერვერები</translation>
+<translation id="1727562178154619254">მზადაა სინქრონიზაციისთვის</translation>
 <translation id="1729953886957086472">გერმანული (გერმანია)</translation>
 <translation id="1730235522912993863">ჩინური ჩანჯი</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> ერთეული დაკოპირდა.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">სურათის გარჩევადობა</translation>
 <translation id="1972984168337863910">ფაილების გამოხმაურების არეების გაფართოება</translation>
 <translation id="1995337122023280937">ფაილის მდებარეობაზე გადასვლა</translation>
-<translation id="1999709132469742660">ფაილებზე წვდომა ყველა URL-ის მიერ</translation>
 <translation id="2001796770603320721">Google Drive-ში მართვა</translation>
 <translation id="2009067268969781306">დისკის დაფორმატება წაშლის მასში შენახულ ყველა მონაცემს. ამ ქმედებას ვერ გააუქმებთ.</translation>
 <translation id="2025955442973426285">ტიგრინია</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">ლათინური ამერიკა</translation>
 <translation id="5330145655348521461">ეს ფაილი გახსნილია სხვადასხვა სამუშაო მაგიდაზე. მის სანახავად გადადით <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)-ზე.</translation>
 <translation id="5330512191124428349">ინფორმაციის მიღება</translation>
-<translation id="5337538975554986899">ფაილებზე წვდომა ყველა URL-ის მიერ, გარდა შემდეგისა: <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">გაზიარების მართვა Bruschetta-სთვის</translation>
 <translation id="535792325654997756">პიროვნება კატებით</translation>
 <translation id="5358764674931277">კადრების სიხშირე</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">თქვენი Linux აპლიკაციის ინსტალაციისას მოხდა შეცდომა.</translation>
 <translation id="5912396950572065471">ფორმატი</translation>
 <translation id="5913638992615760742">კოპირების ოპერაცია ვერ შესრულდა, მოულოდნელი შეცდომა: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">ხელმისაწვდომია ახალი საძიებო ფუნქციები</translation>
 <translation id="5926082595146149752">ნიდერლანდური (ნიდერლანდები) აშშ-ის საერთაშორისო (PC) კლავიატურით</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">ქსელი <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" />-დან, <ph name="NETWORK_NAME" />, გაააქტიურეთ მოწყობილობის დაყენების შემდეგ</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">სერტიფიკატები ვერ ჩაიტვირთა</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">საქაღალდის გაზიარება Bruschetta-სთან</translation>
+<translation id="6750737795876287924">მიმდინარე კატალოგი</translation>
 <translation id="6751256176799620176">არჩეულია 1 საქაღალდე</translation>
 <translation id="6755827872271341378">ChromeOS Flex მოწყობილობა</translation>
 <translation id="6790428901817661496">დაკვრა</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">ფოლდერები</translation>
 <translation id="6976795442547527108">ლომი</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">ყველა დროის</translation>
 <translation id="6989942356279143254">შვედური</translation>
 <translation id="6990081529015358884">ადგილი აღარ არის</translation>
 <translation id="6993826899923627728">ეს ერთეულები თქვენს წაშლილებშია</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">ბოლოდროინდელი სურათები არ არის</translation>
 <translation id="7460898608667578234">უკრაინული</translation>
 <translation id="7469894403370665791">ამ ქსელთან ავტომატური დაკავშირება</translation>
-<translation id="7481358317100446445">მზად არის</translation>
 <translation id="7486315294984620427">Parallels Desktop-ში ფაილის ჩავლებით გადასატანად ის უნდა დააკოპიროთ Windows ფაილებში.</translation>
 <translation id="749452993132003881">ჰირაგანა</translation>
 <translation id="7495372004724182530">მალაიალამური ფონეტიკური</translation>

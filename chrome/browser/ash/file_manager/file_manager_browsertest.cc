@@ -953,6 +953,7 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
           /*result*/
           expected_results,
           /*username*/ kUserName,
+          /*profile_identifier*/ profile()->GetPath().AsUTF8Unsafe(),
           /*scan_ids*/ expected_scan_ids);
 
       return true;
@@ -1209,6 +1210,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("keyboardDeleteDownloads"),
         TestCase("keyboardDeleteDownloads").EnableTrash(),
         TestCase("keyboardDeleteDrive"),
+        TestCase("keyboardDeleteDrive").EnableTrash(),
         TestCase("keyboardDeleteFolderDownloads").InGuestMode(),
         TestCase("keyboardDeleteFolderDownloads"),
         TestCase("keyboardDeleteFolderDownloads").EnableTrash(),
@@ -2171,9 +2173,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchLocalWithTypeOptions").EnableSearchV2(),
         TestCase("searchDriveWithTypeOptions").EnableSearchV2(),
         TestCase("searchWithRecencyOptions").EnableSearchV2(),
+        TestCase("searchDriveWithRecencyOptions").EnableSearchV2(),
         TestCase("searchRemovableDevice").EnableSearchV2(),
         TestCase("resetSearchOptionsOnFolderChange").EnableSearchV2(),
-        TestCase("showSearchResultMessageWhenSearching").EnableSearchV2()
+        TestCase("showSearchResultMessageWhenSearching").EnableSearchV2(),
+        TestCase("showsEducationNudge").EnableSearchV2(),
+        TestCase("searchFromMyFiles").EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));
@@ -2247,6 +2252,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableTrash()
             .FeatureIds({"screenplay-38573550-c60a-4009-ba92-c0af1420fde6"}),
         TestCase("trashDeleteFromTrashOriginallyFromMyFiles")
+            .EnableTrash()
+            .FeatureIds({"screenplay-38573550-c60a-4009-ba92-c0af1420fde6"}),
+        TestCase("trashDeleteFromTrashOriginallyFromDrive")
             .EnableTrash()
             .FeatureIds({"screenplay-38573550-c60a-4009-ba92-c0af1420fde6"}),
         TestCase("trashNoTasksInTrashRoot").EnableTrash(),

@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Komprimerer <ph name="NUMBER_OF_ITEMS" /> elementer...</translation>
 <translation id="1722687688096767818">Tilføjer profilen...</translation>
 <translation id="1726100011689679555">Navneservere</translation>
+<translation id="1727562178154619254">Klar til synkronisering</translation>
 <translation id="1729953886957086472">Tysk (Tyskland)</translation>
 <translation id="1730235522912993863">Kinesisk cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> elementer blev kopieret.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Billedopløsning</translation>
 <translation id="1972984168337863910">Udvid paneler med feedback til filer</translation>
 <translation id="1995337122023280937">Gå til filplacering</translation>
-<translation id="1999709132469742660">Filadgang for alle webadresser</translation>
 <translation id="2001796770603320721">Administrer i Drev</translation>
 <translation id="2009067268969781306">Formatering af et drev sletter alle de data, der er gemt på det. Denne handling kan ikke fortrydes.</translation>
 <translation id="2025955442973426285">Tigrinsk</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Latinamerikansk</translation>
 <translation id="5330145655348521461">Disse filer blev åbnet på en anden computer. Skift til <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) for at se dem.</translation>
 <translation id="5330512191124428349">Hent oplysninger</translation>
-<translation id="5337538975554986899">Filadgang for alle webadresser undtagen <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Administrer deling med Bruschetta</translation>
 <translation id="535792325654997756">Person med katte</translation>
 <translation id="5358764674931277">Billedfrekvens</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Der opstod en fejl ved installationen af Linux-appen.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Kopiering mislykkedes, uventet fejl: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Der er kommet nye søgefunktioner</translation>
 <translation id="5926082595146149752">Hollandsk (Holland) med amerikansk internationalt computertastatur</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, aktivér efter konfiguration af enhed</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Certifikaterne blev ikke indlæst</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Del mappe med Bruschetta</translation>
+<translation id="6750737795876287924">Aktuel mappe</translation>
 <translation id="6751256176799620176">1 mappe er valgt</translation>
 <translation id="6755827872271341378">ChromeOS Flex-enhed</translation>
 <translation id="6790428901817661496">Afspil</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Mapper</translation>
 <translation id="6976795442547527108">Løve</translation>
 <translation id="6979158407327259162">Google Drev</translation>
-<translation id="6979737339423435258">Altid</translation>
 <translation id="6989942356279143254">Svensk</translation>
 <translation id="6990081529015358884">Der er ikke mere plads</translation>
 <translation id="6993826899923627728">Disse elementer er i din papirkurv</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Du har ikke åbnet nogen billeder for nylig</translation>
 <translation id="7460898608667578234">ukrainsk</translation>
 <translation id="7469894403370665791">Opret automatisk forbindelse til dette netværk</translation>
-<translation id="7481358317100446445">Klar</translation>
 <translation id="7486315294984620427">Filer skal først kopieres til mappen med Windows-filer, før du kan trække dem til Parallels Desktop.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam fonetisk</translation>
@@ -1000,7 +999,7 @@
 <translation id="9035689366572880647">Angiv aktuel pinkode</translation>
 <translation id="9038620279323455325">Der findes allerede en fil med navnet "<ph name="FILE_NAME" />". Vælg et andet navn.</translation>
 <translation id="9046895021617826162">Forbindelsen mislykkedes</translation>
-<translation id="9065512565307033593">Hvis du ikke verificerer, mister du adgangen til netværket.</translation>
+<translation id="9065512565307033593">Hvis du ikke bekræfter, mister du adgangen til netværket.</translation>
 <translation id="908378762078012445">Russisk med fonetisk AATSEEL-tastatur</translation>
 <translation id="9086302186042011942">Synkroniserer</translation>
 <translation id="9099674669267916096">Sideantal</translation>

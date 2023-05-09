@@ -37,18 +37,17 @@ CacheStorageContextImpl::CacheStorageContextImpl(
 CacheStorageContextImpl::~CacheStorageContextImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (const auto& storage_key : storage_keys_to_purge_on_shutdown_) {
-    cache_manager_->DeleteStorageKeyData(
-        storage_key, storage::mojom::CacheStorageOwner::kCacheAPI,
+  cache_manager_->DeleteStorageKeyData(
+      storage_keys_to_purge_on_shutdown_,
+      storage::mojom::CacheStorageOwner::kCacheAPI,
 
-        // Retain a reference to the manager until the deletion is
-        // complete, since it internally uses weak pointers for
-        // the various stages of deletion and nothing else will
-        // keep it alive during shutdown.
-        base::BindOnce([](scoped_refptr<CacheStorageManager> cache_manager,
-                          blink::mojom::QuotaStatusCode) {},
-                       cache_manager_));
-  }
+      // Retain a reference to the manager until the deletion is
+      // complete, since it internally uses weak pointers for
+      // the various stages of deletion and nothing else will
+      // keep it alive during shutdown.
+      base::BindOnce([](scoped_refptr<CacheStorageManager> cache_manager,
+                        blink::mojom::QuotaStatusCode) {},
+                     cache_manager_));
 }
 
 // static
@@ -125,7 +124,8 @@ void CacheStorageContextImpl::AddReceiver(
         bucket_locator.id, base::SequencedTaskRunner::GetCurrentDefault(),
         std::move(add_receiver));
   } else {
-    std::move(add_receiver).Run(storage::QuotaError::kNotFound);
+    std::move(add_receiver)
+        .Run(base::unexpected(storage::QuotaError::kNotFound));
   }
 }
 
@@ -174,8 +174,8 @@ void CacheStorageContextImpl::AddReceiverWithBucketInfo(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const absl::optional<storage::BucketLocator> bucket =
-      result.ok() ? absl::make_optional(result->ToBucketLocator())
-                  : absl::nullopt;
+      result.has_value() ? absl::make_optional(result->ToBucketLocator())
+                         : absl::nullopt;
 
   dispatcher_host_->AddReceiver(cross_origin_embedder_policy,
                                 std::move(coep_reporter), storage_key, bucket,

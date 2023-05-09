@@ -1055,7 +1055,13 @@ void ForEachServiceWithPrefix(
         continue;
       }
 
-      if (base::StartsWith(display_name, display_name_prefix)) {
+      const bool display_name_starts_with_prefix =
+          base::StartsWith(display_name, display_name_prefix);
+      VLOG(1) << __func__ << ": " << service_name
+              << " matches: " << service_name_prefix << ": " << display_name
+              << ": " << display_name_starts_with_prefix << ": "
+              << display_name_prefix;
+      if (display_name_starts_with_prefix) {
         callback.Run(service_name);
       }
     }
@@ -1063,29 +1069,33 @@ void ForEachServiceWithPrefix(
 }
 
 [[nodiscard]] bool DeleteService(const std::wstring& service_name) {
-  SC_HANDLE scm = ::OpenSCManager(
-      nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE);
-  if (!scm) {
+  ScopedScHandle scm(::OpenSCManager(
+      nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE));
+  if (!scm.IsValid()) {
     return false;
   }
 
-  SC_HANDLE service = ::OpenService(scm, service_name.c_str(), DELETE);
-  bool is_service_deleted = !service;
+  ScopedScHandle service(
+      ::OpenService(scm.Get(), service_name.c_str(), DELETE));
+  bool is_service_deleted = !service.IsValid();
   if (!is_service_deleted) {
     is_service_deleted =
-        ::DeleteService(service)
+        ::DeleteService(service.Get())
             ? true
             : ::GetLastError() == ERROR_SERVICE_MARKED_FOR_DELETE;
-
-    ::CloseServiceHandle(service);
   }
-  ::CloseServiceHandle(scm);
 
   if (!DeleteRegValue(HKEY_LOCAL_MACHINE, UPDATER_KEY, service_name)) {
     return false;
   }
 
+  VLOG(1) << __func__ << ": " << service_name << ": " << is_service_deleted;
   return is_service_deleted;
+}
+
+bool WrongUser(UpdaterScope scope) {
+  return IsSystemInstall(scope) ? !::IsUserAnAdmin()
+                                : ::IsUserAnAdmin() && IsUACOn();
 }
 
 }  // namespace updater

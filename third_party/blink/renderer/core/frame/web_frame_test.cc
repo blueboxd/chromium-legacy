@@ -391,15 +391,9 @@ class WebFrameTest : public testing::Test {
         WebString::FromUTF8(file_name), WebString::FromUTF8(mime_type));
   }
 
-  static void ConfigureCompositingWebView(WebSettings* settings) {
-    settings->SetPreferCompositingToLCDTextEnabled(true);
-  }
-
   static void ConfigureAndroid(WebSettings* settings) {
-    settings->SetViewportMetaEnabled(true);
-    settings->SetViewportEnabled(true);
-    settings->SetMainFrameResizesAreOrientationChanges(true);
-    settings->SetShrinksViewportContentToFit(true);
+    frame_test_helpers::WebViewHelper::UpdateAndroidCompositingSettings(
+        settings);
     settings->SetViewportStyle(mojom::blink::ViewportStyle::kMobile);
   }
 
@@ -1119,6 +1113,25 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
     ScriptExecutionCallbackHelper callback_helper;
     ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
                              post_message_w_fullscreen_request,
+                             callback_helper.Callback(),
+                             blink::mojom::PromiseResultOption::kAwait,
+                             blink::mojom::UserActivationOption::kActivate);
+    RunPendingTasks();
+    EXPECT_TRUE(callback_helper.DidComplete());
+    EXPECT_TRUE(message_event_listener->DelegateCapability());
+  }
+
+  {
+    String post_message_w_display_capture_request(
+        "window.frames[0].postMessage("
+        "'1', {targetOrigin: '/', delegate: 'display-capture'});");
+
+    // The delegation info is passed through a postMessage that is sent with
+    // both user activation and the delegation option for another known
+    // capability.
+    ScriptExecutionCallbackHelper callback_helper;
+    ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                             post_message_w_display_capture_request,
                              callback_helper.Callback(),
                              blink::mojom::PromiseResultOption::kAwait,
                              blink::mojom::UserActivationOption::kActivate);
@@ -3555,7 +3568,11 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
   int view_height = 500;
 
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, nullptr, &ConfigureCompositingWebView);
+  web_view_helper.Initialize();
+  web_view_helper.GetWebView()
+      ->GetPage()
+      ->GetSettings()
+      .SetPreferCompositingToLCDTextForTesting(true);
 
   web_view_helper.Resize(gfx::Size(view_width, view_height));
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
@@ -8150,7 +8167,11 @@ TEST_F(WebFrameTest, FirstNonBlankSubframeNavigation) {
 TEST_F(WebFrameTest, overflowHiddenRewrite) {
   RegisterMockedHttpURLLoad("non-scrollable.html");
   frame_test_helpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(nullptr, nullptr, &ConfigureCompositingWebView);
+  web_view_helper.Initialize();
+  web_view_helper.GetWebView()
+      ->GetPage()
+      ->GetSettings()
+      .SetPreferCompositingToLCDTextForTesting(true);
 
   web_view_helper.Resize(gfx::Size(100, 100));
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
@@ -10508,7 +10529,15 @@ TEST_F(WebFrameTest, SendBeaconFromChildWithRemoteMainFrame) {
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(local_frame);
 }
 
-TEST_F(WebFrameTest, SiteForCookiesFromChildWithRemoteMainFrame) {
+#if BUILDFLAG(IS_IOS)
+// TODO(crbug.com/1141478)
+#define MAYBE_SiteForCookiesFromChildWithRemoteMainFrame \
+  DISABLED_SiteForCookiesFromChildWithRemoteMainFrame
+#else
+#define MAYBE_SiteForCookiesFromChildWithRemoteMainFrame \
+  SiteForCookiesFromChildWithRemoteMainFrame
+#endif  // BUILDFLAG(IS_IOS)
+TEST_F(WebFrameTest, MAYBE_SiteForCookiesFromChildWithRemoteMainFrame) {
   frame_test_helpers::WebViewHelper helper;
   helper.InitializeRemote(SecurityOrigin::Create(ToKURL(not_base_url_)));
 

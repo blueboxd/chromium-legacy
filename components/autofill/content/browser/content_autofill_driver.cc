@@ -5,6 +5,7 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -17,31 +18,42 @@
 #include "components/autofill/content/browser/content_autofill_router.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/payments/payments_service_url.h"
-#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/version_info/channel.h"
-#include "content/public/browser/back_forward_cache.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_controller.h"
+#include "components/autofill/core/common/form_data_predictions.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
-#include "content/public/browser/site_instance.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/origin_util.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "ui/gfx/geometry/size_f.h"
 #include "url/origin.h"
 
 namespace autofill {
+
+namespace {
+
+// TODO(crbug.com/1117028): Remove once FormData objects aren't stored
+// globally anymore.
+const FormData& WithNewVersion(const FormData& form) {
+  static FormVersion version_counter;
+  ++*version_counter;
+  const_cast<FormData&>(form).version = version_counter;
+  return form;
+}
+
+// TODO(crbug.com/1117028): Remove once FormData objects aren't stored
+// globally anymore.
+const std::vector<FormData>& WithNewVersion(
+    const std::vector<FormData>& forms) {
+  for (const FormData& form : forms) {
+    WithNewVersion(form);
+  }
+  return forms;
+}
+
+}  // namespace
 
 ContentAutofillDriver::ContentAutofillDriver(
     content::RenderFrameHost* render_frame_host,
@@ -62,6 +74,9 @@ ContentAutofillDriver::~ContentAutofillDriver() {
   if (autofill_router_)  // Can be nullptr only in tests.
     autofill_router_->UnregisterDriver(this);
 
+  // DONOTSUBMIT: Need to check whether RWH can be nullptr. I can't find the
+  // test right now where this happened, so I want to run the bots again. I had
+  // a hypothesis why that happened in that test.
   if (render_frame_host_) {  // Can be nullptr only in tests.
     render_frame_host_->GetRenderWidgetHost()->RemoveSuppressShowingImeCallback(
         suppress_showing_ime_callback_);
@@ -325,7 +340,8 @@ void ContentAutofillDriver::FormsSeen(
       [](ContentAutofillDriver* target,
          const std::vector<FormData>& updated_forms,
          const std::vector<FormGlobalId>& removed_forms) {
-        target->autofill_manager_->OnFormsSeen(updated_forms, removed_forms);
+        target->autofill_manager_->OnFormsSeen(WithNewVersion(updated_forms),
+                                               removed_forms);
       });
 }
 
@@ -350,8 +366,8 @@ void ContentAutofillDriver::FormSubmitted(
             !target->submitted_forms_.insert(form.global_id()).second) {
           return;
         }
-        target->autofill_manager_->OnFormSubmitted(form, known_success,
-                                                   submission_source);
+        target->autofill_manager_->OnFormSubmitted(
+            WithNewVersion(form), known_success, submission_source);
       });
 }
 
@@ -371,7 +387,7 @@ void ContentAutofillDriver::TextFieldDidChange(const FormData& raw_form,
          const FormFieldData& field, const gfx::RectF& bounding_box,
          base::TimeTicks timestamp) {
         target->autofill_manager_->OnTextFieldDidChange(
-            form, field, bounding_box, timestamp);
+            WithNewVersion(form), field, bounding_box, timestamp);
       });
 }
 
@@ -388,8 +404,8 @@ void ContentAutofillDriver::TextFieldDidScroll(const FormData& raw_form,
       TransformBoundingBoxToViewportCoordinates(bounding_box),
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const gfx::RectF& bounding_box) {
-        target->autofill_manager_->OnTextFieldDidScroll(form, field,
-                                                        bounding_box);
+        target->autofill_manager_->OnTextFieldDidScroll(WithNewVersion(form),
+                                                        field, bounding_box);
       });
 }
 
@@ -407,8 +423,8 @@ void ContentAutofillDriver::SelectControlDidChange(
       TransformBoundingBoxToViewportCoordinates(bounding_box),
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const gfx::RectF& bounding_box) {
-        target->autofill_manager_->OnSelectControlDidChange(form, field,
-                                                            bounding_box);
+        target->autofill_manager_->OnSelectControlDidChange(
+            WithNewVersion(form), field, bounding_box);
       });
 }
 
@@ -432,8 +448,8 @@ void ContentAutofillDriver::AskForValuesToFill(
          AutoselectFirstSuggestion autoselect_first_suggestion,
          FormElementWasClicked form_element_was_clicked) {
         target->autofill_manager_->OnAskForValuesToFill(
-            form, field, bounding_box, autoselect_first_suggestion,
-            form_element_was_clicked);
+            WithNewVersion(form), field, bounding_box,
+            autoselect_first_suggestion, form_element_was_clicked);
       });
 }
 
@@ -475,8 +491,8 @@ void ContentAutofillDriver::FocusOnFormField(const FormData& raw_form,
       TransformBoundingBoxToViewportCoordinates(bounding_box),
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const gfx::RectF& bounding_box) {
-        target->autofill_manager_->OnFocusOnFormField(form, field,
-                                                      bounding_box);
+        target->autofill_manager_->OnFocusOnFormField(WithNewVersion(form),
+                                                      field, bounding_box);
       });
 }
 
@@ -488,7 +504,8 @@ void ContentAutofillDriver::DidFillAutofillFormData(const FormData& raw_form,
       this, GetFormWithFrameAndFormMetaData(raw_form), timestamp,
       [](ContentAutofillDriver* target, const FormData& form,
          base::TimeTicks timestamp) {
-        target->autofill_manager_->OnDidFillAutofillFormData(form, timestamp);
+        target->autofill_manager_->OnDidFillAutofillFormData(
+            WithNewVersion(form), timestamp);
       });
 }
 
@@ -517,7 +534,8 @@ void ContentAutofillDriver::SelectFieldOptionsDidChange(
   autofill_router().SelectFieldOptionsDidChange(
       this, GetFormWithFrameAndFormMetaData(raw_form),
       [](ContentAutofillDriver* target, const FormData& form) {
-        target->autofill_manager_->OnSelectFieldOptionsDidChange(form);
+        target->autofill_manager_->OnSelectFieldOptionsDidChange(
+            WithNewVersion(form));
       });
 }
 
@@ -535,7 +553,7 @@ void ContentAutofillDriver::JavaScriptChangedAutofilledValue(
       [](ContentAutofillDriver* target, const FormData& form,
          const FormFieldData& field, const std::u16string& old_value) {
         target->autofill_manager_->OnJavaScriptChangedAutofilledValue(
-            form, field, old_value);
+            WithNewVersion(form), field, old_value);
       });
 }
 
@@ -607,10 +625,8 @@ ContentAutofillDriver::GetAutofillAgent() {
 void ContentAutofillDriver::UnsetKeyPressHandlerCallback() {
   if (key_press_handler_.is_null())
     return;
-  content::RenderWidgetHostView* view = render_frame_host_->GetView();
-  if (!view)
-    return;
-  view->GetRenderWidgetHost()->RemoveKeyPressEventCallback(key_press_handler_);
+  render_frame_host_->GetRenderWidgetHost()->RemoveKeyPressEventCallback(
+      key_press_handler_);
   key_press_handler_.Reset();
 }
 
@@ -625,11 +641,8 @@ void ContentAutofillDriver::SetKeyPressHandler(
       [](ContentAutofillDriver* target,
          const content::RenderWidgetHost::KeyPressEventCallback& handler) {
         target->UnsetKeyPressHandlerCallback();
-        content::RenderWidgetHostView* view =
-            target->render_frame_host_->GetView();
-        if (!view)
-          return;
-        view->GetRenderWidgetHost()->AddKeyPressEventCallback(handler);
+        target->render_frame_host_->GetRenderWidgetHost()
+            ->AddKeyPressEventCallback(handler);
         target->key_press_handler_ = handler;
       });
 }
@@ -651,10 +664,6 @@ void ContentAutofillDriver::SetShouldSuppressKeyboard(bool suppress) {
 void ContentAutofillDriver::SetFrameAndFormMetaData(
     FormData& form,
     FormFieldData* optional_field) const {
-  static FormVersion version_counter;
-  ++*version_counter;
-  form.version = version_counter;
-
   form.host_frame =
       LocalFrameToken(render_frame_host_->GetFrameToken().value());
 

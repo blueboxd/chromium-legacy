@@ -105,9 +105,9 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_switches.h"
-#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/cros_disks/fake_cros_disks_client.h"
+#include "chromeos/ash/components/dbus/vm_concierge/concierge_service.pb.h"
 #include "chromeos/ash/components/disks/mount_point.h"
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 #include "chromeos/ash/components/drivefs/fake_drivefs.h"
@@ -2000,8 +2000,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   if (options.enable_trash) {
     enabled_features.push_back(ash::features::kFilesTrash);
+    enabled_features.push_back(ash::features::kFilesTrashDrive);
   } else {
     disabled_features.push_back(ash::features::kFilesTrash);
+    disabled_features.push_back(ash::features::kFilesTrashDrive);
   }
 
   if (options.enable_dlp_files_restriction) {

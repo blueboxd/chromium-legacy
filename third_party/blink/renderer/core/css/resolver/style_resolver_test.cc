@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/css_image_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
@@ -131,6 +132,7 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
   StyleRequest style_request;
   style_request.parent_override = parent_style;
   style_request.layout_parent_override = parent_style;
+  style_request.can_trigger_animations = false;
   EXPECT_EQ(
       10,
       resolver.ResolveStyle(div, recalc_context, style_request)->FontSize());
@@ -1044,6 +1046,22 @@ TEST_F(StyleResolverTest, ComputeValueStandardProperty) {
   EXPECT_EQ("rgb(0, 128, 0)", computed_value->CssText());
 }
 
+namespace {
+
+const CSSValue* ParseCustomProperty(Document& document,
+                                    const CustomProperty& property,
+                                    const String& value) {
+  const auto* context = MakeGarbageCollected<CSSParserContext>(document);
+  CSSParserLocalContext local_context;
+  auto tokens = CSSTokenizer(value).TokenizeToEOF();
+  CSSParserTokenRange range(tokens);
+
+  return property.Parse(CSSTokenizedValue{range, value}, *context,
+                        local_context);
+}
+
+}  // namespace
+
 TEST_F(StyleResolverTest, ComputeValueCustomProperty) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
@@ -1057,7 +1075,7 @@ TEST_F(StyleResolverTest, ComputeValueCustomProperty) {
   ASSERT_TRUE(target);
 
   AtomicString custom_property_name = "--color";
-  const CSSValue* parsed_value = css_test_helpers::ParseLonghand(
+  const CSSValue* parsed_value = ParseCustomProperty(
       GetDocument(), CustomProperty(custom_property_name, GetDocument()),
       "blue");
   ASSERT_TRUE(parsed_value);
@@ -2280,9 +2298,8 @@ TEST_F(StyleResolverTestCQ, StyleRulesForElementContainerQuery) {
   auto* target = GetDocument().getElementById("target");
   auto& resolver = GetDocument().GetStyleResolver();
 
-  auto* rule_list = resolver.StyleRulesForElement(
-      target,
-      StyleResolver::kAuthorCSSRules | StyleResolver::kCrossOriginCSSRules);
+  auto* rule_list =
+      resolver.StyleRulesForElement(target, StyleResolver::kAuthorCSSRules);
   ASSERT_TRUE(rule_list);
   ASSERT_EQ(rule_list->size(), 1u)
       << "The empty #target rule in the container query should be collected";
@@ -3224,6 +3241,34 @@ TEST_F(StyleResolverTest, ScopedAnchorSizeFunction) {
                          min_height->ComputedStyleRef().MinHeight()));
   EXPECT_EQ(&GetDocument(), GetAnchorQueryTreeScope(
                                 max_height->ComputedStyleRef().MaxHeight()));
+}
+
+TEST_F(StyleResolverTestCQ, CanAffectAnimationsMPC) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #a { transition: color 1s; }
+      @container (width > 100000px) {
+        #b { animation-name: anim; }
+      }
+    </style>
+    <div id=a></div>
+    <div id=b></div>
+    <div id=c></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* a = GetDocument().getElementById("a");
+  auto* b = GetDocument().getElementById("b");
+  auto* c = GetDocument().getElementById("c");
+
+  ASSERT_TRUE(a);
+  ASSERT_TRUE(b);
+  ASSERT_TRUE(c);
+
+  EXPECT_TRUE(a->ComputedStyleRef().CanAffectAnimations());
+  EXPECT_FALSE(b->ComputedStyleRef().CanAffectAnimations());
+  EXPECT_FALSE(c->ComputedStyleRef().CanAffectAnimations());
 }
 
 }  // namespace blink

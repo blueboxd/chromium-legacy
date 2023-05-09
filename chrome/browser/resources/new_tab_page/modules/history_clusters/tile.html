@@ -1,22 +1,27 @@
 <style include="history-clusters-shared-style">
-  #content {
-    background: var(--google-grey-100);
-    border-radius: 25px;
-    color: var(--google-grey-900);
+  :host {
+    background:
+        var(--color-new-tab-page-history-clusters-module-item-background);
+    border-radius: 12px;
+    color: var(--color-new-tab-page-primary-foreground);
+    height: 100%;
+    width: 100%;
   }
 
-  /* TODO(crbug.com/1414484): Add comprehensive theming to the hover states */
-  /*:host(:hover) #content {*/
-  /*  background-color: var(--cr-hover-background-color);*/
-  /*}*/
+  a:link,
+  a:visited,
+  a:hover,
+  a:active {
+    text-decoration: none;
+  }
 
-  /*:host(:active) #content {*/
-  /*  background-color: var(--cr-active-background-color);*/
-  /*}*/
+  :host-context(.focus-outline-visible) :focus {
+    box-shadow: var(--ntp-focus-shadow);
+    outline: none;
+  }
 
-  :host([large-format]) #content {
-    display: flex;
-    flex-direction: column;
+  #content {
+    display: inline-block;
     height: 100%;
     width: 100%;
   }
@@ -24,40 +29,53 @@
   :host([medium-format]) #content {
     display: flex;
     flex-direction: row;
-    height: 100%;
-    width: 100%;
   }
 
   #image {
-    background: red;
-    border-radius: 25px;
+    background: var(--color-new-tab-page-module-background);
+    overflow: hidden;
+    position: relative;
   }
 
   :host([large-format]) #image {
+    border-radius: 7px;
     height: 152px;
-    margin: 16px auto;
+    margin: 16px 16px;
     width: 320px;
   }
 
   :host([medium-format]) #image {
+    border-radius: 6px;
     height: 128px;
     margin: 8px;
     width: 128px;
   }
 
-  /* TODO(crbug.com/1418528): Add favicon */
-  /*#icon {*/
-  /*  background-color: white;*/
-  /*  height: 16px;*/
-  /*  margin-inline-end: 8px;*/
-  /*  width: 16px;*/
-  /*}*/
+  :host([small-format]) #image {
+    display: none;
+  }
 
-  :host([medium-format]) #icon {
-    margin-inline-start: 8px;
+  #image img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  #image page-favicon {
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  #icon {
+    height: 16px;
+    margin-inline-end: 8px;
+    width: 16px;
   }
 
   #title {
+    color: var(--color-new-tab-page-primary-foreground);
     font-size: 16px;
     white-space: initial;
   }
@@ -65,7 +83,7 @@
   :host([large-format]) #title {
     height: 48px;
     max-width: 298px;
-    padding: 16px 24px 24px;
+    padding: 16px 16px 24px;
   }
 
   :host([medium-format]) #title {
@@ -74,20 +92,27 @@
     padding: 18px 16px 32px 8px;
   }
 
+  :host([small-format]) #title {
+    height: 60px;
+    max-width: 136px;
+    padding: 18px 16px 32px 16px;
+  }
+
   #info-container {
-    color: var(--google-grey-700);
+    color: var(--color-new-tab-page-secondary-foreground);
     display: flex;
     flex-direction: row;
     font-size: 11px;
-    margin-inline-start: 24px;
+    margin-inline: 16px;
   }
 
-  :host([large-format]) #label {
-    max-width: 200px;
+  :host([medium-format]) #info-container {
+    margin-inline-start: 8px;
   }
 
-  :host([medium-format]) #label {
-    max-width: 90px;
+  :host([small-format]) #info-container {
+    height: 20px;
+    margin-bottom: 14px;
   }
 
   #label,
@@ -96,18 +121,46 @@
     position: relative;
   }
 
+  :host([large-format]) #label {
+    max-width: 220px;
+  }
+
+  :host([medium-format]) #label {
+    max-width: 90px;
+  }
+
+  :host([small-format]) #label,
+  :host([small-format]) #dot {
+    display: none;
+  }
+
   #dot {
     line-height: 16px;
   }
 </style>
-<div id="content">
-  <div id="image"></div>
+<a id="content" href="[[visit.normalizedUrl.url]]"
+   aria-label$="[[visit.pageTitle]], [[label_]], [[visit.relativeDate]]">
+  <div id="image">
+    <template is="dom-if" if="[[hasImageUrl_(imageUrl_)]]" restamp>
+      <img is="cr-auto-img" auto-src="[[imageUrl_.url]]"
+          draggable="false">
+      </img>
+    </template>
+    <template is="dom-if" if="[[!hasImageUrl_(imageUrl_)]]" restamp>
+      <page-favicon url="[[visit.normalizedUrl]]"
+          is-known-to-sync="[[visit.isKnownToSync]]" size="24">
+      </page-favicon>
+    </template>
+  </div>
   <div id="text-container">
     <div id="title" class="truncate">[[visit.pageTitle]]</div>
     <div id="info-container">
+      <page-favicon id="icon" url="[[visit.normalizedUrl]]"
+          is-known-to-sync="[[visit.isKnownToSync]]">
+      </page-favicon>
       <div id="label" class="truncate"> [[label_]]</div>
       <span id="dot">&nbsp&#8226&nbsp</span>
       <div id="date">[[visit.relativeDate]]</div>
     </div>
   </div>
-</div>
+</a>

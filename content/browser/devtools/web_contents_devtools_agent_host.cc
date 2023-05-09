@@ -321,7 +321,7 @@ WebContentsDevToolsAgentHost::GetOrCreatePrimaryFrameAgent() {
 
 void WebContentsDevToolsAgentHost::WebContentsDestroyed() {
   DCHECK_EQ(this, FindAgentHost(web_contents()));
-  auto retain_this = ForceDetachAllSessionsImpl();
+  ForceDetachAllSessions();
   auto_attacher_.reset();
   g_agent_host_instances.Get().erase(web_contents());
   Observe(nullptr);

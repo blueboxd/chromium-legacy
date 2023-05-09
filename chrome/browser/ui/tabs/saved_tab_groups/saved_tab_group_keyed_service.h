@@ -27,6 +27,7 @@ class SavedTabGroupKeyedService : public KeyedService,
   ~SavedTabGroupKeyedService() override;
 
   SavedTabGroupModelListener* listener() { return &listener_; }
+  const SavedTabGroupModel* model() const { return &model_; }
   SavedTabGroupModel* model() { return &model_; }
   SavedTabGroupSyncBridge* bridge() { return &bridge_; }
   Profile* profile() { return profile_; }
@@ -34,8 +35,7 @@ class SavedTabGroupKeyedService : public KeyedService,
   // SavedTabGroupController
   void OpenSavedTabGroupInBrowser(Browser* browser,
                                   const base::GUID& saved_group_guid) override;
-  void SaveGroup(const tab_groups::TabGroupId& group_id,
-                 Browser* browser = nullptr) override;
+  void SaveGroup(const tab_groups::TabGroupId& group_id) override;
   void UnsaveGroup(const tab_groups::TabGroupId& group_id) override;
   void DisconnectLocalTabGroup(const tab_groups::TabGroupId& group_id) override;
 

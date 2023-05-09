@@ -55,7 +55,7 @@ const char kManagedDefaultFileSystemWriteGuardSetting[] =
     "profile.managed_default_content_settings.file_system_write_guard";
 const char kManagedDefaultSerialGuardSetting[] =
     "profile.managed_default_content_settings.serial_guard";
-const char kManagedDefaultInsecurePrivateNetworkSetting[] =
+const char kManagedDefaultInsecureLocalNetworkSetting[] =
     "profile.managed_default_content_settings.insecure_private_network";
 const char kManagedDefaultJavaScriptJitSetting[] =
     "profile.managed_default_content_settings.javascript_jit";
@@ -65,6 +65,8 @@ const char kManagedDefaultWindowManagementSetting[] =
     "profile.managed_default_content_settings.window_management";
 const char kManagedDefaultLocalFontsSetting[] =
     "profile.managed_default_content_settings.local_fonts";
+const char kManagedDefaultThirdPartyStoragePartitioningSetting[] =
+    "profile.managed_default_content_settings.third_party_storage_partitioning";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
@@ -124,7 +126,7 @@ const char kManagedLegacyCookieAccessAllowedForDomains[] =
 const char kManagedSerialAskForUrls[] = "profile.managed_serial_ask_for_urls";
 const char kManagedSerialBlockedForUrls[] =
     "profile.managed_serial_blocked_for_urls";
-const char kManagedInsecurePrivateNetworkAllowedForUrls[] =
+const char kManagedInsecureLocalNetworkAllowedForUrls[] =
     "profile.managed_insecure_private_network_allowed_for_urls";
 const char kManagedJavaScriptJitAllowedForSites[] =
     "profile.managed_javascript_jit_allowed_for_sites";
@@ -141,6 +143,8 @@ const char kManagedLocalFontsAllowedForUrls[] =
     "profile.managed_local_fonts_allowed_for_urls";
 const char kManagedLocalFontsBlockedForUrls[] =
     "profile.managed_local_fonts_blocked_for_urls";
+const char kManagedThirdPartyStoragePartitioningBlockedForOrigins[] =
+    "profile.managed_third_party_storage_partitioning_blocked_for_origins";
 
 // Boolean indicating whether the quiet UI is enabled for notification
 // permission requests.

@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_COMMAND_SCHEDULER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_COMMAND_SCHEDULER_H_
 
+#include "base/containers/flat_map.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/commands/fetch_installability_for_chrome_management.h"
-#include "chrome/browser/web_applications/commands/manifest_update_data_fetch_command.h"
+#include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
@@ -26,6 +27,10 @@ struct WebAppInstallInfo;
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace url {
+class Origin;
+}  // namespace url
 
 class ScopedKeepAlive;
 class ScopedProfileKeepAlive;
@@ -49,8 +54,6 @@ enum class ApiApprovalState;
 // * Operations have the necessary dependencies from the WebAppProvider system.
 class WebAppCommandScheduler {
  public:
-  using ManifestFetchCallback =
-      ManifestUpdateDataFetchCommand::ManifestFetchCallback;
   using ManifestWriteCallback =
       ManifestUpdateFinalizeCommand::ManifestWriteCallback;
   using InstallIsolatedWebAppCallback = base::OnceCallback<void(
@@ -130,11 +133,11 @@ class WebAppCommandScheduler {
 
   // Schedule a command that performs fetching data from the manifest
   // for a manifest update.
-  void ScheduleManifestUpdateDataFetch(
+  void ScheduleManifestUpdateCheck(
       const GURL& url,
       const AppId& app_id,
       base::WeakPtr<content::WebContents> contents,
-      ManifestFetchCallback callback,
+      ManifestUpdateCheckCommand::CompletedCallback callback,
       const base::Location& location = FROM_HERE);
 
   // Schedules a command that performs the data writes into the DB for
@@ -143,7 +146,6 @@ class WebAppCommandScheduler {
       const GURL& url,
       const AppId& app_id,
       WebAppInstallInfo install_info,
-      bool app_identity_update_allowed,
       std::unique_ptr<ScopedKeepAlive> keep_alive,
       std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
       ManifestWriteCallback callback,
@@ -161,6 +163,11 @@ class WebAppCommandScheduler {
                              const IsolatedWebAppLocation& location,
                              InstallIsolatedWebAppCallback callback,
                              const base::Location& call_location = FROM_HERE);
+
+  // Computes the browsing data size of all installed Isolated Web Apps.
+  void GetIsolatedWebAppBrowsingData(
+      base::OnceCallback<void(base::flat_map<url::Origin, int64_t>)> callback,
+      const base::Location& call_location = FROM_HERE);
 
   // Scheduler a command that installs a web app from sync.
   void InstallFromSync(const WebApp& web_app,

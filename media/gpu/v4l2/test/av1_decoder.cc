@@ -476,23 +476,12 @@ void FillGlobalMotionParams(
     constexpr auto kNumGlobalMotionParams = std::size(decltype(gm.params){});
 
     for (size_t j = 0; j < kNumGlobalMotionParams; ++j) {
-      // TODO(b/265204534): V4L2 AV1 uAPI v4 changed |params|'s data type from
-      // uint32_t to int32_t. Remove separate handling for gm.params[j] < 0 case
-      // when the kernel related change lands.
       static_assert(
-          std::is_same<decltype(v4l2_gm->params[0][0]), uint32_t&>::value ||
-              std::is_same<decltype(v4l2_gm->params[0][0]), int32_t&>::value,
-          "v4l2_av1_global_motion::params must be either uint32_t or int32_t");
-      if (std::is_same<decltype(v4l2_gm->params[0][0]), uint32_t&>::value) {
-        if (gm.params[j] < 0) {
-          v4l2_gm->params[i][j] =
-              base::checked_cast<uint32_t>(UINT32_MAX + gm.params[j] + 1);
-        } else {
-          v4l2_gm->params[i][j] = base::checked_cast<uint32_t>(gm.params[j]);
-        }
-      } else {
-        v4l2_gm->params[i][j] = gm.params[j];
-      }
+          std::is_same<decltype(v4l2_gm->params[0][0]), int32_t&>::value,
+          "|v4l2_av1_global_motion::params|'s data type must be int32_t "
+          "starting from AV1 uAPI v4");
+
+      v4l2_gm->params[i][j] = gm.params[j];
     }
 
     conditionally_set_flags(&v4l2_gm->invalid, !libgav1::SetupShear(&gm),
@@ -874,22 +863,12 @@ void Av1Decoder::SetupFrameParams(
                     libgav1::kNumInterReferenceFrameTypes,
                 "Invalid size of |ref_frame_idx| array");
   for (size_t i = 0; i < libgav1::kNumInterReferenceFrameTypes; i++) {
-    // TODO(b/265204534): V4L2 AV1 uAPI v4 changed |ref_frame_idx|'s data type
-    // from uint8_t to int8_t. Remove separate handling when the kernel related
-    // change lands.
-    static_assert(
-        std::is_same<decltype(v4l2_frame_params->ref_frame_idx[0]),
-                     uint8_t&>::value ||
-            std::is_same<decltype(v4l2_frame_params->ref_frame_idx[0]),
-                         int8_t&>::value,
-        "|ref_frame_idx| must be either uint8_t or int8_t");
-    if (std::is_same<decltype(v4l2_frame_params->ref_frame_idx[0]),
-                     uint8_t&>::value) {
-      v4l2_frame_params->ref_frame_idx[i] =
-          base::checked_cast<__u8>(frm_header.reference_frame_index[i]);
-    } else {
-      v4l2_frame_params->ref_frame_idx[i] = frm_header.reference_frame_index[i];
-    }
+    static_assert(std::is_same<decltype(v4l2_frame_params->ref_frame_idx[0]),
+                               int8_t&>::value,
+                  "|v4l2_ctrl_av1_frame::ref_frame_idx|'s data type must be "
+                  "int8_t starting from AV1 uAPI v4");
+
+    v4l2_frame_params->ref_frame_idx[i] = frm_header.reference_frame_index[i];
   }
 
   v4l2_frame_params->skip_mode_frame[0] =
@@ -902,7 +881,7 @@ std::set<int> Av1Decoder::RefreshReferenceSlots(
     const libgav1::ObuFrameHeader& frame_hdr,
     const libgav1::RefCountedBufferPtr current_frame,
     const scoped_refptr<MmapedBuffer> buffer,
-    const uint32_t last_queued_buffer_index) {
+    const uint32_t last_queued_buffer_id) {
   state_->UpdateReferenceFrames(
       current_frame, base::strict_cast<int>(frame_hdr.refresh_frame_flags));
 
@@ -934,7 +913,7 @@ std::set<int> Av1Decoder::RefreshReferenceSlots(
 
     // Note that the CAPTURE buffer for previous frame can be used as well,
     // but it is already queued again at this point.
-    reusable_buffer_ids.erase(last_queued_buffer_index);
+    reusable_buffer_ids.erase(last_queued_buffer_id);
 
     // Updates to assign current key frame as a reference frame for all
     // reference frame slots in the reference frames list.
@@ -997,7 +976,7 @@ void Av1Decoder::QueueReusableBuffersInCaptureQueue(
       LOG(ERROR) << "VIDIOC_QBUF failed for CAPTURE queue.";
 
     if (is_inter_frame)
-      CAPTURE_queue_->set_last_queued_buffer_index(reusable_buffer_id);
+      CAPTURE_queue_->set_last_queued_buffer_id(reusable_buffer_id);
   }
 }
 
@@ -1060,7 +1039,7 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
       const std::set<int> reusable_buffer_ids =
           RefreshReferenceSlots(current_frame_header, current_frame,
                                 ref_frames_[current_frame_header.frame_to_show],
-                                CAPTURE_queue_->last_queued_buffer_index());
+                                CAPTURE_queue_->last_queued_buffer_id());
 
       QueueReusableBuffersInCaptureQueue(
           reusable_buffer_ids,
@@ -1122,12 +1101,13 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
   if (!v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_))
     LOG(FATAL) << "MEDIA_REQUEST_IOC_QUEUE failed.";
 
-  uint32_t index;
+  uint32_t buffer_id;
 
-  if (!v4l2_ioctl_->DQBuf(CAPTURE_queue_, &index))
+  if (!v4l2_ioctl_->DQBuf(CAPTURE_queue_, &buffer_id)) {
     LOG(FATAL) << "VIDIOC_DQBUF failed for CAPTURE queue.";
+  }
 
-  scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(index);
+  scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
   size = CAPTURE_queue_->display_size();
   if (CAPTURE_queue_->fourcc() == V4L2_PIX_FMT_NV12) {
     CHECK_EQ(buffer->mmaped_planes().size(), 1u)
@@ -1149,15 +1129,16 @@ VideoDecoder::Result Av1Decoder::DecodeNextFrame(std::vector<char>& y_plane,
   }
 
   const std::set<int> reusable_buffer_ids = RefreshReferenceSlots(
-      current_frame_header, current_frame, CAPTURE_queue_->GetBuffer(index),
-      CAPTURE_queue_->last_queued_buffer_index());
+      current_frame_header, current_frame, CAPTURE_queue_->GetBuffer(buffer_id),
+      CAPTURE_queue_->last_queued_buffer_id());
 
   QueueReusableBuffersInCaptureQueue(
       reusable_buffer_ids,
       !libgav1::IsIntraFrame(current_frame_header.frame_type));
 
-  if (!v4l2_ioctl_->DQBuf(OUTPUT_queue_, &index))
+  if (!v4l2_ioctl_->DQBuf(OUTPUT_queue_, &buffer_id)) {
     LOG(FATAL) << "VIDIOC_DQBUF failed for OUTPUT queue.";
+  }
 
   if (!v4l2_ioctl_->MediaRequestIocReinit(OUTPUT_queue_))
     LOG(FATAL) << "MEDIA_REQUEST_IOC_REINIT failed.";

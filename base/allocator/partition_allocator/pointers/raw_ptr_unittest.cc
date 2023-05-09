@@ -30,6 +30,7 @@
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
+#include "base/test/memory/dangling_ptr_instrumentation.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -38,10 +39,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
-
-#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-#include "base/allocator/partition_allocator/partition_tag_types.h"
-#endif
 
 #if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 #include <sanitizer/asan_interface.h>
@@ -91,6 +88,65 @@ static_assert(
     "raw_ptr should be trivially default constructible");
 #endif  // !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
         // !BUILDFLAG(USE_ASAN_UNOWNED_PTR) && !BUILDFLAG(USE_HOOKABLE_RAW_PTR)
+
+// Verify that raw_ptr is a literal type, and its entire interface is constexpr.
+//
+// Constexpr destructors were introduced in C++20. PartitionAlloc's minimum
+// supported C++ version is C++17, so raw_ptr is not a literal type in C++17.
+// Thus we only test for constexpr in C++20.
+#if defined(__cpp_constexpr) && __cpp_constexpr >= 201907L
+static_assert([]() constexpr {
+  struct IntBase {};
+  struct Int : public IntBase {
+    int i = 0;
+  };
+
+  Int* i = new Int();
+  {
+    raw_ptr<Int> r(i);              // raw_ptr(T*)
+    raw_ptr<Int> r2(r);             // raw_ptr(const raw_ptr&)
+    raw_ptr<Int> r3(std::move(r));  // raw_ptr(raw_ptr&&)
+    r = r2;                         // operator=(const raw_ptr&)
+    r = std::move(r3);              // operator=(raw_ptr&&)
+    raw_ptr<Int, base::RawPtrTraits::kMayDangle> r4(
+        r);   // raw_ptr(const raw_ptr<DifferentTraits>&)
+    r4 = r2;  // operator=(const raw_ptr<DifferentTraits>&)
+    // (There is no move-version of DifferentTraits.)
+    [[maybe_unused]] raw_ptr<IntBase> r5(
+        r2);  // raw_ptr(const raw_ptr<Convertible>&)
+    [[maybe_unused]] raw_ptr<IntBase> r6(
+        std::move(r2));  // raw_ptr(raw_ptr<Convertible>&&)
+    r2 = r;              // Reset after move...
+    r5 = r2;             // operator=(const raw_ptr<Convertible>&)
+    r5 = std::move(r2);  // operator=(raw_ptr<Convertible>&&)
+    [[maybe_unused]] raw_ptr<Int> r7(nullptr);  // raw_ptr(nullptr)
+    r4 = nullptr;                               // operator=(nullptr)
+    r4 = i;                                     // operator=(T*)
+    r5 = r4;                                    // operator=(const Upcast&)
+    r5 = std::move(r4);                         // operator=(Upcast&&)
+    r.get()->i += 1;                            // get()
+    [[maybe_unused]] bool b = r;                // operator bool
+    (*r).i += 1;                                // operator*()
+    r->i += 1;                                  // operator->()
+    [[maybe_unused]] Int* i2 = r;               // operator T*()
+    [[maybe_unused]] IntBase* i3 = r;           // operator Convertible*()
+
+    Int* array = new Int[3]();
+    {
+      raw_ptr<Int, base::RawPtrTraits::kAllowPtrArithmetic> ra(array);
+      ++ra;      // operator++()
+      --ra;      // operator--()
+      ra++;      // operator++(int)
+      ra--;      // operator--(int)
+      ra += 1u;  // operator+=()
+      ra -= 1u;  // operator-=()
+    }
+    delete[] array;
+  }
+  delete i;
+  return true;
+}());
+#endif
 
 // Don't use base::internal for testing raw_ptr API, to test if code outside
 // this namespace calls the correct functions from this namespace.
@@ -1354,7 +1410,7 @@ TEST_F(RawPtrTest, WorksWithVariant) {
   EXPECT_EQ(&x, absl::get<raw_ptr<int>>(vary));
 }
 
-TEST_F(RawPtrTest, CrossKindConversions) {
+TEST_F(RawPtrTest, CrossKindConversion) {
   int x = 123;
   CountingRawPtr<int> ptr1 = &x;
 
@@ -1362,28 +1418,37 @@ TEST_F(RawPtrTest, CrossKindConversions) {
   RawPtrCountingMayDangleImpl::ClearCounters();
 
   CountingRawPtrMayDangle<int> ptr2(ptr1);
+  CountingRawPtrMayDangle<int> ptr3(std::move(ptr1));  // Falls back to copy.
 
   EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingImpl>{
                   .get_for_dereference_cnt = 0,
                   .get_for_extraction_cnt = 0,
-                  .get_for_duplication_cnt = 1}),
+                  .get_for_duplication_cnt = 2}),
               CountersMatch());
   EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingMayDangleImpl>{
-                  .wrap_raw_ptr_cnt = 0, .wrap_raw_ptr_for_dup_cnt = 1}),
+                  .wrap_raw_ptr_cnt = 0, .wrap_raw_ptr_for_dup_cnt = 2}),
               CountersMatch());
+}
+
+TEST_F(RawPtrTest, CrossKindAssignment) {
+  int x = 123;
+  CountingRawPtr<int> ptr1 = &x;
 
   RawPtrCountingImpl::ClearCounters();
   RawPtrCountingMayDangleImpl::ClearCounters();
 
-  CountingRawPtr<int> ptr3(ptr2);
+  CountingRawPtrMayDangle<int> ptr2;
+  CountingRawPtrMayDangle<int> ptr3;
+  ptr2 = ptr1;
+  ptr3 = std::move(ptr1);  // Falls back to copy.
 
-  EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingMayDangleImpl>{
+  EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingImpl>{
                   .get_for_dereference_cnt = 0,
                   .get_for_extraction_cnt = 0,
-                  .get_for_duplication_cnt = 1}),
+                  .get_for_duplication_cnt = 2}),
               CountersMatch());
-  EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingImpl>{
-                  .wrap_raw_ptr_cnt = 0, .wrap_raw_ptr_for_dup_cnt = 1}),
+  EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingMayDangleImpl>{
+                  .wrap_raw_ptr_cnt = 0, .wrap_raw_ptr_for_dup_cnt = 2}),
               CountersMatch());
 }
 
@@ -1555,7 +1620,7 @@ void RunBackupRefPtrImplAdvanceTest(
   // end-of-allocation address should not cause an error immediately, but it may
   // result in the pointer being poisoned.
   protected_ptr = protected_ptr + requested_size / 2;
-#if PA_CONFIG(USE_OOB_POISON)
+#if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr = ' ', "");
   protected_ptr -= 1;  // This brings the pointer back within
                        // bounds, which causes the poison to be removed.
@@ -1576,7 +1641,7 @@ void RunBackupRefPtrImplAdvanceTest(
   EXPECT_CHECK_DEATH(protected_ptr -= 1);
   EXPECT_CHECK_DEATH(--protected_ptr);
 
-#if PA_CONFIG(USE_OOB_POISON)
+#if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
   // An array type that should be more than a third the size of the available
   // memory for the allocation such that incrementing a pointer to this type
   // twice causes it to point to a memory location that is too small to fit a
@@ -1589,7 +1654,7 @@ void RunBackupRefPtrImplAdvanceTest(
   **protected_arr_ptr = 4;
   protected_arr_ptr++;
   EXPECT_DEATH_IF_SUPPORTED(** protected_arr_ptr = 4, "");
-#endif
+#endif  // BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
 
   allocator.root()->Free(ptr);
 }
@@ -1668,6 +1733,7 @@ TEST_F(BackupRefPtrTest, GetDeltaElems) {
             checked_cast<ptrdiff_t>(requested_size));
   EXPECT_EQ(protected_ptr1 - protected_ptr1_4,
             -checked_cast<ptrdiff_t>(requested_size));
+#if BUILDFLAG(ENABLE_POINTER_SUBTRACTION_CHECK)
   EXPECT_CHECK_DEATH(protected_ptr2 - protected_ptr1);
   EXPECT_CHECK_DEATH(protected_ptr1 - protected_ptr2);
   EXPECT_CHECK_DEATH(protected_ptr2 - protected_ptr1_4);
@@ -1676,6 +1742,7 @@ TEST_F(BackupRefPtrTest, GetDeltaElems) {
   EXPECT_CHECK_DEATH(protected_ptr1 - protected_ptr2_2);
   EXPECT_CHECK_DEATH(protected_ptr2_2 - protected_ptr1_4);
   EXPECT_CHECK_DEATH(protected_ptr1_4 - protected_ptr2_2);
+#endif  // BUILDFLAG(ENABLE_POINTER_SUBTRACTION_CHECK)
   EXPECT_EQ(protected_ptr2_2 - protected_ptr2, 1);
   EXPECT_EQ(protected_ptr2 - protected_ptr2_2, -1);
 
@@ -1843,48 +1910,36 @@ TEST_F(BackupRefPtrTest, DanglingPtrComparison) {
 }
 
 // Check the assignment operator works, even across raw_ptr with different
-// dangling policies.
+// dangling policies (only `not dangling` -> `dangling` direction is supported).
 TEST_F(BackupRefPtrTest, DanglingPtrAssignment) {
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
   void* ptr = allocator_.root()->Alloc(16, "");
 
-  raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr_1;
-  raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr_2;
+  raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr;
   raw_ptr<void> not_dangling_ptr;
 
-  dangling_ptr_1 = ptr;
-
-  not_dangling_ptr = dangling_ptr_1;
-  dangling_ptr_1 = nullptr;
-
-  dangling_ptr_2 = not_dangling_ptr;
+  not_dangling_ptr = ptr;
+  dangling_ptr = not_dangling_ptr;
   not_dangling_ptr = nullptr;
 
   allocator_.root()->Free(ptr);
 
-  dangling_ptr_1 = dangling_ptr_2;
-  dangling_ptr_2 = nullptr;
-
-  not_dangling_ptr = dangling_ptr_1;
-  dangling_ptr_1 = nullptr;
+  dangling_ptr = nullptr;
 }
 
 // Check the copy constructor works, even across raw_ptr with different dangling
-// policies.
+// policies (only `not dangling` -> `dangling` direction is supported).
 TEST_F(BackupRefPtrTest, DanglingPtrCopyContructor) {
   ScopedInstallDanglingRawPtrChecks enable_dangling_raw_ptr_checks;
 
   void* ptr = allocator_.root()->Alloc(16, "");
 
-  raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr_1(ptr);
-  raw_ptr<void> not_dangling_ptr_1(ptr);
+  raw_ptr<void> not_dangling_ptr(ptr);
+  raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr(not_dangling_ptr);
 
-  raw_ptr<void, DisableDanglingPtrDetection> dangling_ptr_2(not_dangling_ptr_1);
-  raw_ptr<void> not_dangling_ptr_2(dangling_ptr_1);
-
-  not_dangling_ptr_1 = nullptr;
-  not_dangling_ptr_2 = nullptr;
+  not_dangling_ptr = nullptr;
+  dangling_ptr = nullptr;
 
   allocator_.root()->Free(ptr);
 }
@@ -1917,7 +1972,8 @@ TEST_F(BackupRefPtrTest, RawPtrDeleteWithoutExtractAsDangling) {
 #else
   allocator_.root()->Free(ptr.get());
   ptr = nullptr;
-#endif
+#endif  // BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && \
+        // !BUILDFLAG(ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT)
 }
 
 TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
@@ -1934,14 +1990,14 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
       reinterpret_cast<int*>(allocator_.root()->Alloc(requested_size, ""));
   int* ptr_end = ptr + requested_elements;
 
-  RawPtrCountingImpl::ClearCounters();
-
   CountingRawPtr<int> protected_ptr = ptr;
   CountingRawPtr<int> protected_ptr_end = protected_ptr + requested_elements;
 
-#if PA_CONFIG(USE_OOB_POISON)
+#if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
   EXPECT_DEATH_IF_SUPPORTED(*protected_ptr_end = 1, "");
 #endif
+
+  RawPtrCountingImpl::ClearCounters();
 
   int gen_val = 1;
   std::generate(protected_ptr, protected_ptr_end, [&gen_val]() {
@@ -2017,7 +2073,7 @@ TEST_F(BackupRefPtrTest, SpatialAlgoCompat) {
   allocator_.root()->Free(ptr);
 }
 
-#if PA_CONFIG(USE_OOB_POISON)
+#if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
 TEST_F(BackupRefPtrTest, Duplicate) {
   size_t requested_size = allocator_.root()->AdjustSizeForExtrasSubtract(512);
   char* ptr = static_cast<char*>(allocator_.root()->Alloc(requested_size, ""));
@@ -2041,7 +2097,7 @@ TEST_F(BackupRefPtrTest, Duplicate) {
 
   allocator_.root()->Free(ptr);
 }
-#endif  // PA_USE_OOB_POISON
+#endif  // BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
 
 namespace {
 constexpr uint8_t kCustomQuarantineByte = 0xff;
@@ -2072,380 +2128,193 @@ TEST_F(BackupRefPtrTest, QuarantineHook) {
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
         // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
-#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-
-static constexpr size_t kTagOffsetForTest = 2;
-
-struct MTECheckedPtrImplPartitionAllocSupportForTest {
-  static bool EnabledForPtr(void* ptr) { return !!ptr; }
-
-  static ALWAYS_INLINE void* TagPointer(uintptr_t ptr) {
-    return reinterpret_cast<void*>(ptr - kTagOffsetForTest);
-  }
-};
-
-using MTECheckedPtrImplForTest =
-    MTECheckedPtrImpl<MTECheckedPtrImplPartitionAllocSupportForTest>;
-
-TEST(MTECheckedPtrImpl, WrapAndSafelyUnwrap) {
-  // Create a fake allocation, with first 2B for tag.
-  // It is ok to use a fake allocation, instead of PartitionAlloc, because
-  // MTECheckedPtrImplForTest fakes the functionality is enabled for this
-  // pointer and points to the tag appropriately.
-  unsigned char bytes[] = {0xBA, 0x42, 0x78, 0x89};
-  void* ptr = bytes + kTagOffsetForTest;
-  ASSERT_EQ(0x78, *static_cast<char*>(ptr));
-  uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-
-  uintptr_t mask = 0xFFFFFFFFFFFFFFFF;
-  if (sizeof(partition_alloc::PartitionTag) < 2) {
-    mask = 0x00FFFFFFFFFFFFFF;
-  }
-
-  uintptr_t wrapped =
-      reinterpret_cast<uintptr_t>(MTECheckedPtrImplForTest::WrapRawPtr(ptr));
-  // The bytes before the allocation will be used as tag (in reverse
-  // order due to little-endianness).
-  ASSERT_EQ(wrapped, (addr | 0x42BA000000000000) & mask);
-  ASSERT_EQ(MTECheckedPtrImplForTest::SafelyUnwrapPtrForDereference(
-                reinterpret_cast<void*>(wrapped)),
-            ptr);
-
-  // Modify the tag in the fake allocation.
-  bytes[0] |= 0x40;
-  wrapped =
-      reinterpret_cast<uintptr_t>(MTECheckedPtrImplForTest::WrapRawPtr(ptr));
-  ASSERT_EQ(wrapped, (addr | 0x42FA000000000000) & mask);
-  ASSERT_EQ(MTECheckedPtrImplForTest::SafelyUnwrapPtrForDereference(
-                reinterpret_cast<void*>(wrapped)),
-            ptr);
-}
-
-TEST(MTECheckedPtrImpl, SafelyUnwrapDisabled) {
-  // Create a fake allocation, with first 2B for tag.
-  // It is ok to use a fake allocation, instead of PartitionAlloc, because
-  // MTECheckedPtrImplForTest fakes the functionality is enabled for this
-  // pointer and points to the tag appropriately.
-  unsigned char bytes[] = {0xBA, 0x42, 0x78, 0x89};
-  unsigned char* ptr = bytes + kTagOffsetForTest;
-  ASSERT_EQ(0x78, *ptr);
-  ASSERT_EQ(MTECheckedPtrImplForTest::SafelyUnwrapPtrForDereference(ptr), ptr);
-}
-
-TEST(MTECheckedPtrImpl, CrashOnTagMismatch) {
-  // Create a fake allocation, using the first two bytes for the tag.
-  // It is ok to use a fake allocation, instead of PartitionAlloc, because
-  // MTECheckedPtrImplForTest fakes the functionality is enabled for this
-  // pointer and points to the tag appropriately.
-  unsigned char bytes[] = {0xBA, 0x42, 0x78, 0x89};
-  unsigned char* ptr =
-      MTECheckedPtrImplForTest::WrapRawPtr(bytes + kTagOffsetForTest);
-  EXPECT_EQ(*MTECheckedPtrImplForTest::SafelyUnwrapPtrForDereference(ptr),
-            0x78);
-  // Clobber the tag associated with the fake allocation.
-  bytes[0] = 0;
-  EXPECT_DEATH_IF_SUPPORTED(
-      if (*MTECheckedPtrImplForTest::SafelyUnwrapPtrForDereference(ptr) ==
-          0x78) return,
-      "");
-}
-
-#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) && \
-    BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-
-// This test works only when PartitionAlloc is used, when tags are enabled.
-// Don't enable it when MEMORY_TOOL_REPLACES_ALLOCATOR is defined, because it
-// makes PartitionAlloc take a different path that doesn't provide tags, thus no
-// crash on UaF, thus missing the EXPECT_DEATH_IF_SUPPORTED expectation.
-TEST(MTECheckedPtrImpl, CrashOnUseAfterFree) {
-  int* unwrapped_ptr = new int;
-  // Use the actual CheckedPtr implementation, not a test substitute, to
-  // exercise real PartitionAlloc paths.
-  raw_ptr<int> ptr = unwrapped_ptr;
-  *ptr = 42;
-  EXPECT_EQ(*ptr, 42);
-  delete unwrapped_ptr;
-  EXPECT_DEATH_IF_SUPPORTED(g_volatile_int_to_ignore = *ptr, "");
-}
-
-TEST(MTECheckedPtrImpl, CrashOnUseAfterFree_WithOffset) {
-  const uint8_t kSize = 100;
-  uint8_t* unwrapped_ptr = new uint8_t[kSize];
-  // Use the actual CheckedPtr implementation, not a test substitute, to
-  // exercise real PartitionAlloc paths.
-  raw_ptr<uint8_t> ptrs[kSize];
-  for (uint8_t i = 0; i < kSize; ++i) {
-    ptrs[i] = static_cast<uint8_t*>(unwrapped_ptr) + i;
-  }
-  for (uint8_t i = 0; i < kSize; ++i) {
-    *ptrs[i] = 42 + i;
-    EXPECT_TRUE(*ptrs[i] == 42 + i);
-  }
-  delete[] unwrapped_ptr;
-  for (uint8_t i = 0; i < kSize; i += 15) {
-    EXPECT_DEATH_IF_SUPPORTED(g_volatile_int_to_ignore = *ptrs[i], "");
-  }
-}
-
-TEST(MTECheckedPtrImpl, DirectMapCrashOnUseAfterFree) {
-  // Alloc two super pages' worth of ints.
-  constexpr size_t kIntsPerSuperPage =
-      partition_alloc::kSuperPageSize / sizeof(int);
-  constexpr size_t kAllocAmount = kIntsPerSuperPage * 2;
-  int* unwrapped_ptr = new int[kAllocAmount];
-  ASSERT_TRUE(partition_alloc::internal::IsManagedByDirectMap(
-      partition_alloc::UntagPtr(unwrapped_ptr)));
-
-  // Use the actual CheckedPtr implementation, not a test substitute, to
-  // exercise real PartitionAlloc paths.
-  raw_ptr<int> ptr = unwrapped_ptr;
-
-  *ptr = 42;
-  EXPECT_EQ(*ptr, 42);
-  *(ptr + kIntsPerSuperPage) = 42;
-  EXPECT_EQ(*(ptr + kIntsPerSuperPage), 42);
-  *(ptr + kAllocAmount - 1) = 42;
-  EXPECT_EQ(*(ptr + kAllocAmount - 1), 42);
-
-  delete[] unwrapped_ptr;
-  EXPECT_DEATH_IF_SUPPORTED(g_volatile_int_to_ignore = *ptr, "");
-}
-
-TEST(MTECheckedPtrImpl, AdvancedPointerShiftedAppropriately) {
-  uint64_t* unwrapped_ptr = new uint64_t[6];
-  CountingRawPtr<uint64_t> ptr = unwrapped_ptr;
-
-  // This is a non-fixture test, so we need to unset all
-  // counters manually.
-  RawPtrCountingImpl::ClearCounters();
-
-  // This is unwrapped, but still useful for ensuring that the
-  // shift is sized in `uint64_t`s.
-  auto original_addr = reinterpret_cast<uintptr_t>(ptr.get());
-  EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingImpl>{
-                  .get_for_dereference_cnt = 0,
-                  .get_for_extraction_cnt = 1,
-              }),
-              CountersMatch());
-
-  ptr += 5;
-  EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr.get()) - original_addr,
-            5 * sizeof(uint64_t));
-  EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingImpl>{
-                  .get_for_dereference_cnt = 0,
-                  .get_for_extraction_cnt = 2,
-              }),
-              CountersMatch());
-  delete[] unwrapped_ptr;
-
-  EXPECT_DEATH_IF_SUPPORTED(*ptr, "");
-
-  // We assert that no visible extraction actually took place.
-  EXPECT_THAT((CountingRawPtrExpectations<RawPtrCountingImpl>{
-                  .get_for_dereference_cnt = 0,
-                  .get_for_extraction_cnt = 2,
-              }),
-              CountersMatch());
-}
-
-// Verifies that MTECheckedPtr allows the extraction of the raw pointee
-// pointing just one byte beyond the end. (Dereference is still
-// undefined behavior.)
-TEST(MTECheckedPtrImpl, PointerBeyondAllocationCanBeExtracted) {
-  // This test was most meaningful when MTECheckedPtr had the error
-  // in its implementation (crbug.com/1364476), i.e. in cases where
-  // the allocation end was flush with the slot end: the next byte
-  // would lie outside said slot. When fixed with the extra byte
-  // padding, this is never true.
-  //
-  // Without asserting any particular knowledge of PartitionAlloc's
-  // internals (i.e. what allocation size will produce exactly
-  // this situation), we perform the same test for a range of
-  // allocation sizes. Note that this test doesn't do anything when
-  // the PA cookie is present at slot's end.
-  for (size_t size = 16; size <= 64; ++size) {
-    char* unwrapped_ptr = new char[size];
-    raw_ptr<char> wrapped_ptr = unwrapped_ptr;
-    char unused = 0;
-
-    // There are no real expectations here - we just don't expect the
-    // test to crash when we get() the raw pointers.
-    //
-    // Getting the last allocated char definitely cannot crash.
-    char* unwrapped_last_char = (wrapped_ptr + size - 1).get();
-
-    // Trivial expectation to prevent "unused variable" warning.
-    EXPECT_THAT(unwrapped_last_char, testing::NotNull());
-
-    // Getting the char just beyond the allocation area must not crash.
-    // Today, MTECheckedPtr is patched with a one-byte "extra" that
-    // makes this not crash.
-    char* unwrapped_char_beyond = (wrapped_ptr + size).get();
-
-    // This is bad behavior (clients must not dereference beyond-the-end
-    // pointers), but it is in the same slot, so MTECheckedPtr sees no
-    // issue with the tag. Therefore, this must not crash.
-    unused = *(wrapped_ptr + size);
-
-    // Trivial statements to prevent "unused variable" warnings.
-    unused = 0;
-    EXPECT_EQ(unused, 0);
-    EXPECT_THAT(unwrapped_char_beyond, testing::NotNull());
-
-    delete[] unwrapped_ptr;
-  }
-}
-
-// Verifies that MTECheckedPtr allows pointer extraction, even from
-// a dangling `raw_ptr`. Historically, MTECheckedPtr simply handed off
-// extraction to the "get for dereference" method, which would crash
-// eagerly on dangling pointers. This was too noisy to be helpful; we
-// now believe that allowing (potentially dangerous) extraction without
-// crashing is the way to go.
-TEST(MTECheckedPtrImpl, DanglingExtractionIsAcceptable) {
-  int* will_dangle = new int;
-  raw_ptr<int> dangling = will_dangle;
-  delete will_dangle;
-
-  // Both `get()` and `operator T*()` express the same thing even if
-  // they are physically distinct methods in the definition. In any
-  // case, neither is permitted to crash.
-  EXPECT_EQ(will_dangle, dangling.get());
-  will_dangle = dangling;
-}
-#endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) &&
-        // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-
-#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-
 #if BUILDFLAG(USE_HOOKABLE_RAW_PTR)
-class CountingHooks {
- public:
-  MOCK_METHOD(void, WrapPtr, ());
-  MOCK_METHOD(void, ReleaseWrappedPtr, ());
-  MOCK_METHOD(void, SafelyUnwrapForDereference, ());
-  MOCK_METHOD(void, SafelyUnwrapForExtraction, ());
-  MOCK_METHOD(void, UnsafelyUnwrapForComparison, ());
-  MOCK_METHOD(void, Advance, ());
-  MOCK_METHOD(void, Duplicate, ());
+
+namespace {
+#define FOR_EACH_RAW_PTR_OPERATION(F) \
+  F(wrap_ptr)                         \
+  F(release_wrapped_ptr)              \
+  F(safely_unwrap_for_dereference)    \
+  F(safely_unwrap_for_extraction)     \
+  F(unsafely_unwrap_for_comparison)   \
+  F(advance)                          \
+  F(duplicate)
+
+// Can't use gMock to count the number of invocations because
+// gMock itself triggers raw_ptr<T> operations.
+struct CountingHooks {
+  void ResetCounts() {
+#define F(name) name##_count = 0;
+    FOR_EACH_RAW_PTR_OPERATION(F)
+#undef F
+  }
+
+  static CountingHooks* Get() {
+    static thread_local CountingHooks instance;
+    return &instance;
+  }
+
+// The adapter method is templated to accept any number of arguments.
+#define F(name)                      \
+  template <typename... T>           \
+  static void name##_adapter(T...) { \
+    Get()->name##_count++;           \
+  }                                  \
+  size_t name##_count = 0;
+  FOR_EACH_RAW_PTR_OPERATION(F)
+#undef F
 };
 
-CountingHooks* g_counting_hooks = nullptr;
 constexpr RawPtrHooks raw_ptr_hooks{
-    .wrap_ptr =
-        [](uintptr_t) {
-          if (g_counting_hooks) {
-            g_counting_hooks->WrapPtr();
-          }
-        },
-    .release_wrapped_ptr =
-        [](uintptr_t) {
-          if (g_counting_hooks) {
-            g_counting_hooks->ReleaseWrappedPtr();
-          }
-        },
-    .safely_unwrap_for_dereference =
-        [](uintptr_t) {
-          if (g_counting_hooks) {
-            g_counting_hooks->SafelyUnwrapForDereference();
-          }
-        },
-    .safely_unwrap_for_extraction =
-        [](uintptr_t) {
-          if (g_counting_hooks) {
-            g_counting_hooks->SafelyUnwrapForExtraction();
-          }
-        },
-    .unsafely_unwrap_for_comparison =
-        [](uintptr_t) {
-          if (g_counting_hooks) {
-            g_counting_hooks->UnsafelyUnwrapForComparison();
-          }
-        },
-    .advance =
-        [](uintptr_t, uintptr_t) {
-          if (g_counting_hooks) {
-            g_counting_hooks->Advance();
-          }
-        },
-    .duplicate =
-        [](uintptr_t) {
-          if (g_counting_hooks) {
-            g_counting_hooks->Duplicate();
-          }
-        },
+#define F(name) .name = CountingHooks::name##_adapter,
+    FOR_EACH_RAW_PTR_OPERATION(F)
+#undef F
 };
+}  // namespace
 
 class HookableRawPtrImplTest : public testing::Test {
  protected:
-  void SetUp() override {
-    g_counting_hooks = &hooks_;
-    InstallRawPtrHooks(&raw_ptr_hooks);
-  }
-
-  void TearDown() override {
-    ResetRawPtrHooks();
-    g_counting_hooks = nullptr;
-  }
-
-  testing::NiceMock<CountingHooks> hooks_;
+  void SetUp() override { InstallRawPtrHooks(&raw_ptr_hooks); }
+  void TearDown() override { ResetRawPtrHooks(); }
 };
 
 TEST_F(HookableRawPtrImplTest, WrapPtr) {
-  EXPECT_CALL(hooks_, WrapPtr).Times(1);
-  int* ptr = new int;
-  [[maybe_unused]] raw_ptr<int> interesting_ptr = ptr;
-  delete ptr;
+  // Can't call `ResetCounts` in `SetUp` because gTest triggers
+  // raw_ptr<T> operations between `SetUp` and the test body.
+  CountingHooks::Get()->ResetCounts();
+  {
+    int* ptr = new int;
+    [[maybe_unused]] raw_ptr<int> interesting_ptr = ptr;
+    delete ptr;
+  }
+  EXPECT_EQ(CountingHooks::Get()->wrap_ptr_count, 1u);
 }
 
 TEST_F(HookableRawPtrImplTest, ReleaseWrappedPtr) {
-  EXPECT_CALL(hooks_, ReleaseWrappedPtr).Times(1);
-  int* ptr = new int;
-  [[maybe_unused]] raw_ptr<int> interesting_ptr = ptr;
-  delete ptr;
+  CountingHooks::Get()->ResetCounts();
+  {
+    int* ptr = new int;
+    [[maybe_unused]] raw_ptr<int> interesting_ptr = ptr;
+    delete ptr;
+  }
+  EXPECT_EQ(CountingHooks::Get()->release_wrapped_ptr_count, 1u);
 }
 
 TEST_F(HookableRawPtrImplTest, SafelyUnwrapForDereference) {
-  EXPECT_CALL(hooks_, SafelyUnwrapForDereference).Times(1);
-  int* ptr = new int;
-  raw_ptr<int> interesting_ptr = ptr;
-  *interesting_ptr = 1;
-  delete ptr;
+  CountingHooks::Get()->ResetCounts();
+  {
+    int* ptr = new int;
+    raw_ptr<int> interesting_ptr = ptr;
+    *interesting_ptr = 1;
+    delete ptr;
+  }
+  EXPECT_EQ(CountingHooks::Get()->safely_unwrap_for_dereference_count, 1u);
 }
 
 TEST_F(HookableRawPtrImplTest, SafelyUnwrapForExtraction) {
-  EXPECT_CALL(hooks_, SafelyUnwrapForExtraction).Times(1);
-  int* ptr = new int;
-  raw_ptr<int> interesting_ptr = ptr;
-  ptr = interesting_ptr;
-  delete ptr;
+  CountingHooks::Get()->ResetCounts();
+  {
+    int* ptr = new int;
+    raw_ptr<int> interesting_ptr = ptr;
+    ptr = interesting_ptr;
+    delete ptr;
+  }
+  EXPECT_EQ(CountingHooks::Get()->safely_unwrap_for_extraction_count, 1u);
 }
 
 TEST_F(HookableRawPtrImplTest, UnsafelyUnwrapForComparison) {
-  EXPECT_CALL(hooks_, UnsafelyUnwrapForComparison).Times(1);
-  int* ptr = new int;
-  raw_ptr<int> interesting_ptr = ptr;
-  EXPECT_EQ(interesting_ptr, ptr);
-  delete ptr;
+  CountingHooks::Get()->ResetCounts();
+  {
+    int* ptr = new int;
+    raw_ptr<int> interesting_ptr = ptr;
+    EXPECT_EQ(interesting_ptr, ptr);
+    delete ptr;
+  }
+  EXPECT_EQ(CountingHooks::Get()->unsafely_unwrap_for_comparison_count, 1u);
 }
 
 TEST_F(HookableRawPtrImplTest, Advance) {
-  EXPECT_CALL(hooks_, Advance).Times(1);
-  int* ptr = new int[10];
-  raw_ptr<int, AllowPtrArithmetic> interesting_ptr = ptr;
-  interesting_ptr += 1;
-  delete[] ptr;
+  CountingHooks::Get()->ResetCounts();
+  {
+    int* ptr = new int[10];
+    raw_ptr<int, AllowPtrArithmetic> interesting_ptr = ptr;
+    interesting_ptr += 1;
+    delete[] ptr;
+  }
+  EXPECT_EQ(CountingHooks::Get()->advance_count, 1u);
 }
 
 TEST_F(HookableRawPtrImplTest, Duplicate) {
-  EXPECT_CALL(hooks_, Duplicate).Times(1);
-  int* ptr = new int;
-  raw_ptr<int> interesting_ptr = ptr;
-  raw_ptr<int> interesting_ptr2 = interesting_ptr;
-  delete ptr;
+  CountingHooks::Get()->ResetCounts();
+  {
+    int* ptr = new int;
+    raw_ptr<int> interesting_ptr = ptr;
+    raw_ptr<int> interesting_ptr2 = interesting_ptr;
+    delete ptr;
+  }
+  EXPECT_EQ(CountingHooks::Get()->duplicate_count, 1u);
 }
 
 #endif  // BUILDFLAG(USE_HOOKABLE_RAW_PTR)
+
+TEST(DanglingPtrTest, DetectAndReset) {
+  auto instrumentation = test::DanglingPtrInstrumentation::Create();
+  if (!instrumentation.has_value()) {
+    GTEST_SKIP() << instrumentation.error();
+  }
+
+  auto owned_ptr = std::make_unique<int>(42);
+  raw_ptr<int> dangling_ptr = owned_ptr.get();
+  EXPECT_EQ(instrumentation->dangling_ptr_detected(), 0u);
+  EXPECT_EQ(instrumentation->dangling_ptr_released(), 0u);
+  owned_ptr.reset();
+  EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+  EXPECT_EQ(instrumentation->dangling_ptr_released(), 0u);
+  dangling_ptr = nullptr;
+  EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+  EXPECT_EQ(instrumentation->dangling_ptr_released(), 1u);
+}
+
+TEST(DanglingPtrTest, DetectAndDestructor) {
+  auto instrumentation = test::DanglingPtrInstrumentation::Create();
+  if (!instrumentation.has_value()) {
+    GTEST_SKIP() << instrumentation.error();
+  }
+
+  auto owned_ptr = std::make_unique<int>(42);
+  {
+    [[maybe_unused]] raw_ptr<int> dangling_ptr = owned_ptr.get();
+    EXPECT_EQ(instrumentation->dangling_ptr_detected(), 0u);
+    EXPECT_EQ(instrumentation->dangling_ptr_released(), 0u);
+    owned_ptr.reset();
+    EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+    EXPECT_EQ(instrumentation->dangling_ptr_released(), 0u);
+  }
+  EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+  EXPECT_EQ(instrumentation->dangling_ptr_released(), 1u);
+}
+
+TEST(DanglingPtrTest, DetectResetAndDestructor) {
+  auto instrumentation = test::DanglingPtrInstrumentation::Create();
+  if (!instrumentation.has_value()) {
+    GTEST_SKIP() << instrumentation.error();
+  }
+
+  auto owned_ptr = std::make_unique<int>(42);
+  {
+    raw_ptr<int> dangling_ptr = owned_ptr.get();
+    EXPECT_EQ(instrumentation->dangling_ptr_detected(), 0u);
+    EXPECT_EQ(instrumentation->dangling_ptr_released(), 0u);
+    owned_ptr.reset();
+    EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+    EXPECT_EQ(instrumentation->dangling_ptr_released(), 0u);
+    dangling_ptr = nullptr;
+    EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+    EXPECT_EQ(instrumentation->dangling_ptr_released(), 1u);
+  }
+  EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+  EXPECT_EQ(instrumentation->dangling_ptr_released(), 1u);
+}
 
 }  // namespace internal
 }  // namespace base

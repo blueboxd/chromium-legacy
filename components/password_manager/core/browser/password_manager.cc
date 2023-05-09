@@ -148,11 +148,10 @@ PasswordFormManager* FindMatchedManagerByRendererId(
 #endif  // !BUILDFLAG(IS_IOS)
 
 bool HasSingleUsernameVote(const FormPredictions& form) {
-  for (const auto& field : form.fields) {
-    if (field.type == autofill::SINGLE_USERNAME)
-      return true;
-  }
-  return false;
+  return base::ranges::any_of(
+      form.fields,
+      [](const auto& type) { return type == autofill::SINGLE_USERNAME; },
+      &PasswordFieldPrediction::type);
 }
 
 // Returns true if at least one of the fields in |form| has a prediction to be a
@@ -160,19 +159,21 @@ bool HasSingleUsernameVote(const FormPredictions& form) {
 bool HasNewPasswordVote(const FormPredictions& form) {
   if (!base::FeatureList::IsEnabled(
           password_manager::features::
-              kEnablePasswordGenerationForClearTextFields))
+              kEnablePasswordGenerationForClearTextFields)) {
     return false;
-  for (const auto& field : form.fields) {
-    if (field.type == ACCOUNT_CREATION_PASSWORD || field.type == NEW_PASSWORD)
-      return true;
   }
-  return false;
+  auto is_creation_password_or_new_password = [](const auto& type) {
+    return type == ACCOUNT_CREATION_PASSWORD || type == NEW_PASSWORD;
+  };
+
+  return base::ranges::any_of(form.fields, is_creation_password_or_new_password,
+                              &PasswordFieldPrediction::type);
 }
 
 // Adds predictions to |predictions->fields| if |field_info_manager| has
 // predictions for corresponding fields. Predictions from |field_info_manager|
 // have priority over server predictions.
-void AddLocallySavedPredictions(FieldInfoManager* field_info_manager,
+void AddLocallySavedPredictions(const FieldInfoManager* field_info_manager,
                                 FormPredictions* predictions,
                                 BrowserSavePasswordProgressLogger* logger) {
   DCHECK(predictions);
@@ -281,7 +282,9 @@ void PasswordManager::RegisterProfilePrefs(
       prefs::kSyncedLastTimePasswordCheckCompleted, base::Time(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 
+#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
   registry->RegisterDictionaryPref(prefs::kAccountStoragePerAccountSettings);
+#endif  // !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
 
   registry->RegisterTimePref(prefs::kProfileStoreDateLastUsedForFilling,
                              base::Time());
@@ -337,6 +340,7 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kBiometricAuthenticationBeforeFilling,
                                 false);
 #endif
+  registry->RegisterBooleanPref(prefs::kPasswordsGroupingInfoRequested, false);
 }
 
 // static
@@ -506,10 +510,10 @@ void PasswordManager::UpdateFormManagers() {
   }
 
   // Remove the duplicates.
-  std::sort(fetchers.begin(), fetchers.end());
-  fetchers.erase(std::unique(fetchers.begin(), fetchers.end()), fetchers.end());
-  std::sort(drivers.begin(), drivers.end());
-  drivers.erase(std::unique(drivers.begin(), drivers.end()), drivers.end());
+  base::ranges::sort(fetchers);
+  fetchers.erase(base::ranges::unique(fetchers), fetchers.end());
+  base::ranges::sort(drivers);
+  drivers.erase(base::ranges::unique(drivers), drivers.end());
   // Refetch credentials for all the forms and update the drivers.
   for (FormFetcher* fetcher : fetchers)
     fetcher->Fetch();
@@ -1013,7 +1017,7 @@ void PasswordManager::OnPasswordFormsRendered(
       driver &&
 #endif
       !driver->IsInPrimaryMainFrame() &&
-      submitted_manager->driver_id() != driver->GetId()) {
+      submitted_manager->GetFrameId() != driver->GetFrameId()) {
     // Frames different from the main frame and the frame of the submitted form
     // are unlikely relevant to success of submission.
     return;

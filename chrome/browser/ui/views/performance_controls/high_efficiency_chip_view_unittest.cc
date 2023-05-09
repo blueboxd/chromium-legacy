@@ -61,18 +61,10 @@ class HighEfficiencyChipViewTest : public TestWithBrowserView {
   void SetUp() override {
     feature_list_.InitAndEnableFeature(
         performance_manager::features::kHighEfficiencyModeAvailable);
-    performance_manager::user_tuning::prefs::RegisterLocalStatePrefs(
-        local_state_.registry());
-    environment_.SetUp(&local_state_);
     TestWithBrowserView::SetUp();
 
     AddNewTab(kMemorySavingsKilobytes,
               ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
-  }
-
-  void TearDown() override {
-    TestWithBrowserView::TearDown();
-    environment_.TearDown();
   }
 
   // Creates a new tab at index 0 that would report the given memory savings and
@@ -105,9 +97,9 @@ class HighEfficiencyChipViewTest : public TestWithBrowserView {
   }
 
   void SetHighEfficiencyModeEnabled(bool enabled) {
-    g_browser_process->local_state()->SetBoolean(
-        performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled,
-        enabled);
+    performance_manager::user_tuning::UserPerformanceTuningManager::
+        GetInstance()
+            ->SetHighEfficiencyModeEnabled(enabled);
   }
 
   PageActionIconView* GetPageActionIconView() {
@@ -145,9 +137,6 @@ class HighEfficiencyChipViewTest : public TestWithBrowserView {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  TestingPrefServiceSimple local_state_;
-  performance_manager::user_tuning::TestUserPerformanceTuningManagerEnvironment
-      environment_;
 };
 
 // When the previous page has a tab discard state of true, when the icon is
@@ -326,6 +315,27 @@ TEST_F(HighEfficiencyChipViewTest, ShouldCollapseChipAfterNavigatingTabs) {
   EXPECT_FALSE(GetPageActionIconView()->ShouldShowLabel());
 
   tab_strip_model->SelectNextTab();
+  EXPECT_FALSE(GetPageActionIconView()->ShouldShowLabel());
+}
+
+TEST_F(HighEfficiencyChipViewTest,
+       ShouldCollapseChipAfterNavigatingTabsWithDialogOpen) {
+  SetHighEfficiencyModeEnabled(true);
+  AddNewTab(kMemorySavingsKilobytes,
+            ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(2, tab_strip_model->GetTabCount());
+
+  SetTabDiscardState(0, true);
+  SetTabDiscardState(1, true);
+
+  EXPECT_TRUE(GetPageActionIconView()->ShouldShowLabel());
+  tab_strip_model->SelectNextTab();
+
+  EXPECT_TRUE(GetPageActionIconView()->ShouldShowLabel());
+  ClickPageActionChip();
+
+  tab_strip_model->SelectPreviousTab();
   EXPECT_FALSE(GetPageActionIconView()->ShouldShowLabel());
 }
 

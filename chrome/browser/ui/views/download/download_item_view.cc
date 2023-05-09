@@ -68,6 +68,7 @@
 #include "ui/base/themed_vector_icon.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -154,9 +155,11 @@ class TransparentButton : public views::Button {
         [](views::View* host) {
           // This button will be used like a LabelButton, so use the same
           // foreground base color as a label button.
+          // TODO(crbug.com/1423975): Replace by a `ui::ColorId` and use it in
+          // `InkDropHost::SetBaseColorId`.
           return color_utils::DeriveDefaultIconColor(
-              views::style::GetColor(*host, views::style::CONTEXT_BUTTON,
-                                     views::style::STYLE_PRIMARY));
+              host->GetColorProvider()->GetColor(views::style::GetColorId(
+                  views::style::CONTEXT_BUTTON, views::style::STYLE_PRIMARY)));
         },
         this));
   }
@@ -1001,7 +1004,7 @@ ui::ImageModel DownloadItemView::GetIcon() const {
 
   const int non_error_icon_size = 27;
   const auto kWarning = ui::ImageModel::FromVectorIcon(
-      vector_icons::kWarningIcon, ui::kColorAlertMediumSeverity,
+      vector_icons::kWarningIcon, ui::kColorAlertMediumSeverityIcon,
       non_error_icon_size);
   const auto kError = ui::ImageModel::FromVectorIcon(
       vector_icons::kErrorIcon, ui::kColorAlertHighSeverity, 24);

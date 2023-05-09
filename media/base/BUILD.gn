@@ -43,6 +43,8 @@ source_set("base") {
   }
 
   sources = [
+    "amplitude_peak_detector.cc",
+    "amplitude_peak_detector.h",
     "android_overlay_config.cc",
     "android_overlay_config.h",
     "android_overlay_mojo_factory.h",
@@ -96,7 +98,6 @@ source_set("base") {
     "audio_shifter.h",
     "audio_timestamp_helper.cc",
     "audio_timestamp_helper.h",
-    "bind_to_current_loop.h",
     "bit_reader.cc",
     "bit_reader.h",
     "bit_reader_core.cc",

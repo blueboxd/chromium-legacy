@@ -8,6 +8,7 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "build/build_config.h"');
 GEN('#include "build/chromeos_buildflags.h"');
+GEN('#include "components/history_clusters/core/features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 class NewTabPageBrowserTest extends PolymerTest {
@@ -56,8 +57,8 @@ TEST_F('NewTabPageAppTest', 'CounterfactualModules', function() {
   runMochaSuite('NewTabPageAppTest counterfactual modules');
 });
 
-TEST_F('NewTabPageAppTest', 'CustomizeUrl', function() {
-  runMochaSuite('NewTabPageAppTest customize URL');
+TEST_F('NewTabPageAppTest', 'CustomizeDialog', function() {
+  runMochaSuite('NewTabPageAppTest customize dialog');
 });
 
 TEST_F('NewTabPageAppTest', 'CustomizeChromeSidePanel', function() {
@@ -402,6 +403,40 @@ var NewTabPageModulesHistoryClustersModuleTest =
 TEST_F('NewTabPageModulesHistoryClustersModuleTest', 'All', function() {
   mocha.run();
 });
+
+var NewTabPageModulesHistoryClustersModuleTileTest =
+    class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/history_clusters/tile_test.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: [
+        'history_clusters::internal::kJourneysImages',
+      ],
+    };
+  }
+};
+
+TEST_F('NewTabPageModulesHistoryClustersModuleTileTest', 'All', function() {
+  mocha.run();
+});
+
+var NewTabPageModulesHistoryClustersModuleSuggestTileTest =
+    class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/history_clusters/suggest_tile_test.js';
+  }
+};
+
+TEST_F(
+    'NewTabPageModulesHistoryClustersModuleSuggestTileTest', 'All', function() {
+      mocha.run();
+    });
 
 // https://crbug.com/1227564: Flaky on Chrome OS.
 GEN('#if BUILDFLAG(IS_CHROMEOS)');

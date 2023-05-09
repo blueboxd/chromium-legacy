@@ -163,6 +163,7 @@
 <translation id="2346474577291266260">შესანიშნავი (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2359808026110333948">გაგრძელება</translation>
 <translation id="2364498172489649528">გავლილია</translation>
+<translation id="2367335866686097760">კლავიშთა დანიშვნის კლავიში</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">გამოხმაურების ანგარიშის გაგზავნა</translation>
 <translation id="2407209115954268704">SIM-ბარათის ჩაკეტვის სტატუსი</translation>
@@ -235,10 +236,11 @@
 <translation id="319101249942218879">ავატარის სურათი შეცვლილია</translation>
 <translation id="3192947282887913208">აუდიო ფაილები</translation>
 <translation id="3199982728237701504">დოკუმენტების მიმწოდი (ორმხრივი)</translation>
+<translation id="3211671540163313381">კლავიშთა დანიშვნის D-pad</translation>
 <translation id="3226405216343213872">მიმდინარეობს სკანერების ძიება</translation>
+<translation id="3226657629376379887">განლაგებასთან დაკავშირებული მოქმედებების მენიუ</translation>
 <translation id="3246869037381808805">ბეჭდვის 1 დღეზე ძველი დავალებები ამოიშლება</translation>
 <translation id="3268178239013324452">ვერ მოხერხდა — პრინტერის კარი ღიაა</translation>
-<translation id="3275506277319227640"><ph name="DIRECTION" /> მხარეს ჩამაგრება</translation>
 <translation id="3275729367986477355">ავატარის სურათი</translation>
 <translation id="3283504360622356314">{0,plural, =1{ფაილის რედაქტირება}other{ფაილების რედაქტირება}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> გჰც</translation>
@@ -275,7 +277,6 @@
 <translation id="3595596368722241419">ბატარეა სავსეა</translation>
 <translation id="3600339377155080675">ეკრანის არეკვლა</translation>
 <translation id="3602290021589620013">გადახედვა</translation>
-<translation id="360282891121575443">გაზიარებულ ალბომებში არსებული ფოტოები შეიძლება განახლდეს სხვა მომხმარებლების მიერ. დღიური ცვლილებისას, შესაძლოა, ნაჩვენები იყოს ფონები, რომლებიც ამჟამად არ არის ალბომში.</translation>
 <translation id="3603829704940252505">ავატარი</translation>
 <translation id="3604713164406837697">ფონის შეცვლა</translation>
 <translation id="360565022852130722">Wi-Fi ქსელი უზრუნველყოფილია სუსტი პროტოკოლით WEP 802.1x</translation>
@@ -357,7 +358,6 @@
 <translation id="4311195029067684288">მთლიანი</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> კლავიში დაჭერილია</translation>
 <translation id="435692326371619097">მართეთ ქსელის APN-ის პარამეტრები. APN ამყარებს კავშირს ფიჭურ ქსელსა და ინტერნეტს შორის. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">შედარებით პატარა მხარეს ჩამაგრება</translation>
 <translation id="4378373042927530923">არ არის გაშვებული</translation>
 <translation id="4378551569595875038">დაკავშირება…</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -568,6 +568,7 @@
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> სხვა ალბომი</translation>
 <translation id="6122191549521593678">ონლაინ</translation>
 <translation id="6122277663991249694">ChromeOS-ის შეყვანის მეთოდის სერვისი</translation>
+<translation id="6136285399872347291">უკუშლა</translation>
 <translation id="6137767437444130246">მომხმარებლის სერტიფიკატი</translation>
 <translation id="6146993107019042706">დასასრულებლად შეიყვანეთ თქვენი ახალი პაროლი</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -615,6 +616,7 @@
 <translation id="650266656685499220">ალბომების შესაქმნელად გადადით Google Photos-ზე</translation>
 <translation id="6516990319416533844">ბატარეის დატენის სიჩქარის შესამოწმებლად ჯერ დაცალეთ ბატარეა გარკვეული დროის განმავლობაში</translation>
 <translation id="6517239166834772319">გაცნობა</translation>
+<translation id="6526200165918397681">ფონის დამთხვევა</translation>
 <translation id="6527081081771465939">Wi-Fi-ს უცნობი უსაფრთხოების პროტოკოლი</translation>
 <translation id="6535178685492749208">თქვენ ხაზგარეშე რეჟიმში ხართ. გამოხმაურება მოგვიანებით გაიგზავნება.</translation>
 <translation id="65587193855025101">ბაქანი</translation>
@@ -634,7 +636,6 @@
 <translation id="6657585470893396449">პაროლი</translation>
 <translation id="6659594942844771486">ჩანართი</translation>
 <translation id="6692996468359469499">მიიღეთ თქვენს არჩევანთან დაკავშირებული ინფორმაცია</translation>
-<translation id="6698459586333070823">გაზიარებულ ალბომები შეიძლება განახლდეს სხვა მომხმარებლების მიერ</translation>
 <translation id="6704062477274546131">DNS-ის დარეგულირება</translation>
 <translation id="6723839937902243910">ენერგია</translation>
 <translation id="6723847290197874913">კლავიატურის შენათება</translation>
@@ -671,6 +672,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">წარუმატებელია — ავტორიზაცია ვერ მოხერხდა</translation>
 <translation id="7103252855940681301">მოწყობილობა <ph name="INDEX" /> / <ph name="COUNT" />-დან, სახელწოდებით — <ph name="NAME" />.</translation>
+<translation id="7108668606237948702">შეყვანა</translation>
 <translation id="7130438335435247835">წვდომის წერტილი (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{სახელთა სერვერი}other{სახელთა სერვერები}}</translation>
 <translation id="7143207342074048698">დაკავშირება</translation>
@@ -789,7 +791,6 @@
 <translation id="8226628635270268143">აირჩიეთ თქვენი რჩეული ფოტოები და ალბომები</translation>
 <translation id="8227119283605456246">ფაილის მიმაგრება</translation>
 <translation id="8230672074305416752">ნაგულისხმევი ქსელის გეითვეისთან კავშირის შემოწმება ვერ მოხერხდა</translation>
-<translation id="8242426110754782860">გაგრძელება</translation>
 <translation id="8246209727385807362">უცნობი ოპერატორი</translation>
 <translation id="827422111966801947">ინდიგო</translation>
 <translation id="8286154143153872371">ფონის სანახავად დაუკავშირდით ქსელს და გადატვირთეთ გვერდი.</translation>
@@ -800,6 +801,7 @@
 <translation id="8318753676953949627">სურათები არ არის</translation>
 <translation id="8336739000755212683">მოწყობილობის ანგარიშის სურათის შეცვლა</translation>
 <translation id="8347227221149377169">ბეჭდვის დავალებები</translation>
+<translation id="8351855506390808906">კლავიშთა დანიშვნის შეხების წერტილი</translation>
 <translation id="8352772353338965963">დაამატეთ ანგარიში მრავლობითი შესვლისთვის. სისტემაში შესულ ანგარიშზე წვდომის მიღება შესაძლებელია პაროლის შეყვანის გარეშე, ამიტომ ეს ფუნქცია უნდა გამოიყენოთ მხოლოდ სანდო ანგარიშებზე.</translation>
 <translation id="8364946094152050673">სახელის ცარიელი სერვერები</translation>
 <translation id="8372477600026034341">დამატებითი ჰოსტები</translation>
@@ -896,7 +898,7 @@
 <translation id="9137526406337347448">Google სერვისები</translation>
 <translation id="9138630967333032450">მარცხენა shift</translation>
 <translation id="9149391708638971077">მეხსიერების ტესტის გაშვება</translation>
-<translation id="9157515863513902090">შედარებით დიდ მხარეს ჩამაგრება</translation>
+<translation id="9161276708550942948">შორისი</translation>
 <translation id="9173638680043580060">დარჩენილია ერთ წუთზე ნაკლები</translation>
 <translation id="917720651393141712">შემოწმება</translation>
 <translation id="9188992814426075118">შესაძლებელია თქვენი კლავიატურის ავტომატურად მორგება თქვენი ფონის მიხედვით</translation>

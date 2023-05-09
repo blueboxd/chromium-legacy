@@ -171,12 +171,7 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     task_environment()->FastForwardBy(kDefaultKioskSplashScreenMinTime);
   }
 
-  void DeleteSplashScreen() { controller_->OnDeletingSplashScreenView(); }
-
-  void SetOnline(bool online) {
-    view_->SetNetworkReady(online);
-    view_controls().OnNetworkStateChanged(online);
-  }
+  void SetOnline(bool online) { view_->SetNetworkReady(online); }
 
   void OnNetworkConfigRequested() { controller().OnNetworkConfigRequested(); }
 
@@ -343,8 +338,8 @@ TEST_F(KioskLaunchControllerTest,
   profile_controls().OnProfileLoaded(profile());
 
   network_delegate().InitializeNetwork();
-  EXPECT_THAT(controller(),
-              HasState(AppState::kInitNetwork, NetworkUIState::kNotShowing));
+  EXPECT_THAT(controller(), HasState(AppState::kInitLauncher,
+                                     NetworkUIState::kWaitingForNetwork));
   EXPECT_THAT(
       view(),
       HasViewState(
@@ -361,8 +356,8 @@ TEST_F(KioskLaunchControllerTest,
   profile_controls().OnProfileLoaded(profile());
 
   network_delegate().InitializeNetwork();
-  EXPECT_THAT(controller(),
-              HasState(AppState::kInitNetwork, NetworkUIState::kNotShowing));
+  EXPECT_THAT(controller(), HasState(AppState::kInitLauncher,
+                                     NetworkUIState::kWaitingForNetwork));
   EXPECT_THAT(
       view(),
       HasViewState(
@@ -390,7 +385,7 @@ TEST_F(KioskLaunchControllerTest,
   profile_controls().OnProfileLoaded(profile());
 
   EXPECT_THAT(controller(),
-              HasState(AppState::kCreatingProfile, NetworkUIState::kShowing));
+              HasState(AppState::kInitNetwork, NetworkUIState::kShowing));
   EXPECT_THAT(view(), HasViewState(AppLaunchSplashScreenView::AppLaunchState::
                                        kShowingNetworkConfigureUI));
 }
@@ -415,12 +410,13 @@ TEST_F(KioskLaunchControllerTest, ConfigureNetworkDuringInstallation) {
       HasViewState(
           AppLaunchSplashScreenView::AppLaunchState::kInstallingApplication));
 
-  view_controls().OnNetworkConfigFinished();
+  view().FinishNetworkConfig();
   EXPECT_THAT(
       view(),
       HasViewState(
           AppLaunchSplashScreenView::AppLaunchState::kPreparingProfile));
   EXPECT_TRUE(launcher().IsInitialized());
+  EXPECT_EQ(num_launchers_created(), 2);
 }
 
 TEST_F(KioskLaunchControllerTest, KioskProfileLoadFailedObserverShouldBeFired) {
@@ -436,6 +432,7 @@ TEST_F(KioskLaunchControllerTest, KioskProfileLoadFailedObserverShouldBeFired) {
   profile_controls().OnProfileLoadFailed(
       KioskAppLaunchError::Error::kUnableToMount);
   VerifyLaunchStateCrashKey(KioskLaunchState::kLaunchFailed);
+  EXPECT_EQ(num_launchers_created(), 0);
 
   controller().RemoveKioskProfileLoadFailedObserver(
       &profile_load_failed_observer);
@@ -464,8 +461,8 @@ TEST_F(KioskLaunchControllerTest,
 
   // Network required during app launch
   network_delegate().InitializeNetwork();
-  EXPECT_THAT(controller(),
-              HasState(AppState::kInitNetwork, NetworkUIState::kNotShowing));
+  EXPECT_THAT(controller(), HasState(AppState::kInstalled,
+                                     NetworkUIState::kWaitingForNetwork));
   EXPECT_FALSE(launcher().HasContinueWithNetworkReadyBeenCalled());
 
   SetOnline(true);

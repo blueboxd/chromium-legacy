@@ -52,8 +52,7 @@ base::flat_set<std::u16string> ExtractPasswords(
 bool IsCheckForReusedPasswordsEnabled() {
 #if BUILDFLAG(IS_IOS)
   // Weak and reused checks are controlled by the Password Checkup feature.
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kIOSPasswordCheckup);
+  return password_manager::features::IsPasswordCheckupEnabled();
 #else
   return base::FeatureList::IsEnabled(
       password_manager::features::kPasswordManagerRedesign);
@@ -63,8 +62,7 @@ bool IsCheckForReusedPasswordsEnabled() {
 bool IsCheckForWeakPasswordsEnabled() {
 #if BUILDFLAG(IS_IOS)
   // Weak and reused checks are controlled by the Password Checkup feature.
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kIOSPasswordCheckup);
+  return password_manager::features::IsPasswordCheckupEnabled();
 #else
   return true;
 #endif
@@ -163,7 +161,7 @@ InsecureCredentialsManager::GetInsecureCredentialEntries() const {
 #if BUILDFLAG(IS_ANDROID)
   // Otherwise erase entries which aren't leaked and phished.
   base::EraseIf(credentials, [](const auto& credential) {
-    return !credential.IsLeaked() && !credential.IsPhished();
+    return !IsCompromised(credential);
   });
   return credentials;
 #else

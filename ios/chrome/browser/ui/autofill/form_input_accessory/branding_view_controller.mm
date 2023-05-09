@@ -4,12 +4,15 @@
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/branding_view_controller.h"
 
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "base/task/sequenced_task_runner.h"
 #import "base/time/time.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/autofill/features.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/branding_view_controller_delegate.h"
+#import "ios/chrome/common/button_configuration_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -58,16 +61,26 @@ constexpr NSString* kBrandingButtonAXId = @"kBrandingButtonAXId";
       NOTREACHED();
       break;
   }
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
-  if (@available(iOS 15.0, *)) {
-    UIButtonConfiguration* buttonConfig =
-        [UIButtonConfiguration plainButtonConfiguration];
-    buttonConfig.contentInsets =
-        NSDirectionalEdgeInsetsMake(0, kLeadingInset, 0, 0);
-    button.configuration = buttonConfig;
+
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
+  // iOS 15.
+  UIButton* button = nil;
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets =
+          NSDirectionalEdgeInsetsMake(0, kLeadingInset, 0, 0);
+      button = [UIButton buttonWithConfiguration:buttonConfiguration
+                                   primaryAction:nil];
+    }
   } else {
-    button.imageEdgeInsets = UIEdgeInsetsMake(0, kLeadingInset, 0, 0);
+    button = [UIButton buttonWithType:UIButtonTypeCustom];
+    UIEdgeInsets imageEdgeInsets = UIEdgeInsetsMake(0, kLeadingInset, 0, 0);
+    SetImageEdgeInsets(button, imageEdgeInsets);
   }
+
   button.accessibilityIdentifier = kBrandingButtonAXId;
   button.isAccessibilityElement = NO;  // Prevents VoiceOver users from tap.
   button.translatesAutoresizingMaskIntoConstraints = NO;

@@ -107,7 +107,6 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
 
   if (!output_.Initialize(display_.get()))
     return false;
-  SetupOutputs();
 
   if (!data_device_manager_.Initialize(display_.get()))
     return false;
@@ -121,6 +120,10 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
     return false;
 
   if (config.enable_aura_shell == EnableAuraShellProtocol::kEnabled) {
+    if (!zaura_output_manager_.Initialize(display_.get())) {
+      return false;
+    }
+
     if (!zxdg_output_manager_.Initialize(display_.get()))
       return false;
 
@@ -226,28 +229,16 @@ uint32_t TestWaylandServerThread::GetNextTime() {
   return ++timestamp;
 }
 
-// By default, just make sure primary screen has bounds set. Otherwise delegates
-// it, making it possible to emulate different scenarios, such as, multi-screen,
-// lazy configuration, arbitrary ordering of the outputs metadata sending, etc.
-void TestWaylandServerThread::SetupOutputs() {
-  if (output_delegate_) {
-    output_delegate_->SetupOutputs(&output_);
-    return;
-  }
-  if (output_.GetRect().IsEmpty())
-    output_.SetRect(gfx::Rect{0, 0, 800, 600});
-}
-
 bool TestWaylandServerThread::SetupPrimarySelectionManager(
     PrimarySelectionProtocol protocol) {
   switch (protocol) {
     case PrimarySelectionProtocol::kNone:
       return true;
     case PrimarySelectionProtocol::kZwp:
-      primary_selection_device_manager_.reset(CreateTestSelectionManagerZwp());
+      primary_selection_device_manager_ = CreateTestSelectionManagerZwp();
       break;
     case PrimarySelectionProtocol::kGtk:
-      primary_selection_device_manager_.reset(CreateTestSelectionManagerGtk());
+      primary_selection_device_manager_ = CreateTestSelectionManagerGtk();
       break;
   }
   return primary_selection_device_manager_->Initialize(display_.get());

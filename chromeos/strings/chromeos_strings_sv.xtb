@@ -163,6 +163,7 @@
 <translation id="2346474577291266260">Utmärkt (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2364498172489649528">Godkänd</translation>
+<translation id="2367335866686097760">Tangentmappning: tangent</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Skicka feedbackrapport</translation>
 <translation id="2407209115954268704">Status för SIM-lås</translation>
@@ -235,10 +236,11 @@
 <translation id="319101249942218879">Avatarbild har ändrats</translation>
 <translation id="3192947282887913208">Ljudfiler</translation>
 <translation id="3199982728237701504">Dokumentmatare (tvåsidig)</translation>
+<translation id="3211671540163313381">Tangentmappning: styrkors</translation>
 <translation id="3226405216343213872">Söker efter skannrar</translation>
+<translation id="3226657629376379887">Layoutåtgärdsmeny</translation>
 <translation id="3246869037381808805">Utskriftsjobb som är äldre än 1 dagar tas bort</translation>
 <translation id="3268178239013324452">Misslyckades – luckan är öppen</translation>
-<translation id="3275506277319227640">Docka på den <ph name="DIRECTION" /> delen</translation>
 <translation id="3275729367986477355">Avatarbild</translation>
 <translation id="3283504360622356314">{0,plural, =1{Redigera fil}other{Redigera filer}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
@@ -275,7 +277,6 @@
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
 <translation id="3600339377155080675">Tangenten för att spegla skärmen</translation>
 <translation id="3602290021589620013">Förhandsgranskning</translation>
-<translation id="360282891121575443">Foton i delade album kan uppdateras av andra användare. Ändra dagligen kan visa bakgrunder som för närvarande inte finns i albumet.</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Ändra bakgrund</translation>
 <translation id="360565022852130722">wifi-nätverket använder det svaga säkerhetsprotokollet WEP 802.1x</translation>
@@ -357,7 +358,6 @@
 <translation id="4311195029067684288">Fullt</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> har tryckts ned</translation>
 <translation id="435692326371619097">Hantera APN-inställningar för nätverket. APN upprättar en anslutning mellan ett mobilnätverk och internet. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">Docka på den mindre delen</translation>
 <translation id="4378373042927530923">Har inte körts</translation>
 <translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -568,6 +568,7 @@
 <translation id="6117895505466548728"><ph name="TITLE" /> och <ph name="NUMBER" /> album till</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6122277663991249694">Tjänst för inmatningsmetod för Chrome OS</translation>
+<translation id="6136285399872347291">backsteg</translation>
 <translation id="6137767437444130246">Användarcertifikat</translation>
 <translation id="6146993107019042706">Slutför genom att ange det nya lösenordet</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -615,6 +616,7 @@
 <translation id="650266656685499220">Besök Google Foto om du vill skapa album</translation>
 <translation id="6516990319416533844">Om du vill testa batteriets laddningshastighet låter du det laddas ur under en kortare period</translation>
 <translation id="6517239166834772319">Utforska</translation>
+<translation id="6526200165918397681">Matcha bakgrund</translation>
 <translation id="6527081081771465939">Okänt säkerhetsprotokoll för wifi</translation>
 <translation id="6535178685492749208">Du är offline. Din feedback skickas senare.</translation>
 <translation id="65587193855025101">Flatbädd</translation>
@@ -634,7 +636,6 @@
 <translation id="6657585470893396449">Lösenord</translation>
 <translation id="6659594942844771486">Flik</translation>
 <translation id="6692996468359469499">Få information utifrån det du markerar</translation>
-<translation id="6698459586333070823">Delade album kan uppdateras av andra användare</translation>
 <translation id="6704062477274546131">DNS-matchning</translation>
 <translation id="6723839937902243910">Batteri</translation>
 <translation id="6723847290197874913">Tangentbordets bakgrundsbelysning</translation>
@@ -671,6 +672,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Misslyckades – auktoriseringen misslyckades</translation>
 <translation id="7103252855940681301">Enhet <ph name="INDEX" /> av <ph name="COUNT" /> heter <ph name="NAME" />.</translation>
+<translation id="7108668606237948702">retur</translation>
 <translation id="7130438335435247835">Åtkomstpunktens namn (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Namnserver}other{Namnservrar}}</translation>
 <translation id="7143207342074048698">Ansluter</translation>
@@ -789,7 +791,6 @@
 <translation id="8226628635270268143">Välj favoritfoton och favoritalbum</translation>
 <translation id="8227119283605456246">Bifoga fil</translation>
 <translation id="8230672074305416752">Det gick inte att pinga standardnätverkets gateway</translation>
-<translation id="8242426110754782860">Fortsätt</translation>
 <translation id="8246209727385807362">Okänd operatör</translation>
 <translation id="827422111966801947">Indigoblå</translation>
 <translation id="8286154143153872371">Anslut till ett nätverk och läs in sidan igen för att se bakgrunden.</translation>
@@ -800,6 +801,7 @@
 <translation id="8318753676953949627">Inga bilder</translation>
 <translation id="8336739000755212683">Ändra kontobilden på enheten</translation>
 <translation id="8347227221149377169">Utskriftsjobb</translation>
+<translation id="8351855506390808906">Tangentmappning: pekyta</translation>
 <translation id="8352772353338965963">Lägg till ett konto för multiinloggning. Alla inloggade konton kan öppnas utan lösenord, så använd bara den här funktionen med konton du litar på.</translation>
 <translation id="8364946094152050673">Inga namnservrar har angetts</translation>
 <translation id="8372477600026034341">Ytterligare värdar</translation>
@@ -896,7 +898,7 @@
 <translation id="9137526406337347448">Google Services</translation>
 <translation id="9138630967333032450">Vänster skifttangent</translation>
 <translation id="9149391708638971077">Kör minnestest</translation>
-<translation id="9157515863513902090">Docka på den större delen</translation>
+<translation id="9161276708550942948">blanksteg</translation>
 <translation id="9173638680043580060">Mindre än en minut kvar</translation>
 <translation id="917720651393141712">Testa</translation>
 <translation id="9188992814426075118">Tangentbordet kan matcha bakgrunden automatiskt</translation>

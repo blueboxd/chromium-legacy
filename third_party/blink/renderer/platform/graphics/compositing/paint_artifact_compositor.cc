@@ -96,12 +96,14 @@ void PaintArtifactCompositor::WillBeRemovedFromFrame() {
   root_layer_->RemoveAllChildren();
 }
 
-void PaintArtifactCompositor::SetPrefersLCDText(bool prefers) {
-  if (prefers_lcd_text_ == prefers)
+void PaintArtifactCompositor::SetLCDTextPreference(
+    LCDTextPreference preference) {
+  if (lcd_text_preference_ == preference) {
     return;
+  }
   SetNeedsUpdate(PaintArtifactCompositorUpdateReason::
                      kPaintArtifactCompositorPrefersLCDText);
-  prefers_lcd_text_ = prefers;
+  lcd_text_preference_ = preference;
 }
 
 std::unique_ptr<JSONArray> PaintArtifactCompositor::GetPendingLayersAsJSON()
@@ -122,11 +124,11 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
 
   LayersAsJSON layers_as_json(flags);
   for (const auto& layer : root_layer_->children()) {
-    const LayerAsJSONClient* json_client = nullptr;
+    const ContentLayerClientImpl* layer_client = nullptr;
     const TransformPaintPropertyNode* transform = nullptr;
     for (const auto& pending_layer : pending_layers_) {
       if (layer.get() == &pending_layer.CcLayer()) {
-        json_client = pending_layer.GetContentLayerClient();
+        layer_client = pending_layer.GetContentLayerClient();
         transform = &pending_layer.GetPropertyTreeState().Transform();
         break;
       }
@@ -142,7 +144,7 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
       }
     }
     DCHECK(transform);
-    layers_as_json.AddLayer(*layer, *transform, json_client);
+    layers_as_json.AddLayer(*layer, *transform, layer_client);
   }
   return layers_as_json.Finalize();
 }
@@ -232,8 +234,8 @@ bool NeedsFullUpdateAfterPaintingChunk(
   }
   // Whether background color is transparent affects cc::Layers's contents
   // opaque property.
-  if ((previous.background_color == Color()) !=
-      (repainted.background_color == Color())) {
+  if ((previous.background_color.color == SkColors::kTransparent) !=
+      (repainted.background_color.color == SkColors::kTransparent)) {
     return true;
   }
 
@@ -247,6 +249,14 @@ bool NeedsFullUpdateAfterPaintingChunk(
   // |SwitchToEffectNodeWithSynthesizedClip|).
   if (previous.DrawsContent() != repainted.DrawsContent())
     return true;
+
+  // Solid color status change requires full update to change the cc::Layer
+  // type.
+  if (RuntimeEnabledFeatures::SolidColorLayersEnabled() &&
+      previous.background_color.is_solid_color !=
+          repainted.background_color.is_solid_color) {
+    return true;
+  }
 
   // Debugging for https://crbug.com/1237389 and https://crbug.com/1230104.
   // Before returning that a full update is not needed, check that the
@@ -361,8 +371,10 @@ bool PaintArtifactCompositor::DecompositeEffect(
         return false;
       const auto& previous_sibling = pending_layers_[layer_index - 1];
       if (previous_sibling.DrawsContent() &&
-          !previous_sibling.CanMerge(layer, *upcast_state, prefers_lcd_text_))
+          !previous_sibling.CanMerge(layer, *upcast_state,
+                                     lcd_text_preference_)) {
         return false;
+      }
     }
   }
 
@@ -461,7 +473,7 @@ void PaintArtifactCompositor::LayerizeGroup(
     for (wtf_size_t candidate_index = pending_layers_.size() - 1;
          candidate_index-- > first_layer_in_current_group;) {
       PendingLayer& candidate_layer = pending_layers_[candidate_index];
-      if (candidate_layer.Merge(new_layer, prefers_lcd_text_)) {
+      if (candidate_layer.Merge(new_layer, lcd_text_preference_)) {
         pending_layers_.pop_back();
         break;
       }
@@ -1048,7 +1060,7 @@ void PaintArtifactCompositor::ClearPropertyTreeChangedState() {
     CHECK(!layer.Chunks().IsEmpty());
     const auto& layer_state = layer.GetPropertyTreeState();
     const auto& first_chunk_state =
-        layer.Chunks().begin()->properties.GetPropertyTreeState();
+        layer.Chunks()[0].properties.GetPropertyTreeState();
     CHECK(layer_state.Transform().IsAncestorOf(first_chunk_state.Transform()));
     CHECK(layer_state.Clip().IsAncestorOf(first_chunk_state.Clip()));
     CHECK(layer_state.Effect().IsAncestorOf(first_chunk_state.Effect()));

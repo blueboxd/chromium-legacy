@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_switches.h"
+#include "gpu/config/webgpu_blocklist.h"
 #include "skia/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"  // nogncheck
@@ -575,9 +576,7 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
 #if BUILDFLAG(IS_CHROMEOS)
   gpu_info->gpu.revision = active->revisionId;
 #endif  // BUILDFLAG(IS_CHROMEOS)
-#if BUILDFLAG(IS_MAC)
-  gpu_info->gpu.register_id = active->systemDeviceId;
-#endif  // BUILDFLAG(IS_MAC)
+  gpu_info->gpu.system_device_id = active->systemDeviceId;
   gpu_info->gpu.driver_vendor = std::move(active->driverVendor);
   gpu_info->gpu.driver_version = std::move(active->driverVersion);
   gpu_info->gpu.active = true;
@@ -593,9 +592,7 @@ void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
 #if BUILDFLAG(IS_CHROMEOS)
     device.revision = system_info->gpus[i].revisionId;
 #endif  // BUILDFLAG(IS_CHROMEOS)
-#if BUILDFLAG(IS_MAC)
-    device.register_id = system_info->gpus[i].systemDeviceId;
-#endif  // BUILDFLAG(IS_MAC)
+    device.system_device_id = system_info->gpus[i].systemDeviceId;
     device.driver_vendor = std::move(system_info->gpus[i].driverVendor);
     device.driver_version = std::move(system_info->gpus[i].driverVersion);
 
@@ -706,6 +703,14 @@ void CollectDawnInfo(const gpu::GpuPreferences& gpu_preferences,
       gpu_str += " " + GetDawnBackendTypeString(backend_type);
       gpu_str += " - " + adapter_name;
       dawn_info_list->push_back(gpu_str);
+
+      dawn_info_list->push_back("[WebGPU Status]");
+      if (IsWebGPUAdapterBlocklisted(
+              *reinterpret_cast<WGPUAdapterProperties*>(&properties))) {
+        dawn_info_list->push_back("Blocklisted");
+      } else {
+        dawn_info_list->push_back("Available");
+      }
 
       // Scope the lifetime of |device| to avoid accidental use after release.
       {

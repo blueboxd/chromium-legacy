@@ -18,7 +18,7 @@
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/network/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
-#include "content/browser/renderer_host/private_network_access_util.h"
+#include "content/browser/renderer_host/local_network_access_util.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -233,8 +233,8 @@ void SharedWorkerHost::Start(
     } else {
       auto policy = base::FeatureList::IsEnabled(
                         features::kPrivateNetworkAccessForWorkers)
-                        ? network::mojom::PrivateNetworkRequestPolicy::kBlock
-                        : network::mojom::PrivateNetworkRequestPolicy::kAllow;
+                        ? network::mojom::LocalNetworkRequestPolicy::kBlock
+                        : network::mojom::LocalNetworkRequestPolicy::kAllow;
 
       // Create a maximally restricted client security state if the policy
       // container is missing.

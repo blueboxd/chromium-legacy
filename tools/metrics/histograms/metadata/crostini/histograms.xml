@@ -228,7 +228,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.DiskType" enum="CrostiniDiskImageType"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -283,6 +283,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Crostini.InputMethodOnBlur" enum="InputMethodID2"
+    expires_after="2024-01-06">
+  <owner>timloh@chromium.org</owner>
+  <owner>clumptini@google.com</owner>
+  <summary>
+    Breakdown of active input method by input method IDs. Recorded when a
+    Crostini window loses focus, including switching between Crostini windows
+    and some actions like opening the launcher. See InputMethod.ID2 for details
+    on the enum format.
+  </summary>
+</histogram>
+
 <histogram name="Crostini.InstallSource" enum="CrostiniInstallSource"
     expires_after="2023-04-10">
   <obsolete>
@@ -321,7 +333,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.Restarter.Started" enum="BooleanAttempted"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -331,7 +343,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.RestarterResult" enum="CrostiniResult"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -342,7 +354,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.RestarterResult.Installer" enum="CrostiniResult"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>timloh@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -398,7 +410,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.SettingsEvent" enum="CrostiniSettingsEvent"
-    expires_after="2023-04-24">
+    expires_after="2024-04-24">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <owner>victorhsieh@chromium.org</owner>
@@ -406,7 +418,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Crostini.Setup.Started" enum="BooleanAttempted"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>
@@ -600,7 +612,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Crostini.UnsupportedNotification.Reason"
-    enum="CrostiniUnsupportedNotificationReason" expires_after="2023-06-25">
+    enum="CrostiniUnsupportedNotificationReason" expires_after="2023-08-27">
   <owner>davidmunro@google.com</owner>
   <owner>clumptini@google.com</owner>
   <summary>

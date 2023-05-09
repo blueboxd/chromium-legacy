@@ -33,13 +33,13 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.creator.CreatorCoordinator.ContentChangedListener;
 import org.chromium.chrome.browser.creator.test.R;
+import org.chromium.chrome.browser.feed.FeedListContentManager.ExternalViewContent;
+import org.chromium.chrome.browser.feed.FeedListContentManager.FeedContent;
+import org.chromium.chrome.browser.feed.FeedListContentManager.NativeViewContent;
 import org.chromium.chrome.browser.feed.FeedReliabilityLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.FeedServiceBridgeJni;
 import org.chromium.chrome.browser.feed.FeedStream;
-import org.chromium.chrome.browser.feed.NtpListContentManager.ExternalViewContent;
-import org.chromium.chrome.browser.feed.NtpListContentManager.FeedContent;
-import org.chromium.chrome.browser.feed.NtpListContentManager.NativeViewContent;
 import org.chromium.chrome.browser.feed.SingleWebFeedEntryPoint;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -85,6 +85,8 @@ public class CreatorCoordinatorTest {
     private UnownedUserDataSupplier<ShareDelegate> mShareDelegateSupplier;
     @Mock
     private FeedStream mStreamMock;
+    @Mock
+    private SignInInterstitialInitiator mSignInInterstitialInitiator;
 
     @Rule
     public ActivityScenarioRule<TestActivity> mActivityScenarioRule =
@@ -121,7 +123,7 @@ public class CreatorCoordinatorTest {
             String url, byte[] webFeedId, int entryPoint, boolean following) {
         return new CreatorCoordinator(mActivity, webFeedId, mSnackbarManager, mWindowAndroid,
                 mProfile, url, mCreatorWebContents, mCreatorOpenTab, mShareDelegateSupplier,
-                entryPoint, following);
+                entryPoint, following, mSignInInterstitialInitiator);
     }
 
     @Test

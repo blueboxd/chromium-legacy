@@ -173,16 +173,15 @@ class DeleteOperation : public base::RefCountedThreadSafe<DeleteOperation> {
       return;
     }
 
-    if (ash::features::IsDriveFsBulkPinningEnabled()) {
-      if (drive_->GetRelativeDrivePath(path_, &drive_path_)) {
-        // TODO(b/266168982): In the case this is a folder, only the folder will
-        // get unpinned leaving all the children pinned. When the new method is
-        // exposed (or parameter on the existing method) update the
-        // implementation here.
-        drive_->GetDriveFsInterface()->GetMetadata(
-            drive_path_, base::BindOnce(&DeleteOperation::OnGotMetadata, this));
-        return;
-      }
+    if (drive_->GetPinManager() &&
+        drive_->GetRelativeDrivePath(path_, &drive_path_)) {
+      // TODO(b/266168982): In the case this is a folder, only the folder will
+      // get unpinned leaving all the children pinned. When the new method is
+      // exposed (or parameter on the existing method) update the
+      // implementation here.
+      drive_->GetDriveFsInterface()->GetMetadata(
+          drive_path_, base::BindOnce(&DeleteOperation::OnGotMetadata, this));
+      return;
     }
 
     blocking_task_runner_->PostTask(
@@ -195,29 +194,34 @@ class DeleteOperation : public base::RefCountedThreadSafe<DeleteOperation> {
 
   void OnGotMetadata(const drive::FileError error,
                      const drivefs::mojom::FileMetadataPtr metadata) {
-    if (error == drive::FILE_ERROR_OK) {
-      DCHECK(metadata);
-      id_ = Id(metadata->stable_id);
-      VLOG(1) << "Got metadata of " << id_ << " '" << drive_path_ << "'";
-      if (metadata->pinned) {
-        DCHECK(drive_);
-        drive_->GetDriveFsInterface()->SetPinnedByStableId(
-            metadata->stable_id, /*pinned=*/false,
-            base::BindOnce(&DeleteOperation::OnUnpinFile, this));
-        return;
-      }
-    } else {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    if (error != drive::FILE_ERROR_OK) {
       LOG(ERROR) << "Cannot get metadata of '" << drive_path_ << "': " << error;
+      blocking_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&DeleteOperation::Delete, this));
+      return;
     }
 
-    blocking_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&DeleteOperation::Delete, this));
+    DCHECK(metadata);
+    id_ = Id(metadata->stable_id);
+    // TODO(b/271203956) Remove this code once DriveFS automatically unpins
+    // deleted files and folders.
+    VLOG(1) << "Unpinning " << id_ << " '" << drive_path_ << "'...";
+    DCHECK(drive_);
+    drive_->GetDriveFsInterface()->SetPinnedByStableId(
+        metadata->stable_id, false,
+        base::BindOnce(&DeleteOperation::OnUnpinFile, this));
   }
 
   void OnUnpinFile(const drive::FileError error) {
-    LOG_IF(ERROR, error != drive::FILE_ERROR_OK)
-        << "Cannot unpin " << id_ << " '" << drive_path_
-        << "' before deleting it: " << error;
+    if (error == drive::FILE_ERROR_OK) {
+      VLOG(1) << "Unpinned " << id_ << " '" << drive_path_ << "'";
+    } else {
+      LOG(ERROR) << "Cannot unpin " << id_ << " '" << drive_path_
+                 << "': " << error;
+    }
+
     blocking_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&DeleteOperation::Delete, this));
   }

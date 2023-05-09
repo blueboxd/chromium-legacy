@@ -45,6 +45,10 @@
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"  // nogncheck
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // The tests in this file use the Network Service implementation of
 // NetworkContext, to test sending and receiving of data over TCP sockets.
 
@@ -147,8 +151,9 @@ class ReadWriteWaiter {
       DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
       if (bytes_received_ == required_receive_bytes_) {
-        if (bytes_sent_ == required_send_bytes_)
+        if (bytes_sent_ == required_send_bytes_) {
           run_loop_.Quit();
+        }
         return;
       }
     }
@@ -186,8 +191,9 @@ class ReadWriteWaiter {
       DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
       if (bytes_sent_ == required_send_bytes_) {
-        if (bytes_received_ == required_receive_bytes_)
+        if (bytes_received_ == required_receive_bytes_) {
           run_loop_.Quit();
+        }
         return;
       }
     }
@@ -238,10 +244,12 @@ class DirectSocketsTcpBrowserTest : public ContentBrowserTest {
   uint16_t StartTcpServer() {
     base::test::TestFuture<int32_t, const absl::optional<net::IPEndPoint>&>
         future;
+    auto options = network::mojom::TCPServerSocketOptions::New();
+    options->backlog = 5;
     GetNetworkContext()->CreateTCPServerSocket(
         net::IPEndPoint(net::IPAddress::IPv4Localhost(),
                         /*port=*/0),
-        /*backlog=*/5,
+        std::move(options),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         tcp_server_socket_.BindNewPipeAndPassReceiver(), future.GetCallback());
     auto local_addr = future.Get<absl::optional<net::IPEndPoint>>();
@@ -279,13 +287,6 @@ class DirectSocketsTcpBrowserTest : public ContentBrowserTest {
         std::make_unique<content::test::AsyncJsRunner>(shell()->web_contents());
 
     ASSERT_TRUE(NavigateToURL(shell(), GetTestPageURL()));
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // For TCPServerSocket support.
-    // TODO(crbug.com/1408140): remove after TCPServerSocket is fully supported.
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "DirectSocketsExperimental");
   }
 
   void SetUp() override {
@@ -619,10 +620,142 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsTcpBrowserTest,
               ::testing::HasSubstr("waitForClosedPromise succeeded."));
 }
 
-IN_PROC_BROWSER_TEST_F(DirectSocketsTcpBrowserTest, ExchangeTcpServer) {
+class DirectSocketsTcpServerBrowserTest : public DirectSocketsTcpBrowserTest {
+ public:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  DirectSocketsTcpServerBrowserTest() {
+    chromeos::PermissionBrokerClient::InitializeFake();
+    DirectSocketsServiceImpl::SetAlwaysOpenFirewallHoleForTesting(true);
+  }
+
+  ~DirectSocketsTcpServerBrowserTest() override {
+    chromeos::PermissionBrokerClient::Shutdown();
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // For TCPServerSocket support.
+    // TODO(crbug.com/1408140): remove after TCPServerSocket is fully supported.
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "DirectSocketsExperimental");
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsTcpServerBrowserTest, ExchangeTcpServer) {
   ASSERT_THAT(EvalJs(shell(), "exchangeSingleTcpPacketBetweenClientAndServer()")
                   .ExtractString(),
               testing::HasSubstr("succeeded"));
+}
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+IN_PROC_BROWSER_TEST_F(DirectSocketsTcpServerBrowserTest, HasFirewallHole) {
+  class DelegateImpl : public chromeos::FakePermissionBrokerClient::Delegate {
+   public:
+    DelegateImpl(uint16_t port, base::OnceClosure quit_closure)
+        : port_(port), quit_closure_(std::move(quit_closure)) {}
+
+    void OnTcpPortReleased(uint16_t port,
+                           const std::string& interface) override {
+      if (port == port_) {
+        ASSERT_EQ(interface, "");
+        ASSERT_TRUE(quit_closure_);
+        std::move(quit_closure_).Run();
+      }
+    }
+
+   private:
+    uint16_t port_;
+    base::OnceClosure quit_closure_;
+  };
+
+  auto* client = chromeos::FakePermissionBrokerClient::Get();
+
+  const std::string open_script = R"(
+    (async () => {
+      socket = new TCPServerSocket('127.0.0.1');
+      const { localPort } = await socket.opened;
+      return localPort;
+    })();
+  )";
+
+  const int32_t local_port = EvalJs(shell(), open_script).ExtractInt();
+  ASSERT_TRUE(client->HasTcpHole(local_port, "" /* all interfaces */));
+
+  base::RunLoop run_loop;
+  auto delegate =
+      std::make_unique<DelegateImpl>(local_port, run_loop.QuitClosure());
+  client->AttachDelegate(delegate.get());
+
+  EXPECT_TRUE(EvalJs(shell(), content::test::WrapAsync("socket.close()"))
+                  .error.empty());
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsTcpServerBrowserTest, FirewallHoleDenied) {
+  auto* client = chromeos::FakePermissionBrokerClient::Get();
+  client->SetTcpDenyAll();
+
+  const std::string open_script = R"(
+    (async () => {
+      socket = new TCPServerSocket('127.0.0.1');
+      return await socket.opened.catch(err => err.message);
+    })();
+  )";
+
+  EXPECT_THAT(EvalJs(shell(), open_script).ExtractString(),
+              testing::HasSubstr("Firewall"));
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsTcpServerBrowserTest, OkOnClose) {
+  ASSERT_EQ(true, EvalJs(shell(), R"(
+    (async () => {
+      socket = new TCPServerSocket('127.0.0.1');
+      await socket.opened;
+      socket.close();
+      return await socket.closed.then(() => true);
+    })();
+  )"));
+}
+
+class MockNetworkContextWithTCPServerSocketReceiver
+    : public network::TestNetworkContext {
+ public:
+  void CreateTCPServerSocket(
+      const net::IPEndPoint& local_addr,
+      network::mojom::TCPServerSocketOptionsPtr options,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      mojo::PendingReceiver<network::mojom::TCPServerSocket> socket,
+      CreateTCPServerSocketCallback callback) override {
+    receiver_.Bind(std::move(socket));
+    std::move(callback).Run(net::OK, /*local_addr=*/net::IPEndPoint(
+                                net::IPAddress::IPv4Localhost(), 0));
+  }
+
+  void ResetSocketReceiver() { receiver_.reset(); }
+
+ private:
+  mojo::Receiver<network::mojom::TCPServerSocket> receiver_{nullptr};
+};
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsTcpServerBrowserTest, ErrorOnRemoteReset) {
+  MockNetworkContextWithTCPServerSocketReceiver mock_network_context;
+  DirectSocketsServiceImpl::SetNetworkContextForTesting(&mock_network_context);
+
+  ASSERT_EQ(true, EvalJs(shell(), R"(
+    (async () => {
+      socket = new TCPServerSocket('127.0.0.1');
+      await socket.opened;
+      return true;
+    })();
+  )"));
+
+  auto future = GetAsyncJsRunner()->RunScript(
+      test::WrapAsync("return socket.closed.catch(() => 'ok')"));
+  mock_network_context.ResetSocketReceiver();
+
+  ASSERT_EQ("ok", future->Get());
 }
 
 }  // namespace content

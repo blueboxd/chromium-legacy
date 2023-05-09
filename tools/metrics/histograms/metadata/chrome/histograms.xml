@@ -22,6 +22,16 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<histogram name="Chrome.BuildState.BuildStateUpdateType"
+    enum="BuildStateUpdateType" expires_after="2024-03-30">
+  <owner>ajgo@chromium.org</owner>
+  <owner>anunoy@chromium.org</owner>
+  <summary>
+    Result of polling for the installed version of Chrome. Logged once at
+    startup then approximately every two hours.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.KAnonymityService.JoinSet.Action"
     enum="KAnonymityServiceJoinSetAction" expires_after="2023-07-30">
   <owner>behamilton@google.com</owner>
@@ -35,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.JoinSet.Latency" units="ms"
-    expires_after="M113">
+    expires_after="2023-08-27">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -59,7 +69,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.QuerySet.Latency" units="ms"
-    expires_after="M113">
+    expires_after="2023-08-27">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -253,7 +263,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.SystemNetworkContextManager.NetworkSandboxState"
-    enum="NetworkSandboxState" expires_after="2023-07-09">
+    enum="NetworkSandboxState" expires_after="2023-09-10">
   <owner>wfh@chromium.org</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -352,6 +362,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="ChromeElf.ThirdPartyStatus" enum="ThirdPartyStatus"
     expires_after="M82">
+  <obsolete>
+    Retained for historical data.
+  </obsolete>
   <owner>chrisha@chromium.org</owner>
   <owner>pmonette@chromium.org</owner>
   <summary>

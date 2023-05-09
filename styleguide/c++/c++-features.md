@@ -32,7 +32,8 @@ The current status of existing standards and Abseil features is:
 *   **C++14:** _Default allowed_
 *   **C++17:** Initially supported December 23, 2021; see allowed/banned/TBD
     features below
-*   **C++20:** _Not yet supported in Chromium_
+*   **C++20:** _Not yet supported in Chromium_, with the exception of
+    [designated initializers](https://google.github.io/styleguide/cppguide.html#Designated_initializers)
 *   **C++23:** _Not yet standardized_
 *   **Abseil:** _Default allowed; see banned/TBD features below_
       * absl::AnyInvocable: Initially supported June 20, 2022
@@ -97,26 +98,6 @@ Banned in the
 [Google Style Guide](https://google.github.io/styleguide/cppguide.html#Operator_Overloading).
 ***
 
-### thread_local Storage Class <sup>[banned]</sup>
-
-```c++
-thread_local int foo = 1;
-```
-
-**Description:** Puts variables into thread local storage.
-
-**Documentation:**
-[Storage duration](https://en.cppreference.com/w/cpp/language/storage_duration)
-
-**Notes:**
-*** promo
-Some surprising effects on Mac
-([discussion](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2msN8k3Xzgs),
-[fork](https://groups.google.com/a/chromium.org/forum/#!topic/cxx/h7O5BdtWCZw)).
-Use `base::SequenceLocalStorageSlot` for sequence support, and
-`base::ThreadLocal`/`base::ThreadLocalStorage` otherwise.
-***
-
 ## C++11 Banned Library Features {#library-blocklist-11}
 
 The following C++11 library features are not allowed in the Chromium codebase.
@@ -178,21 +159,21 @@ explicitly allowed.
 [Discussion thread](https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg)
 ***
 
-### &lt;random&gt; <sup>[banned]</sup>
+### Engines And Generators From &lt;random&gt; <sup>[banned]</sup>
 
 ```c++
-#include <random>
+std::mt19937 generator;
 ```
 
-**Description:** Random number generation algorithms and utilities.
+**Description:** Methods of generating random numbers.
 
 **Documentation:**
 [Pseudo-random number generation](https://en.cppreference.com/w/cpp/numeric/random)
 
 **Notes:**
 *** promo
-Do not use any random number engines from `<random>`. Instead, use
-`base::RandomBitGenerator`.
+Do not use any random number engines or generators from `<random>`. Instead, use
+`base::RandomBitGenerator`. (You may use the distributions from `<random>`.)
 
 [Discussion thread](https://groups.google.com/a/chromium.org/forum/#!topic/cxx/16Xmw05C-Y0)
 ***
@@ -1520,6 +1501,26 @@ contexts.
 **Documentation:**
 [`std::from_chars`](https://en.cppreference.com/w/cpp/utility/from_chars)
 [`std::to_chars`](https://en.cppreference.com/w/cpp/utility/to_chars),
+
+**Notes:**
+*** promo
+None
+***
+
+## C++20 Allowed Language Features {#core-allowlist-20}
+
+### Designated initializers <sup>[allowed]</sup>
+
+```c++
+struct S { int x = 1; int y = 2; }
+S s{ .y = 3 };  // OK, s.x == 1, s.y == 3
+```
+
+**Description:** Allows explicit initialization of subsets of aggregate members
+at construction.
+
+**Documentation:**
+[Designated initializers](https://en.cppreference.com/w/cpp/language/aggregate_initialization#Designated_initializers)
 
 **Notes:**
 *** promo

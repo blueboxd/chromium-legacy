@@ -10,14 +10,16 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/bookmarks/browser/bookmark_model.h"
-#import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_editor/bookmarks_folder_editor_view_controller.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -80,15 +82,22 @@
 - (void)start {
   [super start];
   // TODO(crbug.com/1402758): Create a mediator.
+  ChromeBrowserState* browserState = self.browser->GetBrowserState();
   bookmarks::BookmarkModel* model =
-      ios::BookmarkModelFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
+      ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
+          browserState);
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(browserState);
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browserState);
   if (_baseNavigationController) {
     DCHECK(!_folderNode);
     _viewController = [BookmarksFolderEditorViewController
         folderCreatorWithBookmarkModel:model
                           parentFolder:_parentFolderNode
-                               browser:self.browser];
+                               browser:self.browser
+                      syncSetupService:syncSetupService
+                           syncService:syncService];
     _viewController.delegate = self;
     _viewController.snackbarCommandsHandler = HandlerForProtocol(
         self.browser->GetCommandDispatcher(), SnackbarCommands);
@@ -100,7 +109,9 @@
     _viewController = [BookmarksFolderEditorViewController
         folderEditorWithBookmarkModel:model
                                folder:_folderNode
-                              browser:self.browser];
+                              browser:self.browser
+                     syncSetupService:syncSetupService
+                          syncService:syncService];
     _viewController.delegate = self;
     _viewController.snackbarCommandsHandler = HandlerForProtocol(
         self.browser->GetCommandDispatcher(), SnackbarCommands);
@@ -136,6 +147,7 @@
     // `nullptr`.
     DCHECK(!self.baseViewController.presentedViewController);
   }
+  [_viewController disconnect];
   _viewController = nil;
 }
 
@@ -160,7 +172,7 @@
                                browser:self.browser
                            hiddenNodes:hiddenNodes];
   _folderChooserCoordinator.allowsNewFolders = NO;
-  _folderChooserCoordinator.selectedFolder = parent;
+  [_folderChooserCoordinator setSelectedFolder:parent];
   _folderChooserCoordinator.delegate = self;
   [_folderChooserCoordinator start];
 }

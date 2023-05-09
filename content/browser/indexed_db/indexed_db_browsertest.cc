@@ -295,16 +295,13 @@ class IndexedDBBrowserTest : public ContentBrowserTest {
   mojo::Remote<storage::mojom::MockFailureInjector> failure_injector_;
 };
 
-class IndexedDBIncognitoTest : public IndexedDBBrowserTest,
-                               public ::testing::WithParamInterface<bool> {
- public:
-  IndexedDBIncognitoTest() = default;
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
+  SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"));
+}
 
-  bool IsIncognito() { return GetParam(); }
-};
-
-IN_PROC_BROWSER_TEST_P(IndexedDBIncognitoTest, CursorTest) {
-  SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"), IsIncognito());
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTestIncognito) {
+  SimpleTest(GetTestUrl("indexeddb", "cursor_test.html"),
+             /*incognito=*/true);
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorPrefetch) {
@@ -404,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, NegativeDBSchemaVersion) {
           ->GetOrCreateBucketSync(storage::BucketInitParams::ForDefaultBucket(
               blink::StorageKey::CreateFirstParty(
                   url::Origin::Create(database_open_url))));
-  ASSERT_TRUE(maybe_bucket_info.ok());
+  ASSERT_TRUE(maybe_bucket_info.has_value());
   const auto bucket_locator = maybe_bucket_info->ToBucketLocator();
 
   auto control_test = GetControlTest();
@@ -443,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, NegativeDBDataVersion) {
           ->GetOrCreateBucketSync(storage::BucketInitParams::ForDefaultBucket(
               blink::StorageKey::CreateFirstParty(
                   url::Origin::Create(database_open_url))));
-  ASSERT_TRUE(maybe_bucket_info.ok());
+  ASSERT_TRUE(maybe_bucket_info.has_value());
   const auto bucket_locator = maybe_bucket_info->ToBucketLocator();
 
   auto control_test = GetControlTest();
@@ -777,7 +774,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
           ->proxy()
           ->GetOrCreateBucketSync(
               storage::BucketInitParams::ForDefaultBucket(kTestStorageKey));
-  ASSERT_TRUE(maybe_bucket_info.ok());
+  ASSERT_TRUE(maybe_bucket_info.has_value());
   const auto bucket_locator = maybe_bucket_info->ToBucketLocator();
   EXPECT_EQ(0,
             RequestBlobFileCount(bucket_locator));  // Start with no blob files.
@@ -1071,7 +1068,7 @@ IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTestWithCorruption,
           base::SequencedTaskRunner::GetCurrentDefault(),
           base::BindLambdaForTesting(
               [&](storage::QuotaErrorOr<storage::BucketInfo> result) {
-                ASSERT_TRUE(result.ok());
+                ASSERT_TRUE(result.has_value());
                 bucket_locator = result->ToBucketLocator();
                 loop.Quit();
               }));
@@ -1242,7 +1239,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestV2SchemaCorruption, LifecycleTest) {
           ->GetOrCreateBucketSync(storage::BucketInitParams::ForDefaultBucket(
               blink::StorageKey::CreateFirstParty(
                   url::Origin::Create(embedded_test_server()->base_url()))));
-  ASSERT_TRUE(maybe_bucket_info.ok());
+  ASSERT_TRUE(maybe_bucket_info.has_value());
   const auto bucket_locator = maybe_bucket_info->ToBucketLocator();
 
   // Verify the backing store does not have corruption.
@@ -1338,7 +1335,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestBlobKeyCorruption, LifecycleTest) {
           ->GetOrCreateBucketSync(storage::BucketInitParams::ForDefaultBucket(
               blink::StorageKey::CreateFirstParty(
                   url::Origin::Create(embedded_test_server()->base_url()))));
-  ASSERT_TRUE(maybe_bucket_info.ok());
+  ASSERT_TRUE(maybe_bucket_info.has_value());
   const auto bucket_locator = maybe_bucket_info->ToBucketLocator();
   int64_t next_blob_number = GetNextBlobNumber(bucket_locator, 1);
 
@@ -1351,30 +1348,25 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestBlobKeyCorruption, LifecycleTest) {
     EXPECT_TRUE(base::PathExists(first_blob));
     EXPECT_FALSE(base::PathExists(corrupt_blob));
     const char kCorruptData[] = "corrupt";
-    base::WriteFile(corrupt_blob, kCorruptData, sizeof(kCorruptData));
+    base::WriteFile(corrupt_blob, kCorruptData);
   }
 
   SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
-IN_PROC_BROWSER_TEST_P(IndexedDBIncognitoTest, BucketDurabilityStrict) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityStrict) {
   FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
-  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_strict.html"),
-             IsIncognito());
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_strict.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(IndexedDBIncognitoTest, BucketDurabilityRelaxed) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityRelaxed) {
   FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
-  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_relaxed.html"),
-             IsIncognito());
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_relaxed.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(IndexedDBIncognitoTest, BucketDurabilityOverride) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BucketDurabilityOverride) {
   FailOperation(FailClass::LEVELDB_TRANSACTION, FailMethod::COMMIT_SYNC, 2, 1);
-  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_override.html"),
-             IsIncognito());
+  SimpleTest(GetTestUrl("indexeddb", "bucket_durability_override.html"));
 }
-
-INSTANTIATE_TEST_SUITE_P(All, IndexedDBIncognitoTest, testing::Bool());
 
 }  // namespace content

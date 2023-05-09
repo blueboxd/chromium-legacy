@@ -9,12 +9,11 @@
 #include <memory>
 #include <vector>
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/schedule_enums.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_variant.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller_client.h"
@@ -28,6 +27,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wallpaper/test_wallpaper_controller_client.h"
 #include "ash/wallpaper/test_wallpaper_drivefs_delegate.h"
+#include "ash/wallpaper/test_wallpaper_image_downloader.h"
 #include "ash/wallpaper/wallpaper_pref_manager.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -39,6 +39,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
@@ -185,11 +186,8 @@ bool WriteJPEGFile(const base::FilePath& path,
     return false;
   }
 
-  size_t bytes_written = base::WriteFile(
-      path, reinterpret_cast<const char*>(&output[0]), output.size());
-  if (bytes_written != output.size()) {
-    LOG(ERROR) << "Wrote " << bytes_written << " byte(s) instead of "
-               << output.size() << " to " << path.value();
+  if (!base::WriteFile(path, output)) {
+    LOG(ERROR) << "Writing to " << path.value() << " failed.";
     return false;
   }
   return true;
@@ -379,10 +377,16 @@ class WallpaperControllerTest : public AshTestBase {
   void SetUp() override {
     auto pref_manager = WallpaperPrefManager::Create(local_state());
     pref_manager_ = pref_manager.get();
-    // Override the pref manager that will be used to construct the
-    // WallpaperController.
+    // Override the pref manager and image downloader that will be used to
+    // construct the WallpaperController.
     WallpaperControllerImpl::SetWallpaperPrefManagerForTesting(
         std::move(pref_manager));
+
+    auto test_wallpaper_image_downloader =
+        std::make_unique<TestWallpaperImageDownloader>();
+    test_wallpaper_image_downloader_ = test_wallpaper_image_downloader.get();
+    WallpaperControllerImpl::SetWallpaperImageDownloaderForTesting(
+        std::move(test_wallpaper_image_downloader));
 
     AshTestBase::SetUp();
 
@@ -400,8 +404,6 @@ class WallpaperControllerTest : public AshTestBase {
     // written around, but at some point they should probably be fixed.
     in_process_data_decoder_.service().SimulateImageDecoderCrashForTesting(
         true);
-
-    test_image_downloader_ = std::make_unique<TestImageDownloader>();
 
     controller_ = Shell::Get()->wallpaper_controller();
     controller_->set_wallpaper_reload_no_delay_for_test();
@@ -739,7 +741,7 @@ class WallpaperControllerTest : public AshTestBase {
 
   TestWallpaperControllerClient client_;
   raw_ptr<TestWallpaperDriveFsDelegate> drivefs_delegate_;
-  std::unique_ptr<TestImageDownloader> test_image_downloader_;
+  raw_ptr<TestWallpaperImageDownloader> test_wallpaper_image_downloader_;
 
   const AccountId kChildAccountId =
       AccountId::FromUserEmailGaiaId(kChildEmail, kChildEmail);
@@ -1038,7 +1040,7 @@ TEST_F(WallpaperControllerTest, ShouldCalculateColorsBasedOnSessionState) {
   EXPECT_FALSE(ShouldCalculateColors());
 
   SetSessionState(SessionState::OOBE);
-  EXPECT_FALSE(ShouldCalculateColors());
+  EXPECT_TRUE(ShouldCalculateColors());
 
   SetSessionState(SessionState::LOGIN_PRIMARY);
   EXPECT_FALSE(ShouldCalculateColors());
@@ -1106,7 +1108,7 @@ TEST_F(WallpaperControllerTest, ColorsCalculatedForMostRecentWallpaper) {
 
 TEST_F(WallpaperControllerTest, CelebiNotSavedWhenJellyIsDisabled) {
   base::test::ScopedFeatureList features;
-  features.InitAndDisableFeature(features::kJelly);
+  features.InitAndDisableFeature(chromeos::features::kJelly);
   TestWallpaperControllerObserver observer(controller_);
 
   const char location[] = "test_wallpaper_here";
@@ -1129,7 +1131,7 @@ TEST_F(WallpaperControllerTest, CelebiNotSavedWhenJellyIsDisabled) {
 }
 
 TEST_F(WallpaperControllerTest, SaveCelebiColorWhenJellyActive) {
-  base::test::ScopedFeatureList features(features::kJelly);
+  base::test::ScopedFeatureList features(chromeos::features::kJelly);
   TestWallpaperControllerObserver observer(controller_);
 
   const char location[] = "test_wallpaper_here";
@@ -3954,7 +3956,8 @@ TEST_F(WallpaperControllerTest,
   info.collection_id = "fun_collection";
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
-  test_image_downloader_->set_should_fail(true);
+  test_wallpaper_image_downloader_->set_image_generator(
+      base::BindLambdaForTesting([]() { return gfx::ImageSkia(); }));
 
   controller_->UpdateDailyRefreshWallpaperForTesting();
 
@@ -4134,8 +4137,11 @@ TEST_F(WallpaperControllerTest,
             controller_->GetDailyRefreshCollectionId(kAccountId1));
 }
 
-TEST_F(WallpaperControllerTest, UpdateWallpaperOnColorModeChanged) {
+TEST_F(WallpaperControllerTest, UpdateWallpaperOnScheduleCheckpointChanged) {
   SimulateUserLogin(kAccountId1);
+
+  // Enable dark mode by default.
+  Shell::Get()->dark_light_mode_controller()->SetDarkModeEnabledForTest(true);
 
   auto run_loop = std::make_unique<base::RunLoop>();
   ClearWallpaperCount();
@@ -4160,10 +4166,10 @@ TEST_F(WallpaperControllerTest, UpdateWallpaperOnColorModeChanged) {
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOnline);
 
-  // Change to light mode.
-  Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
-      prefs::kDarkModeEnabled, false);
-  controller_->OnColorModeChanged(false);
+  // Switch to light mode and simulate schedule checkpoint change to reflect
+  // light mode.
+  EXPECT_TRUE(Shell::Get()->dark_light_mode_controller()->IsDarkModeEnabled());
+  Shell::Get()->dark_light_mode_controller()->ToggleColorMode();
   RunAllTasksUntilIdle();
   EXPECT_EQ(2, GetWallpaperCount());
   WallpaperInfo expected = WallpaperInfo(OnlineWallpaperParams(
@@ -4322,7 +4328,8 @@ TEST_F(WallpaperControllerTest, SetOnlineWallpaperWithoutInternet) {
   // Attempt to set the same online wallpaper without internet. Verify it
   // still succeeds because the previous call to |SetOnlineWallpaper()| has
   // saved the file.
-  test_image_downloader_->set_should_fail(true);
+  test_wallpaper_image_downloader_->set_image_generator(
+      base::BindLambdaForTesting([]() { return gfx::ImageSkia(); }));
   ClearWallpaperCount();
   base::RunLoop run_loop;
   controller_->SetOnlineWallpaper(
@@ -5119,6 +5126,59 @@ TEST_F(WallpaperControllerGooglePhotosWallpaperTest,
   // we do.
   EXPECT_GE(delay, one_day - base::Minutes(1));
   EXPECT_LE(delay, one_day + base::Minutes(61));
+}
+
+TEST_F(WallpaperControllerGooglePhotosWallpaperTest,
+       ResetToDefaultForDisabledGooglePhotosIntegrationPolicyOnStalenessCheck) {
+  SimulateUserLogin(kAccountId1);
+
+  WallpaperInfo info = {kFakeGooglePhotosPhotoId, WALLPAPER_LAYOUT_CENTER,
+                        WallpaperType::kOnceGooglePhotos,
+                        DayBeforeYesterdayish()};
+  pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
+
+  client_.set_wallpaper_google_photos_integration_enabled_for_account_id(
+      kAccountId1, false);
+
+  // Trigger Google Photos wallpaper cache check.
+  controller_->OnActiveUserSessionChanged(kAccountId1);
+  WaitForWallpaperCount(1);
+
+  EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kDefault);
+}
+
+TEST_F(
+    WallpaperControllerGooglePhotosWallpaperTest,
+    ResetToDefaultForDisabledGooglePhotosIntegrationPolicyDailyGooglePhotosAlbums) {
+  SimulateUserLogin(kAccountId1);
+
+  base::test::TestFuture<bool> google_photos_future;
+  controller_->SetGooglePhotosWallpaper(
+      {kAccountId1, kFakeGooglePhotosAlbumId, /*daily_refresh_enabled=*/true,
+       WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
+       /*preview_mode=*/false, /*dedup_key=*/absl::nullopt},
+      google_photos_future.GetCallback());
+  EXPECT_TRUE(google_photos_future.Get());
+  RunAllTasksUntilIdle();
+
+  WallpaperInfo current_info;
+  pref_manager_->GetUserWallpaperInfo(kAccountId1, &current_info);
+
+  EXPECT_EQ(WallpaperType::kDailyGooglePhotos, current_info.type);
+
+  // This makes the test fetch in `client_` return a null photo, but a
+  // successful call, which is the sign for the
+  // WallpaperGooglePhotosIntegrationEnabled policy disabled, or a deleted or
+  // empty album.
+  client_.set_wallpaper_google_photos_integration_enabled_for_account_id(
+      kAccountId1, false);
+
+  controller_->UpdateDailyRefreshWallpaperForTesting();
+  RunAllTasksUntilIdle();
+
+  pref_manager_->GetUserWallpaperInfo(kAccountId1, &current_info);
+
+  EXPECT_EQ(WallpaperType::kDefault, current_info.type);
 }
 
 }  // namespace ash

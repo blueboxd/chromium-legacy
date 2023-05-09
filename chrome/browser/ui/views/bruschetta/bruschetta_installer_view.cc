@@ -10,12 +10,16 @@
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_installer.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_installer_impl.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_pref_names.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_service.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -23,6 +27,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -42,6 +47,11 @@ constexpr int kWindowHeight = 636;
 void BruschettaInstallerView::Show(Profile* profile,
                                    const guest_os::GuestId& guest_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (bruschetta::GetInstallableConfigs(profile).empty()) {
+    LOG(ERROR)
+        << "Bruschetta has no installable configs, not running the installer.";
+    return;
+  }
   if (!g_bruschetta_installer_view) {
     g_bruschetta_installer_view =
         new BruschettaInstallerView(profile, guest_id);
@@ -95,22 +105,17 @@ BruschettaInstallerView::BruschettaInstallerView(Profile* profile,
   // Removed margins so dialog insets specify it instead.
   set_margins(gfx::Insets());
 
-  views::BoxLayout* layout =
-      SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical, kDialogInsets));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical, kDialogInsets));
 
   views::View* upper_container_view =
       AddChildView(std::make_unique<views::View>());
   upper_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets()));
-  AddChildView(upper_container_view);
 
-  views::View* lower_container_view =
-      AddChildView(std::make_unique<views::View>());
-  lower_container_layout_ =
-      lower_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical));
-  AddChildView(lower_container_view);
+  radio_button_container_ = AddChildView(std::make_unique<views::View>());
+  radio_button_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   primary_message_label_ = new TitleLabel(GetPrimaryMessage(), CONTEXT_HEADLINE,
                                           views::style::STYLE_PRIMARY);
@@ -141,10 +146,19 @@ BruschettaInstallerView::BruschettaInstallerView(Profile* profile,
       gfx::Insets::TLBR(kProgressBarTopMargin - kProgressBarHeight, 0, 0, 0));
   upper_container_view->AddChildView(progress_bar_.get());
 
-  // Make sure the lower_container_view is pinned to the bottom of the dialog.
-  lower_container_layout_->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kEnd);
-  layout->SetFlexForView(lower_container_view, 1, true);
+  for (const auto& it : bruschetta::GetInstallableConfigs(profile_)) {
+    const auto& label =
+        it.second.Find(bruschetta::prefs::kPolicyNameKey)->GetString();
+    const auto& config_name = it.first;
+
+    auto* radio_button = radio_button_container_->AddChildView(
+        std::make_unique<views::RadioButton>(base::UTF8ToUTF16(label)));
+
+    radio_buttons_.emplace(config_name, radio_button);
+  }
+  DCHECK(radio_button_container_->children().size() > 0);
+  static_cast<views::RadioButton*>(radio_button_container_->children()[0])
+      ->SetChecked(true);
 
   ash::DarkLightModeController* dark_light_controller =
       ash::DarkLightModeController::Get();
@@ -171,7 +185,25 @@ BruschettaInstallerView::~BruschettaInstallerView() {
 }
 
 bool BruschettaInstallerView::Accept() {
-  DCHECK(state_ == State::kConfirmInstall || state_ == State::kFailed);
+  DCHECK(state_ == State::kConfirmInstall || state_ == State::kFailed ||
+         state_ == State::kFailedCleanup);
+
+  if (state_ == State::kConfirmInstall) {
+    absl::optional<std::string> selected_config;
+    for (const auto& it : radio_buttons_) {
+      if (it.second->GetChecked()) {
+        selected_config = it.first;
+      }
+    }
+
+    DCHECK(selected_config.has_value()) << "No install config selected";
+    selected_config_ = *selected_config;
+
+    RemoveChildViewT(radio_button_container_);
+    radio_button_container_ = nullptr;
+    radio_buttons_.clear();
+  }
+
   observation_.Reset();
   installer_.reset();
   StartInstallation();
@@ -179,6 +211,9 @@ bool BruschettaInstallerView::Accept() {
 }
 
 bool BruschettaInstallerView::Cancel() {
+  if (state_ == State::kInstalling) {
+    CleanupPartialInstall();
+  }
   // We're about to get destroyed, and since all the cleanup happens in our
   // destructor there's nothing special to do here.
   return true;
@@ -194,7 +229,7 @@ void BruschettaInstallerView::StartInstallation() {
       profile_, base::BindOnce(&BruschettaInstallerView::OnInstallationEnded,
                                weak_factory_.GetWeakPtr()));
   observation_.Observe(installer_.get());
-  installer_->Install(guest_id_.vm_name, bruschetta::kBruschettaPolicyId);
+  installer_->Install(guest_id_.vm_name, selected_config_);
 
   OnStateUpdated();
 }
@@ -210,7 +245,7 @@ void BruschettaInstallerView::StateChanged(InstallerState new_state) {
 
 void BruschettaInstallerView::Error(bruschetta::BruschettaInstallResult error) {
   error_ = error;
-  state_ = State::kFailed;
+  CleanupPartialInstall();
   OnStateUpdated();
 }
 
@@ -242,38 +277,50 @@ std::u16string BruschettaInstallerView::GetPrimaryMessage() const {
           IDS_BRUSCHETTA_INSTALLER_CONFIRMATION_TITLE);
     case State::kInstalling:
       return l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_ONGOING_TITLE);
+    case State::kCleaningUp:
     case State::kFailed:
+    case State::kFailedCleanup:
       return l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_ERROR_TITLE);
   }
 }
 
 std::u16string BruschettaInstallerView::GetSecondaryMessage() const {
-  if (state_ == State::kInstalling) {
-    switch (installing_state_) {
-      case InstallerState::kInstallStarted:
-        // We don't really spend any time in the InstallStarted state, the real
-        // first step is installing DLC so fall through to that.
-      case InstallerState::kDlcInstall:
-        return l10n_util::GetStringUTF16(
-            IDS_BRUSCHETTA_INSTALLER_INSTALLING_DLC_MESSAGE);
-      case InstallerState::kBootDiskDownload:
-      case InstallerState::kFirmwareDownload:
-      case InstallerState::kPflashDownload:
-      case InstallerState::kOpenFiles:
-        return l10n_util::GetStringUTF16(
-            IDS_BRUSCHETTA_INSTALLER_DOWNLOADING_MESSAGE);
-      case InstallerState::kCreateVmDisk:
-      case InstallerState::kStartVm:
-      case InstallerState::kLaunchTerminal:
-        return l10n_util::GetStringUTF16(
-            IDS_BRUSCHETTA_INSTALLER_STARTING_VM_MESSAGE);
-    }
-  } else if (state_ == State::kFailed) {
-    return l10n_util::GetStringFUTF16(
-        IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE,
-        bruschetta::BruschettaInstallResultString(error_));
+  switch (state_) {
+    case State::kInstalling:
+      switch (installing_state_) {
+        case InstallerState::kInstallStarted:
+          // We don't really spend any time in the InstallStarted state, the
+          // real first step is installing DLC so fall through to that.
+        case InstallerState::kDlcInstall:
+          return l10n_util::GetStringUTF16(
+              IDS_BRUSCHETTA_INSTALLER_INSTALLING_DLC_MESSAGE);
+        case InstallerState::kBootDiskDownload:
+        case InstallerState::kFirmwareDownload:
+        case InstallerState::kPflashDownload:
+        case InstallerState::kOpenFiles:
+          return l10n_util::GetStringUTF16(
+              IDS_BRUSCHETTA_INSTALLER_DOWNLOADING_MESSAGE);
+        case InstallerState::kCreateVmDisk:
+        case InstallerState::kInstallPflash:
+        case InstallerState::kStartVm:
+        case InstallerState::kLaunchTerminal:
+          return l10n_util::GetStringUTF16(
+              IDS_BRUSCHETTA_INSTALLER_STARTING_VM_MESSAGE);
+      }
+    case State::kCleaningUp:
+      return l10n_util::GetStringUTF16(
+          IDS_BRUSCHETTA_INSTALLER_CLEANING_UP_MESSAGE);
+    case State::kFailed:
+      return l10n_util::GetStringFUTF16(
+          IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE,
+          bruschetta::BruschettaInstallResultString(error_));
+    case State::kFailedCleanup:
+      return l10n_util::GetStringFUTF16(
+          IDS_BRUSCHETTA_INSTALLER_ERROR_CLEANUP_MESSAGE,
+          bruschetta::BruschettaInstallResultString(error_));
+    case State::kConfirmInstall:
+      return {};
   }
-  return {};
 }
 
 int BruschettaInstallerView::GetCurrentDialogButtons() const {
@@ -281,8 +328,13 @@ int BruschettaInstallerView::GetCurrentDialogButtons() const {
     case State::kInstalling:
       return ui::DIALOG_BUTTON_CANCEL;
     case State::kConfirmInstall:
+      // Cancel | Start installing
       return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
+    case State::kCleaningUp:
+      return 0;
+    case State::kFailedCleanup:
     case State::kFailed:
+      // Quit | Retry
       return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
   }
 }
@@ -298,7 +350,10 @@ std::u16string BruschettaInstallerView::GetCurrentDialogButtonLabel(
     case State::kInstalling:
       DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
       return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+    case State::kCleaningUp:
+      return {};
     case State::kFailed:
+    case State::kFailedCleanup:
       return l10n_util::GetStringUTF16(
           button == ui::DIALOG_BUTTON_OK ? IDS_BRUSCHETTA_INSTALLER_RETRY_BUTTON
                                          : IDS_APP_CLOSE);
@@ -323,7 +378,8 @@ void BruschettaInstallerView::OnStateUpdated() {
                    GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
   }
 
-  const bool progress_bar_visible = state_ == State::kInstalling;
+  const bool progress_bar_visible =
+      (state_ == State::kInstalling || state_ == State::kCleaningUp);
   progress_bar_->SetVisible(progress_bar_visible);
 
   DialogModelChanged();
@@ -354,6 +410,25 @@ void BruschettaInstallerView::SetSecondaryMessageLabel() {
   secondary_message_label_->SetVisible(true);
   secondary_message_label_->NotifyAccessibilityEvent(
       ax::mojom::Event::kTextChanged, true);
+}
+
+void BruschettaInstallerView::CleanupPartialInstall() {
+  state_ = State::kCleaningUp;
+  OnStateUpdated();
+  bruschetta::BruschettaService::GetForProfile(profile_)->RemoveVm(
+      guest_id_,
+      base::BindOnce(&BruschettaInstallerView::UninstallBruschettaFinished,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void BruschettaInstallerView::UninstallBruschettaFinished(bool success) {
+  if (!success) {
+    LOG(ERROR) << "Failed to clean up after a failed install";
+    state_ = State::kFailedCleanup;
+  } else {
+    state_ = State::kFailed;
+  }
+  OnStateUpdated();
 }
 
 BEGIN_METADATA(BruschettaInstallerView, views::DialogDelegateView)

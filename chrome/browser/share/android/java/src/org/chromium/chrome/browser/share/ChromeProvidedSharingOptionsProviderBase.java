@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.net.Uri;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -22,11 +23,11 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ChromeShareExtras.DetailedContentType;
+import org.chromium.chrome.browser.share.ShareContentTypeHelper.ContentType;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
 import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfCoordinator;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
-import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder.ContentType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareImageFileUtils;
@@ -222,7 +223,7 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
      * @param isMultiWindow if in multi-window mode.
      * @return a list of {@link FirstPartyOption}s.
      */
-    protected List<FirstPartyOption> getFirstPartyOptions(Set<Integer> contentTypes,
+    protected List<FirstPartyOption> getFirstPartyOptions(@ContentType Set<Integer> contentTypes,
             @DetailedContentType int detailedContentType, boolean isMultiWindow) {
         List<FirstPartyOption> availableOptions = new ArrayList<>();
         for (FirstPartyOption firstPartyOption : mOrderedFirstPartyOptions) {
@@ -291,9 +292,7 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
     }
 
     private void maybeAddLongScreenshotFirstPartyOption() {
-        // TODO(crbug.com/1250871): Long Screenshots on by default; supported on Android 7.0+.
-        if (!(ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT)
-                    && mTabProvider.hasValue())) {
+        if (!mTabProvider.hasValue()) {
             return;
         }
         FirstPartyOption option = createLongScreenshotsFirstPartyOption();
@@ -326,8 +325,9 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
                         DetailedContentType.WEB_NOTES, DetailedContentType.NOT_SPECIFIED)
                 .setFeatureNameForMetrics(USER_ACTION_COPY_GIF_SELECTED)
                 .setOnClickCallback((view) -> {
-                    if (!mShareParams.getFileUris().isEmpty()) {
-                        Clipboard.getInstance().setImageUri(mShareParams.getFileUris().get(0));
+                    Uri imageUri = mShareParams.getImageUriToShare();
+                    if (imageUri != null) {
+                        Clipboard.getInstance().setImageUri(imageUri);
                         Toast.makeText(mActivity, R.string.gif_copied, Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -340,8 +340,9 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
                 .setFeatureNameForMetrics(USER_ACTION_COPY_IMAGE_SELECTED)
                 .setDetailedContentTypesToDisableFor(DetailedContentType.GIF)
                 .setOnClickCallback((view) -> {
-                    if (!mShareParams.getFileUris().isEmpty()) {
-                        Clipboard.getInstance().setImageUri(mShareParams.getFileUris().get(0));
+                    Uri imageUri = mShareParams.getImageUriToShare();
+                    if (imageUri != null) {
+                        Clipboard.getInstance().setImageUri(imageUri);
                         Toast.makeText(mActivity, R.string.image_copied, Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -419,10 +420,10 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
                 .setIcon(R.drawable.save_to_device, R.string.sharing_save_image)
                 .setFeatureNameForMetrics(USER_ACTION_SAVE_IMAGE_SELECTED)
                 .setOnClickCallback((view) -> {
-                    if (mShareParams.getFileUris().isEmpty()) return;
-
+                    Uri imageUri = mShareParams.getImageUriToShare();
+                    if (imageUri == null) return;
                     ShareImageFileUtils.getBitmapFromUriAsync(
-                            mActivity, mShareParams.getFileUris().get(0), (bitmap) -> {
+                            mActivity, imageUri, (bitmap) -> {
                                 SaveBitmapDelegate saveBitmapDelegate = new SaveBitmapDelegate(
                                         mActivity, bitmap, R.string.save_image_filename_prefix,
                                         null, mShareParams.getWindow());

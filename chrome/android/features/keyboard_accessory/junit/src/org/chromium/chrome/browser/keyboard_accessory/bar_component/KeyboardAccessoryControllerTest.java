@@ -10,7 +10,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,8 +22,6 @@ import static org.chromium.chrome.browser.keyboard_accessory.bar_component.Keybo
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.HAS_SUGGESTIONS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.OBFUSCATED_CHILD_AT_CALLBACK;
-import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
-import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_SWIPING_IPH;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
@@ -53,6 +50,7 @@ import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAcce
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutCoordinator;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
@@ -77,7 +75,9 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private ListObservable.ListObserver<Void> mMockActionListObserver;
     @Mock
-    private KeyboardAccessoryCoordinator.VisibilityDelegate mMockVisibilityDelegate;
+    private KeyboardAccessoryCoordinator.BarVisibilityDelegate mMockBarVisibilityDelegate;
+    @Mock
+    private AccessorySheetCoordinator.SheetVisibilityDelegate mMockSheetVisibilityDelegate;
     @Mock
     private KeyboardAccessoryModernView mMockView;
     @Mock
@@ -101,8 +101,8 @@ public class KeyboardAccessoryControllerTest {
         setAutofillFeature(false);
         when(mMockView.getTabLayout()).thenReturn(mock(TabLayout.class));
         when(mMockTabLayout.getTabSwitchingDelegate()).thenReturn(mMockTabSwitchingDelegate);
-        mCoordinator = new KeyboardAccessoryCoordinator(
-                mMockTabLayout, mMockVisibilityDelegate, new FakeViewProvider<>(mMockView));
+        mCoordinator = new KeyboardAccessoryCoordinator(mMockTabLayout, mMockBarVisibilityDelegate,
+                mMockSheetVisibilityDelegate, new FakeViewProvider<>(mMockView));
         mMediator = mCoordinator.getMediatorForTesting();
         mModel = mMediator.getModelForTesting();
     }
@@ -331,20 +331,6 @@ public class KeyboardAccessoryControllerTest {
         // Hiding the accessory should also remove actions.
         mCoordinator.dismiss();
         assertThat(mModel.get(BAR_ITEMS).size(), is(0));
-    }
-
-    @Test
-    public void testShowsTitleForActiveTabs() {
-        // Add an inactive tab and ensure the sheet title isn't already set.
-        mCoordinator.show();
-        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
-        mModel.set(SHEET_TITLE, "");
-        assertThat(mCoordinator.hasActiveTab(), is(false));
-
-        // Changing the active tab should also change the title.
-        setActiveTab(mTestTab);
-        assertThat(mModel.get(SHEET_TITLE), equalTo("Passwords"));
-        assertThat(mCoordinator.hasActiveTab(), is(true));
     }
 
     @Test
@@ -591,23 +577,7 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testFowardsAnimationEventsToVisibilityDelegate() {
         mModel.get(ANIMATION_LISTENER).onFadeInEnd();
-        verify(mMockVisibilityDelegate).onBarFadeInAnimationEnd();
-    }
-
-    @Test
-    public void testDoubleTappingCloseButtonHasNoEffect() {
-        setTabs(new KeyboardAccessoryData.Tab[] {mTestTab});
-        setActiveTab(mTestTab);
-
-        // First click should dismiss.
-        mModel.get(SHOW_KEYBOARD_CALLBACK).run();
-        setActiveTab(null); // Simulate the tab was reset by the click.
-        verify(mMockVisibilityDelegate, atLeast(1)).onChangeAccessorySheet(0);
-        verify(mMockVisibilityDelegate).onCloseAccessorySheet();
-
-        // Second click should not crash but be noop.
-        verifyNoMoreInteractions(mMockVisibilityDelegate);
-        mModel.get(SHOW_KEYBOARD_CALLBACK).run();
+        verify(mMockBarVisibilityDelegate).onBarFadeInAnimationEnd();
     }
 
     private int getGenerationImpressionCount() {

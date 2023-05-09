@@ -11,12 +11,18 @@
 
 #include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/tab_groups/tab_group_color.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "content/public/browser/page.h"
 #include "content/public/browser/page_navigator.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/dialog_model_context_menu_controller.h"
+#include "ui/views/drag_controller.h"
+
+class Browser;
+class SavedTabGroupKeyedService;
 
 namespace gfx {
 class Canvas;
@@ -26,13 +32,15 @@ class Canvas;
 // Note: we currently recreate this button if any content (title, tabs, color,
 // etc.) changes
 // TODO(dljames): Find a way to not recreate the button for each update.
-class SavedTabGroupButton : public views::MenuButton {
+class SavedTabGroupButton : public views::MenuButton,
+                            public views::DragController {
  public:
   METADATA_HEADER(SavedTabGroupButton);
   SavedTabGroupButton(
       const SavedTabGroup& group,
       base::RepeatingCallback<content::PageNavigator*()> page_navigator,
       PressedCallback callback,
+      Browser* browser,
       bool animations_enabled = true);
 
   SavedTabGroupButton(const SavedTabGroupButton&) = delete;
@@ -47,6 +55,15 @@ class SavedTabGroupButton : public views::MenuButton {
       const override;
   void OnThemeChanged() override;
 
+  // views::DragController
+  void WriteDragDataForView(View* sender,
+                            const gfx::Point& press_pt,
+                            ui::OSExchangeData* data) override;
+  int GetDragOperationsForView(View* sender, const gfx::Point& p) override;
+  bool CanStartDragForView(View* sender,
+                           const gfx::Point& press_pt,
+                           const gfx::Point& p) override;
+
   // Updates the buttons visuals (title and color) alongside its list of tabs
   // displayed in the context menu.
   void UpdateButtonData(const SavedTabGroup& group);
@@ -57,9 +74,13 @@ class SavedTabGroupButton : public views::MenuButton {
     return tab_group_color_id_;
   }
 
-  const base::GUID guid() { return guid_; }
+  const base::GUID guid() const { return guid_; }
 
  private:
+  void TabMenuItemPressed(const GURL& url, int event_flags);
+  void MoveGroupToNewWindowPressed(int event_flags);
+  void DeleteGroupPressed(int event_flags);
+
   std::unique_ptr<ui::DialogModel> CreateDialogModelForContextMenu();
 
   // The animations for button movement.
@@ -68,15 +89,19 @@ class SavedTabGroupButton : public views::MenuButton {
   // The color of the TabGroup this button is associated with.
   tab_groups::TabGroupColorId tab_group_color_id_;
 
-  // Denotes if the tabgroup is currently open in the tabstrip.
-  bool is_group_in_tabstrip_;
-
   // The guid used to identify the group this button represents.
   base::GUID guid_;
+
+  // The local guid used to identify the group in the tabstrip if it is open.
+  absl::optional<tab_groups::TabGroupId> local_group_id_;
 
   // The tabs to be displayed in the context menu. Currently supports tab title,
   // url, and favicon.
   std::vector<SavedTabGroupTab> tabs_;
+
+  const raw_ref<Browser> browser_;
+
+  const raw_ref<SavedTabGroupKeyedService> service_;
 
   // A callback used to fetch the current PageNavigator used to open URLs.
   const base::RepeatingCallback<content::PageNavigator*()>

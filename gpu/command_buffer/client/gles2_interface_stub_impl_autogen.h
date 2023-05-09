@@ -1149,6 +1149,20 @@ void GLES2InterfaceStub::CopySharedImageINTERNAL(
     GLsizei /* height */,
     GLboolean /* unpack_flip_y */,
     const GLbyte* /* mailboxes */) {}
+void GLES2InterfaceStub::ReadbackARGBImagePixelsINTERNAL(
+    const GLbyte* /* mailbox */,
+    const void* /* dst_color_space */,
+    GLuint /* dst_color_space_size */,
+    GLuint /* dst_size */,
+    GLuint /* dst_width */,
+    GLuint /* dst_height */,
+    GLuint /* dst_color_type */,
+    GLuint /* dst_alpha_type */,
+    GLuint /* dst_row_bytes */,
+    GLint /* src_x */,
+    GLint /* src_y */,
+    GLint /* plane_index */,
+    void* /* pixels */) {}
 void GLES2InterfaceStub::EnableiOES(GLenum /* target */, GLuint /* index */) {}
 void GLES2InterfaceStub::DisableiOES(GLenum /* target */, GLuint /* index */) {}
 void GLES2InterfaceStub::BlendEquationiOES(GLuint /* buf */,
@@ -1174,4 +1188,36 @@ GLboolean GLES2InterfaceStub::IsEnablediOES(GLenum /* target */,
   return 0;
 }
 void GLES2InterfaceStub::ProvokingVertexANGLE(GLenum /* provokeMode */) {}
+void GLES2InterfaceStub::FramebufferMemorylessPixelLocalStorageANGLE(
+    GLint /* plane */,
+    GLenum /* internalformat */) {}
+void GLES2InterfaceStub::FramebufferTexturePixelLocalStorageANGLE(
+    GLint /* plane */,
+    GLuint /* backingtexture */,
+    GLint /* level */,
+    GLint /* layer */) {}
+void GLES2InterfaceStub::FramebufferPixelLocalClearValuefvANGLE(
+    GLint /* plane */,
+    const GLfloat* /* value */) {}
+void GLES2InterfaceStub::FramebufferPixelLocalClearValueivANGLE(
+    GLint /* plane */,
+    const GLint* /* value */) {}
+void GLES2InterfaceStub::FramebufferPixelLocalClearValueuivANGLE(
+    GLint /* plane */,
+    const GLuint* /* value */) {}
+void GLES2InterfaceStub::BeginPixelLocalStorageANGLE(
+    GLsizei /* count */,
+    const GLenum* /* loadops */) {}
+void GLES2InterfaceStub::EndPixelLocalStorageANGLE(
+    GLsizei /* count */,
+    const GLenum* /* storeops */) {}
+void GLES2InterfaceStub::PixelLocalStorageBarrierANGLE() {}
+void GLES2InterfaceStub::GetFramebufferPixelLocalStorageParameterfvANGLE(
+    GLint /* plane */,
+    GLenum /* pname */,
+    GLfloat* /* params */) {}
+void GLES2InterfaceStub::GetFramebufferPixelLocalStorageParameterivANGLE(
+    GLint /* plane */,
+    GLenum /* pname */,
+    GLint* /* params */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

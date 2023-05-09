@@ -69,9 +69,6 @@ class MockPrinter {
   // Functions that changes settings of a pseudo printer.
   void ResetPrinter();
   void SetDefaultPrintSettings(const printing::mojom::PrintParams& params);
-  void UseInvalidSettings();
-  void UseInvalidPageSize();
-  void UseInvalidContentSize();
 
   // Functions that handle mojo messages.
   printing::mojom::PrintParamsPtr GetDefaultPrintSettings();
@@ -82,8 +79,7 @@ class MockPrinter {
                      uint32_t expected_pages_count,
                      bool has_selection,
                      printing::mojom::PrintPagesParams* settings);
-  void UpdateSettings(int cookie,
-                      printing::mojom::PrintPagesParams* params,
+  void UpdateSettings(printing::mojom::PrintPagesParams* params,
                       const printing::PageRanges& page_range_array,
                       int margins_type,
                       const gfx::Size& page_size,

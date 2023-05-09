@@ -354,7 +354,7 @@ void MediaGalleriesEventRouter::OnGalleryChanged(
     const std::string& extension_id,
     MediaGalleryPrefId gallery_id) {
   MediaGalleries::GalleryChangeDetails details;
-  details.type = MediaGalleries::GALLERY_CHANGE_TYPE_CONTENTS_CHANGED;
+  details.type = MediaGalleries::GalleryChangeType::kContentsChanged;
   details.gallery_id = base::NumberToString(gallery_id);
   DispatchEventToExtension(
       extension_id, extensions::events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
@@ -366,7 +366,7 @@ void MediaGalleriesEventRouter::OnGalleryWatchDropped(
     const std::string& extension_id,
     MediaGalleryPrefId gallery_id) {
   MediaGalleries::GalleryChangeDetails details;
-  details.type = MediaGalleries::GALLERY_CHANGE_TYPE_WATCH_DROPPED;
+  details.type = MediaGalleries::GalleryChangeType::kWatchDropped;
   details.gallery_id = base::NumberToString(gallery_id);
   DispatchEventToExtension(
       extension_id, extensions::events::MEDIA_GALLERIES_ON_GALLERY_CHANGED,
@@ -395,14 +395,14 @@ MediaGalleriesGetMediaFileSystemsFunction::Run() {
   if (base::FeatureList::IsEnabled(features::kDeprecateMediaGalleriesApis))
     return RespondNow(Error(kDeprecatedError));
 
-  std::unique_ptr<GetMediaFileSystems::Params> params(
+  absl::optional<GetMediaFileSystems::Params> params(
       GetMediaFileSystems::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   MediaGalleries::GetMediaFileSystemsInteractivity interactive =
-      MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO;
+      MediaGalleries::GetMediaFileSystemsInteractivity::kNo;
   if (params->details &&
       params->details->interactive !=
-          MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE) {
+          MediaGalleries::GetMediaFileSystemsInteractivity::kNone) {
     interactive = params->details->interactive;
   }
 
@@ -421,7 +421,7 @@ MediaGalleriesGetMediaFileSystemsFunction::Run() {
 void MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit(
     MediaGalleries::GetMediaFileSystemsInteractivity interactive) {
   switch (interactive) {
-    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_YES: {
+    case MediaGalleries::GetMediaFileSystemsInteractivity::kYes: {
       // The MediaFileSystemRegistry only updates preferences for extensions
       // that it knows are in use. Since this may be the first call to
       // chrome.getMediaFileSystems for this extension, call
@@ -431,16 +431,16 @@ void MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit(
           &MediaGalleriesGetMediaFileSystemsFunction::AlwaysShowDialog, this));
       return;
     }
-    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_IF_NEEDED: {
+    case MediaGalleries::GetMediaFileSystemsInteractivity::kIfNeeded: {
       GetMediaFileSystemsForExtension(base::BindOnce(
           &MediaGalleriesGetMediaFileSystemsFunction::ShowDialogIfNoGalleries,
           this));
       return;
     }
-    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NO:
+    case MediaGalleries::GetMediaFileSystemsInteractivity::kNo:
       GetAndReturnGalleries();
       return;
-    case MediaGalleries::GET_MEDIA_FILE_SYSTEMS_INTERACTIVITY_NONE:
+    case MediaGalleries::GetMediaFileSystemsInteractivity::kNone:
       NOTREACHED();
   }
   Respond(Error("Error initializing Media Galleries preferences."));
@@ -681,7 +681,7 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
     return;
   }
 
-  if (metadata_type == MediaGalleries::GET_METADATA_TYPE_MIMETYPEONLY) {
+  if (metadata_type == MediaGalleries::GetMetadataType::kMimeTypeOnly) {
     MediaGalleries::MediaMetadata metadata;
     metadata.mime_type = mime_type;
 
@@ -694,8 +694,8 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
   // We get attached images by default. GET_METADATA_TYPE_NONE is the default
   // value if the caller doesn't specify the metadata type.
   bool get_attached_images =
-      metadata_type == MediaGalleries::GET_METADATA_TYPE_ALL ||
-      metadata_type == MediaGalleries::GET_METADATA_TYPE_NONE;
+      metadata_type == MediaGalleries::GetMetadataType::kAll ||
+      metadata_type == MediaGalleries::GetMetadataType::kNone;
 
   auto media_data_source_factory =
       std::make_unique<BlobDataSourceFactory>(browser_context(), blob_uuid);
@@ -796,7 +796,7 @@ ExtensionFunction::ResponseAction MediaGalleriesAddGalleryWatchFunction::Run() {
   if (!render_frame_host() || !render_frame_host()->GetProcess())
     return RespondNow(Error(kNoRenderFrameOrRenderProcessError));
 
-  std::unique_ptr<AddGalleryWatch::Params> params(
+  absl::optional<AddGalleryWatch::Params> params(
       AddGalleryWatch::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -872,7 +872,7 @@ MediaGalleriesRemoveGalleryWatchFunction::Run() {
   if (!render_frame_host() || !render_frame_host()->GetProcess())
     return RespondNow(Error(kNoRenderFrameOrRenderProcessError));
 
-  std::unique_ptr<RemoveGalleryWatch::Params> params(
+  absl::optional<RemoveGalleryWatch::Params> params(
       RemoveGalleryWatch::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 

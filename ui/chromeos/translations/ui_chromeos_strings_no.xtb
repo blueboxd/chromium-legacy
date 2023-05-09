@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Zipper <ph name="NUMBER_OF_ITEMS" /> elementer …</translation>
 <translation id="1722687688096767818">Legger til profil …</translation>
 <translation id="1726100011689679555">Navnetjenere</translation>
+<translation id="1727562178154619254">Klar for synkronisering</translation>
 <translation id="1729953886957086472">Tysk (Tyskland)</translation>
 <translation id="1730235522912993863">Kinesisk cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> elementer er kopiert.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Bildeoppløsning</translation>
 <translation id="1972984168337863910">Vis tilbakemeldingspaneler på filer</translation>
 <translation id="1995337122023280937">Gå til filplassering</translation>
-<translation id="1999709132469742660">Filtilgang for alle nettadresser</translation>
 <translation id="2001796770603320721">Administrer i Disk</translation>
 <translation id="2009067268969781306">Diskformatering sletter alle data som er lagret på disken. Denne handlingen kan ikke angres.</translation>
 <translation id="2025955442973426285">Tigrinja</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Latinamerikansk</translation>
 <translation id="5330145655348521461">Disse filene ble åpnet på et annet skrivebord. Flytt til <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) for å se dem.</translation>
 <translation id="5330512191124428349">Få informasjon</translation>
-<translation id="5337538975554986899">Filtilgang for alle nettadresser unntatt <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Administrer Bruschetta-deling</translation>
 <translation id="535792325654997756">Person med katter</translation>
 <translation id="5358764674931277">Bildefrekvens</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Det oppsto en feil under installasjon av Linux-appen.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Kopieringshandlingen mislyktes på grunn av en uventet feil: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Nye søkefunksjoner er tilgjengelig</translation>
 <translation id="5926082595146149752">Nederlandsk (Nederland) med datamaskintastaturet USA-Internasjonal</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – aktiver etter enhetskonfigurering</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Sertifikater er ikke lastet inn</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Del mappen med Bruschetta</translation>
+<translation id="6750737795876287924">Gjeldende katalog</translation>
 <translation id="6751256176799620176">1 mappe er valgt</translation>
 <translation id="6755827872271341378">ChromeOS Flex-enhet</translation>
 <translation id="6790428901817661496">Spill av</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Mapper</translation>
 <translation id="6976795442547527108">Løve</translation>
 <translation id="6979158407327259162">Google Disk</translation>
-<translation id="6979737339423435258">Alle datoer</translation>
 <translation id="6989942356279143254">Svensk</translation>
 <translation id="6990081529015358884">Du har ikke tilgjengelig lagringsplass</translation>
 <translation id="6993826899923627728">Disse elementene ligger i papirkurven din</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Ingen nylige bilder</translation>
 <translation id="7460898608667578234">Ukrainsk</translation>
 <translation id="7469894403370665791">Koble til dette nettverket automatisk</translation>
-<translation id="7481358317100446445">Klar</translation>
 <translation id="7486315294984620427">For å slippe filer i Parallels Desktop må du kopiere filen til Windows-filene.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam, fonetisk</translation>
@@ -941,6 +940,7 @@
 <translation id="8492972329130824181">Hjemmenettverket er ikke tilgjengelig. Mobildata-roaming må være påslått for at du skal kunne koble til.</translation>
 <translation id="8499098729323186194">Pakker ut <ph name="NUMBER_OF_ITEMS" /> elementer …</translation>
 <translation id="8502913769543567768">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – <ph name="NETWORK_PROVIDER_NAME" /> – aktiver etter enhetskonfigurering – administrert av administratoren din</translation>
+<translation id="8512483403832814140">Når som helst</translation>
 <translation id="8521441079177373948">Britisk</translation>
 <translation id="853494022971700746">Fransk (Frankrike)</translation>
 <translation id="8540608333167683902">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> % – detaljer</translation>

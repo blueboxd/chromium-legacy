@@ -5,10 +5,12 @@
 #include "chrome/browser/ui/global_media_controls/cast_device_list_host.h"
 
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/browser/ui/media_router/media_route_starter.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
+#include "components/global_media_controls/public/test/mock_media_dialog_delegate.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -54,6 +56,8 @@ class MockCastDialogController : public media_router::CastDialogController {
                media_router::MediaCastMode cast_mode));
   MOCK_METHOD(void, StopCasting, (const std::string& route_id));
   MOCK_METHOD(void, ClearIssue, (const media_router::Issue::Id& issue_id));
+  MOCK_METHOD(void, FreezeRoute, (const std::string& route_id));
+  MOCK_METHOD(void, UnfreezeRoute, (const std::string& route_id));
   MOCK_METHOD(std::unique_ptr<media_router::MediaRouteStarter>,
               TakeMediaRouteStarter,
               ());
@@ -72,10 +76,13 @@ class CastDeviceListHostTest : public testing::Test {
         std::move(dialog_controller),
         client_receiver_.InitWithNewPipeAndPassRemote(),
         base::BindRepeating(&CastDeviceListHostTest::OnMediaRemotingRequested,
+                            base::Unretained(this)),
+        base::BindRepeating(&CastDeviceListHostTest::HideMediaDialog,
                             base::Unretained(this)));
   }
 
   MOCK_METHOD(void, OnMediaRemotingRequested, ());
+  MOCK_METHOD(void, HideMediaDialog, ());
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
@@ -128,6 +135,22 @@ TEST_F(CastDeviceListHostTest, StartRemotePlayback) {
       StartCasting(sink.id, media_router::MediaCastMode::REMOTE_PLAYBACK));
   EXPECT_CALL(*this, OnMediaRemotingRequested());
   host_->SelectDevice(sink.id);
+}
+
+TEST_F(CastDeviceListHostTest, StartAudioTabMirroring) {
+  auto sink = CreateMediaSink();
+  sink.cast_modes = {media_router::MediaCastMode::TAB_MIRROR};
+  sink.icon_type = media_router::SinkIconType::CAST_AUDIO;
+  host_->OnModelUpdated({CreateModelWithSinks({sink})});
+
+  EXPECT_CALL(*dialog_controller_,
+              StartCasting(sink.id, media_router::MediaCastMode::TAB_MIRROR));
+  host_->SelectDevice(sink.id);
+}
+
+TEST_F(CastDeviceListHostTest, HideMediaDialogCallback) {
+  EXPECT_CALL(*this, HideMediaDialog());
+  host_->OnCastingStarted();
 }
 
 TEST_F(CastDeviceListHostTest, TerminateDialSession) {

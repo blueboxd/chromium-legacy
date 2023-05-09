@@ -98,9 +98,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method keys
 [Worker]     method match
 [Worker]     method open
-[Worker] interface CanvasFilter
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
 [Worker] interface CanvasGradient
 [Worker]     attribute @@toStringTag
 [Worker]     method addColorStop
@@ -537,6 +534,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method entries
 [Worker]     method forEach
 [Worker]     method get
+[Worker]     method getSetCookie
 [Worker]     method has
 [Worker]     method keys
 [Worker]     method set
@@ -1347,6 +1345,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method test
 [Worker] interface URLSearchParams
 [Worker]     attribute @@toStringTag
+[Worker]     getter size
 [Worker]     method @@iterator
 [Worker]     method append
 [Worker]     method constructor

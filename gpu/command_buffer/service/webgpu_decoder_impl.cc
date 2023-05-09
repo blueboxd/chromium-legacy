@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bits.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
@@ -42,7 +43,9 @@
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/webgpu_decoder.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/config/webgpu_blocklist.h"
 #include "gpu/webgpu/callback.h"
+#include "third_party/abseil-cpp/absl/base/attributes.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -89,8 +92,6 @@ WGPUAdapterType PowerPreferenceToDawnAdapterType(
       return WGPUAdapterType_CPU;
   }
 }
-
-}  // namespace
 
 class WebGPUDecoderImpl final : public WebGPUDecoder {
  public:
@@ -436,8 +437,8 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
   bool enable_unsafe_webgpu_ = false;
   WebGPUAdapterName use_webgpu_adapter_ = WebGPUAdapterName::kDefault;
-  std::vector<std::string> force_enabled_toggles_;
-  std::vector<std::string> force_disabled_toggles_;
+  std::vector<std::string> require_enabled_toggles_;
+  std::vector<std::string> require_disabled_toggles_;
   bool allow_unsafe_apis_;
   bool tiered_adapter_limits_;
 
@@ -962,6 +963,10 @@ constexpr WebGPUDecoderImpl::CommandInfo WebGPUDecoderImpl::command_info[] = {
 #undef WEBGPU_CMD_OP
 };
 
+// This variable is set to DawnWireServer's parent decoder during execution of
+// HandleCommands. It is cleared to nullptr after.
+ABSL_CONST_INIT thread_local WebGPUDecoderImpl* parent_decoder = nullptr;
+
 // DawnWireServer is a wrapper around dawn::wire::WireServer which allows
 // overriding some of the WGPU procs the server delegates calls to.
 // It has a special feature that around HandleDawnCommands, its owning
@@ -971,10 +976,6 @@ constexpr WebGPUDecoderImpl::CommandInfo WebGPUDecoderImpl::command_info[] = {
 // which loads the WebGPUDecoderImpl from thread-local storage and forwards
 // the call to the member function.
 class DawnWireServer : public dawn::wire::WireServer {
-  // This variable is set to DawnWireServer's parent decoder during
-  // execution of HandleCommands. It is cleared to nullptr after.
-  thread_local static WebGPUDecoderImpl* tls_parent_decoder;
-
   // Base template for specialization.
   template <auto Method>
   struct ProcForDecoderMethodImpl;
@@ -1003,13 +1004,13 @@ class DawnWireServer : public dawn::wire::WireServer {
   ~DawnWireServer() override = default;
 
   // Handle Dawn commands. Forward the call to the base class, but
-  // set |tls_parent_decoder| around it.
+  // set |parent_decoder| around it.
   const volatile char* HandleCommands(const volatile char* commands,
                                       size_t size) override {
-    tls_parent_decoder = decoder_;
+    const base::AutoReset<WebGPUDecoderImpl*> resetter_(&parent_decoder,
+                                                        decoder_);
     const volatile char* rv =
         dawn::wire::WireServer::HandleCommands(commands, size);
-    tls_parent_decoder = nullptr;
     return rv;
   }
 
@@ -1028,9 +1029,8 @@ class DawnWireServer : public dawn::wire::WireServer {
     using Proc = R (*)(Args...);
     Proc operator()() {
       return [](Args... args) -> R {
-        WebGPUDecoderImpl* decoder = tls_parent_decoder;
-        DCHECK(decoder);
-        return (decoder->*Method)(std::forward<Args>(args)...);
+        DCHECK(parent_decoder);
+        return (parent_decoder->*Method)(std::forward<Args>(args)...);
       };
     }
   };
@@ -1038,7 +1038,7 @@ class DawnWireServer : public dawn::wire::WireServer {
   raw_ptr<WebGPUDecoderImpl> decoder_;
 };
 
-thread_local WebGPUDecoderImpl* DawnWireServer::tls_parent_decoder = nullptr;
+}  // namespace
 
 WebGPUDecoder* CreateWebGPUDecoderImpl(
     DecoderClient* client,
@@ -1098,25 +1098,18 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
       isolation_key_provider_(isolation_key_provider) {
   enable_unsafe_webgpu_ = gpu_preferences.enable_unsafe_webgpu;
   use_webgpu_adapter_ = gpu_preferences.use_webgpu_adapter;
-  force_enabled_toggles_ = gpu_preferences.enabled_dawn_features_list;
-  force_disabled_toggles_ = gpu_preferences.disabled_dawn_features_list;
+  require_enabled_toggles_ = gpu_preferences.enabled_dawn_features_list;
+  require_disabled_toggles_ = gpu_preferences.disabled_dawn_features_list;
 
   // Only allow unsafe APIs if the disallow_unsafe_apis toggle is explicitly
   // disabled.
   allow_unsafe_apis_ =
-      base::Contains(force_disabled_toggles_, "disallow_unsafe_apis");
+      base::Contains(require_disabled_toggles_, "disallow_unsafe_apis");
 
   // Force adapters to report their limits in predetermined tiers unless the
   // adapter_limit_tiers toggle is explicitly disabled.
   tiered_adapter_limits_ =
-      !base::Contains(force_disabled_toggles_, "tiered_adapter_limits");
-
-  // Enable the blocklist unless --enable-unsafe-webgpu or
-  // --disable-dawn-features=adapter_blocklist
-  bool disable_adapter_blocklist =
-      base::Contains(force_disabled_toggles_, "adapter_blocklist");
-  dawn_instance_->EnableAdapterBlocklist(
-      !(enable_unsafe_webgpu_ || disable_adapter_blocklist));
+      !base::Contains(require_disabled_toggles_, "tiered_adapter_limits");
 
   DawnProcTable wire_procs = dawn::native::GetProcs();
   wire_procs.createInstance =
@@ -1251,16 +1244,6 @@ void WebGPUDecoderImpl::RequestAdapterImpl(
   const dawn::native::Adapter& adapter =
       dawn_adapters_[requested_adapter_index];
 
-  // TODO(crbug.com/1266550): Hide CPU adapters until WebGPU fallback adapters
-  // are fully tested.
-  WGPUAdapterProperties properties = {};
-  adapter.GetProperties(&properties);
-  if (properties.adapterType == WGPUAdapterType_CPU && !enable_unsafe_webgpu_) {
-    callback(WGPURequestAdapterStatus_Unavailable, nullptr,
-             "No available adapters.", userdata);
-    return;
-  }
-
   // Callback takes ownership of the reference. Add a ref to pass to the
   // callback.
   dawn::native::GetProcs().adapterReference(adapter.Get());
@@ -1364,10 +1347,10 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
     require_device_enabled_toggles.push_back("disable_blob_cache");
   }
 
-  for (const std::string& toggles : force_enabled_toggles_) {
+  for (const std::string& toggles : require_enabled_toggles_) {
     require_device_enabled_toggles.push_back(toggles.c_str());
   }
-  for (const std::string& toggles : force_disabled_toggles_) {
+  for (const std::string& toggles : require_disabled_toggles_) {
     require_device_disabled_toggles.push_back(toggles.c_str());
   }
   dawn_device_toggles.enabledToggles = require_device_enabled_toggles.data();
@@ -1510,6 +1493,13 @@ WebGPUDecoderImpl::CreateQueuedRequestDeviceCallback(
 }
 
 void WebGPUDecoderImpl::DiscoverAdapters() {
+  // Enable the blocklist unless --enable-unsafe-webgpu or
+  // --disable-dawn-features=adapter_blocklist
+  const bool use_blocklist =
+      !(enable_unsafe_webgpu_ ||
+        base::Contains(require_disabled_toggles_, "adapter_blocklist"));
+  dawn_instance_->EnableAdapterBlocklist(use_blocklist);
+
 #if BUILDFLAG(IS_WIN)
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
@@ -1550,6 +1540,10 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
 
     WGPUAdapterProperties adapterProperties = {};
     adapter.GetProperties(&adapterProperties);
+
+    if (use_blocklist && IsWebGPUAdapterBlocklisted(adapterProperties)) {
+      continue;
+    }
 
     const bool is_fallback_adapter =
         adapterProperties.adapterType == WGPUAdapterType_CPU &&
@@ -1765,7 +1759,7 @@ WebGPUDecoderImpl::AssociateMailboxDawn(
     return nullptr;
   }
 
-#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_APPLE)
   if (usage & WGPUTextureUsage_StorageBinding) {
     DLOG(ERROR) << "AssociateMailbox: WGPUTextureUsage_StorageBinding is NOT "
                    "supported yet.";

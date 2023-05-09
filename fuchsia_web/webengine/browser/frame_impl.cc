@@ -4,6 +4,8 @@
 
 #include "fuchsia_web/webengine/browser/frame_impl.h"
 
+#include <fidl/fuchsia.logger/cpp/fidl.h>
+#include <fidl/fuchsia.logger/cpp/hlcpp_conversion.h>
 #include <fuchsia/ui/gfx/cpp/fidl.h>
 #include <lib/fpromise/result.h>
 #include <lib/sys/cpp/component_context.h>
@@ -13,11 +15,13 @@
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/fuchsia/fuchsia_component_connect.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/mem_buffer_util.h"
 #include "base/fuchsia/process_context.h"
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -78,9 +82,9 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_CAST_RECEIVER)
-#include "components/cast_streaming/public/features.h"  //nogncheck
-#include "components/cast_streaming/public/mojom/demuxer_connector.mojom.h"  //nogncheck
-#include "components/cast_streaming/public/mojom/renderer_controller.mojom.h"  //nogncheck
+#include "components/cast_streaming/common/public/features.h"  //nogncheck
+#include "components/cast_streaming/common/public/mojom/demuxer_connector.mojom.h"  //nogncheck
+#include "components/cast_streaming/common/public/mojom/renderer_controller.mojom.h"  //nogncheck
 #include "fuchsia_web/webengine/browser/receiver_session_client.h"  //nogncheck
 #include "fuchsia_web/webengine/common/cast_streaming.h"            // nogncheck
 #endif
@@ -145,46 +149,34 @@ bool IsUrlMatchedByOriginList(const GURL& url,
   return false;
 }
 
-FuchsiaLogSeverity FuchsiaWebConsoleLogLevelToFxLogSeverity(
+logging::LogSeverity FuchsiaWebConsoleLogLevelToLogSeverity(
     fuchsia::web::ConsoleLogLevel level) {
   switch (level) {
     case fuchsia::web::ConsoleLogLevel::DEBUG:
-      return FUCHSIA_LOG_DEBUG;
+      return logging::LOGGING_VERBOSE;
     case fuchsia::web::ConsoleLogLevel::INFO:
-      return FUCHSIA_LOG_INFO;
+      return logging::LOGGING_INFO;
     case fuchsia::web::ConsoleLogLevel::WARN:
-      return FUCHSIA_LOG_WARNING;
+      return logging::LOGGING_WARNING;
     case fuchsia::web::ConsoleLogLevel::ERROR:
-      return FUCHSIA_LOG_ERROR;
+      return logging::LOGGING_ERROR;
     case fuchsia::web::ConsoleLogLevel::NONE:
-      return FUCHSIA_LOG_NONE;
-    default:
-      // Cope gracefully with callers setting undefined levels.
-      DLOG(ERROR) << "Unknown log level:"
-                  << static_cast<std::underlying_type<decltype(level)>::type>(
-                         level);
-      return FUCHSIA_LOG_NONE;
+      return logging::LOGGING_NUM_SEVERITIES;
   }
 }
 
-FuchsiaLogSeverity BlinkConsoleMessageLevelToFxLogSeverity(
+logging::LogSeverity BlinkConsoleMessageLevelToLogSeverity(
     blink::mojom::ConsoleMessageLevel level) {
   switch (level) {
     case blink::mojom::ConsoleMessageLevel::kVerbose:
-      return FUCHSIA_LOG_DEBUG;
+      return logging::LOGGING_VERBOSE;
     case blink::mojom::ConsoleMessageLevel::kInfo:
-      return FUCHSIA_LOG_INFO;
+      return logging::LOGGING_INFO;
     case blink::mojom::ConsoleMessageLevel::kWarning:
-      return FUCHSIA_LOG_WARNING;
+      return logging::LOGGING_WARNING;
     case blink::mojom::ConsoleMessageLevel::kError:
-      return FUCHSIA_LOG_ERROR;
+      return logging::LOGGING_ERROR;
   }
-
-  // Cope gracefully with callers setting undefined levels.
-  DLOG(ERROR) << "Unknown log level:"
-              << static_cast<std::underlying_type<decltype(level)>::type>(
-                     level);
-  return FUCHSIA_LOG_NONE;
 }
 
 bool IsHeadless() {
@@ -1067,7 +1059,7 @@ void FrameImpl::SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) {
   TRACE_EVENT(kWebEngineFidlCategory, "fuchsia.web/Frame.SetJavaScriptLogLevel",
               perfetto::Flow::FromPointer(this));
 
-  log_level_ = FuchsiaWebConsoleLogLevelToFxLogSeverity(level);
+  log_level_ = FuchsiaWebConsoleLogLevelToLogSeverity(level);
 }
 
 void FrameImpl::SetConsoleLogSink(fuchsia::logger::LogSinkHandle sink) {
@@ -1076,7 +1068,7 @@ void FrameImpl::SetConsoleLogSink(fuchsia::logger::LogSinkHandle sink) {
 
   if (sink) {
     console_logger_ = base::ScopedFxLogger::CreateFromLogSink(
-        std::move(sink), {console_log_tag_});
+        fidl::HLCPPToNatural(sink), {console_log_tag_});
   } else {
     console_logger_ = {};
   }
@@ -1422,16 +1414,15 @@ bool FrameImpl::DidAddMessageToConsole(
     const std::u16string& message,
     int32_t line_no,
     const std::u16string& source_id) {
-  // Prevent logging when log_level_ is 0. See crbug.com/1292187.
-  // TODO(crbug.com/1292208): Convert to DCHECK when FUCHSIA_LOG_NONE
-  // is defined to be greater than other log levels.
-  if (log_level_ == 0) {
-    // Prevent the default logging mechanism from logging the message.
-    return true;
-  }
+  // Assert that log severities are strictly ascending, before using numerical
+  // comparison to determine whether to emit a log.
+  static_assert(logging::LOGGING_VERBOSE < logging::LOGGING_INFO);
+  static_assert(logging::LOGGING_INFO < logging::LOGGING_WARNING);
+  static_assert(logging::LOGGING_WARNING < logging::LOGGING_ERROR);
+  static_assert(logging::LOGGING_ERROR < logging::LOGGING_NUM_SEVERITIES);
 
-  FuchsiaLogSeverity severity =
-      BlinkConsoleMessageLevelToFxLogSeverity(log_level);
+  logging::LogSeverity severity =
+      BlinkConsoleMessageLevelToLogSeverity(log_level);
   if (severity < log_level_) {
     // Prevent the default logging mechanism from logging the message.
     return true;
@@ -1441,11 +1432,14 @@ bool FrameImpl::DidAddMessageToConsole(
     // Log via the process' LogSink service if none was set on the Frame.
     // Connect on-demand, so that embedders need not provide a LogSink in the
     // CreateContextParams services, unless they actually enable logging.
+    auto log_sink_client_end =
+        base::fuchsia_component::Connect<fuchsia_logger::LogSink>();
+    if (log_sink_client_end.is_error()) {
+      DLOG(ERROR) << base::FidlConnectionErrorMessage(log_sink_client_end);
+      return false;
+    }
     console_logger_ = base::ScopedFxLogger::CreateFromLogSink(
-        base::ComponentContextForProcess()
-            ->svc()
-            ->Connect<fuchsia::logger::LogSink>(),
-        {console_log_tag_});
+        std::move(log_sink_client_end.value()), {console_log_tag_});
 
     if (!console_logger_.is_valid())
       return false;

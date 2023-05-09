@@ -189,6 +189,7 @@ bool IsAuthError(SigninError error) {
 LoginDisplayHostCommon::LoginDisplayHostCommon()
     : keep_alive_(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
                   KeepAliveRestartOption::DISABLED),
+      login_ui_pref_controller_(std::make_unique<LoginUIPrefController>()),
       wizard_context_(std::make_unique<WizardContext>()) {
   // Close the login screen on app termination (for the case where shutdown
   // occurs before login completes).
@@ -499,13 +500,14 @@ void LoginDisplayHostCommon::StartUserOnboarding() {
   StartWizard(LocaleSwitchView::kScreenId);
 }
 
-void LoginDisplayHostCommon::ResumeUserOnboarding(OobeScreenId screen_id) {
+void LoginDisplayHostCommon::ResumeUserOnboarding(const PrefService& prefs,
+                                                  OobeScreenId screen_id) {
   SetScreenAfterManagedTos(screen_id);
 
   if (features::IsOobeChoobeEnabled()) {
-    if (ChoobeFlowController::IsOptionalScreen(screen_id)) {
-      GetWizardController()->GetChoobeFlowController()->MaybeResumeChoobe(
-          *ProfileManager::GetActiveUserProfile()->GetPrefs());
+    if (ChoobeFlowController::ShouldResumeChoobe(prefs)) {
+      GetWizardController()->CreateChoobeFlowController();
+      GetWizardController()->choobe_flow_controller()->ResumeChoobe(prefs);
     }
   }
 
@@ -720,6 +722,7 @@ void LoginDisplayHostCommon::Cleanup() {
   SigninProfileHandler::Get()->ClearSigninProfile(base::DoNothing());
   app_terminating_subscription_ = {};
   BrowserList::RemoveObserver(this);
+  login_ui_pref_controller_.reset();
 }
 
 void LoginDisplayHostCommon::OnAppTerminating() {

@@ -39,14 +39,31 @@ constexpr int kDefaultStartTimeOffsetMinutes = 18 * 60;
 // Default end time at 6:00 AM as an offset from 00:00.
 constexpr int kDefaultEndTimeOffsetMinutes = 6 * 60;
 
-bool IsEnabledAtCheckpoint(SunsetToSunriseCheckpoint checkpoint) {
+bool IsEnabledAtCheckpoint(ScheduleCheckpoint checkpoint) {
   switch (checkpoint) {
-    case SunsetToSunriseCheckpoint::kSunrise:
-    case SunsetToSunriseCheckpoint::kMorning:
-    case SunsetToSunriseCheckpoint::kLateAfternoon:
+    case ScheduleCheckpoint::kDisabled:
+    case ScheduleCheckpoint::kSunrise:
+    case ScheduleCheckpoint::kMorning:
+    case ScheduleCheckpoint::kLateAfternoon:
       return false;
-    case SunsetToSunriseCheckpoint::kSunset:
+    case ScheduleCheckpoint::kEnabled:
+    case ScheduleCheckpoint::kSunset:
       return true;
+  }
+}
+
+// Converts a boolean feature `is_enabled` state to the appropriate
+// `ScheduleCheckpoint` for the given `schedule_type`.
+ScheduleCheckpoint GetCheckpointForEnabledState(bool is_enabled,
+                                                ScheduleType schedule_type) {
+  switch (schedule_type) {
+    case ScheduleType::kNone:
+    case ScheduleType::kCustom:
+      return is_enabled ? ScheduleCheckpoint::kEnabled
+                        : ScheduleCheckpoint::kDisabled;
+    case ScheduleType::kSunsetToSunrise:
+      return is_enabled ? ScheduleCheckpoint::kSunset
+                        : ScheduleCheckpoint::kSunrise;
   }
 }
 
@@ -161,6 +178,14 @@ void ScheduledFeature::SetCustomEndTime(TimeOfDay end_time) {
   }
 }
 
+void ScheduledFeature::AddCheckpointObserver(CheckpointObserver* obs) {
+  checkpoint_observers_.AddObserver(obs);
+}
+
+void ScheduledFeature::RemoveCheckpointObserver(CheckpointObserver* obs) {
+  checkpoint_observers_.RemoveObserver(obs);
+}
+
 void ScheduledFeature::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   if (pref_service == active_user_pref_service_)
@@ -201,20 +226,23 @@ bool ScheduledFeature::MaybeRestoreSchedule() {
   DCHECK(active_user_pref_service_);
   DCHECK_NE(GetScheduleType(), ScheduleType::kNone);
 
-  auto iter = per_user_schedule_target_state_.find(active_user_pref_service_);
-  if (iter == per_user_schedule_target_state_.end())
+  auto iter = per_user_schedule_snapshot_.find(active_user_pref_service_);
+  if (iter == per_user_schedule_snapshot_.end()) {
     return false;
+  }
 
-  const ScheduleTargetState& target_state = iter->second;
+  const ScheduleSnapshot& snapshot_to_restore = iter->second;
   const base::Time now = clock_->Now();
   // It may be that the device was suspended for a very long time that the
   // target time is no longer valid.
-  if (target_state.target_time <= now)
+  if (snapshot_to_restore.target_time <= now) {
     return false;
+  }
 
   VLOG(1) << "Restoring a previous schedule.";
-  ScheduleNextRefresh(target_state.target_time - now,
-                      target_state.target_status);
+  current_checkpoint_ = snapshot_to_restore.current_checkpoint;
+  ScheduleNextRefresh(snapshot_to_restore.target_time - now,
+                      snapshot_to_restore.target_status);
   return true;
 }
 
@@ -289,6 +317,8 @@ void ScheduledFeature::Refresh(bool did_schedule_change,
     case ScheduleType::kNone:
       timer_->Stop();
       RefreshFeatureState();
+      SetCurrentCheckpoint(
+          GetCheckpointForEnabledState(GetEnabled(), ScheduleType::kNone));
       return;
     case ScheduleType::kSunsetToSunrise:
       RefreshScheduleTimer(geolocation_controller_->GetSunsetTime(),
@@ -304,7 +334,7 @@ void ScheduledFeature::Refresh(bool did_schedule_change,
   }
 }
 
-// The `SunsetToSunriseCheckpoint` usage in this method does not directly apply
+// The `ScheduleCheckpoint` usage in this method does not directly apply
 // to `ScheduleType::kCustom`, but the business logic still works for that
 // `ScheduleType` with no caller-facing impact. The internal `timer_` may just
 // fire a couple more times a day and be no-ops.
@@ -313,7 +343,8 @@ void ScheduledFeature::RefreshScheduleTimer(
     base::Time end_time,
     bool did_schedule_change,
     bool keep_manual_toggles_during_schedules) {
-  DCHECK(GetScheduleType() != ScheduleType::kNone);
+  const ScheduleType schedule_type = GetScheduleType();
+  DCHECK(schedule_type != ScheduleType::kNone);
 
   if (keep_manual_toggles_during_schedules && MaybeRestoreSchedule()) {
     RefreshFeatureState();
@@ -322,19 +353,21 @@ void ScheduledFeature::RefreshScheduleTimer(
 
   const base::Time now = clock_->Now();
   const schedule_utils::Position schedule_position =
-      schedule_utils::GetCurrentPosition(
-          /*sunrise_time=*/end_time, /*sunset_time=*/start_time, now);
+      schedule_utils::GetCurrentPosition(now, start_time, end_time,
+                                         schedule_type);
   const bool enable_now =
       IsEnabledAtCheckpoint(schedule_position.current_checkpoint);
   const bool current_enabled = GetEnabled();
 
   base::TimeDelta time_until_next_refresh;
   bool next_feature_status = false;
+  ScheduleCheckpoint new_checkpoint = current_checkpoint_;
   if (enable_now == current_enabled) {
     // The most standard case:
     next_feature_status =
         IsEnabledAtCheckpoint(schedule_position.next_checkpoint);
     time_until_next_refresh = schedule_position.time_until_next_checkpoint;
+    new_checkpoint = schedule_position.current_checkpoint;
   } else if (did_schedule_change) {  // && enable_now != current_enabled
     // If the change in the schedule introduces a change in the status, then
     // calling SetEnabled() is all we need, since it will trigger a change in
@@ -353,6 +386,8 @@ void ScheduledFeature::RefreshScheduleTimer(
     const base::Time next_toggle_time = schedule_utils::ShiftWithinOneDayFrom(
         now, current_enabled ? end_time : start_time);
     time_until_next_refresh = next_toggle_time - now;
+    new_checkpoint =
+        GetCheckpointForEnabledState(current_enabled, schedule_type);
   }
 
   // We reach here in one of the following conditions:
@@ -366,6 +401,13 @@ void ScheduledFeature::RefreshScheduleTimer(
   // opposite status of the current one.
   ScheduleNextRefresh(time_until_next_refresh, next_feature_status);
   RefreshFeatureState();
+  // Should be called after `ScheduleNextRefresh` and `RefreshFeatureState()`
+  // so that all of the feature's internal bookkeeping has been updated before
+  // broadcasting to users that a new feature state has been reached. This
+  // ensures that the feature is in a stable internal state in case a
+  // `CheckpointObserver` tries to use the feature immediately within its
+  // observer method.
+  SetCurrentCheckpoint(new_checkpoint);
 }
 
 void ScheduledFeature::ScheduleNextRefresh(base::TimeDelta delay,
@@ -374,8 +416,8 @@ void ScheduledFeature::ScheduleNextRefresh(base::TimeDelta delay,
   DCHECK_GE(delay, base::TimeDelta());
 
   const base::Time target_time = clock_->Now() + delay;
-  per_user_schedule_target_state_[active_user_pref_service_] =
-      ScheduleTargetState{target_time, target_status};
+  per_user_schedule_snapshot_[active_user_pref_service_] =
+      ScheduleSnapshot{target_time, target_status, current_checkpoint_};
   base::OnceClosure timer_cb;
   if (target_status == GetEnabled()) {
     timer_cb =
@@ -390,6 +432,17 @@ void ScheduledFeature::ScheduleNextRefresh(base::TimeDelta delay,
           << (target_status ? "enabled" : "disabled") << " at "
           << base::TimeFormatTimeOfDay(target_time);
   timer_->Start(FROM_HERE, delay, std::move(timer_cb));
+}
+
+void ScheduledFeature::SetCurrentCheckpoint(ScheduleCheckpoint new_checkpoint) {
+  if (new_checkpoint == current_checkpoint_) {
+    return;
+  }
+
+  current_checkpoint_ = new_checkpoint;
+  for (CheckpointObserver& obs : checkpoint_observers_) {
+    obs.OnCheckpointChanged(this, current_checkpoint_);
+  }
 }
 
 }  // namespace ash

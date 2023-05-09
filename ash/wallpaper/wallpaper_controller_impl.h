@@ -12,9 +12,9 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/image_downloader.h"
 #include "ash/public/cpp/image_util.h"
 #include "ash/public/cpp/session/session_observer.h"
-#include "ash/public/cpp/style/color_mode_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper/google_photos_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
@@ -22,6 +22,7 @@
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/shell_observer.h"
+#include "ash/system/scheduled_feature/scheduled_feature.h"
 #include "ash/wallpaper/online_wallpaper_variant_info_fetcher.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
@@ -55,6 +56,7 @@ namespace ash {
 
 class WallpaperColorCalculator;
 class WallpaperDriveFsDelegate;
+class WallpaperImageDownloader;
 class WallpaperMetricsManager;
 class WallpaperPrefManager;
 class WallpaperResizer;
@@ -83,7 +85,7 @@ class ASH_EXPORT WallpaperControllerImpl
       public OverviewObserver,
       public ui::CompositorLockClient,
       public ui::NativeThemeObserver,
-      public ColorModeObserver {
+      public ScheduledFeature::CheckpointObserver {
  public:
   // Directory names of custom wallpapers.
   static const char kSmallWallpaperSubDir[];
@@ -96,11 +98,15 @@ class ASH_EXPORT WallpaperControllerImpl
   static void SetWallpaperPrefManagerForTesting(
       std::unique_ptr<WallpaperPrefManager> pref_manager);
 
-  // Prefer to use to obtain an new instance unless injecting non-production
-  // members i.e. in tests.
+  static void SetWallpaperImageDownloaderForTesting(
+      std::unique_ptr<WallpaperImageDownloader> image_downloader);
+
+  // Prefer to use `Create` to obtain an new instance unless injecting
+  // non-production members i.e. in tests.
   explicit WallpaperControllerImpl(
       std::unique_ptr<WallpaperPrefManager> pref_manager,
-      std::unique_ptr<OnlineWallpaperVariantInfoFetcher> fetcher);
+      std::unique_ptr<OnlineWallpaperVariantInfoFetcher> fetcher,
+      std::unique_ptr<WallpaperImageDownloader> image_downloader);
 
   WallpaperControllerImpl(const WallpaperControllerImpl&) = delete;
   WallpaperControllerImpl& operator=(const WallpaperControllerImpl&) = delete;
@@ -337,8 +343,9 @@ class ASH_EXPORT WallpaperControllerImpl
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
-  // ColorModeObserver:
-  void OnColorModeChanged(bool dark_mode_enabled) override;
+  // ScheduledFeature::CheckpointObserver:
+  void OnCheckpointChanged(const ScheduledFeature* src,
+                           const ScheduleCheckpoint new_checkpoint) override;
 
   // ui::NativeThemeObserver:
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
@@ -520,6 +527,12 @@ class ASH_EXPORT WallpaperControllerImpl
                                       const base::FilePath& path,
                                       SetWallpaperCallback callback,
                                       const gfx::ImageSkia& image);
+
+  void OnGooglePhotosAuthenticationTokenFetched(
+      ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
+      const AccountId& account_id,
+      ImageDownloader::DownloadCallback callback,
+      const absl::optional<std::string>& access_token);
 
   // Used as the callback of downloading wallpapers of type
   // `WallpaperType::kOnceGooglePhotos`. Shows the wallpaper immediately if
@@ -830,6 +843,8 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // If true, the current wallpaper should always stay on top.
   bool is_always_on_top_wallpaper_ = false;
+
+  const std::unique_ptr<WallpaperImageDownloader> wallpaper_image_downloader_;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 

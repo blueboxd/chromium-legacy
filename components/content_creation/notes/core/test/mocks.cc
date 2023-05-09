@@ -7,11 +7,8 @@
 namespace content_creation {
 namespace test {
 
-MockTemplateStore::MockTemplateStore() : TemplateStore(nullptr, nullptr, "") {}
+MockTemplateStore::MockTemplateStore() : TemplateStore(nullptr, "") {}
 MockTemplateStore::~MockTemplateStore() = default;
-
-MockNotesRepository::MockNotesRepository() = default;
-MockNotesRepository::~MockNotesRepository() = default;
 
 }  // namespace test
 }  // namespace content_creation

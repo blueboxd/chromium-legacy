@@ -28,14 +28,9 @@ ContactInfoSyncBridge::ContactInfoSyncBridge(
     AutofillWebDataBackend* backend)
     : ModelTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(backend) {
-  if (base::FeatureList::IsEnabled(
-          syncer::kSyncEnableContactInfoDataTypeEarlyReturnNoDatabase) &&
-      (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
-       !GetAutofillTable())) {
-    ModelTypeSyncBridge::change_processor()->ReportError(
-        {FROM_HERE, "Failed to load AutofillWebDatabase."});
-    return;
-  }
+  DCHECK(web_data_backend_);
+  DCHECK(web_data_backend_->GetDatabase());
+  DCHECK(GetAutofillTable());
   scoped_observation_.Observe(web_data_backend_.get());
   LoadMetadata();
 }

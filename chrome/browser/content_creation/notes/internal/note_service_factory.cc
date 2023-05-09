@@ -10,7 +10,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/channel_info.h"
 #include "components/content_creation/notes/core/note_service.h"
-#include "components/content_creation/notes/core/server/notes_repository.h"
 #include "components/content_creation/notes/core/templates/template_store.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/variations/service/variations_service.h"
@@ -43,7 +42,14 @@ NoteService* NoteServiceFactory::GetForProfile(Profile* profile) {
 }
 
 NoteServiceFactory::NoteServiceFactory()
-    : ProfileKeyedServiceFactory("NoteService") {
+    : ProfileKeyedServiceFactory(
+          "NoteService",
+          ProfileSelections::Builder()
+              .WithRegular(ProfileSelection::kOriginalOnly)
+              // TODO(crbug.com/1418376): Check if this service is needed in
+              // Guest mode.
+              .WithGuest(ProfileSelection::kOriginalOnly)
+              .Build()) {
   DependsOn(IdentityManagerFactory::GetInstance());
 }
 
@@ -53,14 +59,8 @@ KeyedService* NoteServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  return new NoteService(std::make_unique<TemplateStore>(
-                             profile->GetPrefs(),
-                             profile->GetURLLoaderFactory(), GetCountryCode()),
-                         std::make_unique<NotesRepository>(
-                             IdentityManagerFactory::GetForProfile(profile),
-                             context->GetDefaultStoragePartition()
-                                 ->GetURLLoaderFactoryForBrowserProcess(),
-                             chrome::GetChannel()));
+  return new NoteService(
+      std::make_unique<TemplateStore>(profile->GetPrefs(), GetCountryCode()));
 }
 
 }  // namespace content_creation

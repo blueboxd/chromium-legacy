@@ -12,6 +12,8 @@ import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")
+} else if (is_ios && use_blink) {
+  import("//build/config/ios/bundle_data_from_filelist.gni")
 }
 
 assert(enable_printing)
@@ -86,6 +88,7 @@ if (enable_oop_printing && (is_linux || is_chromeos)) {
     configs += [ ":strict" ]
 
     deps = [
+      ":printing_base",
       "//base",
       "//printing/buildflags",
       "//sandbox/linux:sandbox_services",
@@ -338,6 +341,13 @@ static_library("test_support") {
   }
 }
 
+if (is_ios && use_blink) {
+  bundle_data_from_filelist("pdf_metafile_cg_mac_unittest_bundle_data") {
+    testonly = true
+    filelist_name = "test/pdf_metafile_cg_mac_unittest_bundle_data.filelist"
+  }
+}
+
 test("printing_unittests") {
   sources = [
     "backend/print_backend_unittest.cc",
@@ -385,13 +395,17 @@ test("printing_unittests") {
     ]
   }
 
-  if (is_mac) {
+  if (is_apple) {
     sources += [ "pdf_metafile_cg_mac_unittest.cc" ]
+  }
 
+  if (is_mac) {
     data = [
       "test/data/pdf_cg/",
       "../pdf/test/data/",
     ]
+  } else if (is_ios && use_blink) {
+    deps += [ ":pdf_metafile_cg_mac_unittest_bundle_data" ]
   }
 
   if (is_win) {

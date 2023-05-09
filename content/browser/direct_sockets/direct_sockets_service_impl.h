@@ -41,11 +41,16 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
       mojo::PendingReceiver<network::mojom::TCPConnectedSocket> socket,
       mojo::PendingRemote<network::mojom::SocketObserver> observer,
       OpenTCPSocketCallback callback) override;
-  void OpenUDPSocket(
-      blink::mojom::DirectUDPSocketOptionsPtr options,
+  void OpenConnectedUDPSocket(
+      blink::mojom::DirectConnectedUDPSocketOptionsPtr options,
       mojo::PendingReceiver<network::mojom::RestrictedUDPSocket> receiver,
       mojo::PendingRemote<network::mojom::UDPSocketListener> listener,
-      OpenUDPSocketCallback callback) override;
+      OpenConnectedUDPSocketCallback callback) override;
+  void OpenBoundUDPSocket(
+      blink::mojom::DirectBoundUDPSocketOptionsPtr options,
+      mojo::PendingReceiver<network::mojom::RestrictedUDPSocket> receiver,
+      mojo::PendingRemote<network::mojom::UDPSocketListener> listener,
+      OpenBoundUDPSocketCallback callback) override;
   void OpenTCPServerSocket(
       blink::mojom::DirectTCPServerSocketOptionsPtr options,
       mojo::PendingReceiver<network::mojom::TCPServerSocket> socket,
@@ -53,6 +58,10 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
 
   // Testing:
   static void SetNetworkContextForTesting(network::mojom::NetworkContext*);
+
+#if BUILDFLAG(IS_CHROMEOS)
+  static void SetAlwaysOpenFirewallHoleForTesting(bool value);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
  private:
   DirectSocketsServiceImpl(
@@ -72,16 +81,21 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
       const absl::optional<net::HostResolverEndpointResults>&);
 
   void OnResolveCompleteForUDPSocket(
-      blink::mojom::DirectUDPSocketOptionsPtr,
+      blink::mojom::DirectConnectedUDPSocketOptionsPtr,
       mojo::PendingReceiver<network::mojom::RestrictedUDPSocket>,
       mojo::PendingRemote<network::mojom::UDPSocketListener>,
-      OpenUDPSocketCallback,
+      OpenConnectedUDPSocketCallback,
       int result,
       const net::ResolveErrorInfo&,
       const absl::optional<net::AddressList>& resolved_addresses,
       const absl::optional<net::HostResolverEndpointResults>&);
 
   std::unique_ptr<network::SimpleHostResolver> resolver_;
+
+#if BUILDFLAG(IS_CHROMEOS)
+  class FirewallHoleDelegate;
+  std::unique_ptr<FirewallHoleDelegate> firewall_hole_delegate_;
+#endif  // BUILDFLAG(IS_CHROMEOS)
 };
 
 }  // namespace content

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_unittest.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/browser/permissions_manager.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/test/permissions_manager_waiter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -193,15 +194,14 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   const GURL requested_url("http://www.requested-url.com");
 
   InstallExtensionWithPermissions("Extension A", {"activeTab"});
-  constexpr char kExtensionName[] = "Extension B";
   auto extension = InstallExtensionWithHostPermissions(
-      kExtensionName, {requested_url.spec(), "activeTab"});
+      "Extension B", {requested_url.spec(), "activeTab"});
   WithholdHostPermissions(extension.get());
 
   web_contents_tester->NavigateAndCommit(requested_url);
   EXPECT_TRUE(IsRequestAccessButtonVisible());
-  EXPECT_THAT(request_access_button()->GetExtensionsNamesForTesting(),
-              testing::ElementsAre(kExtensionName));
+  EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
+              testing::ElementsAre(extension->id()));
 
   web_contents_tester->NavigateAndCommit(
       GURL("http://www.non-requested-url.com"));
@@ -254,6 +254,54 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   }
 }
 
+// Tests that an extension requesting site access but not allowed in
+// the button is not shown in the request access button.
+TEST_F(ExtensionsToolbarControlsUnitTest,
+       RequestAccessButtonVisibility_ExtensionsNotAllowedInButton) {
+  content::WebContentsTester* web_contents_tester =
+      AddWebContentsAndGetTester();
+
+  // Add two extensions that request access to all urls, and withhold their
+  // site access.
+  auto extension_a =
+      InstallExtensionWithHostPermissions("Extension A", {"<all_urls>"});
+  auto extension_b =
+      InstallExtensionWithHostPermissions("Extension B", {"<all_urls>"});
+  WithholdHostPermissions(extension_a.get());
+  WithholdHostPermissions(extension_b.get());
+
+  // By default, both extensions should be allowed in the request
+  // access button. However, request access button is not visible because we
+  // haven't navigated to a site yet.
+  extensions::SitePermissionsHelper permissions_helper(browser()->profile());
+  EXPECT_TRUE(
+      permissions_helper.ShowAccessRequestsInToolbar(extension_a->id()));
+  EXPECT_TRUE(
+      permissions_helper.ShowAccessRequestsInToolbar(extension_b->id()));
+  EXPECT_FALSE(IsRequestAccessButtonVisible());
+
+  // Navigate to an url that both extensions requests access to.
+  const GURL url("http://www.example.com");
+  web_contents_tester->NavigateAndCommit(url);
+  EXPECT_TRUE(IsRequestAccessButtonVisible());
+  EXPECT_EQ(
+      request_access_button()->GetText(),
+      l10n_util::GetStringFUTF16Int(IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON, 2));
+
+  // Disallow extension A in the request access button. Verify only extension A
+  // is visible in the button.
+  permissions_helper.SetShowAccessRequestsInToolbar(extension_a->id(), false);
+  EXPECT_TRUE(IsRequestAccessButtonVisible());
+  EXPECT_EQ(
+      request_access_button()->GetText(),
+      l10n_util::GetStringFUTF16Int(IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON, 1));
+
+  // Disallow extension B in the request access button. Verify button is not
+  // visible anymore.
+  permissions_helper.SetShowAccessRequestsInToolbar(extension_b->id(), false);
+  EXPECT_FALSE(IsRequestAccessButtonVisible());
+}
+
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButton_OnPressedExecuteAction) {
   content::WebContentsTester* web_contents_tester =
@@ -271,14 +319,14 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   constexpr char kActivatedUserAction[] =
       "Extensions.Toolbar.ExtensionsActivatedFromRequestAccessButton";
   base::UserActionTester user_action_tester;
-  extensions::SitePermissionsHelper permissions(browser()->profile());
+  auto* permissions = extensions::PermissionsManager::Get(profile());
 
   // Request access button is visible because extension A is requesting
   // access.
   ASSERT_TRUE(request_access_button()->GetVisible());
   EXPECT_EQ(user_action_tester.GetActionCount(kActivatedUserAction), 0);
-  EXPECT_EQ(permissions.GetSiteAccess(*extension, url),
-            extensions::SitePermissionsHelper::SiteAccess::kOnClick);
+  EXPECT_EQ(permissions->GetUserSiteAccess(*extension, url),
+            extensions::PermissionsManager::UserSiteAccess::kOnClick);
 
   ClickButton(request_access_button());
 
@@ -290,8 +338,8 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   // button grants one time access.
   ASSERT_FALSE(request_access_button()->GetVisible());
   EXPECT_EQ(user_action_tester.GetActionCount(kActivatedUserAction), 1);
-  EXPECT_EQ(permissions.GetSiteAccess(*extension, url),
-            extensions::SitePermissionsHelper::SiteAccess::kOnClick);
+  EXPECT_EQ(permissions->GetUserSiteAccess(*extension, url),
+            extensions::PermissionsManager::UserSiteAccess::kOnClick);
 }
 
 class ExtensionsToolbarControlsWithPermittedSitesUnitTest

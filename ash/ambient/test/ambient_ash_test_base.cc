@@ -11,8 +11,12 @@
 
 #include "ash/ambient/ambient_access_token_controller.h"
 #include "ash/ambient/ambient_constants.h"
+#include "ash/ambient/ambient_managed_photo_controller.h"
+#include "ash/ambient/ambient_managed_slideshow_ui_launcher.h"
 #include "ash/ambient/ambient_photo_cache.h"
 #include "ash/ambient/ambient_photo_controller.h"
+#include "ash/ambient/ambient_ui_launcher.h"
+#include "ash/ambient/ambient_ui_settings.h"
 #include "ash/ambient/test/ambient_ash_test_helper.h"
 #include "ash/ambient/ui/ambient_animation_view.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
@@ -22,6 +26,7 @@
 #include "ash/ambient/ui/jitter_calculator.h"
 #include "ash/ambient/ui/media_string_view.h"
 #include "ash/ambient/ui/photo_view.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
@@ -30,8 +35,11 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_util.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -41,10 +49,12 @@
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
+#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/controls/label.h"
@@ -207,6 +217,14 @@ void AmbientAshTestBase::SetAmbientModeEnabled(bool enabled) {
   Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
       ambient::prefs::kAmbientModeEnabled, enabled);
 
+  // TODO (b/269576509) : Integrate with managed screensaver policy
+  if (ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    // We early return in case the managed screensaver is enabled, as
+    // the photo controller will not exist when the managed screensaver
+    // code path is being used.
+    return;
+  }
+
   if (enabled) {
     photo_controller()->set_photo_cache_for_testing(
         std::make_unique<TestAmbientPhotoCacheImpl>());
@@ -216,9 +234,14 @@ void AmbientAshTestBase::SetAmbientModeEnabled(bool enabled) {
   }
 }
 
+void AmbientAshTestBase::SetAmbientUiSettings(
+    const AmbientUiSettings& settings) {
+  settings.WriteToPrefService(
+      *Shell::Get()->session_controller()->GetActivePrefService());
+}
+
 void AmbientAshTestBase::SetAmbientTheme(AmbientTheme theme) {
-  Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
-      ambient::prefs::kAmbientTheme, static_cast<int>(theme));
+  SetAmbientUiSettings(AmbientUiSettings(theme));
 }
 
 void AmbientAshTestBase::DisableJitter() {
@@ -553,6 +576,22 @@ AmbientPhotoController* AmbientAshTestBase::photo_controller() {
   return ambient_controller()->ambient_photo_controller();
 }
 
+AmbientManagedPhotoController* AmbientAshTestBase::managed_photo_controller() {
+  if (!ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    return nullptr;
+  }
+  AmbientManagedSlideshowUiLauncher* ui_launcher =
+      static_cast<AmbientManagedSlideshowUiLauncher*>(
+          ambient_controller()->ambient_ui_launcher());
+  // Used to make sure to make the ui launcher for
+  // ambient_managed_photo_controller unit tests don't fire an uninitialized
+  // callback and crash.
+  // TODO (fahadmansoor): Start using a test only method to remove the observer
+  // from the ui_launcher for testing the ambient controller
+  ui_launcher->initialization_callback_ = base::DoNothing();
+  return &ui_launcher->photo_controller_;
+}
+
 AmbientPhotoCache* AmbientAshTestBase::photo_cache() {
   return photo_controller()->get_photo_cache_for_testing();
 }
@@ -648,6 +687,20 @@ void AmbientAshTestBase::SetPhotoDownloadDelay(base::TimeDelta delay) {
       photo_controller()->get_photo_cache_for_testing());
 
   photo_cache->SetPhotoDownloadDelay(delay);
+}
+
+void AmbientAshTestBase::CreateTestImageJpegFile(base::FilePath path,
+                                                 size_t width,
+                                                 size_t height,
+                                                 SkColor color) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(width, height);
+  bitmap.eraseColor(color);
+  std::vector<unsigned char> data;
+  ASSERT_TRUE(gfx::JPEGCodec::Encode(bitmap, /*quality=*/50, &data));
+  size_t bytes_written = base::WriteFile(
+      path, reinterpret_cast<const char*>(data.data()), data.size());
+  ASSERT_EQ(data.size(), bytes_written);
 }
 
 }  // namespace ash

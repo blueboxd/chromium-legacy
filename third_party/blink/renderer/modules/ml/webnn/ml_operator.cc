@@ -14,6 +14,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
   switch (kind) {
     case MLOperator::OperatorKind::kClamp:
       return "clamp";
+    case MLOperator::OperatorKind::kConcat:
+      return "concat";
     case MLOperator::OperatorKind::kConv2d:
       return "conv2d";
     case MLOperator::OperatorKind::kAdd:
@@ -24,6 +26,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "mul";
     case MLOperator::OperatorKind::kDiv:
       return "div";
+    case MLOperator::OperatorKind::kLeakyRelu:
+      return "leakyRelu";
     case MLOperator::OperatorKind::kMax:
       return "max";
     case MLOperator::OperatorKind::kMin:
@@ -46,6 +50,8 @@ String MLOperator::OperatorKindToString(MLOperator::OperatorKind kind) {
       return "softmax";
     case MLOperator::OperatorKind::kSigmoid:
       return "sigmoid";
+    case MLOperator::OperatorKind::kTranspose:
+      return "transpose";
   }
 }
 
@@ -61,7 +67,6 @@ void MLOperator::Trace(Visitor* visitor) const {
   visitor->Trace(options_);
   visitor->Trace(inputs_);
   visitor->Trace(outputs_);
-  ScriptWrappable::Trace(visitor);
 }
 
 MLOperator::OperatorKind MLOperator::Kind() const {

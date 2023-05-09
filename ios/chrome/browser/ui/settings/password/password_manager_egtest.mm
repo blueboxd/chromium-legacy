@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings/password_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_app_interface.h"
@@ -66,6 +67,11 @@ constexpr int kScrollAmount = 150;
 
 constexpr base::TimeDelta kSyncInitializedTimeout = base::Seconds(5);
 
+id<GREYMatcher> ButtonWithAccessibilityID(NSString* id) {
+  return grey_allOf(grey_accessibilityID(id),
+                    grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
+}
+
 NSString* GetTextFieldForID(int category_id) {
   return [NSString
       stringWithFormat:@"%@_textField", l10n_util::GetNSString(category_id)];
@@ -99,17 +105,22 @@ GREYElementInteraction* GetInteractionForIssuesListItem(
 // the given `username`. It scrolls down if necessary to ensure that the matched
 // cell is interactable.
 GREYElementInteraction* GetInteractionForPasswordEntry(NSString* username) {
-  return GetInteractionForListItem(ButtonWithAccessibilityLabel(username),
+  // ID, not label because the latter might contain an extra label for the
+  // "local password icon" and most tests don't care about it.
+  return GetInteractionForListItem(ButtonWithAccessibilityID(username),
                                    kGREYDirectionDown);
 }
 
 // Returns the GREYElementInteraction* for the cell on the password list with
-// the given `username`. It scrolls down if necessary to ensure that the matched
-// cell is interactable.
+// the given `username` and `domain`. It scrolls down if necessary to ensure
+// that the matched cell is interactable.
 GREYElementInteraction* GetInteractionForPasswordIssueEntry(
+    NSString* domain,
     NSString* username) {
-  return GetInteractionForIssuesListItem(ButtonWithAccessibilityLabel(username),
-                                         kGREYDirectionDown);
+  return GetInteractionForIssuesListItem(
+      ButtonWithAccessibilityLabel(
+          [NSString stringWithFormat:@"%@, %@", domain, username]),
+      kGREYDirectionDown);
 }
 
 // Returns the GREYElementInteraction* for the item on the detail view
@@ -366,6 +377,13 @@ id<GREYMatcher> ToolbarSettingsSubmenuButton() {
   return grey_accessibilityID(kSettingsToolbarSettingsButtonId);
 }
 
+// Returns matcher for the password details / add password view footer displayed
+// when the note length is approaching max limit.
+id<GREYMatcher> TooLongNoteFooter() {
+  return grey_text(l10n_util::GetNSString(
+      IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION));
+}
+
 // Saves an example form in the store.
 void SaveExamplePasswordForm() {
   GREYAssert(
@@ -468,6 +486,12 @@ id<GREYMatcher> EditDoneButton() {
 // being the website displayed in the nth detail row of the website cell.
 - (id<GREYMatcher>)matcherForPasswordDetailCellWithWebsites:(NSString*)websites;
 
+// Matcher for the delete button for a given username/password in the details
+// screen.
+- (id<GREYMatcher>)
+    matcherForDeleteButtonInDetailsWithUsername:(NSString*)username
+                                       password:(NSString*)password;
+
 @end
 
 @implementation PasswordManagerTestCase {
@@ -484,7 +508,9 @@ id<GREYMatcher> EditDoneButton() {
                                        username:(NSString*)username {
   // With grouping enabled, discard the username; it's only shown on the details
   // page.
-  return GetInteractionForListItem(ButtonWithAccessibilityLabel(domain),
+  // ID, not label because the latter might contain an extra label for the
+  // "local password icon" and most tests don't care about it.
+  return GetInteractionForListItem(ButtonWithAccessibilityID(domain),
                                    kGREYDirectionDown);
 }
 
@@ -492,6 +518,12 @@ id<GREYMatcher> EditDoneButton() {
     (NSString*)websites {
   return grey_accessibilityLabel(
       [NSString stringWithFormat:@"Sites, %@", websites]);
+}
+
+- (id<GREYMatcher>)
+    matcherForDeleteButtonInDetailsWithUsername:(NSString*)username
+                                       password:(NSString*)password {
+  return DeleteButtonForUsernameAndPassword(username, password);
 }
 
 - (void)setUp {
@@ -543,7 +575,8 @@ id<GREYMatcher> EditDoneButton() {
         password_manager::features::kEnablePasswordsAccountStorage);
   }
   if ([self isRunningTest:@selector
-            (testAccountStorageSwitchShownIfSignedInAndFlagEnabled)]) {
+            (testAccountStorageSwitchShownIfSignedInAndFlagEnabled)] ||
+      [self isRunningTest:@selector(testMovePasswordToAccount)]) {
     config.features_enabled.push_back(
         password_manager::features::kEnablePasswordsAccountStorage);
   }
@@ -551,7 +584,12 @@ id<GREYMatcher> EditDoneButton() {
   if ([self isRunningTest:@selector(testLayoutWithNotesDisabled)]) {
     config.features_disabled.push_back(syncer::kPasswordNotesWithBackup);
   }
-  if ([self isRunningTest:@selector(testLayoutWithNotesEnabled)]) {
+  if ([self isRunningTest:@selector(testLayoutWithNotesEnabled)] ||
+      [self isRunningTest:@selector(testAddPasswordLayoutWithLongNotes)] ||
+      [self isRunningTest:@selector
+            (testAddPasswordSaveButtonStateOnFieldChanges)] ||
+      [self isRunningTest:@selector(testLayoutWithLongNotes)] ||
+      [self isRunningTest:@selector(testShowHidePasswordWithNotesEnabled)]) {
     config.features_enabled.push_back(syncer::kPasswordNotesWithBackup);
   }
 
@@ -574,10 +612,6 @@ id<GREYMatcher> EditDoneButton() {
 
 // Verifies the UI elements are accessible on the Passwords page.
 - (void)testAccessibilityOnPasswords {
-  if ([self groupingEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test isn't implemented with grouped passwords yet.");
-  }
   // Saving a form is needed for using the "password details" view.
   SaveExamplePasswordForm();
 
@@ -905,7 +939,6 @@ id<GREYMatcher> EditDoneButton() {
     EARL_GREY_TEST_SKIPPED(
         @"This test isn't implemented with grouped passwords yet.");
   }
-
   // Save form to be deleted later.
   SaveExamplePasswordForm();
   // Save duplicate of the previously saved form to be deleted at the same time.
@@ -1336,6 +1369,10 @@ id<GREYMatcher> EditDoneButton() {
   SaveExamplePasswordFormWithNote();
 
   OpenPasswordManager();
+  [PasswordSettingsAppInterface
+      setUpMockReauthenticationModuleForPasswordManager];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
 
   [[self interactionForSinglePasswordEntryWithDomain:@"example.com"
                                             username:@"concrete username"]
@@ -1368,6 +1405,60 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
+}
+
+// Checks that entering too long note while editing a password blocks the save
+// button and displays a footer explanation.
+- (void)testLayoutWithLongNotes {
+  SaveExamplePasswordFormWithNote();
+
+  OpenPasswordManager();
+  [PasswordSettingsAppInterface
+      setUpMockReauthenticationModuleForPasswordManager];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
+  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"
+                                            username:@"concrete username"]
+      performAction:grey_tap()];
+
+  TapEdit();
+  [[EarlGrey selectElementWithMatcher:TooLongNoteFooter()]
+      assertWithMatcher:grey_nil()];
+
+  // Entering too long note results in "Done" button being disabled and footer
+  // displayed.
+  NSString* note = [@"" stringByPaddingToLength:1001
+                                     withString:@"a"
+                                startingAtIndex:0];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(note)];
+  [[EarlGrey selectElementWithMatcher:EditDoneButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kPasswordDetailsViewControllerId)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+  [[EarlGrey selectElementWithMatcher:TooLongNoteFooter()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Entering note with length close to the limit should result in displaying
+  // footer only ("Done" button should be enabled).
+  note = [@"" stringByPaddingToLength:1000 withString:@"a" startingAtIndex:0];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(note)];
+  [[EarlGrey selectElementWithMatcher:EditDoneButton()]
+      assertWithMatcher:grey_enabled()];
+  [[EarlGrey selectElementWithMatcher:TooLongNoteFooter()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // For shorter notes there should be no footer and "Done" button enabled.
+  note = [@"" stringByPaddingToLength:100 withString:@"a" startingAtIndex:0];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(note)];
+  [[EarlGrey selectElementWithMatcher:EditDoneButton()]
+      assertWithMatcher:grey_enabled()];
+  [[EarlGrey selectElementWithMatcher:TooLongNoteFooter()]
+      assertWithMatcher:grey_nil()];
 }
 
 // Checks the order of the elements in the detail view layout for a blocked
@@ -1645,10 +1736,6 @@ id<GREYMatcher> EditDoneButton() {
 // any device. To limit the effect of (2), custom large scrolling steps are
 // added to the usual scrolling actions.
 - (void)testManyPasswords {
-  if ([self groupingEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test isn't implemented with grouped passwords yet.");
-  }
   if ([ChromeEarlGrey isIPadIdiom]) {
     // TODO(crbug.com/906551): Enable the test on iPad once the bug is fixed.
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad.");
@@ -1675,24 +1762,39 @@ id<GREYMatcher> EditDoneButton() {
 
   // Aim at an entry almost at the end of the list.
   constexpr int kRemoteIndex = kPasswordsCount - 4;
-  // The scrolling in GetInteractionForPasswordEntry has too fine steps to
-  // reach the desired part of the list quickly. The following gives it a head
-  // start of the desired position, counting 30 points per entry and
-  // aiming at `kRemoteIndex`.
-  constexpr int kJump = kRemoteIndex * 30 + 150;
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)]
-      performAction:grey_scrollInDirection(kGREYDirectionDown, kJump)];
-  [GetInteractionForPasswordEntry([NSString
-      stringWithFormat:@"www%02d.example.com, concrete username %02d",
-                       kRemoteIndex, kRemoteIndex]) performAction:grey_tap()];
+
+  if ([self groupingEnabled]) {
+    [GetInteractionForPasswordEntry([NSString
+        stringWithFormat:@"www01.example.com, %d accounts", kPasswordsCount])
+        performAction:grey_tap()];
+  } else {
+    // The scrolling in GetInteractionForPasswordEntry has too fine steps to
+    // reach the desired part of the list quickly. The following gives it a head
+    // start of the desired position, counting 30 points per entry and
+    // aiming at `kRemoteIndex`.
+    constexpr int kJump = kRemoteIndex * 30 + 150;
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)]
+        performAction:grey_scrollInDirection(kGREYDirectionDown, kJump)];
+    [[self interactionForSinglePasswordEntryWithDomain:
+               [NSString stringWithFormat:@"www%02d.example.com", kRemoteIndex]
+                                              username:[NSString
+                                                           stringWithFormat:
+                                                               @"concrete "
+                                                               @"username %02d",
+                                                               kRemoteIndex]]
+        performAction:grey_tap()];
+  }
 
   // Check that the detail view loaded correctly by verifying the site content.
-  [[EarlGrey
+  [[[EarlGrey
       selectElementWithMatcher:
           [self matcherForPasswordDetailCellWithWebsites:
                     [NSString stringWithFormat:@"https://www%02d.example.com/",
                                                kRemoteIndex]]]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(kPasswordDetailsTableViewId)]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -1817,10 +1919,6 @@ id<GREYMatcher> EditDoneButton() {
 // Test that when user types text in search field, passwords and blocked
 // items are filtered out and "save passwords" switch is removed.
 - (void)testSearchPasswords {
-  if ([self groupingEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test isn't implemented with grouped passwords yet.");
-  }
   // TODO(crbug.com/1067818): Test doesn't pass on iPad device or simulator.
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(
@@ -1832,9 +1930,12 @@ id<GREYMatcher> EditDoneButton() {
 
   OpenPasswordManager();
 
-  [GetInteractionForPasswordEntry(@"example11.com, user1")
+  [[self interactionForSinglePasswordEntryWithDomain:@"example11.com"
+                                            username:@"user1"]
       assertWithMatcher:grey_notNil()];
-  [GetInteractionForPasswordEntry(@"example12.com, user2")
+
+  [[self interactionForSinglePasswordEntryWithDomain:@"example12.com"
+                                            username:@"user2"]
       assertWithMatcher:grey_notNil()];
   [GetInteractionForPasswordEntry(@"exclude1.com")
       assertWithMatcher:grey_notNil()];
@@ -1849,9 +1950,11 @@ id<GREYMatcher> EditDoneButton() {
                                           kSavePasswordSwitchTableViewId, YES)]
       assertWithMatcher:grey_nil()];
 
-  [GetInteractionForPasswordEntry(@"example11.com, user1")
+  [[self interactionForSinglePasswordEntryWithDomain:@"example11.com"
+                                            username:@"user1"]
       assertWithMatcher:grey_nil()];
-  [GetInteractionForPasswordEntry(@"example12.com, user2")
+  [[self interactionForSinglePasswordEntryWithDomain:@"example12.com"
+                                            username:@"user2"]
       assertWithMatcher:grey_notNil()];
   [GetInteractionForPasswordEntry(@"exclude1.com")
       assertWithMatcher:grey_nil()];
@@ -1868,10 +1971,6 @@ id<GREYMatcher> EditDoneButton() {
 
 // Test search and delete all passwords and blocked items.
 - (void)testSearchAndDeleteAllPasswords {
-  if ([self groupingEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test isn't implemented with grouped passwords yet.");
-  }
   SaveExamplePasswordForms();
   SaveExampleBlockedForms();
 
@@ -1890,9 +1989,11 @@ id<GREYMatcher> EditDoneButton() {
   TapEdit();
 
   // Select all.
-  [GetInteractionForPasswordEntry(@"example11.com, user1")
+  [[self interactionForSinglePasswordEntryWithDomain:@"example11.com"
+                                            username:@"user1"]
       performAction:grey_tap()];
-  [GetInteractionForPasswordEntry(@"example12.com, user2")
+  [[self interactionForSinglePasswordEntryWithDomain:@"example12.com"
+                                            username:@"user2"]
       performAction:grey_tap()];
 
   [GetInteractionForPasswordEntry(@"exclude1.com") performAction:grey_tap()];
@@ -1902,10 +2003,20 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:DeleteButtonAtBottom()]
       performAction:grey_tap()];
 
+  if ([self groupingEnabled]) {
+    [[EarlGrey
+        selectElementWithMatcher:BatchDeleteConfirmationButtonForGrouping()]
+        performAction:grey_tap()];
+  }
+
+  [ChromeEarlGreyUI waitForAppToIdle];
+
   // All should be gone.
-  [GetInteractionForPasswordEntry(@"example11.com, user1")
+  [[self interactionForSinglePasswordEntryWithDomain:@"example11.com"
+                                            username:@"user1"]
       assertWithMatcher:grey_nil()];
-  [GetInteractionForPasswordEntry(@"example12.com, user2")
+  [[self interactionForSinglePasswordEntryWithDomain:@"example12.com"
+                                            username:@"user2"]
       assertWithMatcher:grey_nil()];
   [GetInteractionForPasswordEntry(@"exclude1.com")
       assertWithMatcher:grey_nil()];
@@ -1937,6 +2048,7 @@ id<GREYMatcher> EditDoneButton() {
     EARL_GREY_TEST_SKIPPED(
         @"This test isn't implemented with grouped passwords yet.");
   }
+
   SaveExamplePasswordForms();
   OpenPasswordManager();
 
@@ -2101,7 +2213,6 @@ id<GREYMatcher> EditDoneButton() {
     EARL_GREY_TEST_SKIPPED(
         @"This test isn't implemented with grouped passwords yet.");
   }
-
   GREYAssert(
       [PasswordSettingsAppInterface saveExamplePassword:@"concrete password"
                                                userName:@"concrete username1"
@@ -2192,27 +2303,50 @@ id<GREYMatcher> EditDoneButton() {
 
 // Tests that removing multiple passwords works fine.
 - (void)testRemovingMultiplePasswords {
-  if ([self groupingEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test isn't implemented with grouped passwords yet.");
-  }
   constexpr int kPasswordsCount = 4;
 
   // Send the passwords to the queue to be added to the PasswordStore.
   [PasswordSettingsAppInterface saveExamplePasswordWithCount:kPasswordsCount];
+
+  if ([self groupingEnabled]) {
+    // Also save passwords for example11.com and example12.com, since the rest
+    // will be grouped together.
+    SaveExamplePasswordForms();
+  }
 
   OpenPasswordManager();
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 
   TapEdit();
 
-  for (int i = kPasswordsCount; i >= 1; i--) {
-    [GetInteractionForPasswordEntry([NSString
-        stringWithFormat:@"www%02d.example.com, concrete username %02d", i, i])
-        performAction:grey_tap()];
+  if ([self groupingEnabled]) {
+    [[GetInteractionForPasswordEntry(@"www01.example.com, 4 accounts")
+        assertWithMatcher:grey_notNil()] performAction:grey_tap()];
+    [[GetInteractionForPasswordEntry(@"example11.com")
+        assertWithMatcher:grey_notNil()] performAction:grey_tap()];
+    [[GetInteractionForPasswordEntry(@"example12.com")
+        assertWithMatcher:grey_notNil()] performAction:grey_tap()];
+  } else {
+    for (int i = kPasswordsCount; i >= 1; i--) {
+      [[self
+          interactionForSinglePasswordEntryWithDomain:
+              [NSString stringWithFormat:@"www%02d.example.com", i]
+                                             username:[NSString
+                                                          stringWithFormat:
+                                                              @"concrete "
+                                                              @"username %02d",
+                                                              i]]
+          performAction:grey_tap()];
+    }
   }
 
   [[EarlGrey selectElementWithMatcher:DeleteButton()] performAction:grey_tap()];
+
+  if ([self groupingEnabled]) {
+    [[EarlGrey
+        selectElementWithMatcher:BatchDeleteConfirmationButtonForGrouping()]
+        performAction:grey_tap()];
+  }
 
   // Wait until animation is over.
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -2302,6 +2436,57 @@ id<GREYMatcher> EditDoneButton() {
       assertWithMatcher:grey_textFieldValue(@"new password")];
 }
 
+// Checks that entering too long note while adding passwords blocks the save
+// button and displays a footer explanation.
+- (void)testAddPasswordLayoutWithLongNotes {
+  OpenPasswordManager();
+
+  [[EarlGrey selectElementWithMatcher:AddPasswordToolbarButton()]
+      performAction:grey_tap()];
+
+  // Fill form.
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
+      performAction:grey_replaceText(@"https://example.com/")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+      performAction:grey_replaceText(@"new username")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      performAction:grey_replaceText(@"new password")];
+
+  // Entering too long note results in "Add" password being disabled and footer
+  // displayed.
+  NSString* note = [@"" stringByPaddingToLength:1001
+                                     withString:@"a"
+                                startingAtIndex:0];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(note)];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kPasswordDetailsViewControllerId)]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+  [[EarlGrey selectElementWithMatcher:TooLongNoteFooter()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Entering note with length close to the limit should result in displaying
+  // footer only ("add" button should be enabled).
+  note = [@"" stringByPaddingToLength:1000 withString:@"a" startingAtIndex:0];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(note)];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_enabled()];
+  [[EarlGrey selectElementWithMatcher:TooLongNoteFooter()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // For shorter notes there should be no footer and "add" button enabled.
+  note = [@"" stringByPaddingToLength:100 withString:@"a" startingAtIndex:0];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(note)];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_enabled()];
+  [[EarlGrey selectElementWithMatcher:TooLongNoteFooter()]
+      assertWithMatcher:grey_nil()];
+}
+
 // Tests that when a new credential is saved or an existing one is updated via
 // the add credential flow, the VC auto scrolls to the newly created or the
 // updated entry.
@@ -2337,11 +2522,8 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
 
   // The newly created credential exists.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   ButtonWithAccessibilityLabel(
-                                       @"zexample.com, zconcrete username"),
-                                   grey_interactable(), nil)]
+  [[self interactionForSinglePasswordEntryWithDomain:@"zexample.com"
+                                            username:@"zconcrete username"]
       performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
@@ -2356,7 +2538,8 @@ id<GREYMatcher> EditDoneButton() {
   SaveExamplePasswordForm();
 
   OpenPasswordManager();
-  [PasswordSettingsAppInterface setUpMockReauthenticationModuleForExport];
+  [PasswordSettingsAppInterface
+      setUpMockReauthenticationModuleForPasswordManager];
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
 
@@ -2407,6 +2590,70 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
+}
+
+// Tests that save button in add password view remains disabled when we switch
+// from invalid to valid input in any of the fields (website, password, note),
+// when there are still other fields with invalid input.
+- (void)testAddPasswordSaveButtonStateOnFieldChanges {
+  OpenPasswordManager();
+  [[EarlGrey selectElementWithMatcher:AddPasswordToolbarButton()]
+      performAction:grey_tap()];
+
+  NSString* long_note = [@"" stringByPaddingToLength:1001
+                                          withString:@"a"
+                                     startingAtIndex:0];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+      performAction:grey_replaceText(@"username")];
+
+  // Make sure that switching from invalid to valid note doesn't enable the save
+  // button when website is invalid.
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
+      performAction:grey_replaceText(@"example")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      performAction:grey_replaceText(@"password")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(long_note)];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(@"note")];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+
+  // Make sure that switching from invalid to valid note doesn't enable the save
+  // button when password is invalid.
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
+      performAction:grey_replaceText(@"https://example.com/")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      performAction:grey_replaceText(@"")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(long_note)];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(@"note")];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+
+  // Make sure that from invalid to valid website and password doesn't enable
+  // the save button when note is too long.
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
+      performAction:grey_replaceText(@"example")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      performAction:grey_replaceText(@"")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      performAction:grey_replaceText(long_note)];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:AddPasswordWebsite()]
+      performAction:grey_replaceText(@"https://example.com/")];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      performAction:grey_replaceText(@"password")];
+  [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
 }
 
 // Tests that the duplicate credential section alert is shown when the user adds
@@ -2477,7 +2724,8 @@ id<GREYMatcher> EditDoneButton() {
 // when adding a new credential.
 - (void)testTLDMissingMessage {
   OpenPasswordManager();
-  [PasswordSettingsAppInterface setUpMockReauthenticationModuleForExport];
+  [PasswordSettingsAppInterface
+      setUpMockReauthenticationModuleForPasswordManager];
   [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
                                     ReauthenticationResult::kSuccess];
 
@@ -2505,11 +2753,6 @@ id<GREYMatcher> EditDoneButton() {
 // Checks that deleting a compromised password from password issues goes back
 // to the list-of-issues which doesn't display that password anymore.
 - (void)testDeletePasswordIssue {
-  if ([self groupingEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test isn't implemented with grouped passwords yet.");
-  }
-
   GREYAssert([PasswordSettingsAppInterface
                  saveInsecurePassword:@"concrete password"
                              userName:@"concrete username"
@@ -2523,11 +2766,12 @@ id<GREYMatcher> EditDoneButton() {
       base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
           IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT, 1));
 
-  [GetInteractionForPasswordEntry([NSString
-      stringWithFormat:@"%@, %@", text, detailText]) performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel([NSString
+                                          stringWithFormat:@"%@, %@", text,
+                                                           detailText])]
+      performAction:grey_tap()];
 
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"
-                                            username:@"concrete username"]
+  [GetInteractionForPasswordIssueEntry(@"example.com", @"concrete username")
       performAction:grey_tap()];
 
   [PasswordSettingsAppInterface setUpMockReauthenticationModule];
@@ -2537,9 +2781,17 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteButton()] performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          [self
+              matcherForDeleteButtonInDetailsWithUsername:@"concrete username"
+                                                 password:@"concrete password"]]
+      performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteConfirmationButton()]
+  [[EarlGrey
+      selectElementWithMatcher:[self groupingEnabled]
+                                   ? DeleteConfirmationButtonForGrouping()
+                                   : DeleteConfirmationButton()]
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
@@ -2551,7 +2803,7 @@ id<GREYMatcher> EditDoneButton() {
       selectElementWithMatcher:grey_accessibilityID(kPasswordIssuesTableViewId)]
       assertWithMatcher:grey_notNil()];
 
-  [GetInteractionForPasswordIssueEntry(@"example.com, concrete username")
+  [GetInteractionForPasswordIssueEntry(@"example.com", @"concrete username")
       assertWithMatcher:grey_nil()];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
@@ -2586,14 +2838,40 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_tap()];
 }
 
+// Tests that reauthentication is not required to show password when notes are
+// enabled since the reauthentication happens before navigating to the details
+// view in this scenario.
+- (void)testShowHidePasswordWithNotesEnabled {
+  SaveExamplePasswordForm();
+
+  OpenPasswordManager();
+  [PasswordSettingsAppInterface
+      setUpMockReauthenticationModuleForPasswordManager];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
+  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"
+                                            username:@"concrete username"]
+      performAction:grey_tap()];
+
+  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [GetInteractionForPasswordDetailItem(ShowPasswordButton())
+      performAction:grey_tap()];
+  [GetInteractionForPasswordDetailItem(HidePasswordButton())
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [GetInteractionForPasswordDetailItem(HidePasswordButton())
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
 // Tests that the favicons for the password managers metrics are logged
 // properly when there are passwords with a favicon.
 // TODO(crbug.com/1348585): Fix to re-enable.
 - (void)testLogFaviconsForPasswordsMetrics {
-  if ([self groupingEnabled]) {
-    EARL_GREY_TEST_SKIPPED(
-        @"This test isn't implemented with grouped passwords yet.");
-  }
   // Sign-in and synced user.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
@@ -2608,14 +2886,9 @@ id<GREYMatcher> EditDoneButton() {
   // Make sure the cell is loaded properly before tapping on it.
   ConditionBlock condition = ^{
     NSError* error = nil;
-    [[[EarlGrey
-        selectElementWithMatcher:grey_allOf(ButtonWithAccessibilityLabel(
-                                                @"example12.com, user2"),
-                                            grey_sufficientlyVisible(), nil)]
-           usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
-                                                    kScrollAmount)
-        onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)]
-        assertWithMatcher:grey_notNil()
+    [[self interactionForSinglePasswordEntryWithDomain:@"example12.com"
+                                              username:@"user2"]
+        assertWithMatcher:grey_sufficientlyVisible()
                     error:&error];
     return error == nil;
   };
@@ -2624,7 +2897,8 @@ id<GREYMatcher> EditDoneButton() {
                  base::test::ios::kWaitForUIElementTimeout, condition),
              @"Waiting for the cell to load");
 
-  [GetInteractionForPasswordEntry(@"example12.com, user2")
+  [[self interactionForSinglePasswordEntryWithDomain:@"example12.com"
+                                            username:@"user2"]
       performAction:grey_tap()];
 
   // Metric: Passwords in the password manager.
@@ -2917,6 +3191,55 @@ id<GREYMatcher> EditDoneButton() {
       assertWithMatcher:grey_nil()];
 }
 
+- (void)testMovePasswordToAccount {
+  GREYAssert(
+      [PasswordSettingsAppInterface saveExamplePassword:@"localPassword"
+                                               userName:@"username"
+                                                 origin:@"https://local.com"],
+      @"Stored form was not found in the PasswordStore results.");
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:NO];
+  OpenPasswordManager();
+
+  // `passwordMatcher` includes grey_sufficientlyVisible() because there are
+  // other invisible cells when password details is closed later.
+  id<GREYMatcher> passwordMatcher =
+      grey_allOf([self groupingEnabled]
+                     ? ButtonWithAccessibilityID(@"local.com")
+                     : ButtonWithAccessibilityID(@"local.com, username"),
+                 grey_sufficientlyVisible(), nil);
+  id<GREYMatcher> localIconMatcher =
+      grey_allOf(grey_accessibilityID(kLocalOnlyPasswordIconId),
+                 grey_ancestor(passwordMatcher), nil);
+  [[EarlGrey selectElementWithMatcher:localIconMatcher]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:passwordMatcher]
+      performAction:grey_tap()];
+
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kMovePasswordToAccountButtonId)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kMovePasswordToAccountButtonId)]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kMovePasswordToAccountButtonId)]
+      assertWithMatcher:grey_notVisible()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:localIconMatcher]
+      assertWithMatcher:grey_notVisible()];
+}
+
 @end
 
 // Rerun all the tests in this file but with kPasswordsGrouping disabled. This
@@ -2936,7 +3259,9 @@ id<GREYMatcher> EditDoneButton() {
     interactionForSinglePasswordEntryWithDomain:(NSString*)domain
                                        username:(NSString*)username {
   NSString* label = [NSString stringWithFormat:@"%@, %@", domain, username];
-  return GetInteractionForListItem(ButtonWithAccessibilityLabel(label),
+  // ID, not label because the latter might contain an extra label for the
+  // "local password icon" and most tests don't care about it.
+  return GetInteractionForListItem(ButtonWithAccessibilityID(label),
                                    kGREYDirectionDown);
 }
 
@@ -2944,6 +3269,12 @@ id<GREYMatcher> EditDoneButton() {
     (NSString*)websites {
   return grey_accessibilityLabel(
       [NSString stringWithFormat:@"Site, %@", websites]);
+}
+
+- (id<GREYMatcher>)
+    matcherForDeleteButtonInDetailsWithUsername:(NSString*)username
+                                       password:(NSString*)password {
+  return DeleteButton();
 }
 
 // This causes the test case to actually be detected as a test case. The actual

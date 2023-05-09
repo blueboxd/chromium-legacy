@@ -35,6 +35,7 @@ TouchToFillDelegateImpl::TouchToFillDelegateImpl(
     BrowserAutofillManager* manager)
     : manager_(manager) {
   DCHECK(manager);
+  autofill_manager_observation_.Observe(manager);
 }
 
 TouchToFillDelegateImpl::~TouchToFillDelegateImpl() {
@@ -86,7 +87,7 @@ TouchToFillDelegateImpl::DryRunResult TouchToFillDelegateImpl::DryRun(
   // Trigger only if there is at least 1 complete valid credit card on file.
   // Complete = contains number, expiration date and name on card.
   // Valid = unexpired with valid number format.
-  std::vector<CreditCard*> cards_to_suggest =
+  std::vector<CreditCard> cards_to_suggest =
       AutofillSuggestionGenerator::GetOrderedCardsToSuggest(
           manager_->client(), /*suppress_disused_cards=*/true);
   if (base::ranges::none_of(cards_to_suggest,
@@ -102,13 +103,13 @@ TouchToFillDelegateImpl::DryRunResult TouchToFillDelegateImpl::DryRun(
   // card with `CreditCard::VIRTUAL_CARD` as the record type, and insert it
   // before the actual card.
   std::vector<autofill::CreditCard> real_and_virtual_cards;
-  for (const CreditCard* card : cards_to_suggest) {
-    if (card->virtual_card_enrollment_state() == CreditCard::ENROLLED &&
+  for (const CreditCard& card : cards_to_suggest) {
+    if (card.virtual_card_enrollment_state() == CreditCard::ENROLLED &&
         base::FeatureList::IsEnabled(
             features::kAutofillVirtualCardsOnTouchToFillAndroid)) {
-      real_and_virtual_cards.push_back(CreditCard::CreateVirtualCard(*card));
+      real_and_virtual_cards.push_back(CreditCard::CreateVirtualCard(card));
     }
-    real_and_virtual_cards.push_back(*card);
+    real_and_virtual_cards.push_back(card);
   }
   return {TriggerOutcome::kShown, std::move(real_and_virtual_cards)};
 }
@@ -119,6 +120,45 @@ void TouchToFillDelegateImpl::SetShouldSuppressKeyboard(bool suppress) {
   }
   manager_->SetShouldSuppressKeyboard(suppress);
   keyboard_is_suppressed_ = suppress;
+  if (suppress) {
+    keyboard_unsuppress_timer_.Start(
+        FROM_HERE, base::Seconds(1),
+        base::BindOnce(
+            [](base::WeakPtr<TouchToFillDelegateImpl> self) {
+              if (self) {
+                self->SetShouldSuppressKeyboard(false);
+              }
+            },
+            GetWeakPtr()));
+  } else {
+    keyboard_unsuppress_timer_.Stop();
+  }
+}
+
+void TouchToFillDelegateImpl::OnAutofillManagerDestroyed(
+    AutofillManager& manager) {
+  autofill_manager_observation_.Reset();
+}
+
+void TouchToFillDelegateImpl::OnBeforeAskForValuesToFill(
+    AutofillManager& manager,
+    FormGlobalId form_id,
+    FieldGlobalId field_id) {
+  if (ttf_credit_card_state_ != TouchToFillState::kIsShowing) {
+    SetShouldSuppressKeyboard(DryRun(form_id, field_id).outcome ==
+                              TriggerOutcome::kShown);
+  }
+}
+
+void TouchToFillDelegateImpl::OnAfterAskForValuesToFill(
+    AutofillManager& manager,
+    FormGlobalId form_id,
+    FieldGlobalId field_id) {
+  if (ttf_credit_card_state_ != TouchToFillState::kIsShowing) {
+    SetShouldSuppressKeyboard(false);
+  } else {
+    keyboard_unsuppress_timer_.Stop();
+  }
 }
 
 bool TouchToFillDelegateImpl::TryToShowTouchToFill(const FormData& form,
@@ -129,21 +169,16 @@ bool TouchToFillDelegateImpl::TryToShowTouchToFill(const FormData& form,
   query_form_ = form;
   query_field_ = field;
   DryRunResult dry_run = DryRun(form.global_id(), field.global_id());
-  if (dry_run.outcome == TriggerOutcome::kShown) {
-    SetShouldSuppressKeyboard(true);
-    if (manager_->client()->ShowTouchToFillCreditCard(
-            GetWeakPtr(), std::move(dry_run.cards_to_suggest))) {
-      // Success.
-    } else {
-      dry_run.outcome = TriggerOutcome::kFailedToDisplayBottomSheet;
-    }
+  if (dry_run.outcome == TriggerOutcome::kShown && keyboard_is_suppressed_ &&
+      !manager_->client()->ShowTouchToFillCreditCard(
+          GetWeakPtr(), std::move(dry_run.cards_to_suggest))) {
+    dry_run.outcome = TriggerOutcome::kFailedToDisplayBottomSheet;
   }
   if (dry_run.outcome != TriggerOutcome::kUnsupportedFieldType) {
     base::UmaHistogramEnumeration(kUmaTouchToFillCreditCardTriggerOutcome,
                                   dry_run.outcome);
   }
   if (dry_run.outcome != TriggerOutcome::kShown) {
-    SetShouldSuppressKeyboard(false);
     return false;
   }
 

@@ -174,6 +174,28 @@ base::RepeatingCallback<bool(Args...)> WithSwitch(
       }));
 }
 
+// Overload for `AppBundleWebCreateMode` switches, represented by ints.
+template <typename... Args>
+base::RepeatingCallback<bool(Args...)> WithSwitch(
+    const std::string& flag,
+    base::RepeatingCallback<bool(AppBundleWebCreateMode, Args...)> callback) {
+  return WithSwitch(
+      flag,
+      base::BindLambdaForTesting([=](const std::string& flag, Args... args) {
+        int flag_app_bundle_web_create_mode = -1;
+        if (base::StringToInt(flag, &flag_app_bundle_web_create_mode) &&
+            flag_app_bundle_web_create_mode >=
+                static_cast<int>(AppBundleWebCreateMode::kCreateApp) &&
+            flag_app_bundle_web_create_mode <=
+                static_cast<int>(AppBundleWebCreateMode::kCreateInstalledApp)) {
+          return callback.Run(static_cast<AppBundleWebCreateMode>(
+                                  flag_app_bundle_web_create_mode),
+                              std::move(args)...);
+        }
+        return false;
+      }));
+}
+
 template <typename Arg, typename... RemainingArgs>
 base::RepeatingCallback<bool(RemainingArgs...)> WithArg(
     Arg arg,
@@ -254,11 +276,14 @@ void AppTestHelper::FirstTaskRun() {
     {"expect_marshal_interface_succeeds",
      WithSystemScope(Wrap(&ExpectMarshalInterfaceSucceeds))},
     {"expect_legacy_update3web_succeeds",
-     WithSwitch("expected_error_code",
-                WithSwitch("expected_final_state",
-                           WithSwitch("app_id",
-                                      WithSystemScope(Wrap(
-                                          &ExpectLegacyUpdate3WebSucceeds)))))},
+     WithSwitch(
+         "expected_error_code",
+         WithSwitch(
+             "expected_final_state",
+             WithSwitch("app_bundle_web_create_mode",
+                        WithSwitch("app_id",
+                                   WithSystemScope(Wrap(
+                                       &ExpectLegacyUpdate3WebSucceeds))))))},
     {"expect_legacy_process_launcher_succeeds",
      WithSystemScope(Wrap(&ExpectLegacyProcessLauncherSucceeds))},
     {"expect_legacy_app_command_web_succeeds",
@@ -281,16 +306,18 @@ void AppTestHelper::FirstTaskRun() {
     {"expect_version_not_active",
      WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionNotActive)))},
     {"install", WithSystemScope(Wrap(&Install))},
+    {"install_updater_and_app",
+     WithSwitch("app_id", WithSystemScope(Wrap(&InstallUpdaterAndApp)))},
     {"print_log", WithSystemScope(Wrap(&PrintLog))},
     {"run_wake", WithSwitch("exit_code", WithSystemScope(Wrap(&RunWake)))},
     {"run_wake_all", WithSystemScope(Wrap(&RunWakeAll))},
     {"run_wake_active",
      WithSwitch("exit_code", WithSystemScope(Wrap(&RunWakeActive)))},
     {"update",
-     WithSwitch(
-         "do_update_check_only",
-         WithSwitch("install_data_index",
-                    (WithSwitch("app_id", WithSystemScope(Wrap(&Update))))))},
+     WithSwitch("install_data_index",
+                (WithSwitch("app_id", WithSystemScope(Wrap(&Update)))))},
+    {"check_for_update",
+     (WithSwitch("app_id", WithSystemScope(Wrap(&CheckForUpdate))))},
     {"update_all", WithSystemScope(Wrap(&UpdateAll))},
     {"delete_updater_directory",
      WithSystemScope(Wrap(&DeleteUpdaterDirectory))},
@@ -316,10 +343,10 @@ void AppTestHelper::FirstTaskRun() {
                 WithSwitch("install_data_index",
                            WithSwitch("app_id", WithSystemScope(Wrap(
                                                     &CallServiceUpdate)))))},
-    {"setup_fake_legacy_updater_data",
-     WithSystemScope(Wrap(&SetupFakeLegacyUpdaterData))},
-    {"expect_legacy_updater_data_migrated",
-     WithSystemScope(Wrap(&ExpectLegacyUpdaterDataMigrated))},
+    {"setup_fake_legacy_updater",
+     WithSystemScope(Wrap(&SetupFakeLegacyUpdater))},
+    {"expect_legacy_updater_migrated",
+     WithSystemScope(Wrap(&ExpectLegacyUpdaterMigrated))},
     {"run_recovery_component",
      WithSwitch("version", WithSwitch("app_id", WithSystemScope(Wrap(
                                                     &RunRecoveryComponent))))},

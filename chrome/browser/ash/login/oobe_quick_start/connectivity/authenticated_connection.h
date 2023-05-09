@@ -11,8 +11,12 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/connection.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/wifi_credentials.h"
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
+#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
 #include "components/cbor/values.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "url/origin.h"
 
 namespace ash::quick_start {
@@ -26,7 +30,14 @@ class AuthenticatedConnection : public Connection {
   using RequestAccountTransferAssertionCallback =
       base::OnceCallback<void(absl::optional<FidoAssertionInfo>)>;
 
-  explicit AuthenticatedConnection(NearbyConnection* nearby_connection);
+  using RequestWifiCredentialsCallback =
+      base::OnceCallback<void(absl::optional<WifiCredentials>)>;
+
+  AuthenticatedConnection(NearbyConnection* nearby_connection,
+                          mojo::SharedRemote<mojom::QuickStartDecoder> remote,
+                          RandomSessionId session_id,
+                          SharedSecret shared_secret);
+
   AuthenticatedConnection(AuthenticatedConnection&) = delete;
   AuthenticatedConnection& operator=(AuthenticatedConnection&) = delete;
   ~AuthenticatedConnection() override;
@@ -34,6 +45,9 @@ class AuthenticatedConnection : public Connection {
   void RequestAccountTransferAssertion(
       const std::string& challenge_b64url,
       RequestAccountTransferAssertionCallback callback);
+
+  void RequestWifiCredentials(int32_t session_id,
+                              RequestWifiCredentialsCallback callback);
 
   void NotifySourceOfUpdate();
 
@@ -53,10 +67,19 @@ class AuthenticatedConnection : public Connection {
   // it to the Android device.
   void RequestAssertion(ConnectionResponseCallback callback);
 
-  // Parses a raw AssertationResponse and converts it into a FidoAssertionInfo
+  // Parses a raw response and converts it to a WifiCredentialsResponse
+  void ParseWifiCredentialsResponse(
+      RequestWifiCredentialsCallback,
+      absl::optional<std::vector<uint8_t>> response_bytes);
+
+  // Parses a raw AssertionResponse and converts it into a FidoAssertionInfo
   void ParseAssertionResponse(
       RequestAccountTransferAssertionCallback callback,
       absl::optional<std::vector<uint8_t>> response_bytes);
+
+  void GenerateFidoAssertionInfo(
+      RequestAccountTransferAssertionCallback callback,
+      ::ash::quick_start::mojom::GetAssertionResponsePtr response);
 
   // GenerateGetAssertionRequest will take challenge bytes and create an
   // instance of cbor::Value of the GetAssertionRequest which can then be CBOR
@@ -75,6 +98,8 @@ class AuthenticatedConnection : public Connection {
   std::string CreateFidoClientDataJson(const url::Origin& orgin);
 
   std::string challenge_b64url_;
+  mojo::SharedRemote<mojom::QuickStartDecoder> decoder_;
+
   base::WeakPtrFactory<AuthenticatedConnection> weak_ptr_factory_{this};
 };
 

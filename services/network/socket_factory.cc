@@ -57,7 +57,7 @@ void SocketFactory::CreateRestrictedUDPSocket(
     const net::IPEndPoint& addr,
     mojom::RestrictedUDPSocketMode mode,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::UDPSocketOptionsPtr options,
+    mojom::RestrictedUDPSocketParamsPtr params,
     mojo::PendingReceiver<mojom::RestrictedUDPSocket> receiver,
     mojo::PendingRemote<mojom::UDPSocketListener> listener,
     std::unique_ptr<SimpleHostResolver> resolver,
@@ -65,28 +65,43 @@ void SocketFactory::CreateRestrictedUDPSocket(
   auto udp_socket = std::make_unique<UDPSocket>(std::move(listener), net_log_);
   switch (mode) {
     case mojom::RestrictedUDPSocketMode::BOUND:
-      udp_socket->Bind(addr, std::move(options), std::move(callback));
+      udp_socket->Bind(addr, /*options=*/
+                       params ? std::move(params->socket_options) : nullptr,
+                       std::move(callback));
       break;
     case mojom::RestrictedUDPSocketMode::CONNECTED:
-      udp_socket->Connect(addr, std::move(options), std::move(callback));
+      udp_socket->Connect(addr, /*options=*/
+                          params ? std::move(params->socket_options) : nullptr,
+                          std::move(callback));
       break;
   }
-  restricted_udp_socket_receivers_.Add(
-      std::make_unique<RestrictedUDPSocket>(
-          std::move(udp_socket), traffic_annotation, std::move(resolver)),
-      std::move(receiver));
+  auto restricted_udp_socket = std::make_unique<RestrictedUDPSocket>(
+      std::move(udp_socket), traffic_annotation, std::move(resolver));
+#if BUILDFLAG(IS_CHROMEOS)
+  if (params && params->connection_tracker) {
+    restricted_udp_socket->AttachConnectionTracker(
+        std::move(params->connection_tracker));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+  restricted_udp_socket_receivers_.Add(std::move(restricted_udp_socket),
+                                       std::move(receiver));
 }
 
 void SocketFactory::CreateTCPServerSocket(
     const net::IPEndPoint& local_addr,
-    int backlog,
+    mojom::TCPServerSocketOptionsPtr options,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
     mojom::NetworkContext::CreateTCPServerSocketCallback callback) {
   auto socket =
       std::make_unique<TCPServerSocket>(this, net_log_, traffic_annotation);
+#if BUILDFLAG(IS_CHROMEOS)
+  if (options->connection_tracker) {
+    socket->AttachConnectionTracker(std::move(options->connection_tracker));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
   net::IPEndPoint local_addr_out;
-  int result = socket->Listen(local_addr, backlog, &local_addr_out);
+  int result = socket->Listen(local_addr, options->backlog, &local_addr_out);
   if (result != net::OK) {
     std::move(callback).Run(result, absl::nullopt);
     return;

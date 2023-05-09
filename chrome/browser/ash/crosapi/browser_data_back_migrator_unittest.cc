@@ -76,13 +76,12 @@ void CreateDirectoryAndFile(const base::FilePath& directory_path,
                             const char* file_content,
                             int file_size) {
   ASSERT_TRUE(base::CreateDirectory(directory_path));
-  ASSERT_EQ(base::WriteFile(directory_path.Append(file_path), file_content,
-                            file_size),
-            file_size);
+  ASSERT_TRUE(base::WriteFile(directory_path.Append(file_path),
+                              base::StringPiece(file_content, file_size)));
 }
 
 void SetUpExtensions(const base::FilePath& ash_profile_dir,
-                     const base::FilePath& lacros_profile_dir,
+                     const base::FilePath& lacros_default_profile_dir,
                      FilesSetup setup) {
   // The extension test data should have the following structure:
   // |- user
@@ -101,7 +100,7 @@ void SetUpExtensions(const base::FilePath& ash_profile_dir,
   base::FilePath ash_extensions_path =
       ash_profile_dir.Append(browser_data_migrator_util::kExtensionsFilePath);
 
-  base::FilePath lacros_extensions_path = lacros_profile_dir.Append(
+  base::FilePath lacros_extensions_path = lacros_default_profile_dir.Append(
       browser_data_migrator_util::kExtensionsFilePath);
 
   if (setup != FilesSetup::kAshOnly) {
@@ -126,7 +125,7 @@ void SetUpExtensions(const base::FilePath& ash_profile_dir,
 }
 
 void SetUpIndexedDB(const base::FilePath& ash_profile_dir,
-                    const base::FilePath& lacros_profile_dir,
+                    const base::FilePath& lacros_default_profile_dir,
                     FilesSetup setup) {
   // The IndexedDB test data should have the following structure for full setup:
   // |- user
@@ -154,8 +153,8 @@ void SetUpIndexedDB(const base::FilePath& ash_profile_dir,
   // Create IndexedDB files for the Lacros-only extension.
   if (setup != FilesSetup::kAshOnly) {
     const auto& [lacros_only_blob_path, lacros_only_leveldb_path] =
-        browser_data_migrator_util::GetIndexedDBPaths(lacros_profile_dir,
-                                                      kLacrosOnlyExtensionId);
+        browser_data_migrator_util::GetIndexedDBPaths(
+            lacros_default_profile_dir, kLacrosOnlyExtensionId);
     CreateDirectoryAndFile(lacros_only_blob_path, kLacrosDataFilePath,
                            kLacrosDataContent, kLacrosDataSize);
     CreateDirectoryAndFile(lacros_only_leveldb_path, kLacrosDataFilePath,
@@ -176,8 +175,8 @@ void SetUpIndexedDB(const base::FilePath& ash_profile_dir,
   // Create IndexedDB files for the extension existing in both Chromes.
   if (setup != FilesSetup::kAshOnly) {
     const auto& [lacros_blob_path, lacros_leveldb_path] =
-        browser_data_migrator_util::GetIndexedDBPaths(lacros_profile_dir,
-                                                      kBothExtensionId);
+        browser_data_migrator_util::GetIndexedDBPaths(
+            lacros_default_profile_dir, kBothExtensionId);
 
     CreateDirectoryAndFile(lacros_blob_path, kLacrosDataFilePath,
                            kLacrosDataContent, kLacrosDataSize);
@@ -194,6 +193,30 @@ void SetUpIndexedDB(const base::FilePath& ash_profile_dir,
     CreateDirectoryAndFile(ash_leveldb_path, kAshDataFilePath, kAshDataContent,
                            kAshDataSize);
   }
+}
+
+void SetUpProfileDirectories(const base::FilePath& lacros_dir) {
+  // Set up the contents of lacros to mimic several secondary profile
+  // directories and some other irrelevant files and directories.
+  // |- user
+  //     |- lacros
+  //         |- Default
+  //         |- Profile 3     /* directory */
+  //         |- Profile 9     /* file */
+  //         |- Profile 14
+  //         |- Profile 824
+  //         |- Profile w/o number
+  //         |- Other directory
+
+  ASSERT_TRUE(base::CreateDirectory(lacros_dir.Append("Profile 3")));
+  ASSERT_TRUE(base::CreateDirectory(lacros_dir.Append("Profile 14")));
+  ASSERT_TRUE(base::CreateDirectory(lacros_dir.Append("Profile 824")));
+  ASSERT_TRUE(base::CreateDirectory(lacros_dir.Append("Profile w/o number")));
+  ASSERT_TRUE(base::CreateDirectory(lacros_dir.Append("Other directory")));
+
+  ASSERT_TRUE(
+      base::WriteFile(lacros_dir.Append("Profile 9"),
+                      base::StringPiece(kLacrosDataContent, kLacrosDataSize)));
 }
 
 void GenerateLevelDB(const base::FilePath& path,
@@ -305,8 +328,8 @@ class BrowserDataBackMigratorTest : public testing::Test {
     // ./                             /* user_data_dir_ */
     // |- user/                       /* ash_profile_dir_ */
     //     |- back_migrator_tmp/      /* tmp_profile_dir_ */
-    //     |- lacros/
-    //         |- Default/            /* lacros_profile_dir_ */
+    //     |- lacros/                 /* lacros_dir_ */
+    //         |- Default/            /* lacros_default_profile_dir_ */
     //             |- Extensions
     //             |- IndexedDB
     //             |- Storage
@@ -319,15 +342,17 @@ class BrowserDataBackMigratorTest : public testing::Test {
 
     ash_profile_dir_ = user_data_dir_.GetPath().Append("user");
 
-    lacros_profile_dir_ =
-        ash_profile_dir_.Append(browser_data_migrator_util::kLacrosDir)
-            .Append(browser_data_migrator_util::kLacrosProfilePath);
+    lacros_dir_ =
+        ash_profile_dir_.Append(browser_data_migrator_util::kLacrosDir);
+
+    lacros_default_profile_dir_ =
+        lacros_dir_.Append(browser_data_migrator_util::kLacrosProfilePath);
 
     tmp_profile_dir_ =
         ash_profile_dir_.Append(browser_data_back_migrator::kTmpDir);
 
     tmp_prefs_path_ = tmp_profile_dir_.Append("Preferences");
-    lacros_prefs_path_ = lacros_profile_dir_.Append("Preferences");
+    lacros_prefs_path_ = lacros_default_profile_dir_.Append("Preferences");
     ash_prefs_path_ = ash_profile_dir_.Append("Preferences");
   }
 
@@ -340,9 +365,10 @@ class BrowserDataBackMigratorTest : public testing::Test {
     ASSERT_TRUE(base::CreateDirectory(tmp_profile_dir_));
   }
 
-  void SetupLocalStorageLevelDBFiles(const base::FilePath& ash_profile_dir,
-                                     const base::FilePath& lacros_profile_dir,
-                                     FilesSetup setup) {
+  void SetupLocalStorageLevelDBFiles(
+      const base::FilePath& ash_profile_dir,
+      const base::FilePath& lacros_default_profile_dir,
+      FilesSetup setup) {
     // The LevelDB test data should have the following structure for full setup,
     // with all the leaves representing LevelDB databases.
     // |- user
@@ -371,7 +397,7 @@ class BrowserDataBackMigratorTest : public testing::Test {
     if (setup != FilesSetup::kAshOnly) {
       // Generate Lacros Local Storage leveldb.
       base::FilePath lacros_local_storage_leveldb_path =
-          lacros_profile_dir
+          lacros_default_profile_dir
               .Append(browser_data_migrator_util::kLocalStorageFilePath)
               .Append(browser_data_migrator_util::kLocalStorageLeveldbName);
       std::map<std::string, std::string> lacros_values;
@@ -384,9 +410,10 @@ class BrowserDataBackMigratorTest : public testing::Test {
     }
   }
 
-  void SetupStateStoreLevelDBFiles(const base::FilePath& ash_profile_dir,
-                                   const base::FilePath& lacros_profile_dir,
-                                   FilesSetup setup) {
+  void SetupStateStoreLevelDBFiles(
+      const base::FilePath& ash_profile_dir,
+      const base::FilePath& lacros_default_profile_dir,
+      FilesSetup setup) {
     // The LevelDB test data should have the following structure for full setup,
     // with all the leaves representing LevelDB databases.
     // |- user
@@ -409,7 +436,7 @@ class BrowserDataBackMigratorTest : public testing::Test {
       }
 
       if (setup != FilesSetup::kAshOnly) {
-        base::FilePath lacros_path = lacros_profile_dir.Append(path);
+        base::FilePath lacros_path = lacros_default_profile_dir.Append(path);
         std::map<std::string, std::string> lacros_values;
         lacros_values[kLacrosOnlyStateStoreKey] = kLacrosLevelDBValue;
         lacros_values[kBothChromesStateStoreKey] = kLacrosLevelDBValue;
@@ -426,7 +453,8 @@ class BrowserDataBackMigratorTest : public testing::Test {
 
   base::ScopedTempDir user_data_dir_;
   base::FilePath ash_profile_dir_;
-  base::FilePath lacros_profile_dir_;
+  base::FilePath lacros_dir_;
+  base::FilePath lacros_default_profile_dir_;
   base::FilePath tmp_profile_dir_;
 
   base::FilePath tmp_prefs_path_;
@@ -465,7 +493,7 @@ TEST_F(BrowserDataBackMigratorTest, PreMigrationCleanUp) {
 
   BrowserDataBackMigrator::TaskResult result =
       BrowserDataBackMigrator::PreMigrationCleanUp(ash_profile_dir_,
-                                                   lacros_profile_dir_);
+                                                   lacros_default_profile_dir_);
   ASSERT_EQ(result.status, BrowserDataBackMigrator::TaskStatus::kSucceeded);
 
   ASSERT_FALSE(base::PathExists(tmp_profile_dir_));
@@ -474,11 +502,11 @@ TEST_F(BrowserDataBackMigratorTest, PreMigrationCleanUp) {
 }
 
 TEST_F(BrowserDataBackMigratorTest, MergeCommonExtensionsDataFiles) {
-  SetUpExtensions(ash_profile_dir_, lacros_profile_dir_,
+  SetUpExtensions(ash_profile_dir_, lacros_default_profile_dir_,
                   FilesSetup::kBothChromes);
 
   ASSERT_TRUE(BrowserDataBackMigrator::MergeCommonExtensionsDataFiles(
-      ash_profile_dir_, lacros_profile_dir_, tmp_profile_dir_,
+      ash_profile_dir_, lacros_default_profile_dir_, tmp_profile_dir_,
       browser_data_migrator_util::kExtensionsFilePath));
 
   // Expected structure after this merge step:
@@ -523,7 +551,7 @@ TEST_F(BrowserDataBackMigratorTest, MergeCommonExtensionsDataFiles) {
   // The contents of the file in the temporary directory are the same as the
   // contents of the file in the original Lacros directory.
   base::FilePath lacros_original_file_path =
-      lacros_profile_dir_
+      lacros_default_profile_dir_
           .Append(browser_data_migrator_util::kExtensionsFilePath)
           .Append(kLacrosOnlyExtensionId)
           .Append(kLacrosDataFilePath);
@@ -538,19 +566,19 @@ TEST_F(BrowserDataBackMigratorTest, MergeCommonExtensionsDataFiles) {
 
 TEST_P(BrowserDataBackMigratorFilesSetupTest, MergeCommonIndexedDB) {
   auto files_setup = GetParam();
-  SetUpIndexedDB(ash_profile_dir_, lacros_profile_dir_, files_setup);
+  SetUpIndexedDB(ash_profile_dir_, lacros_default_profile_dir_, files_setup);
 
   const char* extension_id =
       browser_data_migrator_util::kExtensionsBothChromes[0];
 
   ASSERT_TRUE(BrowserDataBackMigrator::MergeCommonIndexedDB(
-      ash_profile_dir_, lacros_profile_dir_, extension_id));
+      ash_profile_dir_, lacros_default_profile_dir_, extension_id));
 
   const auto& [ash_blob_path, ash_leveldb_path] =
       browser_data_migrator_util::GetIndexedDBPaths(ash_profile_dir_,
                                                     extension_id);
   const auto& [lacros_blob_path, lacros_leveldb_path] =
-      browser_data_migrator_util::GetIndexedDBPaths(lacros_profile_dir_,
+      browser_data_migrator_util::GetIndexedDBPaths(lacros_default_profile_dir_,
                                                     extension_id);
 
   // The Lacros files do not exist - they've either been moved to Ash or they
@@ -576,13 +604,13 @@ TEST_P(BrowserDataBackMigratorFilesSetupTest, MergeCommonIndexedDB) {
 
 TEST_P(BrowserDataBackMigratorFilesSetupTest, MergeLocalStorageLevelDB) {
   auto files_setup = GetParam();
-  SetupLocalStorageLevelDBFiles(ash_profile_dir_, lacros_profile_dir_,
+  SetupLocalStorageLevelDBFiles(ash_profile_dir_, lacros_default_profile_dir_,
                                 files_setup);
   CreateTemporaryDirectory();
 
   base::FilePath ash_local_storage = ash_profile_dir_.Append(
       browser_data_migrator_util::kLocalStorageFilePath);
-  base::FilePath lacros_local_storage = lacros_profile_dir_.Append(
+  base::FilePath lacros_local_storage = lacros_default_profile_dir_.Append(
       browser_data_migrator_util::kLocalStorageFilePath);
   base::FilePath tmp_local_storage = tmp_profile_dir_.Append(
       browser_data_migrator_util::kLocalStorageFilePath);
@@ -643,13 +671,13 @@ TEST_P(BrowserDataBackMigratorFilesSetupTest, MergeLocalStorageLevelDB) {
 
 TEST_P(BrowserDataBackMigratorFilesSetupTest, MergeStateStoreLevelDB) {
   auto files_setup = GetParam();
-  SetupStateStoreLevelDBFiles(ash_profile_dir_, lacros_profile_dir_,
+  SetupStateStoreLevelDBFiles(ash_profile_dir_, lacros_default_profile_dir_,
                               files_setup);
   CreateTemporaryDirectory();
 
   for (const char* path : browser_data_migrator_util::kStateStorePaths) {
     base::FilePath ash_path = ash_profile_dir_.Append(path);
-    base::FilePath lacros_path = lacros_profile_dir_.Append(path);
+    base::FilePath lacros_path = lacros_default_profile_dir_.Append(path);
     base::FilePath tmp_path = tmp_profile_dir_.Append(path);
 
     if (files_setup != FilesSetup::kAshOnly) {
@@ -943,8 +971,8 @@ TEST_F(BrowserDataBackMigratorTest,
 TEST_P(BrowserDataBackMigratorFilesSetupTest,
        DeletesLacrosItemsFromAshDirCorrectly) {
   auto files_setup = GetParam();
-  SetUpExtensions(ash_profile_dir_, lacros_profile_dir_, files_setup);
-  SetupLocalStorageLevelDBFiles(ash_profile_dir_, lacros_profile_dir_,
+  SetUpExtensions(ash_profile_dir_, lacros_default_profile_dir_, files_setup);
+  SetupLocalStorageLevelDBFiles(ash_profile_dir_, lacros_default_profile_dir_,
                                 files_setup);
   EXPECT_TRUE(base::WriteFile(ash_profile_dir_.Append("README"), ""));
 
@@ -960,7 +988,7 @@ TEST_P(BrowserDataBackMigratorFilesSetupTest,
 
 TEST_F(BrowserDataBackMigratorFilesSetupTest,
        MovesLacrosItemsToAshDirCorrectly) {
-  SetUpExtensions(ash_profile_dir_, lacros_profile_dir_,
+  SetUpExtensions(ash_profile_dir_, lacros_default_profile_dir_,
                   FilesSetup::kLacrosOnly);
 
   auto result =
@@ -972,7 +1000,7 @@ TEST_F(BrowserDataBackMigratorFilesSetupTest,
   EXPECT_TRUE(base::PathExists(
       ash_profile_dir_.Append(browser_data_migrator_util::kExtensionsFilePath)
           .Append(kLacrosOnlyExtensionId)));
-  EXPECT_FALSE(base::PathExists(lacros_profile_dir_.Append(
+  EXPECT_FALSE(base::PathExists(lacros_default_profile_dir_.Append(
       browser_data_migrator_util::kExtensionsFilePath)));
 }
 
@@ -1152,6 +1180,18 @@ TEST(BrowserDataBackMigratorUMATest, RecordMigrationTimeIfSuccessful) {
   BrowserDataBackMigrator::RecordMigrationTimeIfSuccessful(
       success, base::TimeTicks::Now());
   histogram_tester.ExpectTotalCount(kSuccessfulMigrationTimeUMA, 1);
+}
+TEST_F(BrowserDataBackMigratorTest, RecordNumberOfLacrosSecondaryProfiles) {
+  base::HistogramTester histogram_tester;
+
+  SetUpProfileDirectories(lacros_dir_);
+  BrowserDataBackMigrator::RecordNumberOfLacrosSecondaryProfiles(
+      ash_profile_dir_);
+
+  histogram_tester.ExpectTotalCount(kNumberOfLacrosSecondaryProfilesUMA, 1);
+
+  // Expect that the bucket for 3 secondary profiles has one record.
+  histogram_tester.ExpectBucketCount(kNumberOfLacrosSecondaryProfilesUMA, 3, 1);
 }
 
 }  // namespace ash

@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ୍ ଜିପ୍ ହେଉଛି...</translation>
 <translation id="1722687688096767818">ପ୍ରୋଫାଇଲ୍ ଯୋଗ କରାଯାଉଛି...</translation>
 <translation id="1726100011689679555">ନାମ ସର୍ଭର୍</translation>
+<translation id="1727562178154619254">ସିଙ୍କ କରିବାକୁ ପ୍ରସ୍ତୁତ</translation>
 <translation id="1729953886957086472">ଜର୍ମାନ (ଜର୍ମାନୀ)</translation>
 <translation id="1730235522912993863">ଚାଇନିଜ୍ କାଙ୍ଗଜି</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ୍ କପି ହୋଇଛି।</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">ଛବି ରିଜୋଲ୍ୟୁସନ୍</translation>
 <translation id="1972984168337863910">ମତାମତ ପ୍ୟାନେଲ୍‍ଗୁଡ଼ିକୁ ପ୍ରସାରଣ କରନ୍ତୁ</translation>
 <translation id="1995337122023280937">ଫାଇଲ୍ ଲୋକେସନକୁ ଯାଆନ୍ତୁ</translation>
-<translation id="1999709132469742660">ସବୁ URL ଦ୍ୱାରା ଫାଇଲ ଆକ୍ସେସ</translation>
 <translation id="2001796770603320721">Driveରେ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="2009067268969781306">କୌଣସି ଡ୍ରାଇଭ୍‍କୁ ଡିଲିଟ୍ କରିବା ଦ୍ୱାରା ଏଥିରେ ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଡିଲିଟ୍ ହୋଇଯିବ। ଏହି କାର୍ଯ୍ୟକୁ ପୂର୍ବବତ୍ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="2025955442973426285">ଟାଇଗ୍ରିନ୍ୟା</translation>
@@ -536,7 +536,6 @@
 <translation id="5323213332664049067">ଲାଟିନ୍‍ ଆମେରିକାନ୍‍</translation>
 <translation id="5330145655348521461">ଏହି ଫାଇଲ୍‌ଗୁଡ଼ିକ ଏକ ଅଲଗା ଡେସ୍କଟପ୍‌ରେ ଖୋଲାଗଲା। ଏହାକୁ ଦେଖିବା ପାଇଁ <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="5330512191124428349">ସୂଚନା ପାଆନ୍ତୁ</translation>
-<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" /> ବ୍ୟତୀତ ସବୁ URL ଦ୍ୱାରା ଫାଇଲ ଆକ୍ସେସ</translation>
 <translation id="5344246330454251646">Bruschetta ସେୟାରିଂକୁ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="535792325654997756">ବିଲେଇମାନଙ୍କ ସହ ଜଣେ ବ୍ୟକ୍ତି</translation>
 <translation id="5358764674931277">ଫ୍ରେମ୍ ହାର</translation>
@@ -609,6 +608,7 @@
 <translation id="5911887972742538906">ଆପଣଙ୍କର Linux ଆପ୍ଲିକେସନ୍ ଇନ୍‌ଷ୍ଟଲେସନ୍‌ ସମୟରେ ଏକ ତ୍ରୁଟି ଦେଖାଦେଲା।</translation>
 <translation id="5912396950572065471">ଫର୍ମାଟ୍</translation>
 <translation id="5913638992615760742">କପି କାର୍ଯ୍ୟ ବିଫଳ ହେଲା, ଅପ୍ରତ୍ୟାଶିତ ତ୍ରୁଟି: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">ନୂଆ ସର୍ଚ୍ଚ ଫିଚରଗୁଡ଼ିକ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="5926082595146149752">US ଆନ୍ତର୍ଜାତୀୟ PC କୀବୋର୍ଡ ସହ ଡଚ୍ (ନେଦରଲ୍ୟାଣ୍ଡ)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063"><ph name="NETWORK_COUNT" />ଟିରୁ <ph name="NETWORK_INDEX" /> ନମ୍ବର ନେଟୱାର୍କ, <ph name="NETWORK_NAME" />, ଡିଭାଇସ ସେଟଅପ ପରେ ସକ୍ରିୟ କରନ୍ତୁ</translation>
@@ -698,6 +698,7 @@
 <translation id="6732801395666424405">ସାର୍ଟିଫିକେଟ୍‌ଗୁଡ଼ିକ ଲୋଡ୍ ହୋଇନାହିଁ</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Bruschetta ସହ ଫୋଲ୍ଡର ସେୟାର କରନ୍ତୁ</translation>
+<translation id="6750737795876287924">ବର୍ତ୍ତମାନର ଡିରେକ୍ଟୋରୀ</translation>
 <translation id="6751256176799620176">1ଟି ଫୋଲ୍ଡର୍ ଚୟନ କରାଯାଇଛି</translation>
 <translation id="6755827872271341378">ChromeOS Flex ଡିଭାଇସ</translation>
 <translation id="6790428901817661496">ଚଲାନ୍ତୁ</translation>
@@ -735,7 +736,6 @@
 <translation id="6973630695168034713">ଫୋଲ୍ଡର୍‌ଗୁଡ଼ିକ</translation>
 <translation id="6976795442547527108">ସିଂହ</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">ସବୁ ସମୟରେ</translation>
 <translation id="6989942356279143254">ସ୍ୱେଡିସ</translation>
 <translation id="6990081529015358884">ଆପଣଙ୍କ ପାଖରେ ଥିବା ଜାଗା ସରିଯାଇଛି</translation>
 <translation id="6993826899923627728">ଏହି ଆଇଟମଗୁଡ଼ିକ ଆପଣଙ୍କ ଟ୍ରାସରେ ଅଛି</translation>
@@ -791,7 +791,6 @@
 <translation id="7458955835361612701">ବର୍ତ୍ତମାନର କୌଣସି ଇମେଜ ନାହିଁ</translation>
 <translation id="7460898608667578234">ୟୁକ୍ରାନିଆନ୍</translation>
 <translation id="7469894403370665791">ସ୍ୱଚାଳିତ ଭାବେ ଏହି ନେଟ୍‍ୱର୍କ ସହ ସଂଯୋଗ କରନ୍ତୁ</translation>
-<translation id="7481358317100446445">ପ୍ରସ୍ତୁତ</translation>
 <translation id="7486315294984620427">Parallels Desktopରେ ଫାଇଲଗୁଡ଼ିକୁ ଡ୍ରପ୍ କରିବା ପାଇଁ ଫାଇଲକୁ Windows ଫାଇଲ୍ ଫୋଲ୍ଡରରେ କପି କରିବା ଆବଶ୍ୟକ।</translation>
 <translation id="749452993132003881">ହିରାଗାନା</translation>
 <translation id="7495372004724182530">ମାଲାୟଲମ୍ ଫୋନେଟିକ୍</translation>
@@ -935,6 +934,7 @@
 <translation id="8492972329130824181">ହୋମ୍ ନେଟୱାର୍କ ଉପଲବ୍ଧ ନାହିଁ। ସଂଯୋଗ କରିବାକୁ ମୋବାଇଲ ଡାଟା ରୋମିଂ ନିଶ୍ଚିତ ରୂପେ ସକ୍ଷମ ହୋଇଥିବା ଆବଶ୍ୟକ।</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ ଏକ୍ସଟ୍ରାକ୍ଟ କରାଯାଉଛି...</translation>
 <translation id="8502913769543567768"><ph name="NETWORK_COUNT" />ଟିରୁ <ph name="NETWORK_INDEX" /> ନମ୍ବର ନେଟୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, ଡିଭାଇସ ସେଟଅପ ପରେ ସକ୍ରିୟ କରନ୍ତୁ, ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି</translation>
+<translation id="8512483403832814140">ଯେ କୌଣସି ସମୟରେ</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="853494022971700746">ଫରାସୀ (ଫ୍ରାନ୍ସ)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ସିଗ୍‌ନାଲ୍‌ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ବିବରଣୀ</translation>

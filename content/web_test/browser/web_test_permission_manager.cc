@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/barrier_callback.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -48,6 +49,11 @@ std::vector<ContentSettingPatternSource> GetContentSettings(
                           /*incognito=*/false);
   }
   return patterns;
+}
+
+bool ShouldHideDeniedState(blink::PermissionType permission_type) {
+  return permission_type == blink::PermissionType::STORAGE_ACCESS_GRANT ||
+         permission_type == blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS;
 }
 
 }  // namespace
@@ -203,6 +209,14 @@ blink::mojom::PermissionStatus WebTestPermissionManager::GetPermissionStatus(
     }
   }
 
+  // Some permissions (currently storage access related) do not expose the
+  // denied state to avoid exposing potentially private user choices to
+  // developers.
+  if (ShouldHideDeniedState(permission) &&
+      it->second == blink::mojom::PermissionStatus::DENIED) {
+    return blink::mojom::PermissionStatus::ASK;
+  }
+
   return it->second;
 }
 
@@ -235,6 +249,19 @@ WebTestPermissionManager::GetPermissionStatusForWorker(
     RenderProcessHost* render_process_host,
     const GURL& worker_origin) {
   return GetPermissionStatus(permission, worker_origin, worker_origin);
+}
+
+blink::mojom::PermissionStatus
+WebTestPermissionManager::GetPermissionStatusForEmbeddedRequester(
+    blink::PermissionType permission,
+    content::RenderFrameHost* render_frame_host,
+    const url::Origin& overridden_origin) {
+  if (render_frame_host->IsNestedWithinFencedFrame()) {
+    return blink::mojom::PermissionStatus::DENIED;
+  }
+  return GetPermissionStatus(permission, overridden_origin.GetURL(),
+                             PermissionUtil::GetLastCommittedOriginAsURL(
+                                 render_frame_host->GetMainFrame()));
 }
 
 WebTestPermissionManager::SubscriptionId
@@ -376,14 +403,37 @@ void WebTestPermissionManager::OnPermissionChanged(
                                  status),
               base::BindOnce(std::move(permission_callback), /*success=*/true));
       break;
-    case blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS:
+    case blink::PermissionType::TOP_LEVEL_STORAGE_ACCESS: {
+      // We dual-write `TOP_LEVEL_STORAGE_ACCESS` and `STORAGE_ACCESS_GRANT` due
+      // to the former granting a superset of the latter. Accordingly, we wait
+      // until both permissions have been written, including the notification to
+      // the network service, to run the permission callback. This could happen
+      // in either order without issue, so a barrier callback is used to ensure
+      // whichever finishes last then runs the callback. The asynchronicity
+      // comes in the form of the updates to the network service.
+      auto barrier_callback = base::BarrierCallback<bool>(
+          /*num_callbacks=*/2,
+          base::BindOnce(
+              [](blink::test::mojom::PermissionAutomation::SetPermissionCallback
+                     permission_callback,
+                 const std::vector<bool>& successes) {
+                std::move(permission_callback)
+                    .Run(base::ranges::all_of(successes, base::identity()));
+              },
+              std::move(permission_callback)));
+      SetPermission(blink::PermissionType::STORAGE_ACCESS_GRANT,
+                    blink::mojom::PermissionStatus::GRANTED, permission.origin,
+                    permission.embedding_origin, barrier_callback);
       browser_context_->GetDefaultStoragePartition()
           ->GetCookieManagerForBrowserProcess()
-          ->SetTopLevelStorageAccessSettings(
+          ->SetAllStorageAccessSettings(
               GetContentSettings(permission.origin, permission.embedding_origin,
                                  status),
-              base::BindOnce(std::move(permission_callback), /*success=*/true));
+              GetContentSettings(permission.origin, permission.embedding_origin,
+                                 status),
+              base::BindOnce(barrier_callback, true));
       break;
+    }
     default:
       std::move(permission_callback).Run(true);
       break;

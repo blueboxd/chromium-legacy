@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> ta element arxivlanmoqda...</translation>
 <translation id="1722687688096767818">Profil kiritilmoqda...</translation>
 <translation id="1726100011689679555">Nom serverlari (NS)</translation>
+<translation id="1727562178154619254">Sinxronizatsiya uchun tayyor</translation>
 <translation id="1729953886957086472">Nemis (Germaniya)</translation>
 <translation id="1730235522912993863">Xitoy (Kangji)</translation>
 <translation id="1731889557567069540">Nusxa olindi: <ph name="NUMBER_OF_ITEMS" /></translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Tasvirning piksellar sig‘imi</translation>
 <translation id="1972984168337863910">Fayllar holat panelini yoyish</translation>
 <translation id="1995337122023280937">Fayl joylashuviga kirish</translation>
-<translation id="1999709132469742660">Fayllarga barcha havolalar orqali ruxsat</translation>
 <translation id="2001796770603320721">Google Drive orqali ochish</translation>
 <translation id="2009067268969781306">Xotira formatlansa, undagi barcha maʼlumotlar oʻchib ketadi. Bu amal bekor qilinmaydi.</translation>
 <translation id="2025955442973426285">Tigrinya</translation>
@@ -541,7 +541,6 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="5323213332664049067">Lotin Amerikasi klaviaturasi</translation>
 <translation id="5330145655348521461">Ushbu fayllar boshqa ish stolida ochilgan. Ularni ko‘rish uchun <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) profiliga o‘ting.</translation>
 <translation id="5330512191124428349">Fayl haqida</translation>
-<translation id="5337538975554986899">Fayllarga barcha havolalar orqali ruxsat (<ph name="NON_RESTRICTED_DESTINATIONS" /> dan tashqari)</translation>
 <translation id="5344246330454251646">Bruschettaga ulashuvni boshqarish</translation>
 <translation id="535792325654997756">Mushuklari bor odam</translation>
 <translation id="5358764674931277">Kadrlar chastotasi</translation>
@@ -614,6 +613,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="5911887972742538906">Linux ilovasini o‘rnatishda xatolik yuz berdi.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Nusxalash amali bajarilmadi, kutilmagan xatolik: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Yangi qidiruv funksiyalari chiqdi</translation>
 <translation id="5926082595146149752">Golland (Niderlandiya) va kompyuter uchun AQSH klaviaturasi (xalqaro)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, Nomi: <ph name="NETWORK_NAME" />, Qurilma sozlangandan keyin faollashtiriladi</translation>
@@ -703,6 +703,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="6732801395666424405">Sertifikatlar yuklanmadi</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Jildni Bruschettaga ulashish</translation>
+<translation id="6750737795876287924">Joriy katalog</translation>
 <translation id="6751256176799620176">1 ta jild tanlandi</translation>
 <translation id="6755827872271341378">ChromeOS Flex qurilmasi</translation>
 <translation id="6790428901817661496">Ijro etish</translation>
@@ -740,7 +741,6 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="6973630695168034713">Jildlar</translation>
 <translation id="6976795442547527108">Sher</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Boshidan beri</translation>
 <translation id="6989942356279143254">Shved</translation>
 <translation id="6990081529015358884">Bo‘sh joy juda kam qoldi</translation>
 <translation id="6993826899923627728">Bu fayllar chiqitdonda</translation>
@@ -796,7 +796,6 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7458955835361612701">Oxirgi rasmlar yoʻq</translation>
 <translation id="7460898608667578234">Ukrayin tili</translation>
 <translation id="7469894403370665791">Bu tarmoqqa avtomatik ravishda ulanish</translation>
-<translation id="7481358317100446445">Tayyor</translation>
 <translation id="7486315294984620427">Windowsga nusxalanishi kerak fayllarni Parallels Desktop oynasiga tashlang.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam, fonetik</translation>

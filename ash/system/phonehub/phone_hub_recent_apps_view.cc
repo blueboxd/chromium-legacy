@@ -13,6 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/system/phonehub/phone_connected_view.h"
 #include "ash/system/phonehub/phone_hub_more_apps_button.h"
 #include "ash/system/phonehub/phone_hub_recent_app_button.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
@@ -28,6 +29,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -63,21 +65,44 @@ constexpr int kMaxAppsWithMoreAppsButton = 5;
 constexpr gfx::Rect kMoreAppsButtonArea = gfx::Rect(57, 32);
 constexpr int kMoreAppsButtonRadius = 16;
 
-class HeaderView : public views::Label {
+constexpr int kRecentAppsHeaderSpacing = 220;
+
+class HeaderView : public views::View {
  public:
-  HeaderView() {
-    SetText(l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_RECENT_APPS_TITLE));
-    SetLineHeight(kHeaderLabelLineHeight);
-    SetFontList(font_list()
-                    .DeriveWithSizeDelta(kHeaderTextFontSizeDip -
-                                         font_list().GetFontSize())
-                    .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-    SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_MIDDLE);
-    SetAutoColorReadabilityEnabled(false);
-    SetSubpixelRenderingEnabled(false);
-    SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+  explicit HeaderView(views::ImageButton::PressedCallback callback) {
+    auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>());
+    layout->set_main_axis_alignment(
+        views::BoxLayout::MainAxisAlignment::kCenter);
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CrossAxisAlignment::kCenter);
+    layout->set_between_child_spacing(kRecentAppsHeaderSpacing);
+
+    auto* label = AddChildView(std::make_unique<views::Label>());
+    label->SetText(
+        l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_RECENT_APPS_TITLE));
+    label->SetLineHeight(kHeaderLabelLineHeight);
+    label->SetFontList(
+        label->font_list()
+            .DeriveWithSizeDelta(kHeaderTextFontSizeDip -
+                                 label->font_list().GetFontSize())
+            .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+    label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    label->SetVerticalAlignment(gfx::VerticalAlignment::ALIGN_MIDDLE);
+    label->SetAutoColorReadabilityEnabled(false);
+    label->SetSubpixelRenderingEnabled(false);
+    label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextColorPrimary));
+
+    if (features::IsEcheNetworkConnectionStateEnabled()) {
+      error_button_ =
+          AddChildView(std::make_unique<views::ImageButton>(callback));
+      gfx::ImageSkia image = gfx::CreateVectorIcon(
+          kPhoneHubEcheErrorStatusIcon,
+          AshColorProvider::Get()->GetContentLayerColor(
+              AshColorProvider::ContentLayerType::kIconColorWarning));
+      error_button_->SetImage(views::Button::STATE_NORMAL, image);
+      error_button_->SetVisible(false);
+    }
   }
   ~HeaderView() override = default;
   HeaderView(HeaderView&) = delete;
@@ -85,6 +110,9 @@ class HeaderView : public views::Label {
 
   // views::View:
   const char* GetClassName() const override { return "HeaderView"; }
+
+ private:
+  views::ImageButton* error_button_;
 };
 
 }  // namespace
@@ -113,15 +141,19 @@ class PhoneHubRecentAppsView::PlaceholderView : public views::Label {
 
 PhoneHubRecentAppsView::PhoneHubRecentAppsView(
     phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler,
-    phonehub::PhoneHubManager* phone_hub_manager)
+    phonehub::PhoneHubManager* phone_hub_manager,
+    PhoneConnectedView* connected_view)
     : recent_apps_interaction_handler_(recent_apps_interaction_handler),
-      phone_hub_manager_(phone_hub_manager) {
+      phone_hub_manager_(phone_hub_manager),
+      connected_view_(connected_view) {
   SetID(PhoneHubViewID::kPhoneHubRecentAppsView);
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
-  AddChildView(std::make_unique<HeaderView>());
+  AddChildView(std::make_unique<HeaderView>(
+      base::BindRepeating(&PhoneHubRecentAppsView::ShowConnectionErrorDialog,
+                          base::Unretained(this))));
   recent_app_buttons_view_ =
       AddChildView(std::make_unique<RecentAppButtonsView>());
   placeholder_view_ = AddChildView(std::make_unique<PlaceholderView>());
@@ -239,6 +271,13 @@ void PhoneHubRecentAppsView::Update() {
       placeholder_view_->SetVisible(false);
       SetVisible(false);
       break;
+    case RecentAppsUiState::LOADING:
+      // TODO(b/271478560): Handle the Loading and Error UI states correctly.
+      // Instead of setting the PlaceholderView to visible, these states will
+      // use the LoadingView and other error states.
+      [[fallthrough]];
+    case RecentAppsUiState::CONNECTION_FAILED:
+      [[fallthrough]];
     case RecentAppsUiState::PLACEHOLDER_VIEW:
       recent_app_buttons_view_->SetVisible(false);
       placeholder_view_->SetVisible(true);
@@ -282,6 +321,12 @@ void PhoneHubRecentAppsView::SwitchToFullAppsList() {
 
   phone_hub_manager_->GetAppStreamLauncherDataModel()
       ->SetShouldShowMiniLauncher(true);
+}
+
+void PhoneHubRecentAppsView::ShowConnectionErrorDialog() {
+  if (features::IsEcheNetworkConnectionStateEnabled()) {
+    connected_view_->ShowAppStreamErrorDialog();
+  }
 }
 
 std::unique_ptr<views::View> PhoneHubRecentAppsView::GenerateMoreAppsButton() {

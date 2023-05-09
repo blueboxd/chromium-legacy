@@ -9,11 +9,8 @@ import static org.chromium.chrome.browser.keyboard_accessory.bar_component.Keybo
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.HAS_SUGGESTIONS;
-import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.OBFUSCATED_CHILD_AT_CALLBACK;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_OPENER_ITEM;
-import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
-import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_SWIPING_IPH;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
@@ -27,14 +24,15 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessorySheetTrigger;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder;
+import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator.BarVisibilityDelegate;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator.TabSwitchingDelegate;
-import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator.VisibilityDelegate;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.AutofillBarItem;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BarItem;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SheetOpenerBarItem;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.Provider;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabLayoutCoordinator;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
@@ -60,21 +58,23 @@ class KeyboardAccessoryMediator
         implements PropertyObservable.PropertyObserver<PropertyKey>, Provider.Observer<Action[]>,
                    KeyboardAccessoryTabLayoutCoordinator.AccessoryTabObserver {
     private final PropertyModel mModel;
-    private final VisibilityDelegate mVisibilityDelegate;
+    private final BarVisibilityDelegate mBarVisibilityDelegate;
+    private final AccessorySheetCoordinator.SheetVisibilityDelegate mSheetVisibilityDelegate;
     private final TabSwitchingDelegate mTabSwitcher;
 
-    KeyboardAccessoryMediator(PropertyModel model, VisibilityDelegate visibilityDelegate,
+    KeyboardAccessoryMediator(PropertyModel model, BarVisibilityDelegate barVisibilityDelegate,
+            AccessorySheetCoordinator.SheetVisibilityDelegate sheetVisibilityDelegate,
             TabSwitchingDelegate tabSwitcher,
             KeyboardAccessoryTabLayoutCoordinator.SheetOpenerCallbacks sheetOpenerCallbacks) {
         mModel = model;
-        mVisibilityDelegate = visibilityDelegate;
+        mBarVisibilityDelegate = barVisibilityDelegate;
+        mSheetVisibilityDelegate = sheetVisibilityDelegate;
         mTabSwitcher = tabSwitcher;
 
         // Add mediator as observer so it can use model changes as signal for accessory visibility.
         mModel.set(OBFUSCATED_CHILD_AT_CALLBACK, this::onSuggestionObfuscatedAt);
-        mModel.set(SHOW_KEYBOARD_CALLBACK, this::onKeyboardRequested);
         mModel.set(SHEET_OPENER_ITEM, new SheetOpenerBarItem(sheetOpenerCallbacks));
-        mModel.set(ANIMATION_LISTENER, mVisibilityDelegate::onBarFadeInAnimationEnd);
+        mModel.set(ANIMATION_LISTENER, mBarVisibilityDelegate::onBarFadeInAnimationEnd);
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
             mModel.get(BAR_ITEMS).add(mModel.get(SHEET_OPENER_ITEM));
         }
@@ -267,13 +267,7 @@ class KeyboardAccessoryMediator
             }
             return;
         }
-        if (propertyKey == KEYBOARD_TOGGLE_VISIBLE) {
-            KeyboardAccessoryData.Tab activeTab = mTabSwitcher.getActiveTab();
-            if (activeTab != null) mModel.set(SHEET_TITLE, activeTab.getTitle());
-            return;
-        }
-        if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == SHOW_KEYBOARD_CALLBACK
-                || propertyKey == SHEET_OPENER_ITEM || propertyKey == SHEET_TITLE
+        if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == SHEET_OPENER_ITEM
                 || propertyKey == SKIP_CLOSING_ANIMATION
                 || propertyKey == DISABLE_ANIMATIONS_FOR_TESTING
                 || propertyKey == OBFUSCATED_CHILD_AT_CALLBACK || propertyKey == SHOW_SWIPING_IPH
@@ -285,12 +279,12 @@ class KeyboardAccessoryMediator
 
     @Override
     public void onActiveTabChanged(Integer activeTab) {
-        mModel.set(KEYBOARD_TOGGLE_VISIBLE, activeTab != null);
         if (activeTab == null) {
-            mVisibilityDelegate.onCloseAccessorySheet();
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) return;
+            mSheetVisibilityDelegate.onCloseAccessorySheet();
             return;
         }
-        mVisibilityDelegate.onChangeAccessorySheet(activeTab);
+        mSheetVisibilityDelegate.onChangeAccessorySheet(activeTab);
     }
 
     @Override
@@ -298,18 +292,13 @@ class KeyboardAccessoryMediator
         closeSheet();
     }
 
-    private void onKeyboardRequested() {
-        // Return early if the button was clicked twice and the active tab was already reset.
-        if (mTabSwitcher.getActiveTab() == null) return;
-        closeSheet();
-    }
-
     private void closeSheet() {
+        assert !ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
+            : "The bar cannot close the sheet when AUTOFILL_KEYBOARD_ACCESSORY is enabled. It must be closed by the sheet.";
         assert mTabSwitcher.getActiveTab() != null;
         ManualFillingMetricsRecorder.recordSheetTrigger(
                 mTabSwitcher.getActiveTab().getRecordingType(), AccessorySheetTrigger.MANUAL_CLOSE);
-        mModel.set(KEYBOARD_TOGGLE_VISIBLE, false);
-        mVisibilityDelegate.onCloseAccessorySheet();
+        mSheetVisibilityDelegate.onCloseAccessorySheet();
     }
 
     private void onSuggestionObfuscatedAt(Integer indexOfLast) {

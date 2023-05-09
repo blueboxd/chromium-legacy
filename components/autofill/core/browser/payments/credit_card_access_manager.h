@@ -36,7 +36,7 @@ namespace autofill {
 class BrowserAutofillManager;
 enum class WebauthnDialogCallbackType;
 
-namespace metrics {
+namespace autofill_metrics {
 class AutofillMetricsBaseTest;
 }
 
@@ -100,11 +100,11 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
                                      const std::u16string& cvc) = 0;
   };
 
-  CreditCardAccessManager(
-      AutofillDriver* driver,
-      AutofillClient* client,
-      PersonalDataManager* personal_data_manager,
-      CreditCardFormEventLogger* credit_card_form_event_logger);
+  CreditCardAccessManager(AutofillDriver* driver,
+                          AutofillClient* client,
+                          PersonalDataManager* personal_data_manager,
+                          autofill_metrics::CreditCardFormEventLogger*
+                              credit_card_form_event_logger);
 
   CreditCardAccessManager(const CreditCardAccessManager&) = delete;
   CreditCardAccessManager& operator=(const CreditCardAccessManager&) = delete;
@@ -181,6 +181,10 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
     return ShouldOfferFidoOptInDialog(response);
   }
 
+#if BUILDFLAG(IS_ANDROID)
+  bool ShouldOfferFidoAuthForTesting() { return ShouldOfferFidoAuth(); }
+#endif
+
  private:
   // TODO(crbug.com/1249665): Remove FRIEND and change everything to _ForTesting
   // or public.
@@ -224,7 +228,7 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
       RiskBasedVirtualCardUnmasking_Failure_VirtualCardRetrievalError);
   FRIEND_TEST_ALL_PREFIXES(CreditCardAccessManagerTest,
                            RiskBasedVirtualCardUnmasking_FlowCancelled);
-  friend class metrics::AutofillMetricsBaseTest;
+  friend class autofill_metrics::AutofillMetricsBaseTest;
   friend class CreditCardAccessManagerTest;
 
 #if !BUILDFLAG(IS_IOS)
@@ -416,7 +420,8 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
   raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // For logging metrics.
-  raw_ptr<CreditCardFormEventLogger, DanglingUntriaged> form_event_logger_;
+  raw_ptr<autofill_metrics::CreditCardFormEventLogger, DanglingUntriaged>
+      form_event_logger_;
 
   // Timestamp used for preflight call metrics.
   absl::optional<base::TimeTicks> preflight_call_timestamp_;

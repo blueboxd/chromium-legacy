@@ -15,6 +15,7 @@
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_peak_memory.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -97,6 +98,12 @@ void SharedImageStub::ExecuteDeferredRequest(
       auto& update = *request->get_update_shared_image();
       OnUpdateSharedImage(update.mailbox, update.release_id,
                           std::move(update.in_fence_handle));
+      break;
+    }
+
+    case mojom::DeferredSharedImageRequest::Tag::kAddReferenceToSharedImage: {
+      const auto& add_ref = *request->get_add_reference_to_shared_image();
+      OnAddReference(add_ref.mailbox, add_ref.release_id);
       break;
     }
 
@@ -338,6 +345,26 @@ void SharedImageStub::OnUpdateSharedImage(const Mailbox& mailbox,
   sync_point_client_state_->ReleaseFenceSync(release_id);
 }
 
+void SharedImageStub::OnAddReference(const Mailbox& mailbox,
+                                     uint32_t release_id) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnUpdateSharedImage");
+  if (!mailbox.IsSharedImage()) {
+    LOG(ERROR)
+        << "SharedImageStub: Trying to add reference to SharedImage with a "
+           "non-SharedImage mailbox.";
+    OnError();
+    return;
+  }
+
+  if (!factory_->AddSecondaryReference(mailbox)) {
+    LOG(ERROR) << "SharedImageStub: Unable to add secondary reference";
+    OnError();
+    return;
+  }
+
+  sync_point_client_state_->ReleaseFenceSync(release_id);
+}
+
 void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
   TRACE_EVENT0("gpu", "SharedImageStub::OnDestroySharedImage");
   if (!mailbox.IsSharedImage()) {
@@ -399,9 +426,8 @@ void SharedImageStub::OnCreateSwapChain(
 
   if (!factory_->CreateSwapChain(
           params->front_buffer_mailbox, params->back_buffer_mailbox,
-          viz::SharedImageFormat::SinglePlane(params->format), params->size,
-          params->color_space, params->surface_origin, params->alpha_type,
-          params->usage)) {
+          params->format, params->size, params->color_space,
+          params->surface_origin, params->alpha_type, params->usage)) {
     DLOG(ERROR) << "SharedImageStub: Unable to create swap chain";
     OnError();
     return;

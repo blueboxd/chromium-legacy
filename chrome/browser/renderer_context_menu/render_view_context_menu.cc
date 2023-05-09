@@ -72,11 +72,11 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -113,6 +113,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/custom_handlers/protocol_handler.h"
@@ -247,7 +248,7 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
@@ -1097,11 +1098,13 @@ void RenderViewContextMenu::InitMenu() {
     }
   }
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (accessibility_state_utils::IsScreenReaderEnabled() &&
       features::IsPdfOcrEnabled() && IsFrameInPdfViewer(GetRenderFrameHost())) {
     AppendPdfOcrItems();
     VLOG(2) << "Appended PDF OCR Items";
   }
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_MEDIA_PLUGIN)) {
@@ -1966,6 +1969,7 @@ void RenderViewContextMenu::AppendReadAnythingItem() {
   menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
 }
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 void RenderViewContextMenu::AppendPdfOcrItems() {
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   if (!pdf_ocr_submenu_model_observer_) {
@@ -1975,6 +1979,7 @@ void RenderViewContextMenu::AppendPdfOcrItems() {
   observers_.AddObserver(pdf_ocr_submenu_model_observer_.get());
   pdf_ocr_submenu_model_observer_->InitMenu(params_);
 }
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 void RenderViewContextMenu::AppendRotationItems() {
   if (params_.media_flags & ContextMenuData::kMediaCanRotate) {
@@ -2982,7 +2987,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_GENERATEPASSWORD:
       password_manager_util::UserTriggeredManualGenerationFromContextMenu(
           ChromePasswordManagerClient::FromWebContents(source_web_contents_),
-          autofill::ChromeAutofillClient::FromWebContents(
+          autofill::ContentAutofillClient::FromWebContents(
               source_web_contents_));
       break;
 
@@ -3093,6 +3098,7 @@ void RenderViewContextMenu::AddAccessibilityLabelsServiceItem(bool is_checked) {
 }
 
 void RenderViewContextMenu::AddPdfOcrMenuItem(bool is_always_active) {
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   if (is_always_active) {
     // Only a checked item needs to be added to the context menu when the user
     // selects "Always" or toggles on PDF OCR to make it always active.
@@ -3115,6 +3121,7 @@ void RenderViewContextMenu::AddPdfOcrMenuItem(bool is_always_active) {
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PDF_OCR_MENU_OPTION),
         pdf_ocr_submenu_model_.get());
   }
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 }
 
 // static
@@ -3249,14 +3256,16 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   Profile* const profile = Profile::FromBrowserContext(browser_context_);
-  if (profile->IsChild()) {
-    SupervisedUserService* supervised_user_service =
-        SupervisedUserServiceFactory::GetForProfile(profile);
-    SupervisedUserURLFilter* url_filter =
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile);
+  if (supervised_user_service &&
+      supervised_user_service->IsURLFilteringEnabled()) {
+    supervised_user::SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
     if (url_filter->GetFilteringBehaviorForURL(params_.link_url) !=
-        SupervisedUserURLFilter::FilteringBehavior::ALLOW)
+        supervised_user::SupervisedUserURLFilter::FilteringBehavior::ALLOW) {
       return false;
+    }
   }
 #endif
 
@@ -3358,8 +3367,15 @@ bool RenderViewContextMenu::IsPrintPreviewEnabled() const {
 }
 
 bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
-  if (!GetBrowser())
+  if (!GetBrowser() || !GetProfile()) {
     return false;
+  }
+
+  if (sharing_hub::SharingIsDisabledByPolicy(GetProfile())) {
+    // If the sharing hub is disabled, clicking the QR code item (which tries to
+    // show the sharing hub) won't work.
+    return false;
+  }
 
   if (params_.media_type == ContextMenuDataMediaType::kImage) {
     return qrcode_generator::QRCodeGeneratorBubbleController::

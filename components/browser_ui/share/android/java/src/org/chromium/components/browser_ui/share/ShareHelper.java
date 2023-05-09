@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -28,6 +29,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.browser_ui.share.ShareParams.TargetChosenCallback;
 import org.chromium.ui.base.WindowAndroid;
@@ -39,8 +41,6 @@ import org.chromium.ui.base.WindowAndroid.IntentCallback;
 public class ShareHelper {
     /** The task ID of the activity that triggered the share action. */
     private static final String EXTRA_TASK_ID = "org.chromium.chrome.extra.TASK_ID";
-
-    private static final String EXTRA_SHARE_SCREENSHOT_AS_STREAM = "share_screenshot_as_stream";
 
     /** The string identifier used as a key to set the extra stream's alt text */
     private static final String EXTRA_STREAM_ALT_TEXT = "android.intent.extra.STREAM_ALT_TEXT";
@@ -74,8 +74,8 @@ public class ShareHelper {
      */
     public static void shareWithSystemShareSheetUi(ShareParams params) {
         recordShareSource(ShareSourceAndroid.ANDROID_SHARE_SHEET);
-        TargetChosenReceiver.sendChooserIntent(
-                params.getWindow(), getShareIntent(params), params.getCallback());
+        new TargetChosenReceiver(params.getCallback())
+                .sendChooserIntent(params.getWindow(), getShareIntent(params));
     }
 
     /**
@@ -126,17 +126,8 @@ public class ShareHelper {
     }
 
     /**
-     * Exposed for browser to send callback without exposing TargetChosenReceiver.
-     */
-    protected static void sendChooserIntent(
-            WindowAndroid window, Intent sharingIntent, @Nullable TargetChosenCallback callback) {
-        TargetChosenReceiver.sendChooserIntent(window, sharingIntent, callback);
-    }
-
-    /**
      * Receiver to record the chosen component when sharing an Intent.
      */
-    @VisibleForTesting
     public static class TargetChosenReceiver extends BroadcastReceiver implements IntentCallback {
         private static final Object LOCK = new Object();
 
@@ -146,12 +137,18 @@ public class ShareHelper {
         @Nullable
         private TargetChosenCallback mCallback;
 
-        private TargetChosenReceiver(@Nullable TargetChosenCallback callback) {
+        protected TargetChosenReceiver(@Nullable TargetChosenCallback callback) {
             mCallback = callback;
         }
 
-        public static void sendChooserIntent(WindowAndroid window, Intent sharingIntent,
-                @Nullable TargetChosenCallback callback) {
+        /**
+         * Create a chooser intent and send it to trigger Android share sheet.
+         *
+         * @param window The {@link WindowAndroid} that starts the sharing.
+         * @param sharingIntent The intent with {@link Intent.ACTION_SEND}.
+         */
+        protected void sendChooserIntent(WindowAndroid window, Intent sharingIntent) {
+            ThreadUtils.assertOnUiThread();
             final Context context = ContextUtils.getApplicationContext();
             final String packageName = context.getPackageName();
             synchronized (LOCK) {
@@ -165,33 +162,55 @@ public class ShareHelper {
                     // TargetChosenCallback is called).
                     sLastRegisteredReceiver.cancel();
                 }
-                sLastRegisteredReceiver = new TargetChosenReceiver(callback);
+                sLastRegisteredReceiver = this;
                 ContextUtils.registerNonExportedBroadcastReceiver(context, sLastRegisteredReceiver,
                         new IntentFilter(sTargetChosenReceiveAction));
             }
 
-            Intent intent = new Intent(sTargetChosenReceiveAction);
-            intent.setPackage(packageName);
-            IntentUtils.addTrustedIntentExtras(intent);
+            Intent chooserIntent =
+                    getChooserIntent(window, sharingIntent, sTargetChosenReceiveAction);
+            ShareHelper.fireIntent(window, chooserIntent, sLastRegisteredReceiver);
+        }
+
+        /** Create the chooser intent via {@link android.content.Intent.createChooser} */
+        protected Intent getChooserIntent(
+                WindowAndroid window, Intent sharingIntent, String targetChosenAction) {
+            Intent intent = createSendBackIntentWithFilteredAction(targetChosenAction);
             Activity activity = window.getActivity().get();
             final PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 0, intent,
                     PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT
                             | IntentUtils.getPendingIntentMutabilityFlag(true));
-            Intent chooserIntent = Intent.createChooser(sharingIntent,
-                    context.getString(R.string.share_link_chooser_title),
+            return Intent.createChooser(sharingIntent,
+                    activity.getString(R.string.share_link_chooser_title),
                     pendingIntent.getIntentSender());
-            fireIntent(window, chooserIntent, sLastRegisteredReceiver);
+        }
+
+        /**
+         * Create an intent to be carried by {@link PendingIntent.getBroadcast}, and will be
+         * received after the PendingIntent is sent. The input action is used to match
+         * the {@link IntentFilter} that this broadcast receiver is interested with.
+         */
+        private Intent createSendBackIntentWithFilteredAction(String filteredAction) {
+            final Context context = ContextUtils.getApplicationContext();
+            Intent intent = new Intent(filteredAction);
+            intent.setPackage(context.getPackageName());
+            IntentUtils.addTrustedIntentExtras(intent);
+            return intent;
         }
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            ThreadUtils.assertOnUiThread();
+            // Ignore intents that's not initiated from Chrome.
+            if (!IntentUtils.isTrustedIntentFromSelf(intent)) return;
+
             synchronized (LOCK) {
-                if (sLastRegisteredReceiver != this) return;
+                if (sLastRegisteredReceiver != this) {
+                    return;
+                }
                 ContextUtils.getApplicationContext().unregisterReceiver(sLastRegisteredReceiver);
                 sLastRegisteredReceiver = null;
             }
-            if (!IntentUtils.isTrustedIntentFromSelf(intent)) return;
-
             ComponentName target = intent.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT);
             if (mCallback != null) {
                 mCallback.onTargetChosen(target);
@@ -221,6 +240,7 @@ public class ShareHelper {
 
         @VisibleForTesting
         public static void resetForTesting() {
+            ThreadUtils.assertOnUiThread();
             synchronized (LOCK) {
                 sTargetChosenReceiveAction = null;
                 if (sLastRegisteredReceiver != null) {
@@ -251,14 +271,23 @@ public class ShareHelper {
                 | Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(EXTRA_TASK_ID, params.getWindow().getActivity().get().getTaskId());
 
-        Uri screenshotUri = params.getScreenshotUri();
-        if (screenshotUri != null) {
+        Uri imageUri = params.getImageUriToShare();
+        if (imageUri != null) {
+            intent.putExtra(Intent.EXTRA_STREAM, imageUri);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            // To give read access to an Intent target, we need to put |screenshotUri| in clipData
-            // because adding Intent.FLAG_GRANT_READ_URI_PERMISSION doesn't work for
-            // EXTRA_SHARE_SCREENSHOT_AS_STREAM.
-            intent.setClipData(ClipData.newRawUri("", screenshotUri));
-            intent.putExtra(EXTRA_SHARE_SCREENSHOT_AS_STREAM, screenshotUri);
+
+            // Add text, title and clip data preview for the image being shared.
+            ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
+            intent.setType(resolver.getType(imageUri));
+            intent.setClipData(ClipData.newUri(resolver, null, imageUri));
+            if (!TextUtils.isEmpty(params.getUrl())) {
+                intent.putExtra(Intent.EXTRA_TEXT, params.getUrl());
+            }
+            if (!TextUtils.isEmpty(params.getImageAltText())) {
+                intent.putExtra(EXTRA_STREAM_ALT_TEXT, params.getImageAltText());
+            }
+
+            return intent;
         }
 
         if (params.getOfflineUri() != null) {
@@ -277,20 +306,11 @@ public class ShareHelper {
             if (isFileShare) {
                 intent.setType(params.getFileContentType());
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                final boolean hasAltText =
-                        params.getFileAltTexts() != null && !params.getFileAltTexts().isEmpty();
 
                 if (isMultipleFileShare) {
                     intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, params.getFileUris());
-                    if (hasAltText) {
-                        intent.putStringArrayListExtra(
-                                EXTRA_STREAM_ALT_TEXT, params.getFileAltTexts());
-                    }
                 } else {
                     intent.putExtra(Intent.EXTRA_STREAM, params.getFileUris().get(0));
-                    if (hasAltText) {
-                        intent.putExtra(EXTRA_STREAM_ALT_TEXT, params.getFileAltTexts().get(0));
-                    }
                 }
             } else {
                 intent.setType("text/plain");

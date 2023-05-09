@@ -171,7 +171,8 @@ constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_SCANOUT | SHARED_IMAGE_USAGE_WEBGPU |
     SHARED_IMAGE_USAGE_VIDEO_DECODE |
     SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
-    SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU | SHARED_IMAGE_USAGE_CPU_UPLOAD;
+    SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU | SHARED_IMAGE_USAGE_CPU_UPLOAD |
+    SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
 
 }  // anonymous namespace
 
@@ -301,7 +302,7 @@ D3DImageBackingFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
   DXGI_PRESENT_PARAMETERS params = {};
   params.DirtyRectsCount = 0;
   params.pDirtyRects = nullptr;
-  hr = swap_chain->Present1(0 /* interval */, 0 /* flags */, &params);
+  hr = swap_chain->Present1(/*interval=*/0, /*flags=*/0, &params);
   if (FAILED(hr)) {
     LOG(ERROR) << "Present1 failed with error " << std::hex << hr;
     return {nullptr, nullptr};
@@ -386,11 +387,31 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
   desc.CPUAccessFlags = 0;
   desc.MiscFlags = 0;
 
-  // WebGPU can use RGBA_8888 and RGBA_16 for STORAGE_BINDING.
-  if ((usage & gpu::SHARED_IMAGE_USAGE_WEBGPU) &&
-      (format == viz::SinglePlaneFormat::kRGBA_8888 ||
-       format == viz::SinglePlaneFormat::kRGBA_F16)) {
-    desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+  if ((usage & gpu::SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE) &&
+      format.is_single_plane()) {
+    DCHECK(usage & gpu::SHARED_IMAGE_USAGE_WEBGPU);
+    switch (format.resource_format()) {
+      // WebGPU can use RGBA_8888 and RGBA_16 for STORAGE_BINDING.
+      case viz::ResourceFormat::RGBA_8888:
+      case viz::ResourceFormat::RGBA_F16:
+        desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+        break;
+
+      // WebGPU can use BGRA_8888 for STORAGE_BINDING when BGRA_8888 is
+      // supported as UAV.
+      case viz::ResourceFormat::BGRA_8888: {
+        if (SupportsBGRA8UnormStorage()) {
+          desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+        } else {
+          LOG(ERROR)
+              << "D3D11_BIND_UNORDERED_ACCESS is not supported on BGRA_8888";
+          return nullptr;
+        }
+        break;
+      }
+      default:
+        break;
+    }
   }
   if (is_shm_gmb) {
     // D3D doesn't support mappable+default YUV textures.
@@ -519,6 +540,26 @@ bool D3DImageBackingFactory::UseMapOnDefaultTextures() {
   return map_on_default_textures_.value();
 }
 
+bool D3DImageBackingFactory::SupportsBGRA8UnormStorage() {
+  if (!supports_bgra8unorm_storage_.has_value()) {
+    D3D11_FEATURE_DATA_FORMAT_SUPPORT bgra8UnormSupport = {};
+    bgra8UnormSupport.InFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+    HRESULT hr = d3d11_device_->CheckFeatureSupport(
+        D3D11_FEATURE_FORMAT_SUPPORT, &bgra8UnormSupport,
+        sizeof(D3D11_FEATURE_DATA_FORMAT_SUPPORT));
+    if (SUCCEEDED(hr)) {
+      supports_bgra8unorm_storage_.emplace(
+          bgra8UnormSupport.OutFormatSupport &
+          D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW);
+    } else {
+      VLOG(1) << "Failed to retrieve D3D11_FEATURE_FORMAT_SUPPORT. hr = "
+              << std::hex << hr;
+      supports_bgra8unorm_storage_.emplace(false);
+    }
+  }
+  return supports_bgra8unorm_storage_.value();
+}
+
 bool D3DImageBackingFactory::IsSupported(uint32_t usage,
                                          viz::SharedImageFormat format,
                                          const gfx::Size& size,
@@ -527,14 +568,6 @@ bool D3DImageBackingFactory::IsSupported(uint32_t usage,
                                          GrContextType gr_context_type,
                                          base::span<const uint8_t> pixel_data) {
   if (!pixel_data.empty()) {
-    return false;
-  }
-
-  if (usage & SHARED_IMAGE_USAGE_SCANOUT_DCOMP_SURFACE) {
-    return false;
-  }
-
-  if (usage & SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE) {
     return false;
   }
 

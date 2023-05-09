@@ -134,12 +134,8 @@
     // Ignore unsupported languages.
     auto it = supportedLanguagesMap.find(languageCode);
     if (it == supportedLanguagesMap.end()) {
-      // languageCodes comes from a synced pref and may contain language codes
-      // that are not supported on the platform, or on this device locale as
-      // defined by the GetLanguageInfoList above.
-      // Ignore them.
-      // TODO(crbug.com/1430745): Investigate why this happens and how to
-      // reconcile data.
+      NOTREACHED() << languageCode + " is an accept language which is not "
+                                     "supported by the platform.";
       continue;
     }
     const translate::TranslateLanguageInfo& language = it->second;

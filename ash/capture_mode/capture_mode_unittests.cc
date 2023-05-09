@@ -129,6 +129,7 @@ using ::ui::mojom::CursorType;
 
 constexpr char kEndRecordingReasonInClamshellHistogramName[] =
     "Ash.CaptureModeController.EndRecordingReason.ClamshellMode";
+constexpr char kScreenCaptureNotificationId[] = "capture_mode_notification";
 
 // Returns true if the software-composited cursor is enabled.
 bool IsCursorCompositingEnabled() {
@@ -138,22 +139,11 @@ bool IsCursorCompositingEnabled() {
       ->is_cursor_compositing_enabled();
 }
 
-bool HasNotificationWithId(const std::string& id) {
-  const message_center::NotificationList::Notifications notifications =
-      message_center::MessageCenter::Get()->GetVisibleNotifications();
-  for (const auto* notification : notifications) {
-    if (notification->id() == id)
-      return true;
-  }
-  return false;
-}
-
 const message_center::Notification* GetPreviewNotification() {
   const message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
   for (const auto* notification : notifications) {
-    if (base::StartsWith(notification->id(),
-                         capture_mode_util::kScreenCaptureNotificationId)) {
+    if (notification->id() == kScreenCaptureNotificationId) {
       return notification;
     }
   }
@@ -470,8 +460,7 @@ class CaptureNotificationWaiter : public message_center::MessageCenterObserver {
 
   // message_center::MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override {
-    if (base::StartsWith(notification_id,
-                         capture_mode_util::kScreenCaptureNotificationId)) {
+    if (notification_id == kScreenCaptureNotificationId) {
       run_loop_.Quit();
     }
   }
@@ -1973,37 +1962,6 @@ TEST_F(CaptureModeTest, VideoNotificationThumbnail) {
   const SkBitmap notification_thumbnail = notification->image().AsBitmap();
   EXPECT_TRUE(
       gfx::test::AreBitmapsEqual(notification_thumbnail, service_thumbnail));
-}
-
-// Verifies that taking multiple screenshots generates multiple notifications.
-TEST_F(CaptureModeTest, MultipleNotificationsForMultipleScreenshots) {
-  // Take a screenshot.
-  auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
-                                         CaptureModeType::kImage);
-  controller->PerformCapture();
-  auto path1 = WaitForCaptureFileToBeSaved();
-  EXPECT_TRUE(HasNotificationWithId(
-      capture_mode_util::GetScreenCaptureNotificationIdForPath(path1)));
-  auto notifications =
-      message_center::MessageCenter::Get()->GetVisibleNotifications();
-  EXPECT_EQ(notifications.size(), 1ul);
-
-  // Wait for one second. This ensures that the second screenshot has a
-  // different ID than the first screenshot.
-  WaitForSeconds(1);
-
-  // Take a second screenshot.
-  controller = StartCaptureSession(CaptureModeSource::kFullscreen,
-                                   CaptureModeType::kImage);
-  controller->PerformCapture();
-  auto path2 = WaitForCaptureFileToBeSaved();
-  notifications =
-      message_center::MessageCenter::Get()->GetVisibleNotifications();
-  EXPECT_EQ(notifications.size(), 2ul);
-  EXPECT_TRUE(HasNotificationWithId(
-      capture_mode_util::GetScreenCaptureNotificationIdForPath(path1)));
-  EXPECT_TRUE(HasNotificationWithId(
-      capture_mode_util::GetScreenCaptureNotificationIdForPath(path2)));
 }
 
 TEST_F(CaptureModeTest, LowDriveFsSpace) {
@@ -6005,7 +5963,9 @@ TEST_P(ProjectorCaptureModeIntegrationTests,
     histogram_tester_.ExpectBucketCount(
         GetCaptureModeHistogramName(
             kProjectorCaptureConfigurationHistogramBase),
-        GetConfiguration(CaptureModeType::kVideo, capture_source), 0);
+        GetConfiguration(CaptureModeType::kVideo, capture_source,
+                         RecordingType::kWebM),
+        0);
 
     StartRecordingForProjectorFromSource(capture_source);
     WaitForSeconds(1);
@@ -6015,7 +5975,9 @@ TEST_P(ProjectorCaptureModeIntegrationTests,
     histogram_tester_.ExpectUniqueSample(
         GetCaptureModeHistogramName(
             kProjectorCaptureConfigurationHistogramBase),
-        GetConfiguration(CaptureModeType::kVideo, capture_source), 1);
+        GetConfiguration(CaptureModeType::kVideo, capture_source,
+                         RecordingType::kWebM),
+        1);
 
     WaitForCaptureFileToBeSaved();
   }
@@ -7047,7 +7009,7 @@ class CaptureModeHistogramTest : public CaptureModeSettingsTest,
   }
 };
 
-TEST_P(CaptureModeHistogramTest, VideoRecordingAudioMetric) {
+TEST_P(CaptureModeHistogramTest, VideoRecordingAudioVideoMetrics) {
   constexpr char kHistogramNameBase[] =
       "Ash.CaptureModeController.CaptureAudioOnMetric";
   base::HistogramTester histogram_tester;
@@ -7063,8 +7025,18 @@ TEST_P(CaptureModeHistogramTest, VideoRecordingAudioMetric) {
       GetCaptureModeHistogramName(kHistogramNameBase), false, 1);
   histogram_tester.ExpectBucketCount(
       GetCaptureModeHistogramName(kHistogramNameBase), true, 0);
+  WaitForSeconds(1);
   StopRecording();
   WaitForCaptureFileToBeSaved();
+
+  // Since getting the file size is an async operation, we have to run a loop
+  // until the task that records the file size is done.
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTotalCount(
+      GetCaptureModeHistogramName(
+          "Ash.CaptureModeController.ScreenRecordingFileSize"),
+      /*expected_count=*/1);
+
   // Perform a video recording with audio on. A true should be recorded.
   StartSessionForVideo();
   CaptureModeTestApi().SetAudioRecordingEnabled(true);

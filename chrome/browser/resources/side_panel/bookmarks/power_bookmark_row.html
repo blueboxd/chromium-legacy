@@ -1,4 +1,4 @@
-<style>
+<style include="sp-shared-style">
   cr-url-list-item[size=compact] {
     padding-inline-end: 14px;
     padding-inline-start: 14px;
@@ -19,67 +19,44 @@
     --cr-input-padding-start: 0;
     width: 100%;
   }
-
-  :host-context([chrome-refresh-2023]) cr-input {
-    --cr-input-border: 1px solid var(--color-side-panel-textfield-border);
-    --cr-input-border-bottom: none;
-    --cr-input-border-radius: 8px;
-    --cr-input-padding-bottom: 9px;
-    --cr-input-padding-end: 9px;
-    --cr-input-padding-start: 9px;
-    --cr-input-padding-top: 9px;
-    --cr-input-underline-display: none;
-    height: 36px;
-    line-height: 16px;
-  }
-
-  :host-context([chrome-refresh-2023]) cr-input:focus {
-    --cr-input-border: 2px solid var(--cr-focus-outline-color);
-    --cr-input-padding-bottom: 8px;
-    --cr-input-padding-end: 8px;
-    --cr-input-padding-start: 8px;
-    --cr-input-padding-top: 8px;
-  }
 </style>
 
 <cr-url-list-item
     role="listitem"
     size="[[getItemSize_(compact)]]"
     url="[[bookmark.url]]"
+    image-urls="[[imageUrls]]"
     count="[[bookmark.children.length]]"
     title="[[bookmark.title]]"
+    description="[[description]]"
+    button-aria-label="[[rowAriaLabel]]"
+    button-aria-description="[[rowAriaDescription]]"
     on-click="onRowClicked_"
     on-contextmenu="onContextMenu_">
   <template is="dom-if" if="[[hasCheckbox]]" restamp>
     <cr-checkbox slot="prefix" hidden="[[!hasCheckbox]]"
         on-change="onCheckboxChange_"
         disabled="[[checkboxDisabled]]">
-      TODO: hidden label text
+      $i18n{checkboxA11yLabel}
     </cr-checkbox>
   </template>
 
-  <template is="dom-if" if="[[hasInput]]" on-dom-change="onInputDisplayChange_">
-    <cr-input slot="title" id="input" value="[[bookmark.title]]"
+  <template is="dom-if" if="[[hasInput]]" on-dom-change="onInputDisplayChange_"
+      restamp>
+    <cr-input slot="content" id="input" value="[[bookmark.title]]"
+        class="sp-labelless-input"
         on-change="onInputChange_" on-blur="onInputChange_"
         on-keypress="onInputKeyPress_"
-        aria-label="$i18n{bookmarkNameA11yLabel}">
+        aria-label="[[rowAriaLabel]]"
+        aria-description="[[rowAriaDescription]]">
     </cr-input>
   </template>
 
   <template is="dom-if" if="[[!hasInput]]"
       on-dom-change="onInputDisplayChange_">
-    <button slot="title" id="title" role="button" tabindex="0"
-        aria-labelledby="title description badges">
-      [[bookmark.title]]
-    </button>
-
-    <div slot="description" id="description" hidden$="[[!description]]">
-      [[description]]
-    </div>
-2   <slot slot="badges" id="badges" name="badges"></slot>
-
+   <slot slot="badges" id="badges" name="badges"></slot>
     <cr-icon-button slot="suffix-icon" iron-icon="[[trailingIcon]]"
         hidden="[[!trailingIcon]]" on-click="onTrailingIconClicked_"
-        disabled="[[hasCheckbox]]" aria-label="[[trailingIconAriaLabel_]]">
+        disabled="[[hasCheckbox]]" aria-label="[[trailingIconAriaLabel]]">
   </template>
 </cr-url-list-item>

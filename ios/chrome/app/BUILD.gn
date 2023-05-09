@@ -48,7 +48,7 @@ source_set("app") {
 
   deps = [
     "//base",
-    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/url:constants",
     "//net",
     "//url",
@@ -142,50 +142,47 @@ source_set("perf_tests_hook") {
   deps = [ ":tests_hook" ]
 }
 
-if (!is_fat_secondary_toolchain) {
-  tweak_info_plist("info_plist") {
-    info_plists = [
-      "resources/Info.plist",
-      "resources/ChromeAddition+Info.plist",
-    ]
-    if (ios_enable_background_mode) {
-      info_plists += [ "resources/Background+Info.plist" ]
-    }
-    if (target_environment == "catalyst") {
-      info_plists += [ "resources/Environment+Catalyst.plist" ]
-    } else {
-      info_plists += [ "resources/Environment+Default.plist" ]
-    }
-    if (ios_chrome_info_plist_additions != []) {
-      info_plists += ios_chrome_info_plist_additions
-    }
-    if (ios_encryption_export_compliance_code != "") {
-      info_plists += [ "resources/EncryptionExportCompliance+Info.plist" ]
-    }
-    if (ios_chrome_info_plist_addition_targets != []) {
-      if (!defined(deps)) {
-        deps = []
-      }
-      deps += ios_chrome_info_plist_addition_targets
-    }
-    args = [
-      "--branding=$chromium_short_name",
-      "--add-gtm-metadata=1",
-    ]
+tweak_info_plist("info_plist") {
+  info_plists = [
+    "resources/Info.plist",
+    "resources/ChromeAddition+Info.plist",
+  ]
+  if (ios_enable_background_mode) {
+    info_plists += [ "resources/Background+Info.plist" ]
   }
+  if (target_environment == "catalyst") {
+    info_plists += [ "resources/Environment+Catalyst.plist" ]
+  } else {
+    info_plists += [ "resources/Environment+Default.plist" ]
+  }
+  if (ios_chrome_info_plist_additions != []) {
+    info_plists += ios_chrome_info_plist_additions
+  }
+  if (ios_encryption_export_compliance_code != "") {
+    info_plists += [ "resources/EncryptionExportCompliance+Info.plist" ]
+  }
+  if (ios_chrome_info_plist_addition_targets != []) {
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += ios_chrome_info_plist_addition_targets
+  }
+  args = [
+    "--branding=$chromium_short_name",
+    "--add-gtm-metadata=1",
+  ]
+}
 
-  compile_entitlements("entitlements") {
-    entitlements_templates = [ "resources/Chrome.entitlements" ]
-    if (ios_chrome_entitlements_additions != []) {
-      entitlements_templates += ios_chrome_entitlements_additions
-    }
-    if (target_environment == "catalyst") {
-      entitlements_templates +=
-          [ "resources/Environment+Catalyst.entitlements" ]
-    }
-    substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
-    output_name = "$target_gen_dir/$chromium_short_name.entitlements"
+compile_entitlements("entitlements") {
+  entitlements_templates = [ "resources/Chrome.entitlements" ]
+  if (ios_chrome_entitlements_additions != []) {
+    entitlements_templates += ios_chrome_entitlements_additions
   }
+  if (target_environment == "catalyst") {
+    entitlements_templates += [ "resources/Environment+Catalyst.entitlements" ]
+  }
+  substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
+  output_name = "$target_gen_dir/$chromium_short_name.entitlements"
 }
 
 if (ios_enable_credential_provider_extension) {
@@ -328,10 +325,10 @@ source_set("first_run_app_state_agent") {
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/geolocation",
-    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/shared/public/commands:commands",
+    "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/ui/blocking_overlay",
     "//ios/chrome/browser/ui/browser_view",
-    "//ios/chrome/browser/ui/commands:commands",
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/first_run:first_run_provider",
@@ -387,20 +384,6 @@ source_set("feed_app_agent") {
   ]
 }
 
-source_set("keyboard_shortcuts_menu_app_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "keyboard_shortcuts_menu_app_agent.h",
-    "keyboard_shortcuts_menu_app_agent.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/app/application_delegate:app_state_header",
-    "//ios/chrome/app/application_delegate:observing_app_state_agent",
-    "//ios/chrome/browser/ui/keyboard:features",
-  ]
-}
-
 source_set("app_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -426,7 +409,6 @@ source_set("app_internal") {
     ":fast_app_terminate_buildflags",
     ":feed_app_agent",
     ":first_run_app_state_agent",
-    ":keyboard_shortcuts_menu_app_agent",
     ":mode",
     ":post_restore_app_agent",
     ":safe_mode_app_state_agent",
@@ -507,28 +489,27 @@ source_set("app_internal") {
     "//ios/chrome/browser/sessions:scene_util",
     "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/share_extension",
+    "//ios/chrome/browser/shared/public/commands",
+    "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/ui/table_view",
+    "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/sync",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/appearance",
     "//ios/chrome/browser/ui/authentication",
-    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/download",
     "//ios/chrome/browser/ui/first_run",
     "//ios/chrome/browser/ui/first_run:utils",
     "//ios/chrome/browser/ui/keyboard",
-    "//ios/chrome/browser/ui/keyboard:features",
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/browser/ui/main:scene",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:tab_grid_ui",
-    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/ui/webui:webui_internal",
     "//ios/chrome/browser/upgrade",
     "//ios/chrome/browser/url_loading",
@@ -623,23 +604,6 @@ source_set("main") {
       "//ios/third_party/material_components_ios:material_components_ios+bundle",
       "//ios/third_party/material_components_ios:material_components_ios+link",
     ]
-  }
-
-  # Lottie links with GLKit which does not support macCatalyst environment
-  # (see https://crbug.com/1394553 for details of the build failure). This
-  # is a stop-gap solution.
-  if (target_environment != "catalyst") {
-    if (ios_chrome_links_with_lottie_framework) {
-      deps += [
-        "//ios/third_party/lottie:lottie+bundle",
-        "//ios/third_party/lottie:lottie+link",
-      ]
-    } else {
-      assert_no_deps += [
-        "//ios/third_party/lottie:lottie+bundle",
-        "//ios/third_party/lottie:lottie+link",
-      ]
-    }
   }
 }
 

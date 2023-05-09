@@ -3884,7 +3884,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, UserAgent) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, UserAgent_NewWindow) {
+// TODO(crbug.com/1424459): Test is flaky.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_UserAgent_NewWindow DISABLED_UserAgent_NewWindow
+#else
+#define MAYBE_UserAgent_NewWindow UserAgent_NewWindow
+#endif
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, MAYBE_UserAgent_NewWindow) {
   ASSERT_TRUE(RunExtensionTest(
       "platform_apps/web_view/common",
       {.custom_arg = "useragent_newwindow", .launch_as_platform_app = true}))
@@ -5541,9 +5547,9 @@ IN_PROC_BROWSER_TEST_F(GuestViewExtensionNameCollisionTest,
   EXPECT_EQ("PASSED", test_passed);
 }
 
-class PrivateNetworkAccessWebViewTest : public WebViewTest {
+class LocalNetworkAccessWebViewTest : public WebViewTest {
  public:
-  PrivateNetworkAccessWebViewTest() {
+  LocalNetworkAccessWebViewTest() {
     features_.InitAndEnableFeature(
         features::kBlockInsecurePrivateNetworkRequests);
   }
@@ -5552,11 +5558,11 @@ class PrivateNetworkAccessWebViewTest : public WebViewTest {
   base::test::ScopedFeatureList features_;
 };
 INSTANTIATE_TEST_SUITE_P(WebViewTests,
-                         PrivateNetworkAccessWebViewTest,
+                         LocalNetworkAccessWebViewTest,
                          testing::Bool(),
                          WebViewTest::DescribeParams);
 
-// Verify that Private Network Access has the correct understanding of guests.
+// Verify that Local Network Access has the correct understanding of guests.
 // The chrome-guest:// scheme should only ever be used as a Site URL (and only
 // when not using <webview> site isolation), and this should not interfere with
 // the local/private/public classification. See https://crbug.com/1167698 for
@@ -5564,8 +5570,8 @@ INSTANTIATE_TEST_SUITE_P(WebViewTests,
 //
 // Note: This test is put in this file for convenience of reusing the entire
 // app testing infrastructure. Other similar tests that do not require that
-// infrastructure live in PrivateNetworkAccessBrowserTest.*
-IN_PROC_BROWSER_TEST_P(PrivateNetworkAccessWebViewTest,
+// infrastructure live in LocalNetworkAccessBrowserTest.*
+IN_PROC_BROWSER_TEST_P(LocalNetworkAccessWebViewTest,
                        SpecialSchemeChromeGuest) {
   LoadAppWithGuest("web_view/simple");
   content::RenderFrameHost* guest_frame_host = GetGuestRenderFrameHost();

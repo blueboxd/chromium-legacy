@@ -49,6 +49,8 @@
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/same_document_navigation_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
@@ -316,7 +318,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   enum State { kNotStarted, kProvisional, kCommitted, kSentDidFinishLoad };
 
   void DispatchLinkHeaderPreloads(const ViewportDescription*,
-                                  PreloadHelper::MediaPreloadPolicy);
+                                  PreloadHelper::LoadLinksFromHeaderMode);
 
   void LoadFailed(const ResourceError&);
 
@@ -402,8 +404,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const absl::optional<Vector<KURL>>& AdAuctionComponents() const {
     return ad_auction_components_;
   }
-
-  bool HasFencedFrameReporting() const { return has_fenced_frame_reporting_; }
 
   const absl::optional<FencedFrame::RedactedFencedFrameProperties>&
   FencedFrameProperties() const {
@@ -601,6 +601,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   ContentSecurityPolicy* CreateCSP();
 
   bool IsSameOriginInitiator() const;
+
+  // This initiates a view transition if the `view_transition_state_` has been
+  // specified.
+  void StartViewTransitionIfNeeded(Document& document);
+
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.
   std::unique_ptr<WebNavigationParams> params_;
@@ -753,7 +758,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   CommitReason commit_reason_ = CommitReason::kRegular;
   uint64_t main_resource_identifier_ = 0;
   mojom::blink::ResourceTimingInfoPtr resource_timing_info_for_parent_;
-  base::TimeTicks redirect_end_time_;
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
   ukm::SourceId ukm_source_id_;
@@ -795,11 +799,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // otherwise.
   absl::optional<Vector<KURL>> ad_auction_components_;
 
-  // This boolean flag indicates whether there is associated reporting metadata
-  // with the fenced frame.
-  // https://github.com/WICG/turtledove/blob/main/Fenced_Frames_Ads_Reporting.md
-  bool has_fenced_frame_reporting_;
-
   std::unique_ptr<ExtraData> extra_data_;
 
   // Reduced accept language for top-level frame.
@@ -817,6 +816,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Indicates whether the document should be loaded with its has_storage_access
   // bit set.
   const bool has_storage_access_;
+
+  // Only container-initiated navigations (e.g. iframe change src) report
+  // their resource timing to the parent.
+  mojom::blink::ParentResourceTimingAccess parent_resource_timing_access_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

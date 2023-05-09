@@ -67,10 +67,15 @@ std::vector<ui::Accelerator> AcceleratorAliasConverter::CreateTopRowAliases(
         Shell::Get()->keyboard_capability()->GetMappedFKeyIfExists(
             accelerator.key_code(), keyboard);
     if (f_key.has_value()) {
-      // If top row keys are function keys, top row shortcut will become
-      // [FKey] + [Search] + [modifiers]
+      // When a keycode has a mapped function key (meaning it is top row
+      // key), for internal keyboard, we show icon + meta key, for external
+      // keyboard, we show F-key + meta key. If both internal and external
+      // exist, we show both variations.
       aliases_set.insert(ui::Accelerator(
-          f_key.value(), accelerator.modifiers() | ui::EF_COMMAND_DOWN,
+          keyboard.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL
+              ? accelerator.key_code()
+              : f_key.value(),
+          accelerator.modifiers() | ui::EF_COMMAND_DOWN,
           accelerator.key_state()));
     }
   }
@@ -114,10 +119,12 @@ std::vector<ui::Accelerator>
 AcceleratorAliasConverter::CreateReversedSixPackAliases(
     const ui::Accelerator& accelerator) const {
   // To find the reversed six pack alias, an accelerator must include [Search]
-  // key, and must be one of the reversed six pack keys.
+  // key, and must be one of the reversed six pack keys. And the connected
+  // keyboards must have six pack keys.
   if (!accelerator.IsCmdDown() ||
       !::features::IsImprovedKeyboardShortcutsEnabled() ||
-      !ui::KeyboardCapability::IsReversedSixPackKey(accelerator.key_code())) {
+      !ui::KeyboardCapability::IsReversedSixPackKey(accelerator.key_code()) ||
+      !ui::KeyboardCapability::HasSixPackOnAnyKeyboard()) {
     return std::vector<ui::Accelerator>();
   }
 

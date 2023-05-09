@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
@@ -12,6 +11,7 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -228,8 +228,9 @@ DesktopWindowTreeHostPlatform* DesktopWindowTreeHostPlatform::GetHostForWidget(
 // static
 std::vector<aura::Window*> DesktopWindowTreeHostPlatform::GetAllOpenWindows() {
   std::vector<aura::Window*> windows(open_windows().size());
-  std::transform(open_windows().begin(), open_windows().end(), windows.begin(),
-                 DesktopWindowTreeHostPlatform::GetContentWindowForWidget);
+  base::ranges::transform(
+      open_windows(), windows.begin(),
+      DesktopWindowTreeHostPlatform::GetContentWindowForWidget);
   return windows;
 }
 
@@ -346,7 +347,6 @@ void DesktopWindowTreeHostPlatform::Close() {
   if (close_widget_factory_.HasWeakPtrs() || !platform_window())
     return;
 
-  is_closing_ = true;
   GetContentWindow()->Hide();
 
   // Hide while waiting for the close.
@@ -839,16 +839,13 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
   bool was_minimized = old_state == ui::PlatformWindowState::kMinimized;
   bool is_minimized = new_state == ui::PlatformWindowState::kMinimized;
 
+  // Propagate minimization/restore to compositor to avoid drawing 'blank'
+  // frames that could be treated as previews, which show content even if a
+  // window is minimized.
   if (is_minimized != was_minimized) {
     if (is_minimized) {
-      if (!HasVideoCaptureLocks()) {
-        // Hide the content window and pause the compositor to prevent drawing
-        // a blank frame which will show up in the window preview. Hiding the
-        // content window is intended to prevent rendering frames when the
-        // window is not visible.
-        SetVisible(false);
-        GetContentWindow()->Hide();
-      }
+      SetVisible(false);
+      GetContentWindow()->Hide();
     } else {
       GetContentWindow()->Show();
       SetVisible(true);
@@ -859,24 +856,6 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
   // window. (The windows code doesn't need this because their window change is
   // synchronous.)
   ScheduleRelayout();
-}
-
-void DesktopWindowTreeHostPlatform::OnVideoCaptureLockChanged() {
-  // This does not account for the case when the lock is destroyed while the
-  // window is minimized. In that case, the content should be hidden and the
-  // compositor paused. However, that does require more state tracking. Because
-  // the difference is not observable to users, a more simple approach is
-  // taken.
-  // We need to ensure that we do not show the content when the window is
-  // closing.
-  if (HasVideoCaptureLocks() && !GetContentWindow()->IsVisible() &&
-      !is_closing_) {
-    // If a video capture lock has been created, this implies that there is a
-    // consumer for the content window's content. Therefore, we must show it and
-    // start rendering it if it is currently hidden.
-    GetContentWindow()->Show();
-    SetVisible(true);
-  }
 }
 
 void DesktopWindowTreeHostPlatform::OnCloseRequest() {
@@ -976,7 +955,14 @@ gfx::Rect DesktopWindowTreeHostPlatform::ToDIPRect(
 
 gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
     const gfx::Rect& rect_in_dip) const {
-  return GetRootTransform().MapRect(rect_in_dip);
+  gfx::RectF rect_in_pixels_f =
+      GetRootTransform().MapRect(gfx::RectF(rect_in_dip));
+  // Due to the limitation of IEEE floating point representation and rounding
+  // error, the converted result may become slightly larger than expected value,
+  // such as 3000.0005. Allow 0.001 eplisin to round down in such case. This is
+  // also used in cc/viz. See crbug.com/1418606.
+  constexpr float kEpsilon = 0.001f;
+  return gfx::ToEnclosingRectIgnoringError(rect_in_pixels_f, kEpsilon);
 }
 
 Widget* DesktopWindowTreeHostPlatform::GetWidget() {

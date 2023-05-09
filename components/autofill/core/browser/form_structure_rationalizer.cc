@@ -20,15 +20,19 @@ namespace {
 // Defines necessary types for the rationalization logic, meaning that fields of
 // `type` are only filled if at least one field of some `GetNecessaryTypesFor()`
 // is present.
-// TODO(crbug.com/1311937) Cleanup PHONE_HOME_CITY_AND_NUMBER when launched.
+// TODO(crbug.com/1311937) Cleanup when launched.
 ServerFieldTypeSet GetNecessaryTypesFor(ServerFieldType type) {
   switch (type) {
-    case PHONE_HOME_COUNTRY_CODE:
-      return {PHONE_HOME_NUMBER, PHONE_HOME_NUMBER_PREFIX,
-              base::FeatureList::IsEnabled(
-                  features::kAutofillEnableSupportForPhoneNumberTrunkTypes)
-                  ? PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX
-                  : PHONE_HOME_CITY_AND_NUMBER};
+    case PHONE_HOME_COUNTRY_CODE: {
+      ServerFieldTypeSet necessary_types{PHONE_HOME_NUMBER,
+                                         PHONE_HOME_NUMBER_PREFIX,
+                                         PHONE_HOME_CITY_AND_NUMBER};
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillEnableSupportForPhoneNumberTrunkTypes)) {
+        necessary_types.insert(PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX);
+      }
+      return necessary_types;
+    }
     default:
       return {};
   }
@@ -270,6 +274,96 @@ void FormStructureRationalizer::RationalizeCreditCardFieldPredictions(
   }
 }
 
+void FormStructureRationalizer::RationalizeCreditCardNumberOffsets(
+    LogManager* log_manager) {
+  // Credit card numbers are 8 to 19 digits in length.
+  // [Ref: http://en.wikipedia.org/wiki/Bank_card_number]
+  constexpr size_t kMinValidCardNumberSize = 8;
+  constexpr size_t kMaxValidCardNumberSize = 19;
+  constexpr size_t kMaxGroupElementLength = 8;
+  using Group = base::span<const std::unique_ptr<AutofillField>>;
+
+  // `may_be_group({f, f + 1}) && ... && may_be_group({f, f + N + 1})` is true
+  // iff all fields in the range
+  // 1. `{f, f + N + 1}` are credit card number fields, and
+  // 2. `{f, f + N + 1}` originate from the same form in the same frame, and
+  // 3. `{f, f + N + 1}` are all focuseable or all unfocusable,
+  // 4. `{f, f + N}` have the same `FormFieldData::max_length <
+  //    kMaxGroupElementLength`.
+  //
+  // `may_be_group({f, f + N + 1})` is valid only if `may_be_group({f, f + N})`
+  // is true. This is because each call only looks at the first and last
+  // element.
+  auto may_be_group = [](Group group) {
+    DCHECK_GE(group.size(), 1u);
+    DCHECK(base::ranges::all_of(
+        group.subspan(0, group.size() - 1), [](const auto& f) {
+          return f->ComputedType().GetStorableType() == CREDIT_CARD_NUMBER;
+        }));
+    size_t last = group.size() - 1;
+    return group[0]->max_length <= kMaxGroupElementLength &&
+           group[last]->ComputedType().GetStorableType() ==
+               CREDIT_CARD_NUMBER &&
+           group[last]->renderer_form_id() == group[0]->renderer_form_id() &&
+           group[last]->IsFocusable() == group[0]->IsFocusable() &&
+           (group[last]->max_length == group[0]->max_length ||
+            (last >= 1 && group[last - 1]->max_length == group[0]->max_length));
+  };
+
+  // `has_reasonable_length({f, f + N + 1})` is true iff
+  // 1. the cumulative FormFieldData::max_length
+  //    (a) is long enough for the shortest credit cards, and
+  //    (b) minus the overflow field (if present) isn't longer than the longest
+  //        credit card, and
+  // 2. there are at least 2 non-overflow fields.
+  auto has_reasonable_length = [](Group group) {
+    DCHECK(!group.empty());
+    DCHECK(base::ranges::all_of(group.subspan(0, group.size() - 1),
+                                [group](const auto& f) {
+                                  return f->max_length == group[0]->max_length;
+                                }));
+    size_t size = group.size();
+    size_t last = group.size() - 1;
+    bool last_is_overflow = group[last]->max_length > kMaxGroupElementLength;
+    size_t length = group[0]->max_length * (size - 1) + group[last]->max_length;
+    size_t length_without_overflow =
+        length - last_is_overflow * group[last]->max_length;
+    return length >= kMinValidCardNumberSize &&
+           length_without_overflow < kMaxValidCardNumberSize &&
+           size >= 2 + last_is_overflow;
+  };
+
+  // Returns the end (exclusive) of the credit card number field group starting
+  // with `begin`.
+  auto find_end_of_group = [&](auto begin) {
+    auto end = begin;
+    while (end != fields_->end() && may_be_group({begin, end + 1})) {
+      ++end;
+    }
+    return end;
+  };
+
+  for (const auto& field : *fields_) {
+    field->set_credit_card_number_offset(0);
+  }
+  for (auto begin = fields_->begin(); begin != fields_->end();) {
+    auto end = find_end_of_group(begin);
+    if (begin == end) {
+      begin = end + 1;
+      continue;
+    }
+    if (has_reasonable_length({begin, end})) {
+      size_t offset = 0;
+      for (auto& field : Group{begin, end}) {
+        field->set_credit_card_number_offset(offset);
+        offset += field->max_length;
+      }
+    }
+    DCHECK(begin != end);
+    begin = end;
+  }
+}
+
 void FormStructureRationalizer::RationalizeStreetAddressAndAddressLine(
     LogManager* log_manager) {
   if (fields_->size() < 2)
@@ -331,6 +425,50 @@ void FormStructureRationalizer::RationalizeStreetAddressAndHouseNumber(
            "address/address-line1, house number) to (street name, house "
            "number)";
     previous_field.SetTypeTo(AutofillType(ADDRESS_HOME_STREET_NAME));
+  }
+}
+
+void FormStructureRationalizer::RationalizePhoneNumberTrunkTypes(
+    LogManager* log_manager) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForPhoneNumberTrunkTypes)) {
+    return;
+  }
+
+  // Changes the `field`'s type to `new_type` if it isn't `new_type` already.
+  // If the type is changed, logs to `log_manager`.
+  auto change_type_and_log =
+      [&](AutofillField& field, ServerFieldType new_type) {
+        ServerFieldType current_type = field.ComputedType().GetStorableType();
+        if (current_type == new_type) {
+          return;
+        }
+        field.SetTypeTo(AutofillType(new_type));
+        LOG_AF(log_manager)
+            << LoggingScope::kRationalization << LogMessage::kRationalization
+            << "Converting "
+            << AutofillType::ServerFieldTypeToString(current_type) << " to "
+            << AutofillType::ServerFieldTypeToString(new_type)
+            << " as part of phone number trunk type rationalization";
+      };
+
+  // Indicates whether the previous field was a phone country code.
+  bool preceding_phone_country_code = false;
+  for (const std::unique_ptr<AutofillField>& field : *fields_) {
+    ServerFieldType type = field->ComputedType().GetStorableType();
+    if (type == PHONE_HOME_CITY_AND_NUMBER ||
+        type == PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX) {
+      change_type_and_log(*field,
+                          preceding_phone_country_code
+                              ? PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX
+                              : PHONE_HOME_CITY_AND_NUMBER);
+    } else if (type == PHONE_HOME_CITY_CODE ||
+               type == PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX) {
+      change_type_and_log(*field, preceding_phone_country_code
+                                      ? PHONE_HOME_CITY_CODE
+                                      : PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX);
+    }
+    preceding_phone_country_code = type == PHONE_HOME_COUNTRY_CODE;
   }
 }
 
@@ -648,8 +786,13 @@ void FormStructureRationalizer::RationalizeRepeatedFields(
 void FormStructureRationalizer::RationalizeFieldTypePredictions(
     LogManager* log_manager) {
   RationalizeCreditCardFieldPredictions(log_manager);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSplitCreditCardNumbersCautiously)) {
+    RationalizeCreditCardNumberOffsets(log_manager);
+  }
   RationalizeStreetAddressAndAddressLine(log_manager);
   RationalizeStreetAddressAndHouseNumber(log_manager);
+  RationalizePhoneNumberTrunkTypes(log_manager);
   for (const auto& field : *fields_)
     field->SetTypeTo(field->Type());
   RationalizeTypeRelationships(log_manager);

@@ -183,13 +183,8 @@ class UserDataAuthClientTest : public testing::Test {
   // The expected replies to the respective D-Bus calls.
   ::user_data_auth::IsMountedReply expected_is_mounted_reply_;
   ::user_data_auth::UnmountReply expected_unmount_reply_;
-  ::user_data_auth::MountReply expected_mount_reply_;
   ::user_data_auth::RemoveReply expected_remove_reply_;
   ::user_data_auth::CheckKeyReply expected_check_key_reply_;
-  ::user_data_auth::StartFingerprintAuthSessionReply
-      expected_start_fingerprint_auth_session_reply_;
-  ::user_data_auth::EndFingerprintAuthSessionReply
-      expected_end_fingerprint_auth_session_reply_;
   ::user_data_auth::StartMigrateToDircryptoReply
       expected_start_migrate_to_dircrypto_reply_;
   ::user_data_auth::NeedsDircryptoMigrationReply
@@ -224,20 +219,10 @@ class UserDataAuthClientTest : public testing::Test {
       writer.AppendProtoAsArrayOfBytes(expected_is_mounted_reply_);
     } else if (method_call->GetMember() == ::user_data_auth::kUnmount) {
       writer.AppendProtoAsArrayOfBytes(expected_unmount_reply_);
-    } else if (method_call->GetMember() == ::user_data_auth::kMount) {
-      writer.AppendProtoAsArrayOfBytes(expected_mount_reply_);
     } else if (method_call->GetMember() == ::user_data_auth::kRemove) {
       writer.AppendProtoAsArrayOfBytes(expected_remove_reply_);
     } else if (method_call->GetMember() == ::user_data_auth::kCheckKey) {
       writer.AppendProtoAsArrayOfBytes(expected_check_key_reply_);
-    } else if (method_call->GetMember() ==
-               ::user_data_auth::kStartFingerprintAuthSession) {
-      writer.AppendProtoAsArrayOfBytes(
-          expected_start_fingerprint_auth_session_reply_);
-    } else if (method_call->GetMember() ==
-               ::user_data_auth::kEndFingerprintAuthSession) {
-      writer.AppendProtoAsArrayOfBytes(
-          expected_end_fingerprint_auth_session_reply_);
     } else if (method_call->GetMember() ==
                ::user_data_auth::kStartMigrateToDircrypto) {
       writer.AppendProtoAsArrayOfBytes(
@@ -348,35 +333,6 @@ TEST_F(UserDataAuthClientTest, CheckKey) {
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(result_reply, absl::nullopt);
   EXPECT_TRUE(ProtobufEquals(result_reply.value(), expected_check_key_reply_));
-}
-
-TEST_F(UserDataAuthClientTest, StartFingerprintAuthSession) {
-  expected_start_fingerprint_auth_session_reply_.set_error(
-      user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_TPM_DEFEND_LOCK);
-  absl::optional<::user_data_auth::StartFingerprintAuthSessionReply>
-      result_reply;
-
-  client_->StartFingerprintAuthSession(
-      ::user_data_auth::StartFingerprintAuthSessionRequest(),
-      CreateCopyCallback(&result_reply));
-  base::RunLoop().RunUntilIdle();
-  ASSERT_NE(result_reply, absl::nullopt);
-  EXPECT_TRUE(ProtobufEquals(result_reply.value(),
-                             expected_start_fingerprint_auth_session_reply_));
-}
-
-TEST_F(UserDataAuthClientTest, EndFingerprintAuthSession) {
-  expected_end_fingerprint_auth_session_reply_.set_error(
-      user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_TPM_DEFEND_LOCK);
-  absl::optional<::user_data_auth::EndFingerprintAuthSessionReply> result_reply;
-
-  client_->EndFingerprintAuthSession(
-      ::user_data_auth::EndFingerprintAuthSessionRequest(),
-      CreateCopyCallback(&result_reply));
-  base::RunLoop().RunUntilIdle();
-  ASSERT_NE(result_reply, absl::nullopt);
-  EXPECT_TRUE(ProtobufEquals(result_reply.value(),
-                             expected_end_fingerprint_auth_session_reply_));
 }
 
 TEST_F(UserDataAuthClientTest, StartMigrateToDircrypto) {

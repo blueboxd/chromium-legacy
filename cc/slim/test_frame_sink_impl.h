@@ -24,7 +24,11 @@ class TestFrameSinkImpl : public FrameSinkImpl {
     DCHECK(!bind_to_client_called_);
     bind_to_client_result_ = result;
   }
+  bool GetDidSubmitAndReset();
+  bool GetDidNotProduceFrameAndReset();
   viz::CompositorFrame TakeLastFrame();
+  const absl::optional<::viz::HitTestRegionList>& GetLastHitTestRegionList()
+      const;
   bool bind_to_client_called() const { return bind_to_client_called_; }
   bool needs_begin_frames() const { return needs_begin_frames_; }
 

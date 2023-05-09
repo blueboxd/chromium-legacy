@@ -26,7 +26,6 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
 
  public:
   GPUAdapter(GPU* gpu,
-             const String& name,
              WGPUAdapter handle,
              scoped_refptr<DawnControlClientHolder> dawn_control_client);
 
@@ -35,11 +34,11 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
 
   void Trace(Visitor* visitor) const override;
 
-  const String& name() const;
   GPU* gpu() const { return gpu_; }
   GPUSupportedFeatures* features() const;
   GPUSupportedLimits* limits() const { return limits_; }
   bool isFallbackAdapter() const;
+  WGPUBackendType backendType() const;
   void invalidate() { is_invalid_ = true; }
   bool SupportsMultiPlanarFormats() const;
 
@@ -64,10 +63,10 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
                                WGPUDevice dawn_device,
                                const char* error_message);
 
-  String name_;
   WGPUAdapter handle_;
   Member<GPU> gpu_;
   bool is_fallback_adapter_;
+  WGPUBackendType backend_type_;
   bool is_invalid_ = false;
   Member<GPUSupportedLimits> limits_;
   Member<GPUSupportedFeatures> features_;

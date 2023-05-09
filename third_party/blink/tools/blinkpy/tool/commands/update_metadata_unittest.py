@@ -7,7 +7,7 @@ import io
 import json
 import textwrap
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from blinkpy.common import path_finder
 from blinkpy.common.net.git_cl import TryJobStatus
@@ -106,6 +106,13 @@ class BaseUpdateMetadataTest(LoggingTestCase):
             stack.enter_context(
                 patch('manifest.manifest.load_and_update',
                       self._manifest_load_and_update))
+            default_port = Mock()
+            default_port.default_smoke_test_only.return_value = False
+            default_port.skipped_due_to_smoke_tests.return_value = False
+            stack.enter_context(
+                patch.object(self.tool.port_factory,
+                             'get',
+                             return_value=default_port))
             yield stack
 
 
@@ -165,8 +172,9 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
             'run_info': {
                 'os': 'mac',
                 'port': 'mac12',
-                'processor': 'arm',
                 'product': 'content_shell',
+                'flag_specific': '',
+                'debug': False,
             },
             'results': [{
                 'test':
@@ -237,7 +245,11 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
         url = 'https://cr.dev/123/wptreport.json?token=abc'
         self.tool.web.urls[url] = json.dumps({
             'run_info': {
-                'os': 'mac'
+                'os': 'mac',
+                'port': 'mac12',
+                'product': 'content_shell',
+                'flag_specific': '',
+                'debug': False,
             },
             'results': [{
                 'test': '/variant.html?foo=bar/abc',
@@ -266,15 +278,12 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
             "INFO: Updated 'variant.html'\n",
             'INFO: Staged 1 metadata file.\n',
         ])
+        lines = self.tool.filesystem.read_text_file(
+            self.finder.path_from_web_tests('external', 'wpt',
+                                            'variant.html.ini')).splitlines()
+        self.assertIn('[variant.html?foo=bar/abc]', lines)
         # The other variant is not updated.
-        self.assertEqual(
-            self.tool.filesystem.read_text_file(
-                self.finder.path_from_web_tests('external', 'wpt',
-                                                'variant.html.ini')),
-            textwrap.dedent("""\
-                [variant.html?foo=bar/abc]
-                  expected: FAIL
-                """))
+        self.assertNotIn('[variant.html?foo=baz]', lines)
 
     def test_execute_with_no_issue_number_aborts(self):
         self.command.git_cl = MockGitCL(self.tool, issue_number='None')
@@ -601,9 +610,13 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                     **result
                 } for result in report['results']]
 
-            configs = frozenset(
-                metadata.RunInfo(report['run_info']) for report in reports)
+            configs = {
+                metadata.RunInfo(report['run_info']):
+                report.pop('test_port', self.tool.port_factory.get())
+                for report in reports
+            }
             updater = MetadataUpdater.from_manifests(manifests, configs,
+                                                     self.tool.filesystem,
                                                      **options)
             updater.collect_results(
                 io.StringIO(json.dumps(report)) for report in reports)
@@ -1091,6 +1104,132 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                 expected:
                   if (product == "content_shell") and (os == "win"): TIMEOUT
                   FAIL
+            """)
+
+    def test_no_fill_for_disabled_configs(self):
+        self.write_contents(
+            'external/wpt/variant.html.ini', """\
+            [variant.html?foo=baz]
+              disabled:
+                if product == "chrome": @False
+                if product == "content_shell": needs webdriver
+            """)
+        self.write_contents(
+            'external/wpt/__dir__.ini', """\
+            disabled:
+                if product == "chrome": not tested by default
+                if product == "android_webview": not tested by default
+            """)
+
+        smoke_test_port = Mock()
+        smoke_test_port.default_smoke_test_only.return_value = True
+        smoke_test_port.skipped_due_to_smoke_tests.return_value = True
+        self.update(
+            {
+                'run_info': {
+                    'product': 'chrome',
+                    'flag_specific': '',
+                },
+                'results': [{
+                    'test': '/variant.html?foo=baz',
+                    'status': 'FAIL',
+                    'expected': 'PASS',
+                    'subtests': [],
+                }],
+            }, {
+                'run_info': {
+                    'product': 'chrome',
+                    'flag_specific': 'fake-flag',
+                },
+                'results': [],
+                'test_port': smoke_test_port,
+            }, {
+                'run_info': {
+                    'product': 'content_shell',
+                },
+                'results': [],
+            }, {
+                'run_info': {
+                    'product': 'android_webview',
+                },
+                'results': [],
+            })
+
+        # Only non-flag-specific 'chrome' runs, so there's no need to write its
+        # failure expectation conditionally like:
+        #   if (product == "chrome") and (flag_specific == ""): FAIL
+        #
+        # A `PASS` also should not be added for skipped configurations, which
+        # would result in:
+        #   [FAIL, PASS]
+        self.assert_contents(
+            'external/wpt/variant.html.ini', """\
+            [variant.html?foo=baz]
+              disabled:
+                if product == "chrome": @False
+                if product == "content_shell": needs webdriver
+              expected: FAIL
+            """)
+        smoke_test_port.skipped_due_to_smoke_tests.assert_called_once_with(
+            'external/wpt/variant.html?foo=baz')
+
+    def test_condition_initialization_without_starting_metadata(self):
+        self.update(
+            {
+                'run_info': {
+                    'product': 'content_shell'
+                },
+                'results': [{
+                    'test': '/variant.html?foo=baz',
+                    'status': 'FAIL',
+                    'expected': 'OK',
+                }],
+            }, {
+                'run_info': {
+                    'product': 'chrome'
+                },
+                'results': [],
+            })
+        self.assert_contents(
+            'external/wpt/variant.html.ini', """\
+            [variant.html?foo=baz]
+              expected:
+                if product == "content_shell": FAIL
+            """)
+
+    def test_condition_initialization_without_starting_subtest(self):
+        self.write_contents(
+            'external/wpt/variant.html.ini', """\
+            [variant.html?foo=baz]
+            """)
+        self.update(
+            {
+                'run_info': {
+                    'product': 'content_shell'
+                },
+                'results': [{
+                    'test':
+                    '/variant.html?foo=baz',
+                    'status':
+                    'OK',
+                    'subtests': [{
+                        'name': 'new subtest',
+                        'status': 'FAIL',
+                        'expected': 'PASS',
+                    }],
+                }],
+            }, {
+                'run_info': {
+                    'product': 'chrome'
+                },
+                'results': [],
+            })
+        self.assert_contents(
+            'external/wpt/variant.html.ini', """\
+            [variant.html?foo=baz]
+              [new subtest]
+                expected:
+                  if product == "content_shell": FAIL
             """)
 
     def test_condition_no_change(self):

@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" />টি আইটেম জিপ করা হচ্ছে…</translation>
 <translation id="1722687688096767818">প্রোফাইল যোগ করা হচ্ছে...</translation>
 <translation id="1726100011689679555">নেম সার্ভারগুলি</translation>
+<translation id="1727562178154619254">এখন সিঙ্ক করা যাবে</translation>
 <translation id="1729953886957086472">জার্মান (জার্মানি)</translation>
 <translation id="1730235522912993863">চীনা কাংগজি</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" />টি আইটেম কপি করা হয়েছে।</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">ছবির রেজোলিউশন</translation>
 <translation id="1972984168337863910">ফাইল ফিডব্যাক প্যানেল বড় করুন</translation>
 <translation id="1995337122023280937">ফাইল লোকেশনে যান</translation>
-<translation id="1999709132469742660">সব URL-কে ফাইল অ্যাক্সেস করতে</translation>
 <translation id="2001796770603320721">ড্রাইভে পরিচালনা করুন</translation>
 <translation id="2009067268969781306">ড্রাইভ ফরম্যাট করা হলে, সেটিতে সেভ করা সব ডেটা মুছে যাবে। সেটিকে আর আগের অবস্থায় ফেরানো যাবে না।</translation>
 <translation id="2025955442973426285">টাইগ্রিনা</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">লাতিন আমেরিকান</translation>
 <translation id="5330145655348521461">এই ফাইলগুলি একটি আলাদা ডেস্কটপে খোলা রয়েছে৷ এটিকে দেখতে <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)-এ সরান৷</translation>
 <translation id="5330512191124428349">তথ্য পান</translation>
-<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" /> ছাড়া সব URL ফাইল অ্যাক্সেস করতে পারবে</translation>
 <translation id="5344246330454251646">Bruschetta শেয়ারিং ম্যানেজ করুন</translation>
 <translation id="535792325654997756">বিড়ালের সাথে ব্যক্তির ছবি</translation>
 <translation id="5358764674931277">ফ্রেম রেট</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">Linux অ্যাপ্লিকেশন ইনস্টল করার সময়ে সমস্যা হয়েছে।</translation>
 <translation id="5912396950572065471">ফর্ম্যাট</translation>
 <translation id="5913638992615760742">কপি করা যায়নি, অপ্রত্যাশিত সমস্যা হয়েছে: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">নতুন সার্চ ফিচার উপলভ্য আছে</translation>
 <translation id="5926082595146149752">ডাচ (নেদারল্যান্ডস) ভাষায় ইউএস ইন্টারন্যাশনাল পিসি কীবোর্ড</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, ডিভাইস সেট-আপ করার পর চালু করুন</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">শংসাপত্র লোড হয়নি</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Bruschetta ব্যবহার করে ফোল্ডার শেয়ার করুন</translation>
+<translation id="6750737795876287924">বর্তমান ডিরেক্টরি</translation>
 <translation id="6751256176799620176">১টি ফোল্ডার নির্বাচন করা হয়েছে</translation>
 <translation id="6755827872271341378">ChromeOS Flex ডিভাইস</translation>
 <translation id="6790428901817661496">চালু করুন</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">ফোল্ডারগুলি</translation>
 <translation id="6976795442547527108">সিংহ</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">শুরু থেকে</translation>
 <translation id="6989942356279143254">সুইডিশ</translation>
 <translation id="6990081529015358884">আপনার ডিভাইসে স্পেশ নেই৷</translation>
 <translation id="6993826899923627728">এই আইটেমগুলি আপনার ট্র্যাশে রয়েছে</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">কোনও সাম্প্রতিক ছবি নেই</translation>
 <translation id="7460898608667578234">ইউক্রেনীয়</translation>
 <translation id="7469894403370665791">স্বয়ংক্রিয়ভাবে এই নেটওয়ার্কে সংযোগ করুন</translation>
-<translation id="7481358317100446445">প্রস্তুত</translation>
 <translation id="7486315294984620427">Parallels Desktop-এ ফাইল রাখতে হলে ফাইলকে অবশ্যই Windows ফাইলের ফোল্ডারে কপি করতে হবে।</translation>
 <translation id="749452993132003881">হিরাগানা</translation>
 <translation id="7495372004724182530">মালয়ালাম ফোনেটিক</translation>
@@ -940,6 +939,7 @@
 <translation id="8492972329130824181">হোম নেটওয়ার্ক উপলভ্য নেই। কানেক্ট করতে, মোবাইলে ডেটা রোমিং অবশ্যই চালু থাকতে হবে।</translation>
 <translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" />টি আইটেম এক্সট্র্যাক্ট করা হচ্ছে...</translation>
 <translation id="8502913769543567768"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, ডিভাইস সেট-আপ করার পর চালু করুন, আপনার অ্যাডমিনিস্ট্রেটর দ্বারা ম্যানেজ করা হয়</translation>
+<translation id="8512483403832814140">যেকোনও সময়</translation>
 <translation id="8521441079177373948">যুক্তরাজ্য</translation>
 <translation id="853494022971700746">ফরাসি (ফ্রান্স)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />%, বিবরণ</translation>

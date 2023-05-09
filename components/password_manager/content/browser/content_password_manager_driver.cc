@@ -125,18 +125,16 @@ int ContentPasswordManagerDriver::GetId() const {
   return id_;
 }
 
+int ContentPasswordManagerDriver::GetFrameId() const {
+  // Use the associated FrameTreeNode ID as the Frame ID.
+  return render_frame_host_->GetFrameTreeNodeId();
+}
+
 void ContentPasswordManagerDriver::SetPasswordFillData(
     const autofill::PasswordFormFillData& form_data) {
   password_autofill_manager_.OnAddPasswordFillData(form_data);
   if (const auto& agent = GetPasswordAutofillAgent()) {
     agent->SetPasswordFillData(autofill::MaybeClearPasswordValues(form_data));
-  }
-}
-
-void ContentPasswordManagerDriver::PasswordFieldHasNoAssociatedUsername(
-    autofill::FieldRendererId password_element_renderer_id) {
-  if (const auto& agent = GetPasswordAutofillAgent()) {
-    agent->PasswordFieldHasNoAssociatedUsername(password_element_renderer_id);
   }
 }
 

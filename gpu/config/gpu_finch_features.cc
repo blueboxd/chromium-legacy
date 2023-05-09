@@ -5,6 +5,7 @@
 #include "gpu/config/gpu_finch_features.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/config/gpu_switches.h"
@@ -188,6 +189,12 @@ BASE_FEATURE(kNoUndamagedOverlayPromotion,
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
 // Enable use of Metal for OOP rasterization.
 BASE_FEATURE(kMetal, "Metal", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, the TASK_CATEGORY_POLICY value of the GPU process will be
+// adjusted to match the one from the browser process every time it changes.
+BASE_FEATURE(kAdjustGpuProcessPriority,
+             "AdjustGpuProcessPriority",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Causes us to use the SharedImageManager, removing support for the old
@@ -375,6 +382,12 @@ BASE_FEATURE(kPassthroughYuvRgbConversion,
 BASE_FEATURE(kCmdDecoderAlwaysGetSizeFromSourceTexture,
              "CmdDecoderAlwaysGetSizeFromSourceTexture",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When the application is in background, whether to perform immediate GPU
+// cleanup when executing deferred requests.
+BASE_FEATURE(kGpuCleanupInBackground,
+             "GpuCleanupInBackground",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool UseGles2ForOopR() {
 #if BUILDFLAG(IS_ANDROID)

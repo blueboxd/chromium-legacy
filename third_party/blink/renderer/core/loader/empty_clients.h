@@ -236,7 +236,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void RequestUnbufferedInputEvents(LocalFrame*) override {}
   void SetTouchAction(LocalFrame*, TouchAction) override {}
   void SetPanAction(LocalFrame*, mojom::blink::PanAction pan_action) override {}
-  void DidAssociateFormControlsAfterLoad(LocalFrame*) override {}
+  void DidAddOrRemoveFormRelatedElementsAfterLoad(LocalFrame*) override {}
   String AcceptLanguages() override;
   void RegisterPopupOpeningObserver(PopupOpeningObserver*) override {}
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override {}
@@ -251,6 +251,34 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
  private:
   const display::ScreenInfos empty_screen_infos_{display::ScreenInfo()};
+};
+
+class EmptyWebWorkerFetchContext : public WebWorkerFetchContext {
+ public:
+  void SetTerminateSyncLoadEvent(base::WaitableEvent*) override {}
+  void InitializeOnWorkerThread(AcceptLanguagesWatcher*) override {}
+  URLLoaderFactory* GetURLLoaderFactory() override { return nullptr; }
+  std::unique_ptr<URLLoaderFactory> WrapURLLoaderFactory(
+      CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+          url_loader_factory) override {
+    return nullptr;
+  }
+  void WillSendRequest(WebURLRequest&) override {}
+  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
+      const override {
+    return mojom::ControllerServiceWorkerMode::kNoController;
+  }
+  net::SiteForCookies SiteForCookies() const override {
+    return net::SiteForCookies();
+  }
+  absl::optional<WebSecurityOrigin> TopFrameOrigin() const override {
+    return absl::nullopt;
+  }
+  blink::WebString GetAcceptLanguages() const override { return ""; }
+  void SetIsOfflineMode(bool is_offline_mode) override {}
+  bool IsDedicatedWorkerOrSharedWorkerFetchContext() const override {
+    return true;
+  }
 };
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
@@ -308,8 +336,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       const absl::optional<Impression>&,
       const LocalFrameToken* initiator_frame_token,
       std::unique_ptr<SourceLocation>,
-      mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>)
-      override;
+      mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>,
+      bool is_container_initiated) override;
 
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
 
@@ -424,6 +452,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   }
 
   Frame* FindFrame(const AtomicString& name) const override;
+
+  scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() override {
+    return base::MakeRefCounted<EmptyWebWorkerFetchContext>();
+  }
 
  protected:
   // Not owned

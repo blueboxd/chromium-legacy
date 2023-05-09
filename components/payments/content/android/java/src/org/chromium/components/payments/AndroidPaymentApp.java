@@ -261,8 +261,9 @@ public class AndroidPaymentApp
                 /*packageName=*/mPackageName, /*serviceName=*/mIsReadyToPayServiceName,
                 removeUrlScheme(origin), removeUrlScheme(iframeOrigin), certificateChain,
                 WebPaymentIntentHelperTypeConverter.fromMojoPaymentMethodDataMap(methodDataMap),
-                // TODO(crbug.com/1290492): Re-enable clearing of identity for IS_READY_TO_PAY
-                /*clearIdFields=*/false);
+                /*clearIdFields=*/
+                !PaymentFeatureList.isEnabled(
+                        PaymentFeatureList.ADD_IDENTITY_IN_CAN_MAKE_PAYMENT_EVENT));
         if (mBypassIsReadyToPayServiceInTest) {
             respondToIsReadyToPayQuery(true);
             return;

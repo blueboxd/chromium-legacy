@@ -41,9 +41,6 @@
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #include "base/allocator/partition_allocator/partition_root.h"
-#include "base/allocator/partition_allocator/partition_tag.h"
-#include "base/allocator/partition_allocator/partition_tag_bitmap.h"
-#include "base/allocator/partition_allocator/partition_tag_types.h"
 #include "base/allocator/partition_allocator/pkey.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/tagging.h"
@@ -226,21 +223,12 @@ using SlotSpan = SlotSpanMetadata<ThreadSafe>;
 
 const size_t kTestAllocSize = 16;
 
-// Add one extra byte to each slot's end to allow beyond-the-end
-// pointers (crbug.com/1364476).
-#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-const size_t kMTECheckedPtrExtrasAdjustment = 1;
-#else
-const size_t kMTECheckedPtrExtrasAdjustment = 0;
-#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-
 #if !BUILDFLAG(PA_DCHECK_IS_ON)
 const size_t kPointerOffset = kPartitionRefCountOffsetAdjustment;
-const size_t kExtraAllocSizeWithoutRefCount = kMTECheckedPtrExtrasAdjustment;
+const size_t kExtraAllocSizeWithoutRefCount = 0ull;
 #else
 const size_t kPointerOffset = kPartitionRefCountOffsetAdjustment;
-const size_t kExtraAllocSizeWithoutRefCount =
-    kCookieSize + kMTECheckedPtrExtrasAdjustment;
+const size_t kExtraAllocSizeWithoutRefCount = kCookieSize;
 #endif
 
 const size_t kExtraAllocSizeWithRefCount =
@@ -409,7 +397,6 @@ class PartitionAllocTest
         PartitionOptions::UseConfigurablePool::kNo,
     });
     test_bucket_index_ = SizeToIndex(RealAllocSize());
-
     allocator.root()->UncapEmptySlotSpanMemoryForTesting();
     aligned_allocator.root()->UncapEmptySlotSpanMemoryForTesting();
 
@@ -721,7 +708,6 @@ TEST_P(PartitionAllocTest, Basic) {
   EXPECT_EQ(kPointerOffset, UntagPtr(ptr) & PartitionPageOffsetMask());
   // Check that the offset appears to include a guard page.
   EXPECT_EQ(PartitionPageSize() +
-                partition_alloc::internal::ReservedTagBitmapSize() +
                 partition_alloc::internal::ReservedFreeSlotBitmapSize() +
                 kPointerOffset,
             UntagPtr(ptr) & kSuperPageOffsetMask);
@@ -996,7 +982,6 @@ TEST_P(PartitionAllocTest, MultiPageAllocs) {
   // 1 super page has 2 guard partition pages and a tag bitmap.
   size_t num_slot_spans_needed =
       (NumPartitionPagesPerSuperPage() - 2 -
-       partition_alloc::internal::NumPartitionPagesPerTagBitmap() -
        partition_alloc::internal::NumPartitionPagesPerFreeSlotBitmap()) /
       num_pages_per_slot_span;
 
@@ -1021,7 +1006,6 @@ TEST_P(PartitionAllocTest, MultiPageAllocs) {
       // Check that we allocated a guard page and the reserved tag bitmap for
       // the second page.
       EXPECT_EQ(PartitionPageSize() +
-                    partition_alloc::internal::ReservedTagBitmapSize() +
                     partition_alloc::internal::ReservedFreeSlotBitmapSize(),
                 second_super_page_offset);
     }
@@ -1403,11 +1387,14 @@ TEST_P(PartitionAllocTest, MTEProtectsFreedPtr) {
   PA_EXPECT_PTR_EQ(ptr2, ptr3);
   EXPECT_NE(ptr1, ptr3);
   EXPECT_NE(ptr2, ptr3);
+
+  // We don't check anything about ptr3, but we do clean it up to avoid DCHECKs.
+  allocator.root()->Free(ptr3);
 }
 #endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-TEST_P(PartitionAllocTest, IsValidPtrDelta) {
+TEST_P(PartitionAllocTest, IsPtrWithinSameAlloc) {
   if (!UseBRPPool()) {
     return;
   }
@@ -1459,100 +1446,88 @@ TEST_P(PartitionAllocTest, IsValidPtrDelta) {
       }
 
       uintptr_t address = UntagPtr(ptr);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address,
-                                              PtrDelta(-kFarFarAwayDelta, 0)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address - kFarFarAwayDelta, 0u),
                 PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(
-          PartitionAllocIsValidPtrDelta(address, PtrDelta(-kSuperPageSize, 0)),
-          PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, PtrDelta(-1, 0)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address - kSuperPageSize, 0u),
                 PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address, PtrDelta(0, 0)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address - 1, 0u),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address, 0u),
                 PtrPosWithinAlloc::kInBounds);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address,
-                                              PtrDelta(requested_size / 2, 0)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address + requested_size / 2, 0u),
                 PtrPosWithinAlloc::kInBounds);
-#if PA_CONFIG(USE_OOB_POISON)
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address,
-                                              PtrDelta(requested_size - 1, 1)),
+#if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address + requested_size - 1, 1u),
                 PtrPosWithinAlloc::kInBounds);
-      EXPECT_EQ(
-          PartitionAllocIsValidPtrDelta(address, PtrDelta(requested_size, 1)),
-          PtrPosWithinAlloc::kAllocEnd);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address,
-                                              PtrDelta(requested_size - 4, 4)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address + requested_size, 1u),
+                PtrPosWithinAlloc::kAllocEnd);
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address + requested_size - 4, 4u),
                 PtrPosWithinAlloc::kInBounds);
       for (size_t subtrahend = 0; subtrahend < 4; subtrahend++) {
-        EXPECT_EQ(PartitionAllocIsValidPtrDelta(
-                      address, PtrDelta(requested_size - subtrahend, 4)),
+        EXPECT_EQ(IsPtrWithinSameAlloc(
+                      address, address + requested_size - subtrahend, 4u),
                   PtrPosWithinAlloc::kAllocEnd);
       }
-#else
-      EXPECT_EQ(
-          PartitionAllocIsValidPtrDelta(address, PtrDelta(requested_size, 0)),
-          PtrPosWithinAlloc::kInBounds);
-#endif
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address,
-                                              PtrDelta(requested_size + 1, 0)),
-                PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(
-                    address, PtrDelta(requested_size + kSuperPageSize, 0)),
-                PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(
-                    address, PtrDelta(requested_size + kFarFarAwayDelta, 0)),
-                PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                              PtrDelta(kFarFarAwayDelta, 0)),
-                PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                              PtrDelta(kSuperPageSize, 0)),
-                PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                              PtrDelta(1, 0)),
-                PtrPosWithinAlloc::kFarOOB);
-#if PA_CONFIG(USE_OOB_POISON)
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size - 1,
-                                              PtrDelta(0, 1)),
+#else  // BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address + requested_size, 0u),
                 PtrPosWithinAlloc::kInBounds);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size - 1,
-                                              PtrDelta(1, 1)),
+#endif
+      EXPECT_EQ(IsPtrWithinSameAlloc(address, address + requested_size + 1, 0u),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(IsPtrWithinSameAlloc(
+                    address, address + requested_size + kSuperPageSize, 0u),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(IsPtrWithinSameAlloc(
+                    address, address + requested_size + kFarFarAwayDelta, 0u),
+                PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(
+          IsPtrWithinSameAlloc(address + requested_size,
+                               address + requested_size + kFarFarAwayDelta, 0u),
+          PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(
+          IsPtrWithinSameAlloc(address + requested_size,
+                               address + requested_size + kSuperPageSize, 0u),
+          PtrPosWithinAlloc::kFarOOB);
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size,
+                                     address + requested_size + 1, 0u),
+                PtrPosWithinAlloc::kFarOOB);
+#if BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size - 1,
+                                     address + requested_size - 1, 1u),
+                PtrPosWithinAlloc::kInBounds);
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size - 1,
+                                     address + requested_size, 1u),
                 PtrPosWithinAlloc::kAllocEnd);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                              PtrDelta(0, 1)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size,
+                                     address + requested_size, 1u),
                 PtrPosWithinAlloc::kAllocEnd);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size - 1,
-                                              PtrDelta(1, 1)),
-                PtrPosWithinAlloc::kAllocEnd);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size - 4,
-                                              PtrDelta(0, 4)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size - 4,
+                                     address + requested_size - 4, 4u),
                 PtrPosWithinAlloc::kInBounds);
       for (size_t addend = 1; addend < 4; addend++) {
-        EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size - 4,
-                                                PtrDelta(addend, 4)),
-                  PtrPosWithinAlloc::kAllocEnd);
+        EXPECT_EQ(
+            IsPtrWithinSameAlloc(address + requested_size - 4,
+                                 address + requested_size - 4 + addend, 4u),
+            PtrPosWithinAlloc::kAllocEnd);
       }
-#else
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                              PtrDelta(0, 0)),
+#else  // BUILDFLAG(BACKUP_REF_PTR_POISON_OOB_PTR)
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size,
+                                     address + requested_size, 0u),
                 PtrPosWithinAlloc::kInBounds);
 #endif
-      EXPECT_EQ(
-          PartitionAllocIsValidPtrDelta(address + requested_size,
-                                        PtrDelta(-(requested_size / 2), 0)),
-          PtrPosWithinAlloc::kInBounds);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                              PtrDelta(-requested_size, 0)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(
+                    address + requested_size,
+                    address + requested_size - (requested_size / 2), 0u),
                 PtrPosWithinAlloc::kInBounds);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(address + requested_size,
-                                              PtrDelta(-requested_size - 1, 0)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size, address, 0u),
+                PtrPosWithinAlloc::kInBounds);
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size, address - 1, 0u),
                 PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(
-                    address + requested_size,
-                    PtrDelta(-requested_size - kSuperPageSize, 0)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size,
+                                     address - kSuperPageSize, 0u),
                 PtrPosWithinAlloc::kFarOOB);
-      EXPECT_EQ(PartitionAllocIsValidPtrDelta(
-                    address + requested_size,
-                    PtrDelta(-requested_size - kFarFarAwayDelta, 0)),
+      EXPECT_EQ(IsPtrWithinSameAlloc(address + requested_size,
+                                     address - kFarFarAwayDelta, 0u),
                 PtrPosWithinAlloc::kFarOOB);
     }
 
@@ -2114,7 +2089,6 @@ TEST_P(PartitionAllocTest, MappingCollision) {
   // guard pages. We also discount the partition pages used for the tag bitmap.
   size_t num_slot_span_needed =
       (NumPartitionPagesPerSuperPage() - 2 -
-       partition_alloc::internal::NumPartitionPagesPerTagBitmap() -
        partition_alloc::internal::NumPartitionPagesPerFreeSlotBitmap()) /
       num_pages_per_slot_span;
   size_t num_partition_pages_needed =
@@ -2133,12 +2107,10 @@ TEST_P(PartitionAllocTest, MappingCollision) {
   uintptr_t slot_span_start =
       SlotSpan::ToSlotSpanStart(first_super_page_pages[0]);
   EXPECT_EQ(PartitionPageSize() +
-                partition_alloc::internal::ReservedTagBitmapSize() +
                 partition_alloc::internal::ReservedFreeSlotBitmapSize(),
             slot_span_start & kSuperPageOffsetMask);
   uintptr_t super_page =
       slot_span_start - PartitionPageSize() -
-      partition_alloc::internal::ReservedTagBitmapSize() -
       partition_alloc::internal::ReservedFreeSlotBitmapSize();
   // Map a single system page either side of the mapping for our allocations,
   // with the goal of tripping up alignment of the next mapping.
@@ -2166,11 +2138,9 @@ TEST_P(PartitionAllocTest, MappingCollision) {
 
   super_page = SlotSpan::ToSlotSpanStart(second_super_page_pages[0]);
   EXPECT_EQ(PartitionPageSize() +
-                partition_alloc::internal::ReservedTagBitmapSize() +
                 partition_alloc::internal::ReservedFreeSlotBitmapSize(),
             super_page & kSuperPageOffsetMask);
   super_page -= PartitionPageSize() +
-                partition_alloc::internal::ReservedTagBitmapSize() +
                 partition_alloc::internal::ReservedFreeSlotBitmapSize();
   // Map a single system page either side of the mapping for our allocations,
   // with the goal of tripping up alignment of the next mapping.
@@ -2619,10 +2589,7 @@ TEST_P(PartitionAllocDeathTest, FreelistCorruption) {
 }
 
 // With BUILDFLAG(PA_DCHECK_IS_ON), cookie already handles off-by-one detection.
-// With MTECheckedPtr enabled, an extra byte is present to allow an off-by-one
-// (crbug.com/1364476).
-#if !BUILDFLAG(PA_DCHECK_IS_ON) && \
-    !PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+#if !BUILDFLAG(PA_DCHECK_IS_ON)
 TEST_P(PartitionAllocDeathTest, OffByOneDetection) {
   base::CPU cpu;
   const size_t alloc_size = 2 * sizeof(void*);
@@ -2664,8 +2631,7 @@ TEST_P(PartitionAllocDeathTest, OffByOneDetectionWithRealisticData) {
     array[2] = previous_value;
   }
 }
-#endif  // !BUILDFLAG(PA_DCHECK_IS_ON) &&
-        // !PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
+#endif  // !BUILDFLAG(PA_DCHECK_IS_ON)
 
 #endif  // !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
         // PA_CONFIG(HAS_FREELIST_SHADOW_ENTRY)
@@ -3519,7 +3485,7 @@ TEST_P(PartitionAllocTest, SmallReallocDoesNotMoveTrailingCookie) {
 }
 
 TEST_P(PartitionAllocTest, ZeroFill) {
-  constexpr static size_t kAllZerosSentinel =
+  static constexpr size_t kAllZerosSentinel =
       std::numeric_limits<size_t>::max();
   for (size_t size : kTestSizes) {
     char* p = static_cast<char*>(
@@ -5159,106 +5125,6 @@ TEST_P(PartitionAllocTest, IncreaseEmptySlotSpanRingSize) {
   EXPECT_EQ(PA_TS_UNCHECKED_READ(root.empty_slot_spans_dirty_bytes),
             kMaxFreeableSpans * bucket_size);
 }
-
-#if PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
-
-// Verifies basic PA support for `MTECheckedPtr`.
-TEST_P(PartitionAllocTest, PartitionTagBasic) {
-  const size_t alloc_size = 64 - ExtraAllocSize(allocator);
-  void* ptr1 = allocator.root()->Alloc(alloc_size, type_name);
-  void* ptr2 = allocator.root()->Alloc(alloc_size, type_name);
-  void* ptr3 = allocator.root()->Alloc(alloc_size, type_name);
-  EXPECT_TRUE(ptr1);
-  EXPECT_TRUE(ptr2);
-  EXPECT_TRUE(ptr3);
-
-  auto* slot_span = SlotSpan::FromObject(ptr1);
-  EXPECT_TRUE(slot_span);
-
-  char* char_ptr1 = static_cast<char*>(ptr1);
-  char* char_ptr2 = static_cast<char*>(ptr2);
-  char* char_ptr3 = static_cast<char*>(ptr3);
-  EXPECT_LT(kTestAllocSize, slot_span->bucket->slot_size);
-  EXPECT_EQ(char_ptr1 + slot_span->bucket->slot_size, char_ptr2);
-  EXPECT_EQ(char_ptr2 + slot_span->bucket->slot_size, char_ptr3);
-  constexpr partition_alloc::PartitionTag kTag1 =
-      static_cast<partition_alloc::PartitionTag>(0xBADA);
-  constexpr partition_alloc::PartitionTag kTag2 =
-      static_cast<partition_alloc::PartitionTag>(0xDB8A);
-  constexpr partition_alloc::PartitionTag kTag3 =
-      static_cast<partition_alloc::PartitionTag>(0xA3C4);
-
-  partition_alloc::internal::NormalBucketPartitionTagSetValue(
-      allocator.root()->ObjectToSlotStart(ptr1), slot_span->bucket->slot_size,
-      kTag1);
-  partition_alloc::internal::NormalBucketPartitionTagSetValue(
-      allocator.root()->ObjectToSlotStart(ptr2), slot_span->bucket->slot_size,
-      kTag2);
-  partition_alloc::internal::NormalBucketPartitionTagSetValue(
-      allocator.root()->ObjectToSlotStart(ptr3), slot_span->bucket->slot_size,
-      kTag3);
-
-  memset(ptr1, 0, alloc_size);
-  memset(ptr2, 0, alloc_size);
-  memset(ptr3, 0, alloc_size);
-
-  EXPECT_EQ(kTag1, partition_alloc::internal::PartitionTagGetValue(ptr1));
-  EXPECT_EQ(kTag2, partition_alloc::internal::PartitionTagGetValue(ptr2));
-  EXPECT_EQ(kTag3, partition_alloc::internal::PartitionTagGetValue(ptr3));
-
-  EXPECT_TRUE(!memchr(ptr1, static_cast<uint8_t>(kTag1), alloc_size));
-  EXPECT_TRUE(!memchr(ptr2, static_cast<uint8_t>(kTag2), alloc_size));
-
-  allocator.root()->Free(ptr1);
-  EXPECT_EQ(kTag2, partition_alloc::internal::PartitionTagGetValue(ptr2));
-
-  size_t request_size =
-      slot_span->bucket->slot_size - ExtraAllocSize(allocator);
-  void* new_ptr2 = allocator.root()->Realloc(ptr2, request_size, type_name);
-  EXPECT_EQ(ptr2, new_ptr2);
-  EXPECT_EQ(kTag3, partition_alloc::internal::PartitionTagGetValue(ptr3));
-
-  // Add 1B to ensure the object is rellocated to a larger slot.
-  request_size = slot_span->bucket->slot_size - ExtraAllocSize(allocator) + 1;
-  new_ptr2 = allocator.root()->Realloc(ptr2, request_size, type_name);
-  EXPECT_TRUE(new_ptr2);
-  EXPECT_NE(ptr2, new_ptr2);
-
-  allocator.root()->Free(new_ptr2);
-
-  EXPECT_EQ(kTag3, partition_alloc::internal::PartitionTagGetValue(ptr3));
-  allocator.root()->Free(ptr3);
-}
-
-// Verifies basic PA support for MTECheckedPtr used with direct map
-// allocations.
-TEST_P(PartitionAllocTest, PartitionTagDirectMapBasic) {
-  constexpr size_t kAllocSize = partition_alloc::internal::kSuperPageSize * 3;
-  void* object = allocator.root()->AllocWithFlags(AllocFlags::kZeroFill,
-                                                  kAllocSize, type_name);
-  ASSERT_TRUE(object);
-  ASSERT_TRUE(IsManagedByDirectMap(UntagPtr(object)));
-
-  constexpr partition_alloc::PartitionTag kTag =
-      static_cast<partition_alloc::PartitionTag>(0xBADA);
-  partition_alloc::internal::DirectMapPartitionTagSetValue(
-      allocator.root()->ObjectToSlotStart(object), kTag);
-  EXPECT_EQ(kTag, partition_alloc::internal::PartitionTagGetValue(object));
-
-  // As the allocation spans four (bumped over three by metadata) super
-  // pages, we expect offsets into the two subsequent super pages to
-  // also bear the same tag.
-  EXPECT_EQ(kTag, partition_alloc::internal::PartitionTagGetValue(
-                      static_cast<char*>(object) + kSuperPageSize));
-  EXPECT_EQ(kTag, partition_alloc::internal::PartitionTagGetValue(
-                      static_cast<char*>(object) + (2 * kSuperPageSize)));
-  EXPECT_EQ(kTag, partition_alloc::internal::PartitionTagGetValue(
-                      static_cast<char*>(object) + (3 * kSuperPageSize) - 1));
-
-  allocator.root()->Free(object);
-}
-
-#endif  // PA_CONFIG(ENABLE_MTE_CHECKED_PTR_SUPPORT_WITH_64_BITS_POINTERS)
 
 #if BUILDFLAG(PA_IS_CAST_ANDROID) && BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 extern "C" {

@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Kompakteer tans <ph name="NUMBER_OF_ITEMS" /> items …</translation>
 <translation id="1722687688096767818">Voeg tans profiel by …</translation>
 <translation id="1726100011689679555">Naambedieners</translation>
+<translation id="1727562178154619254">Gereed om te sinkroniseer</translation>
 <translation id="1729953886957086472">Duits (Duitsland)</translation>
 <translation id="1730235522912993863">Chinees-Cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> items is gekopieer.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Prentresolusie</translation>
 <translation id="1972984168337863910">Vou lêersterugvoerpanele uit</translation>
 <translation id="1995337122023280937">Gaan na lêerligging toe</translation>
-<translation id="1999709132469742660">Lêertoegang tot alle URL'e</translation>
 <translation id="2001796770603320721">Bestuur in Drive</translation>
 <translation id="2009067268969781306">Alle data wat op 'n skyf geberg is, sal uitgevee word wanneer dit geformateer word. Hierdie handeling kan nie ontdoen word nie.</translation>
 <translation id="2025955442973426285">Tigrinja</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">Latyns-Amerikaans</translation>
 <translation id="5330145655348521461">Hierdie lêers het op 'n ander werkskerm oopgemaak. Beweeg na <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) om dit te bekyk.</translation>
 <translation id="5330512191124428349">Kry inligting</translation>
-<translation id="5337538975554986899">Lêertoegang tot alle URL'e behalwe <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Bestuur Bruschetta-deling</translation>
 <translation id="535792325654997756">Persoon met katte</translation>
 <translation id="5358764674931277">Raamtempo</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">Kon nie jou Linux-program installeer nie.</translation>
 <translation id="5912396950572065471">Formaat</translation>
 <translation id="5913638992615760742">Kon nie kopieer nie; 'n onverwagse fout: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Nuwe soekkenmerke is beskikbaar</translation>
 <translation id="5926082595146149752">Nederlands met Internasionale VSA- (rekenaar-) sleutelbord</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />; aktiveer ná toestelopstelling</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">Sertifikate is nie gelaai nie</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Deel vouer met Bruschetta</translation>
+<translation id="6750737795876287924">Huidige indeks</translation>
 <translation id="6751256176799620176">1 vouer is gekies</translation>
 <translation id="6755827872271341378">Chrome OS Flex-toestel</translation>
 <translation id="6790428901817661496">Speel</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">Vouers</translation>
 <translation id="6976795442547527108">Leeu</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Van die begin af</translation>
 <translation id="6989942356279143254">Sweeds</translation>
 <translation id="6990081529015358884">Jy het nie meer spasie nie</translation>
 <translation id="6993826899923627728">Hierdie items is in jou asblik</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">Geen onlangse prente nie</translation>
 <translation id="7460898608667578234">Oekraïens</translation>
 <translation id="7469894403370665791">Koppel outomaties aan hierdie netwerk</translation>
-<translation id="7481358317100446445">Gereed</translation>
 <translation id="7486315294984620427">Die lêer moet na Windows-lêers gekopieer word om in Parallels Desktop gelos te word.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malabaars-foneties</translation>
@@ -940,6 +939,7 @@
 <translation id="8492972329130824181">Tuisnetwerk is nie beskikbaar nie. Mobiele dataswerwing moet geaktiveer wees om te kan koppel.</translation>
 <translation id="8499098729323186194">Onttrek tans <ph name="NUMBER_OF_ITEMS" /> items …</translation>
 <translation id="8502913769543567768">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />; aktiveer ná toestelopstelling; bestuur deur jou admin</translation>
+<translation id="8512483403832814140">Enige tyd</translation>
 <translation id="8521441079177373948">VK</translation>
 <translation id="853494022971700746">Frans (Frankryk)</translation>
 <translation id="8540608333167683902">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />%, besonderhede</translation>

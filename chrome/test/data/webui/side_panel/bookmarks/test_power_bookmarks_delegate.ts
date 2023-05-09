@@ -10,12 +10,14 @@ export class TestPowerBookmarksDelegate extends TestBrowserProxy {
       'setCurrentUrl',
       'setCompactDescription',
       'setExpandedDescription',
+      'setImageUrl',
       'onBookmarksLoaded',
       'onBookmarkChanged',
       'onBookmarkCreated',
       'onBookmarkMoved',
       'onBookmarkRemoved',
       'isPriceTracked',
+      'getProductImageUrl',
     ]);
   }
 
@@ -31,6 +33,10 @@ export class TestPowerBookmarksDelegate extends TestBrowserProxy {
   setExpandedDescription(
       bookmark: chrome.bookmarks.BookmarkTreeNode, description: string) {
     this.methodCalled('setExpandedDescription', bookmark, description);
+  }
+
+  setImageUrl(bookmark: chrome.bookmarks.BookmarkTreeNode, url: string) {
+    this.methodCalled('setImageUrl', bookmark, url);
   }
 
   onBookmarksLoaded() {
@@ -61,5 +67,10 @@ export class TestPowerBookmarksDelegate extends TestBrowserProxy {
   isPriceTracked(bookmark: chrome.bookmarks.BookmarkTreeNode) {
     this.methodCalled('isPriceTracked', bookmark);
     return false;
+  }
+
+  getProductImageUrl(bookmark: chrome.bookmarks.BookmarkTreeNode) {
+    this.methodCalled('getProductImageUrl', bookmark);
+    return '';
   }
 }

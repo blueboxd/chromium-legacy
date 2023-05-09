@@ -13,13 +13,14 @@ import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {DefaultUserImage, UserImage} from '../../personalization_app.mojom-webui.js';
 import {setErrorAction} from '../personalization_actions.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
-import {decodeString16, getCheckmarkIcon, getSanitizedDefaultImageUrl, isNonEmptyArray, isSelectionEvent} from '../utils.js';
+import {decodeString16, getCheckmarkIcon, isNonEmptyArray, isSelectionEvent} from '../utils.js';
 
 import {AvatarCamera, AvatarCameraMode} from './avatar_camera_element.js';
 import {getTemplate} from './avatar_list_element.html.js';
 import {fetchDefaultUserImages} from './user_controller.js';
 import {getUserProvider} from './user_interface_provider.js';
 import {selectLastExternalUserImageUrl} from './user_selectors.js';
+import {getAvatarUrl} from './utils.js';
 
 export interface AvatarList {
   $: {avatarCamera: AvatarCamera};
@@ -194,7 +195,7 @@ export class AvatarList extends WithPersonalizationStore {
         options.push({
           id: `defaultUserImage-${defaultImage.index}`,
           class: 'image-container',
-          imgSrc: getSanitizedDefaultImageUrl(defaultImage.url).url,
+          imgSrc: defaultImage.url.url,
           icon: getCheckmarkIcon(),
           title: decodeString16(defaultImage.title),
           defaultImageIndex: defaultImage.index,
@@ -262,9 +263,22 @@ export class AvatarList extends WithPersonalizationStore {
     }
   }
 
-  // Called when (1) avatar images fail to load, (2) device goes
-  // offline while the avatar picker is open, (3) user tries to
-  // select an avatar while the device is offline.
+  /**
+   * Called when there's an image load error.
+   *
+   * The most common case would be when trying to load default avatars
+   * from gstatic resources for the first time while the device is offline.
+   */
+  private onImgError_(e: Event) {
+    const divElement = e.currentTarget as HTMLDivElement;
+    divElement.setAttribute('hidden', 'true');
+  }
+
+  /**
+   * Called when (1) avatar images fail to load, (2) the device goes
+   * offline while the avatar picker window is open, or (3) the user
+   * tries to select an avatar while the device is offline.
+   */
   private onAvatarNetworkError_ = () => {
     this.dispatch(setErrorAction({
       id: 'AvatarList',
@@ -395,10 +409,16 @@ export class AvatarList extends WithPersonalizationStore {
     // If the image is a default avatar loaded from gstatic resources,
     // return a static encoded background image.
     if (defaultImageIndex) {
-      return `background-image: url('` + url + `&staticEncode=true')`;
+      assert(
+          !url.startsWith('chrome://image/'),
+          'The URL shouldn\'t be sanitized');
+      return `background-image: url('${getAvatarUrl(url)}&staticEncode=true')`;
     }
-
     return '';
+  }
+
+  private getAvatarUrl_(url: string): string {
+    return getAvatarUrl(url);
   }
 }
 

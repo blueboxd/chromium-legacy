@@ -9,10 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -28,8 +30,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.chromium.base.Log;
 import org.chromium.webengine.CookieManager;
+import org.chromium.webengine.FullscreenCallback;
 import org.chromium.webengine.Navigation;
+import org.chromium.webengine.NavigationObserver;
 import org.chromium.webengine.Tab;
+import org.chromium.webengine.TabListObserver;
 import org.chromium.webengine.TabManager;
 import org.chromium.webengine.WebEngine;
 import org.chromium.webengine.WebFragment;
@@ -50,7 +55,7 @@ import java.util.Arrays;
  *  - Move cookie test to manual-test activity
  *  - Move registerWebMessageCallback to manual-test activity
  */
-public class WebEngineShellActivity extends AppCompatActivity {
+public class WebEngineShellActivity extends AppCompatActivity implements FullscreenCallback {
     private static final String TAG = "WebEngineShell";
 
     private static final String WEB_FRAGMENT_TAG = "WEB_FRAGMENT_TAG";
@@ -60,11 +65,16 @@ public class WebEngineShellActivity extends AppCompatActivity {
     private WebSandbox mWebSandbox;
     private TabManager mTabManager;
 
+    private DefaultObservers mDefaultTabListObserver;
+
+    private int mSystemVisibilityToRestore;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         mContext = getApplicationContext();
+        mDefaultTabListObserver = new DefaultObservers();
 
         setupActivitySpinner((Spinner) findViewById(R.id.activity_nav), this, 0);
 
@@ -115,6 +125,10 @@ public class WebEngineShellActivity extends AppCompatActivity {
             assert webSandbox.getWebEngines().size() == 1;
 
             mTabManager = webEngine.getTabManager();
+
+            for (Tab tab : mTabManager.getAllTabs()) {
+                tab.setFullscreenCallback(this);
+            }
             return;
         }
 
@@ -137,21 +151,30 @@ public class WebEngineShellActivity extends AppCompatActivity {
         Tab activeTab = mTabManager.getActiveTab();
         ProgressBar progressBar = findViewById(R.id.progress_bar);
         EditText urlBar = findViewById(R.id.url_bar);
+        ImageButton reloadButton = findViewById(R.id.reload_button);
         Button tabCountButton = findViewById(R.id.tab_count);
         Spinner tabListSpinner = findViewById(R.id.tab_list);
-        new TopBarObservers(new TopBarImpl(this, mTabManager, urlBar, progressBar, tabCountButton,
-                                    tabListSpinner),
+        new TopBarObservers(new TopBarImpl(this, mTabManager, urlBar, progressBar, reloadButton,
+                                    tabCountButton, tabListSpinner),
                 mTabManager);
 
-        mTabManager.registerTabListObserver(new DefaultObservers.DefaultTabListObserver());
-        activeTab.getNavigationController().registerNavigationObserver(
-                new DefaultObservers.DefaultNavigationObserver() {
-                    @Override
-                    public void onNavigationCompleted(@NonNull Navigation navigation) {
-                        super.onNavigationCompleted(navigation);
-                        ListenableFuture<String> scriptResultFuture =
-                                activeTab.executeScript("1+1", true);
-                        Futures.addCallback(scriptResultFuture, new FutureCallback<String>() {
+        activeTab.setFullscreenCallback(this);
+        mTabManager.registerTabListObserver(new TabListObserver() {
+            @Override
+            public void onTabAdded(@NonNull WebEngine webEngine, @NonNull Tab tab) {
+                tab.setFullscreenCallback(WebEngineShellActivity.this);
+            }
+        });
+        activeTab.registerTabObserver(mDefaultTabListObserver);
+        activeTab.getNavigationController().registerNavigationObserver(mDefaultTabListObserver);
+        mTabManager.registerTabListObserver(mDefaultTabListObserver);
+
+        activeTab.getNavigationController().registerNavigationObserver(new NavigationObserver() {
+            @Override
+            public void onNavigationCompleted(@NonNull Tab tab, @NonNull Navigation navigation) {
+                ListenableFuture<String> scriptResultFuture = activeTab.executeScript("1+1", true);
+                Futures.addCallback(
+                        scriptResultFuture, new FutureCallback<String>() {
                             @Override
                             public void onSuccess(String result) {
                                 Log.w(TAG, "executeScript result: " + result);
@@ -161,9 +184,9 @@ public class WebEngineShellActivity extends AppCompatActivity {
                                 Log.w(TAG, "executeScript failed: " + thrown);
                             }
                         }, ContextCompat.getMainExecutor(mContext));
-                    }
-                });
-        activeTab.getNavigationController().navigate("https://www.google.com");
+            }
+        });
+        activeTab.getNavigationController().navigate("https://google.com");
 
         activeTab.registerWebMessageCallback(new WebMessageCallback() {
             @Override
@@ -171,15 +194,7 @@ public class WebEngineShellActivity extends AppCompatActivity {
                 Log.i(TAG, "received WebMessage: " + message);
                 replyProxy.postMessage("Bouncing answer from tab: " + message);
             }
-
-            @Override
-            public void onWebMessageReplyProxyClosed(WebMessageReplyProxy replyProxy) {}
-
-            @Override
-            public void onWebMessageReplyProxyActiveStateChanged(WebMessageReplyProxy proxy) {}
         }, "x", Arrays.asList("*"));
-
-        activeTab.registerTabObserver(new DefaultObservers.DefaultTabObserver());
 
         activeTab.addMessageEventListener((Tab source, String message) -> {
             Log.w(TAG, "Received post message from web content: " + message);
@@ -215,6 +230,15 @@ public class WebEngineShellActivity extends AppCompatActivity {
                 .setReorderingAllowed(true)
                 .add(R.id.fragment_container_view, webEngine.getFragment(), WEB_FRAGMENT_TAG)
                 .commit();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mTabManager == null) return;
+        for (Tab tab : mTabManager.getAllTabs()) {
+            tab.setFullscreenCallback(null);
+        }
     }
 
     @Override
@@ -273,5 +297,43 @@ public class WebEngineShellActivity extends AppCompatActivity {
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+    }
+
+    @Override
+    public void onEnterFullscreen(WebEngine webEngine, Tab tab) {
+        final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+        attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+        getWindow().setAttributes(attrs);
+
+        findViewById(R.id.activity_nav).setVisibility(View.GONE);
+        findViewById(R.id.version).setVisibility(View.GONE);
+        findViewById(R.id.app_bar).setVisibility(View.GONE);
+        findViewById(R.id.progress_bar).setVisibility(View.GONE);
+
+        View decorView = getWindow().getDecorView();
+
+        mSystemVisibilityToRestore = decorView.getSystemUiVisibility();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                | View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+
+    @Override
+    public void onExitFullscreen(WebEngine webEngine, Tab tab) {
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(mSystemVisibilityToRestore);
+
+        findViewById(R.id.activity_nav).setVisibility(View.VISIBLE);
+        findViewById(R.id.version).setVisibility(View.VISIBLE);
+        findViewById(R.id.app_bar).setVisibility(View.VISIBLE);
+        findViewById(R.id.progress_bar).setVisibility(View.VISIBLE);
+
+        final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+        if ((attrs.flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) != 0) {
+            attrs.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+            getWindow().setAttributes(attrs);
+        }
     }
 }

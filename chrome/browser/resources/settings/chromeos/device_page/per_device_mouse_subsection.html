@@ -44,7 +44,7 @@
           label-max="$i18n{pointerFast}">
       </settings-slider>
     </div>
-    <template is="dom-if" if="[[allowScrollSettings_]]">
+    <template is="dom-if" if="[[allowScrollSettings_]]" restamp>
       <settings-toggle-button id="mouseScrollAcceleration"
           class="hr"
           pref="{{scrollAccelerationPref}}"
@@ -74,7 +74,7 @@
         </localized-link>
       </div>
       <cr-toggle id="mouseReverseScroll"
-          checked="[[reverseScrollValue]]"
+          checked="{{reverseScrollValue}}"
           aria-labelledby="enableMouseReverseScrollingLabel">
       </cr-toggle>
     </div>

@@ -21,9 +21,11 @@ UDPClientSocket::UDPClientSocket(DatagramSocket::BindType bind_type,
 UDPClientSocket::~UDPClientSocket() = default;
 
 int UDPClientSocket::Connect(const IPEndPoint& address) {
+  CHECK(!connect_called_);
   if (connect_using_network_ != handles::kInvalidNetworkHandle)
     return ConnectUsingNetwork(connect_using_network_, address);
 
+  connect_called_ = true;
   int rv = socket_.Open(address.GetFamily());
   if (rv != OK)
     return rv;
@@ -32,6 +34,8 @@ int UDPClientSocket::Connect(const IPEndPoint& address) {
 
 int UDPClientSocket::ConnectUsingNetwork(handles::NetworkHandle network,
                                          const IPEndPoint& address) {
+  CHECK(!connect_called_);
+  connect_called_ = true;
   if (!NetworkChangeNotifier::AreNetworkHandlesSupported())
     return ERR_NOT_IMPLEMENTED;
   int rv = socket_.Open(address.GetFamily());
@@ -45,6 +49,8 @@ int UDPClientSocket::ConnectUsingNetwork(handles::NetworkHandle network,
 }
 
 int UDPClientSocket::ConnectUsingDefaultNetwork(const IPEndPoint& address) {
+  CHECK(!connect_called_);
+  connect_called_ = true;
   if (!NetworkChangeNotifier::AreNetworkHandlesSupported())
     return ERR_NOT_IMPLEMENTED;
   int rv;
@@ -169,12 +175,6 @@ void UDPClientSocket::EnableRecvOptimization() {
 void UDPClientSocket::SetIOSNetworkServiceType(int ios_network_service_type) {
 #if BUILDFLAG(IS_POSIX)
   socket_.SetIOSNetworkServiceType(ios_network_service_type);
-#endif
-}
-
-void UDPClientSocket::SetDontClose(bool dont_close) {
-#if BUILDFLAG(IS_POSIX)
-  socket_.SetDontClose(dont_close);
 #endif
 }
 

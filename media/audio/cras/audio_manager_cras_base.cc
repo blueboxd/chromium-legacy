@@ -54,7 +54,8 @@ AudioOutputStream* AudioManagerCrasBase::MakeLinearOutputStream(
     const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
   // Pinning stream is not supported for MakeLinearOutputStream.
-  return MakeOutputStream(params, AudioDeviceDescription::kDefaultDeviceId);
+  return MakeOutputStream(params, AudioDeviceDescription::kDefaultDeviceId,
+                          std::move(log_callback));
 }
 
 AudioOutputStream* AudioManagerCrasBase::MakeLowLatencyOutputStream(
@@ -62,7 +63,7 @@ AudioOutputStream* AudioManagerCrasBase::MakeLowLatencyOutputStream(
     const std::string& device_id,
     const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-  return MakeOutputStream(params, device_id);
+  return MakeOutputStream(params, device_id, std::move(log_callback));
 }
 
 AudioInputStream* AudioManagerCrasBase::MakeLinearInputStream(
@@ -70,7 +71,7 @@ AudioInputStream* AudioManagerCrasBase::MakeLinearInputStream(
     const std::string& device_id,
     const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
-  return MakeInputStream(params, device_id);
+  return MakeInputStream(params, device_id, std::move(log_callback));
 }
 
 AudioInputStream* AudioManagerCrasBase::MakeLowLatencyInputStream(
@@ -78,19 +79,22 @@ AudioInputStream* AudioManagerCrasBase::MakeLowLatencyInputStream(
     const std::string& device_id,
     const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-  return MakeInputStream(params, device_id);
+  return MakeInputStream(params, device_id, std::move(log_callback));
 }
 
 AudioOutputStream* AudioManagerCrasBase::MakeOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
-  return new CrasUnifiedStream(params, this, device_id);
+    const std::string& device_id,
+    const LogCallback& log_callback) {
+  return new CrasUnifiedStream(params, this, device_id,
+                               std::move(log_callback));
 }
 
 AudioInputStream* AudioManagerCrasBase::MakeInputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
-  return new CrasInputStream(params, this, device_id);
+    const std::string& device_id,
+    const LogCallback& log_callback) {
+  return new CrasInputStream(params, this, device_id, std::move(log_callback));
 }
 
 void AudioManagerCrasBase::RegisterSystemAecDumpSource(

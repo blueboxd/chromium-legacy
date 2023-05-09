@@ -38,6 +38,25 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/view_class_properties.h"
 
+namespace {
+
+void AddIfNotBookmarkedToTheDefaultFolder(bookmarks::BookmarkModel* model,
+                                          content::WebContents* web_contents) {
+  GURL url;
+  std::u16string title;
+
+  if (chrome::GetURLAndTitleToBookmark(web_contents, &url, &title)) {
+    if (bookmarks::IsBookmarkedByUser(model, url)) {
+      return;
+    }
+
+    const bookmarks::BookmarkNode* other_node = model->other_node();
+    model->AddNewURL(other_node, other_node->children().size(), title, url);
+  }
+}
+
+}  // namespace
+
 PriceTrackingIconView::PriceTrackingIconView(
     IconLabelBubbleView::Delegate* parent_delegate,
     Delegate* delegate,
@@ -195,11 +214,7 @@ void PriceTrackingIconView::EnablePriceTracking(bool enable) {
   bool is_new_bookmark = existing_node == nullptr;
 
   if (enable) {
-    GURL url;
-    std::u16string title;
-    if (chrome::GetURLAndTitleToBookmark(GetWebContents(), &url, &title)) {
-      bookmarks::AddIfNotBookmarked(model, url, title);
-    }
+    AddIfNotBookmarkedToTheDefaultFolder(model, GetWebContents());
     base::RecordAction(
         base::UserMetricsAction("Commerce.PriceTracking.OmniboxChip.Tracked"));
     commerce::MaybeEnableEmailNotifications(profile_->GetPrefs());
@@ -221,32 +236,14 @@ void PriceTrackingIconView::EnablePriceTracking(bool enable) {
     }
   }
 
-  const bookmarks::BookmarkNode* node =
-      existing_node ? existing_node
-                    : model->GetMostRecentlyAddedUserNodeForURL(
-                          GetWebContents()->GetLastCommittedURL());
+  auto* tab_helper =
+      commerce::ShoppingListUiTabHelper::FromWebContents(GetWebContents());
+  CHECK(tab_helper);
 
-  commerce::ShoppingService* service =
-      commerce::ShoppingServiceFactory::GetForBrowserContext(profile_);
-  base::OnceCallback<void(bool)> callback =
+  tab_helper->SetPriceTrackingState(
+      enable, is_new_bookmark,
       base::BindOnce(&PriceTrackingIconView::OnPriceTrackingServerStateUpdated,
-                     weak_ptr_factory_.GetWeakPtr());
-
-  if (node) {
-    commerce::SetPriceTrackingStateForBookmark(
-        commerce::ShoppingServiceFactory::GetForBrowserContext(profile_), model,
-        node, enable, std::move(callback), enable && is_new_bookmark);
-  } else {
-    DCHECK(!enable);
-    absl::optional<commerce::ProductInfo> info =
-        service->GetAvailableProductInfoForUrl(
-            GetWebContents()->GetLastCommittedURL());
-    if (info.has_value()) {
-      commerce::SetPriceTrackingStateForClusterId(
-          commerce::ShoppingServiceFactory::GetForBrowserContext(profile_),
-          model, info->product_cluster_id, enable, std::move(callback));
-    }
-  }
+                     weak_ptr_factory_.GetWeakPtr()));
 
   SetVisualState(enable);
 }

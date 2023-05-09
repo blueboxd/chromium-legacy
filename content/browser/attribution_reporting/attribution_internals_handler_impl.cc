@@ -25,7 +25,9 @@
 #include "base/time/time.h"
 #include "components/aggregation_service/parsing_utils.h"
 #include "components/attribution_reporting/aggregation_keys.h"
+#include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/parsing_utils.h"
+#include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -33,11 +35,11 @@
 #include "content/browser/attribution_reporting/attribution_debug_report.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_internals.mojom.h"
-#include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/create_report_result.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
@@ -48,7 +50,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
-#include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -73,19 +74,15 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
     Attributability attributability) {
   const CommonSourceInfo& common_info = source.common_info();
   return attribution_internals::mojom::WebUISource::New(
-      common_info.source_event_id(), common_info.source_origin(),
-      std::vector<net::SchemefulSite>(
-          common_info.destination_sites().destinations().begin(),
-          common_info.destination_sites().destinations().end()),
-      common_info.reporting_origin(), common_info.source_time().ToJsTime(),
-      common_info.expiry_time().ToJsTime(),
-      common_info.event_report_window_time().ToJsTime(),
-      common_info.aggregatable_report_window_time().ToJsTime(),
-      common_info.source_type(), common_info.priority(),
-      common_info.debug_key(), source.dedup_keys(),
-      common_info.filter_data().filter_values(),
+      source.source_event_id(), common_info.source_origin(),
+      source.destination_sites(), common_info.reporting_origin(),
+      common_info.source_time().ToJsTime(), source.expiry_time().ToJsTime(),
+      source.event_report_window_time().ToJsTime(),
+      source.aggregatable_report_window_time().ToJsTime(),
+      common_info.source_type(), source.priority(), source.debug_key(),
+      source.dedup_keys(), source.filter_data().filter_values(),
       base::MakeFlatMap<std::string, std::string>(
-          common_info.aggregation_keys().keys(), {},
+          source.aggregation_keys().keys(), {},
           [](const auto& key) {
             return std::make_pair(
                 key.first,
@@ -169,15 +166,10 @@ attribution_internals::mojom::WebUIReportPtr WebUIReport(
                       contribution.value());
                 });
 
-            ai_mojom::AttestationTokenPtr attestation_token =
-                aggregatable_data.attestation_token
-                    ? ai_mojom::AttestationToken::New(
-                          *aggregatable_data.attestation_token)
-                    : nullptr;
-
             return ai_mojom::WebUIReportData::NewAggregatableAttributionData(
                 ai_mojom::WebUIReportAggregatableAttributionData::New(
-                    std::move(contributions), std::move(attestation_token),
+                    std::move(contributions),
+                    aggregatable_data.attestation_token,
                     aggregation_service::SerializeAggregationCoordinator(
                         aggregatable_data.aggregation_coordinator)));
           },
@@ -255,12 +247,10 @@ void AttributionInternalsHandlerImpl::GetActiveSources(
 }
 
 void AttributionInternalsHandlerImpl::GetReports(
-    AttributionReport::Type report_type,
     attribution_internals::mojom::Handler::GetReportsCallback callback) {
   if (AttributionManager* manager =
           AttributionManager::FromWebContents(web_ui_->GetWebContents())) {
     manager->GetPendingReportsForInternalUse(
-        AttributionReport::Types{report_type},
         /*limit=*/1000,
         base::BindOnce(&ForwardReportsToWebUI, std::move(callback)));
   } else {
@@ -296,9 +286,8 @@ void AttributionInternalsHandlerImpl::OnSourcesChanged() {
   observer_->OnSourcesChanged();
 }
 
-void AttributionInternalsHandlerImpl::OnReportsChanged(
-    AttributionReport::Type report_type) {
-  observer_->OnReportsChanged(report_type);
+void AttributionInternalsHandlerImpl::OnReportsChanged() {
+  observer_->OnReportsChanged();
 }
 
 namespace {
@@ -330,7 +319,9 @@ void AttributionInternalsHandlerImpl::OnSourceHandled(
   auto web_ui_source = WebUISourceRegistration::New();
   web_ui_source->registration = GetRegistration(
       source.common_info().source_time(), source.common_info().source_origin(),
-      source.common_info().reporting_origin(), source.registration_json(),
+      source.common_info().reporting_origin(),
+      SerializeAttributionJson(source.registration().ToJson(),
+                               /*pretty_print=*/true),
       cleared_debug_key);
   web_ui_source->type = source.common_info().source_type();
   web_ui_source->status =

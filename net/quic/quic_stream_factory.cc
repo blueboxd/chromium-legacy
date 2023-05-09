@@ -109,7 +109,7 @@ enum class JobProtocolErrorLocation {
   kMaxValue = kCryptoConnectFailedAsync,
 };
 
-base::Value NetLogQuicStreamFactoryJobParams(
+base::Value::Dict NetLogQuicStreamFactoryJobParams(
     const QuicStreamFactory::QuicSessionAliasKey* key) {
   base::Value::Dict dict;
   dict.Set("host", key->server_id().host());
@@ -118,7 +118,7 @@ base::Value NetLogQuicStreamFactoryJobParams(
            PrivacyModeToDebugString(key->session_key().privacy_mode()));
   dict.Set("network_anonymization_key",
            key->session_key().network_anonymization_key().ToDebugString());
-  return base::Value(std::move(dict));
+  return dict;
 }
 
 std::string QuicPlatformNotificationToString(
@@ -449,11 +449,13 @@ class QuicStreamFactory::Job {
 
     DCHECK(quic_version_used_.IsKnown());
     IPEndPoint stale_address = endpoint_result_.ip_endpoints.front();
+    bool svcb_optional =
+        IsSvcbOptional(*fresh_resolve_host_request_->GetEndpointResults());
     for (const auto& candidate :
          *fresh_resolve_host_request_->GetEndpointResults()) {
       // TODO(https://crbug.com/1416963): Should other values also be checked
       // for consistency?
-      if (SelectQuicVersion(candidate) == quic_version_used_ &&
+      if (SelectQuicVersion(candidate, svcb_optional) == quic_version_used_ &&
           base::Contains(candidate.ip_endpoints, stale_address)) {
         return true;
       }
@@ -462,11 +464,28 @@ class QuicStreamFactory::Job {
     return false;
   }
 
+  // Returns whether the client should be SVCB-optional when connecting to
+  // `results`.
+  bool IsSvcbOptional(
+      base::span<const HostResolverEndpointResult> results) const {
+    // If SVCB/HTTPS resolution succeeded, the client supports ECH, and all
+    // routes support ECH, disable the A/AAAA fallback. See Section 10.1 of
+    // draft-ietf-dnsop-svcb-https-11.
+    if (!factory_->ssl_config_service_->GetSSLContextConfig()
+             .EncryptedClientHelloEnabled() ||
+        !base::FeatureList::IsEnabled(features::kEncryptedClientHelloQuic)) {
+      return true;  // ECH is not supported for this request.
+    }
+
+    return !HostResolver::AllProtocolEndpointsHaveEch(results);
+  }
+
   // Returns the QUIC version that would be used with `endpoint_result`, or
   // `quic::ParsedQuicVersion::Unsupported()` if `endpoint_result` cannot be
   // used with QUIC.
   quic::ParsedQuicVersion SelectQuicVersion(
-      const HostResolverEndpointResult& endpoint_result) const {
+      const HostResolverEndpointResult& endpoint_result,
+      bool svcb_optional) const {
     // TODO(davidben): `require_dns_https_alpn_` only exists to be `DCHECK`ed
     // for consistency against `quic_version_`. Remove the parameter?
     DCHECK_EQ(require_dns_https_alpn_, !quic_version_.IsKnown());
@@ -474,8 +493,10 @@ class QuicStreamFactory::Job {
     if (endpoint_result.metadata.supported_protocol_alpns.empty()) {
       // `endpoint_result` came from A/AAAA records directly, without HTTPS/SVCB
       // records. If we know the QUIC ALPN to use externally, i.e. via Alt-Svc,
-      // use it. Otherwise, `endpoint_result` is not eligible for QUIC.
-      return quic_version_;
+      // use it in SVCB-optional mode. Otherwise, `endpoint_result` is not
+      // eligible for QUIC.
+      return svcb_optional ? quic_version_
+                           : quic::ParsedQuicVersion::Unsupported();
     }
 
     // Otherwise, `endpoint_result` came from an HTTPS/SVCB record. We can use
@@ -929,9 +950,12 @@ void QuicStreamFactory::Job::MaybeOnQuicSessionCreationComplete(int rv) {
 int QuicStreamFactory::Job::DoCreateSession() {
   // TODO(https://crbug.com/1416409): This logic only knows how to try one
   // endpoint result.
+  bool svcb_optional =
+      IsSvcbOptional(*resolve_host_request_->GetEndpointResults());
   bool found = false;
   for (const auto& candidate : *resolve_host_request_->GetEndpointResults()) {
-    quic::ParsedQuicVersion version = SelectQuicVersion(candidate);
+    quic::ParsedQuicVersion version =
+        SelectQuicVersion(candidate, svcb_optional);
     if (version.IsKnown()) {
       found = true;
       quic_version_used_ = version;
@@ -2160,7 +2184,7 @@ void QuicStreamFactory::FinishCreateSession(
       dns_resolution_end_time,
       std::make_unique<quic::QuicClientPushPromiseIndex>(), push_delegate_,
       tick_clock_, task_runner_, std::move(socket_performance_watcher),
-      net_log.net_log());
+      endpoint_result, net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer
   writer->set_delegate(*session);

@@ -37,13 +37,17 @@ class ArcVmmManagerFactory
   ~ArcVmmManagerFactory() override = default;
 };
 
-constexpr auto kSwapOutDelay = base::Seconds(3);
 }  // namespace
 
 // static
 ArcVmmManager* ArcVmmManager::GetForBrowserContext(
     content::BrowserContext* context) {
   return ArcVmmManagerFactory::GetForBrowserContext(context);
+}
+
+// static
+void ArcVmmManager::EnsureFactoryBuilt() {
+  ArcVmmManagerFactory::GetInstance();
 }
 
 // static
@@ -56,6 +60,19 @@ ArcVmmManager::ArcVmmManager(content::BrowserContext* context,
                              ArcBridgeService* bridge) {
   if (base::FeatureList::IsEnabled(kVmmSwapKeyboardShortcut)) {
     accelerator_ = std::make_unique<AcceleratorTarget>(this);
+  }
+  if (base::FeatureList::IsEnabled(kVmmSwapPolicy)) {
+    swap_out_delay_ = base::Seconds(kVmmSwapOutDelaySecond.Get());
+    scheduler_ = std::make_unique<ArcVmmSwapScheduler>(
+        base::Seconds(kVmmSwapOutTimeIntervalSecond.Get()),
+        base::Seconds(kVmmSwapArcSilenceIntervalSecond.Get()),
+        base::BindRepeating([]() {
+          // TODO(sstan): Placeholder for ARC side implementation.
+          return false;
+        }),
+        base::BindRepeating(&ArcVmmManager::SetSwapState,
+                            weak_ptr_factory_.GetWeakPtr()));
+    scheduler_->Start();
   }
 }
 
@@ -108,7 +125,7 @@ void ArcVmmManager::SendSwapRequest(
 
 void ArcVmmManager::PostWithSwapDelay(base::OnceClosure callback) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE, std::move(callback), kSwapOutDelay);
+      FROM_HERE, std::move(callback), swap_out_delay_);
 }
 
 // ArcVmmManager::AcceleratorTarget --------------------------------------------

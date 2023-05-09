@@ -4,7 +4,10 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/chip_button.h"
 
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -71,29 +74,38 @@ static const CGFloat kChipVerticalMargin = 4;
 - (void)setEnabled:(BOOL)enabled {
   [super setEnabled:enabled];
   self.backgroundView.hidden = !enabled;
-  // TODO(crbug.com/1418068): Remove after minimum version required is >=
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
   // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-  self.configuration.contentInsets =
-      enabled ? [self chipEdgeInsets] : NSDirectionalEdgeInsetsZero;
-#else
-  self.contentEdgeInsets = enabled ? [self chipEdgeInsets] : UIEdgeInsetsZero;
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets =
+          enabled ? [self chipNSDirectionalEdgeInsets]
+                  : NSDirectionalEdgeInsetsZero;
+      self.configuration = buttonConfiguration;
+    }
+  } else {
+    UIEdgeInsets contentEdgeInsets =
+        enabled ? [self chipEdgeInsets] : UIEdgeInsetsZero;
+    SetContentEdgeInsets(self, contentEdgeInsets);
+  }
 }
 
 #pragma mark - Private
 
+// TODO(crbug.com/1418068): Simplify after minimum version required is >=
+// iOS 15.
 - (UIEdgeInsets)chipEdgeInsets {
-  // TODO(crbug.com/1418068): Remove after minimum version required is >=
-  // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+  return UIEdgeInsetsMake(kChipVerticalPadding, kChipHorizontalPadding,
+                          kChipVerticalPadding, kChipHorizontalPadding);
+}
+
+- (NSDirectionalEdgeInsets)chipNSDirectionalEdgeInsets {
   return NSDirectionalEdgeInsetsMake(
       kChipVerticalPadding, kChipHorizontalPadding, kChipVerticalPadding,
       kChipHorizontalPadding);
-#else
-  return UIEdgeInsetsMake(kChipVerticalPadding, kChipHorizontalPadding,
-                          kChipVerticalPadding, kChipHorizontalPadding);
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
 }
 
 - (void)initializeStyling {
@@ -121,13 +133,20 @@ static const CGFloat kChipVerticalMargin = 4;
   self.titleLabel.adjustsFontForContentSizeCategory = YES;
 
   [self updateTitleLabelFont];
-  // TODO(crbug.com/1418068): Remove after minimum version required is >=
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
   // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-  self.configuration.contentInsets = [self chipEdgeInsets];
-#else
-  self.contentEdgeInsets = [self chipEdgeInsets];
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets = [self chipNSDirectionalEdgeInsets];
+      self.configuration = buttonConfiguration;
+    }
+  } else {
+    UIEdgeInsets contentEdgeInsets = [self chipEdgeInsets];
+    SetContentEdgeInsets(self, contentEdgeInsets);
+  }
 }
 
 - (void)updateTitleLabelFont {

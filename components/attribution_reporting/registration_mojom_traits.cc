@@ -95,20 +95,33 @@ bool StructTraits<attribution_reporting::mojom::AggregationKeysDataView,
 }
 
 // static
-bool StructTraits<attribution_reporting::mojom::SourceRegistrationDataView,
-                  attribution_reporting::SourceRegistration>::
-    Read(attribution_reporting::mojom::SourceRegistrationDataView data,
-         attribution_reporting::SourceRegistration* out) {
+bool StructTraits<attribution_reporting::mojom::DestinationSetDataView,
+                  attribution_reporting::DestinationSet>::
+    Read(attribution_reporting::mojom::DestinationSetDataView data,
+         attribution_reporting::DestinationSet* out) {
   std::vector<net::SchemefulSite> destinations;
   if (!data.ReadDestinations(&destinations)) {
     return false;
   }
+
   auto destination_set =
       attribution_reporting::DestinationSet::Create(std::move(destinations));
   if (!destination_set.has_value()) {
     return false;
   }
-  out->destination_set = std::move(*destination_set);
+
+  *out = std::move(*destination_set);
+  return true;
+}
+
+// static
+bool StructTraits<attribution_reporting::mojom::SourceRegistrationDataView,
+                  attribution_reporting::SourceRegistration>::
+    Read(attribution_reporting::mojom::SourceRegistrationDataView data,
+         attribution_reporting::SourceRegistration* out) {
+  if (!data.ReadDestinations(&out->destination_set)) {
+    return false;
+  }
 
   if (!data.ReadExpiry(&out->expiry)) {
     return false;
@@ -137,26 +150,6 @@ bool StructTraits<attribution_reporting::mojom::SourceRegistrationDataView,
   out->source_event_id = data.source_event_id();
   out->priority = data.priority();
   out->debug_reporting = data.debug_reporting();
-  return true;
-}
-
-// static
-bool StructTraits<attribution_reporting::mojom::FiltersDataView,
-                  attribution_reporting::Filters>::
-    Read(attribution_reporting::mojom::FiltersDataView data,
-         attribution_reporting::Filters* out) {
-  attribution_reporting::FilterValues filter_values;
-  if (!data.ReadFilterValues(&filter_values)) {
-    return false;
-  }
-
-  absl::optional<attribution_reporting::Filters> filters =
-      attribution_reporting::Filters::Create(std::move(filter_values));
-  if (!filters.has_value()) {
-    return false;
-  }
-
-  *out = std::move(*filters);
   return true;
 }
 
@@ -238,38 +231,17 @@ bool StructTraits<attribution_reporting::mojom::TriggerRegistrationDataView,
                   attribution_reporting::TriggerRegistration>::
     Read(attribution_reporting::mojom::TriggerRegistrationDataView data,
          attribution_reporting::TriggerRegistration* out) {
-  std::vector<attribution_reporting::EventTriggerData> event_triggers;
-  if (!data.ReadEventTriggers(&event_triggers)) {
+  if (!data.ReadEventTriggers(&out->event_triggers)) {
     return false;
   }
-
-  auto event_triggers_list =
-      attribution_reporting::EventTriggerDataList::Create(
-          std::move(event_triggers));
-  if (!event_triggers_list) {
-    return false;
-  }
-
-  out->event_triggers = std::move(*event_triggers_list);
 
   if (!data.ReadFilters(&out->filters)) {
     return false;
   }
 
-  std::vector<attribution_reporting::AggregatableTriggerData>
-      aggregatable_trigger_data;
-  if (!data.ReadAggregatableTriggerData(&aggregatable_trigger_data)) {
+  if (!data.ReadAggregatableTriggerData(&out->aggregatable_trigger_data)) {
     return false;
   }
-
-  auto aggregatable_trigger_data_list =
-      attribution_reporting::AggregatableTriggerDataList::Create(
-          std::move(aggregatable_trigger_data));
-  if (!aggregatable_trigger_data_list) {
-    return false;
-  }
-
-  out->aggregatable_trigger_data = std::move(*aggregatable_trigger_data_list);
 
   attribution_reporting::AggregatableValues::Values values;
   if (!data.ReadAggregatableValues(&values)) {
@@ -284,20 +256,9 @@ bool StructTraits<attribution_reporting::mojom::TriggerRegistrationDataView,
 
   out->aggregatable_values = std::move(*aggregatable_values);
 
-  std::vector<attribution_reporting::AggregatableDedupKey>
-      aggregatable_dedup_keys;
-  if (!data.ReadAggregatableDedupKeys(&aggregatable_dedup_keys)) {
+  if (!data.ReadAggregatableDedupKeys(&out->aggregatable_dedup_keys)) {
     return false;
   }
-
-  auto aggregatable_dedup_key_list =
-      attribution_reporting::AggregatableDedupKeyList::Create(
-          std::move(aggregatable_dedup_keys));
-  if (!aggregatable_dedup_key_list) {
-    return false;
-  }
-
-  out->aggregatable_dedup_keys = std::move(*aggregatable_dedup_key_list);
 
   if (!data.ReadDebugKey(&out->debug_key)) {
     return false;

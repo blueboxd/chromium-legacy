@@ -4,7 +4,7 @@
 
 import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
-import {crosAudioConfigMojom, DevicePageBrowserProxyImpl, fakeCrosAudioConfig, FakeInputDeviceSettingsProvider, fakeKeyboards, fakeMice, fakePointingSticks, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setCrosAudioConfigForTesting, setDisplayApiForTesting, setInputDeviceSettingsProviderForTesting, StorageSpaceState} from 'chrome://os-settings/chromeos/os_settings.js';
+import {crosAudioConfigMojom, DevicePageBrowserProxyImpl, fakeCrosAudioConfig, FakeInputDeviceSettingsProvider, fakeKeyboards, fakeMice, fakePointingSticks, fakeTouchpads, IdleBehavior, LidClosedBehavior, NoteAppLockScreenSupport, Router, routes, setCrosAudioConfigForTesting, setDisplayApiForTesting, setInputDeviceSettingsProviderForTesting, StorageSpaceState} from 'chrome://os-settings/chromeos/os_settings.js';
 import {assert} from 'chrome://resources/ash/common/assert.js';
 import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
@@ -478,8 +478,6 @@ suite('SettingsDevicePage', function() {
 
   test(assert(TestNames.DevicePage), async function() {
     await init();
-    assertTrue(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
-    assertTrue(isVisible(devicePage.shadowRoot.querySelector('#keyboardRow')));
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#displayRow')));
 
     // enableAudioSettingsPage feature flag by default is turned on in tests.
@@ -494,17 +492,29 @@ suite('SettingsDevicePage', function() {
         devicePage.shadowRoot.querySelector('#perDevicePointingStickRow')));
     assertTrue(isVisible(
         devicePage.shadowRoot.querySelector('#perDeviceKeyboardRow')));
+    assertFalse(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
+    assertFalse(isVisible(devicePage.shadowRoot.querySelector('#keyboardRow')));
+
+    // Turn off the enableInputDeviceSettingsSplit feature flag.
+    setDeviceSplitEnabled(false);
+    await init();
+    assertTrue(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
+    assertTrue(isVisible(devicePage.shadowRoot.querySelector('#keyboardRow')));
 
     webUIListenerCallback('has-mouse-changed', false);
+    await flushTasks();
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
 
     webUIListenerCallback('has-pointing-stick-changed', false);
+    await flushTasks();
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
 
     webUIListenerCallback('has-touchpad-changed', false);
+    await flushTasks();
     assertFalse(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
 
     webUIListenerCallback('has-mouse-changed', true);
+    await flushTasks();
     assertTrue(isVisible(devicePage.shadowRoot.querySelector('#pointersRow')));
   });
 
@@ -955,7 +965,7 @@ suite('SettingsDevicePage', function() {
       const inputGainSubsectionHeader =
           audioPage.shadowRoot.querySelector('#audioInputGainLabel');
       assertTrue(isVisible(inputGainSubsectionHeader), 'audioInputGainLabel');
-      assertEquals('Gain', inputGainSubsectionHeader.textContent.trim());
+      assertEquals('Volume', inputGainSubsectionHeader.textContent.trim());
       const inputVolumeButton =
           audioPage.shadowRoot.querySelector('#audioInputGainMuteButton');
       assertTrue(isVisible(inputVolumeButton), 'audioInputGainMuteButton');
@@ -967,7 +977,7 @@ suite('SettingsDevicePage', function() {
               '#audioInputNoiseCancellationLabel');
       assertTrue(isVisible(noiseCancellationSubsectionHeader));
       assertEquals(
-          'Noise Cancellation',
+          'Noise cancellation',
           noiseCancellationSubsectionHeader.textContent.trim());
       const noiseCancellationToggle = audioPage.shadowRoot.querySelector(
           '#audioInputNoiseCancellationToggle');
@@ -1534,6 +1544,13 @@ suite('SettingsDevicePage', function() {
 
   suite(assert(TestNames.PerDeviceMouse), function() {
     let perDeviceMousePage;
+    let inputDeviceSettingsProvider;
+
+    suiteSetup(() => {
+      inputDeviceSettingsProvider = new FakeInputDeviceSettingsProvider();
+      inputDeviceSettingsProvider.setFakeMice(fakeMice);
+      setInputDeviceSettingsProviderForTesting(inputDeviceSettingsProvider);
+    });
 
     setup(async function() {
       await init();
@@ -1556,6 +1573,12 @@ suite('SettingsDevicePage', function() {
 
   suite(assert(TestNames.PerDeviceTouchpad), function() {
     let perDeviceTouchpadPage;
+    let inputDeviceSettingsProvider;
+    suiteSetup(() => {
+      inputDeviceSettingsProvider = new FakeInputDeviceSettingsProvider();
+      inputDeviceSettingsProvider.setFakeTouchpads(fakeTouchpads);
+      setInputDeviceSettingsProviderForTesting(inputDeviceSettingsProvider);
+    });
 
     setup(async function() {
       await init();
@@ -1580,6 +1603,13 @@ suite('SettingsDevicePage', function() {
 
   suite(assert(TestNames.PerDevicePointingStick), function() {
     let perDevicePointingStickPage;
+    let inputDeviceSettingsProvider;
+
+    suiteSetup(() => {
+      inputDeviceSettingsProvider = new FakeInputDeviceSettingsProvider();
+      inputDeviceSettingsProvider.setFakePointingSticks(fakePointingSticks);
+      setInputDeviceSettingsProviderForTesting(inputDeviceSettingsProvider);
+    });
 
     setup(async function() {
       await init();
@@ -1606,6 +1636,7 @@ suite('SettingsDevicePage', function() {
     let pointersPage;
 
     setup(async function() {
+      setDeviceSplitEnabled(false);
       await init();
       return showAndGetDeviceSubpage('pointers', routes.POINTERS)
           .then(function(page) {
@@ -1613,7 +1644,7 @@ suite('SettingsDevicePage', function() {
           });
     });
 
-    test('subpage responds to pointer attach/detach', function() {
+    test('subpage responds to pointer attach/detach', async function() {
       assertEquals(routes.POINTERS, Router.getInstance().currentRoute);
       assertTrue(isVisible(pointersPage.shadowRoot.querySelector('#mouse')));
       assertTrue(isVisible(pointersPage.shadowRoot.querySelector('#mouse h2')));
@@ -1626,6 +1657,7 @@ suite('SettingsDevicePage', function() {
           isVisible(pointersPage.shadowRoot.querySelector('#touchpad h2')));
 
       webUIListenerCallback('has-touchpad-changed', false);
+      await flushTasks();
       assertEquals(routes.POINTERS, Router.getInstance().currentRoute);
       assertTrue(isVisible(pointersPage.shadowRoot.querySelector('#mouse')));
       assertTrue(isVisible(pointersPage.shadowRoot.querySelector('#mouse h2')));
@@ -1639,6 +1671,7 @@ suite('SettingsDevicePage', function() {
           isVisible(pointersPage.shadowRoot.querySelector('#touchpad h2')));
 
       webUIListenerCallback('has-pointing-stick-changed', false);
+      await flushTasks();
       assertEquals(routes.POINTERS, Router.getInstance().currentRoute);
       assertTrue(isVisible(pointersPage.shadowRoot.querySelector('#mouse')));
       assertFalse(
@@ -1653,11 +1686,13 @@ suite('SettingsDevicePage', function() {
           isVisible(pointersPage.shadowRoot.querySelector('#touchpad h2')));
 
       webUIListenerCallback('has-mouse-changed', false);
+      await flushTasks();
       assertEquals(routes.DEVICE, Router.getInstance().currentRoute);
       assertFalse(
           isVisible(devicePage.shadowRoot.querySelector('#main #pointersRow')));
 
       webUIListenerCallback('has-touchpad-changed', true);
+      await flushTasks();
       assertTrue(
           isVisible(devicePage.shadowRoot.querySelector('#main #pointersRow')));
 
@@ -1845,6 +1880,7 @@ suite('SettingsDevicePage', function() {
     let keyboardPage;
 
     setup(async () => {
+      setDeviceSplitEnabled(false);
       await init();
       keyboardPage = await showAndGetDeviceSubpage('keyboard', routes.KEYBOARD);
     });
@@ -3738,7 +3774,7 @@ suite('SettingsDevicePage', function() {
               .innerText);
 
       // In guest mode, the system row should be hidden.
-      storagePage.isGuest_ = true;
+      storagePage.isEphemeralUser_ = true;
       flush();
       assertFalse(
           isVisible(storagePage.shadowRoot.querySelector('#systemSize')));
@@ -3779,7 +3815,7 @@ suite('SettingsDevicePage', function() {
       assertEquals('322 MB', getStorageItemSubLabelFromId('otherUsersSize'));
 
       // If the user is in Guest mode, the row is not visible.
-      storagePage.isGuest_ = true;
+      storagePage.isEphemeralUser_ = true;
       webUIListenerCallback(
           'storage-other-users-size-changed', '322 MB', false);
       flush();

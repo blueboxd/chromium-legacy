@@ -13,14 +13,6 @@ BASE_FEATURE(kWebNotesStylizeEnabled,
 const base::FeatureParam<bool> kRandomizeOrderParam{&kWebNotesStylizeEnabled,
                                                     "randomize_order", false};
 
-BASE_FEATURE(kWebNotesPublish,
-             "WebNotesPublish",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kWebNotesDynamicTemplates,
-             "WebNotesDynamicTemplates",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 bool IsStylizeEnabled() {
   return base::FeatureList::IsEnabled(kWebNotesStylizeEnabled);
 }
@@ -28,14 +20,6 @@ bool IsStylizeEnabled() {
 bool IsRandomizeOrderEnabled() {
   DCHECK(IsStylizeEnabled());
   return kRandomizeOrderParam.Get();
-}
-
-bool IsPublishEnabled() {
-  return base::FeatureList::IsEnabled(kWebNotesPublish);
-}
-
-bool IsDynamicTemplatesEnabled() {
-  return base::FeatureList::IsEnabled(kWebNotesDynamicTemplates);
 }
 
 }  // namespace content_creation

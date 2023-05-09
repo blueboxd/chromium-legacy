@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
@@ -33,20 +32,6 @@ namespace {
 constexpr base::TaskTraits kBackendTaskTraits = {
     base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-
-constexpr char kDefaultTrustedVaultServiceURL[] =
-    "https://securitydomain-pa.googleapis.com/v1/";
-
-GURL ExtractTrustedVaultServiceURLFromCommandLine() {
-  std::string string_url =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          kTrustedVaultServiceURL);
-  if (string_url.empty()) {
-    // Command line switch is not specified or is not a valid ASCII string.
-    return GURL(kDefaultTrustedVaultServiceURL);
-  }
-  return GURL(string_url);
-}
 
 class IdentityManagerObserver : public signin::IdentityManager::Observer {
  public:
@@ -344,13 +329,13 @@ void StandaloneTrustedVaultClient::AddTrustedRecoveryMethod(
                      BindToCurrentSequence(std::move(cb))));
 }
 
-void StandaloneTrustedVaultClient::ClearDataForAccount(
+void StandaloneTrustedVaultClient::ClearLocalDataForAccount(
     const CoreAccountInfo& account_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&StandaloneTrustedVaultBackend::ClearDataForAccount,
+      base::BindOnce(&StandaloneTrustedVaultBackend::ClearLocalDataForAccount,
                      backend_, account_info));
 }
 

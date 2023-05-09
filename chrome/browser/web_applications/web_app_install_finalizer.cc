@@ -75,6 +75,7 @@ bool ShouldInstallOverwriteUserDisplayMode(
     case InstallSource::CHROME_SERVICE:
     case InstallSource::OMNIBOX_INSTALL_ICON:
     case InstallSource::MENU_CREATE_SHORTCUT:
+    case InstallSource::PROFILE_MENU:
       return true;
     case InstallSource::DEVTOOLS:
     case InstallSource::MANAGEMENT_API:
@@ -204,7 +205,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetAdditionalSearchTerms(web_app_info.additional_search_terms);
   web_app->AddSource(options.source);
   web_app->SetIsFromSyncAndPendingInstallation(false);
-  web_app->SetInstallSourceForMetrics(options.install_surface);
+  web_app->SetLatestInstallSource(options.install_surface);
 
   WriteExternalConfigMapInfo(*web_app, options.source,
                              web_app_info.is_placeholder,
@@ -273,8 +274,6 @@ void WebAppInstallFinalizer::UninstallExternalWebAppByUrl(
 bool WebAppInstallFinalizer::CanUserUninstallWebApp(const AppId& app_id) const {
   DCHECK(started_);
 
-  // TODO(loyso): Policy Apps: Implement ManagementPolicy taking
-  // extensions::ManagementPolicy::UserMayModifySettings as inspiration.
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   return app ? app->CanUserUninstallWebApp() : false;
 }

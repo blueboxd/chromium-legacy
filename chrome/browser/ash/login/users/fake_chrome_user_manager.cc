@@ -551,12 +551,6 @@ absl::optional<std::string> FakeChromeUserManager::GetOwnerEmail() {
   return GetLocalState() ? UserManagerBase::GetOwnerEmail() : absl::nullopt;
 }
 
-void FakeChromeUserManager::UpdateUserAccountData(
-    const AccountId& account_id,
-    const UserAccountData& account_data) {
-  NOTREACHED();
-}
-
 bool FakeChromeUserManager::IsCurrentUserOwner() const {
   return active_user_ && GetOwnerAccountId() == active_user_->GetAccountId();
 }
@@ -566,7 +560,7 @@ bool FakeChromeUserManager::IsCurrentUserNew() const {
 }
 
 bool FakeChromeUserManager::IsCurrentUserNonCryptohomeDataEphemeral() const {
-  return false;
+  return current_user_ephemeral_;
 }
 
 bool FakeChromeUserManager::IsCurrentUserCryptohomeDataEphemeral() const {

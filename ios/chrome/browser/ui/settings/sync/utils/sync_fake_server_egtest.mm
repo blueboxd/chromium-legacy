@@ -28,9 +28,11 @@ namespace {
 // Constant for timeout while waiting for asynchronous sync operations.
 constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
 
-// Waits for `entity_count` entities of type `entity_type`, and fails with
-// a GREYAssert if the condition is not met, within a short period of time.
-void WaitForNumberOfEntities(int entity_count, syncer::ModelType entity_type) {
+// Waits for `entity_count` entities of type `entity_type` on the fake server,
+// and fails with a GREYAssert if the condition is not met, within a short
+// period of time.
+void WaitForEntitiesOnFakeServer(int entity_count,
+                                 syncer::ModelType entity_type) {
   ConditionBlock condition = ^{
     return [ChromeEarlGrey numberOfSyncEntitiesWithType:entity_type] ==
            entity_count;
@@ -65,7 +67,7 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   [ChromeEarlGrey clearBookmarks];
 
   [ChromeEarlGrey clearSyncServerData];
-  WaitForNumberOfEntities(0, syncer::AUTOFILL_PROFILE);
+  WaitForEntitiesOnFakeServer(0, syncer::AUTOFILL_PROFILE);
 
   [super tearDown];
 }
@@ -75,9 +77,9 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 
   [ChromeEarlGrey clearSyncServerData];
 
-  WaitForNumberOfEntities(0, syncer::AUTOFILL_PROFILE);
-  WaitForNumberOfEntities(0, syncer::BOOKMARKS);
-  WaitForNumberOfEntities(0, syncer::TYPED_URLS);
+  WaitForEntitiesOnFakeServer(0, syncer::AUTOFILL_PROFILE);
+  WaitForEntitiesOnFakeServer(0, syncer::BOOKMARKS);
+  WaitForEntitiesOnFakeServer(0, syncer::TYPED_URLS);
 }
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
@@ -108,7 +110,7 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   // Assert that the correct number of bookmarks have been synced.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  WaitForNumberOfEntities(1, syncer::BOOKMARKS);
+  WaitForEntitiesOnFakeServer(1, syncer::BOOKMARKS);
 }
 
 // Tests that a bookmark added on the client is uploaded to the Sync server.
@@ -121,7 +123,7 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
   [BookmarkEarlGrey addBookmarkWithTitle:@"goo" URL:@"https://www.goo.com"];
-  WaitForNumberOfEntities(1, syncer::BOOKMARKS);
+  WaitForEntitiesOnFakeServer(1, syncer::BOOKMARKS);
 }
 
 // Tests that a bookmark injected in the FakeServer is synced down to the
@@ -136,32 +138,28 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
-  WaitForNumberOfEntities(1, syncer::BOOKMARKS);
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
   [BookmarkEarlGrey verifyBookmarksWithTitle:@"hoo" expectedCount:1];
 }
 
 // Tests that the local cache guid does not change when sync is restarted.
-// TODO(crbug.com/1222348): Test is regularly failing.
-- (void)DISABLED_testSyncCheckSameCacheGuid_SyncRestarted {
+- (void)testSyncCheckSameCacheGuid_SyncRestarted {
   // Sign in the fake identity.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
 
   // Store the original guid, then restart sync.
   std::string original_guid = [ChromeEarlGrey syncCacheGUID];
   [ChromeEarlGrey stopSync];
-  [ChromeEarlGrey waitForSyncEngineInitialized:NO
-                                   syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey startSync];
 
   // Verify the guid did not change.
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
   GREYAssertEqual([ChromeEarlGrey syncCacheGUID], original_guid,
                   @"Stored guid doesn't match current value");
 }
@@ -173,8 +171,8 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
   std::string original_guid = [ChromeEarlGrey syncCacheGUID];
 
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
@@ -184,8 +182,8 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 
   // Sign the user back in, and verify the guid has changed.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
   GREYAssertTrue(
       [ChromeEarlGrey syncCacheGUID] != original_guid,
       @"guid didn't change after user signed out and signed back in");
@@ -194,14 +192,13 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 // Tests that the local cache guid does not change when sync is restarted, if
 // a user previously signed out and back in.
 // Test for http://crbug.com/413611 .
-// TODO(crbug.com/1222348): Test is regularly failing.
-- (void)DISABLED_testSyncCheckSameCacheGuid_SyncRestartedAfterSignOutAndSignIn {
+- (void)testSyncCheckSameCacheGuid_SyncRestartedAfterSignOutAndSignIn {
   // Sign in a fake idenitty.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
 
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
   [SigninEarlGrey signOut];
@@ -210,19 +207,17 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 
   // Sign the user back in.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
 
   // Record the initial guid, before restarting sync.
   std::string original_guid = [ChromeEarlGrey syncCacheGUID];
   [ChromeEarlGrey stopSync];
-  [ChromeEarlGrey waitForSyncEngineInitialized:NO
-                                   syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey startSync];
 
   // Verify the guid did not change after restarting sync.
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
   GREYAssertEqual([ChromeEarlGrey syncCacheGUID], original_guid,
                   @"Stored guid doesn't match current value");
 }
@@ -347,7 +342,7 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   // Verify the sessions on the sync server.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  WaitForNumberOfEntities(3, syncer::SESSIONS);
+  WaitForEntitiesOnFakeServer(3, syncer::SESSIONS);
 
   NSArray<NSString*>* specs = @[
     base::SysUTF8ToNSString(URL1.spec()),
@@ -443,7 +438,7 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 
   // Trigger sync and wait for typed URL to be deleted.
   [ChromeEarlGrey triggerSyncCycleForType:syncer::TYPED_URLS];
-  WaitForNumberOfEntities(0, syncer::TYPED_URLS);
+  WaitForEntitiesOnFakeServer(0, syncer::TYPED_URLS);
 }
 
 // Test that typed url is deleted from client after server sends tombstone for
@@ -505,9 +500,8 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncOperationTimeout];
-  WaitForNumberOfEntities(2, syncer::BOOKMARKS);
+  [ChromeEarlGrey
+      waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
 
   [BookmarkEarlGrey verifyBookmarksWithTitle:title1 expectedCount:1];
   [BookmarkEarlGrey verifyBookmarksWithTitle:title2 expectedCount:1];
@@ -521,7 +515,7 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  WaitForNumberOfEntities(1, syncer::DEVICE_INFO);
+  WaitForEntitiesOnFakeServer(1, syncer::DEVICE_INFO);
   [ChromeEarlGrey waitForSyncInvalidationFields];
 }
 

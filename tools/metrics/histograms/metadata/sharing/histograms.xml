@@ -106,7 +106,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.ClickToCallSelectedDeviceIndex" units="index"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
 <!-- Name completed by histogram_suffixes name="SharingClickToCallUi" -->
 
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -144,38 +144,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Result of Sharing device un-registration. Logged after Sharing
     un-registration is attempted.
-  </summary>
-</histogram>
-
-<histogram name="Sharing.LongScreenshots.BitmapGenerationStatus"
-    enum="SharingLongScreenshotsEvent" expires_after="M110">
-  <owner>skare@chromium.org</owner>
-  <owner>src/chrome/browser/share/OWNERS</owner>
-  <summary>
-    Counts of Bitmap Generator statuses when capturing long screenshots.
-    Recorded when a new bitmap is requested from the paint_preview engine, for
-    example when scrolling down the page for the first time.
-  </summary>
-</histogram>
-
-<histogram name="Sharing.LongScreenshots.BitmapSelectedHeight" units="pixels"
-    expires_after="M110">
-  <owner>skare@chromium.org</owner>
-  <owner>src/chrome/browser/share/OWNERS</owner>
-  <summary>
-    Height of the long screenshot output from the region-selection dialog.
-    Recorded on region selection dialog confirmation.
-  </summary>
-</histogram>
-
-<histogram name="Sharing.LongScreenshots.Event"
-    enum="SharingLongScreenshotsEvent" expires_after="M110">
-  <owner>skare@chromium.org</owner>
-  <owner>src/chrome/browser/share/OWNERS</owner>
-  <summary>
-    Counts of events in the long screenshot capture process. Events are recorded
-    for events such as opening/confirming the dialog, or on corner cases such as
-    memory pressure while the dialog is open.
   </summary>
 </histogram>
 
@@ -321,7 +289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.Screenshot.Action" enum="SharingScreenshotAction"
-    expires_after="2023-06-25">
+    expires_after="2023-09-03">
   <owner>jeffreycohen@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -399,7 +367,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SendTabToSelf.NotificationStatus"
-    enum="SendTabToSelfNotificationStatus" expires_after="2023-07-02">
+    enum="SendTabToSelfNotificationStatus" expires_after="2023-09-03">
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -481,7 +449,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.Opened" enum="ShareOrigin"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -503,6 +471,10 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Sharing.SharingHubAndroid.TimeToSaveScreenshotImageBeforeShare"
     units="ms" expires_after="M110">
+  <obsolete>
+    No longer gathered for several milestones as of M111. Not sure precisely
+    when gathering of this metric stopped.
+  </obsolete>
   <owner>skare@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -556,7 +528,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubDesktop.CrOSSharesheetResult"
-    enum="SharingHubSharesheetResult" expires_after="2023-07-02">
+    enum="SharingHubSharesheetResult" expires_after="2023-09-03">
   <owner>kristipark@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>

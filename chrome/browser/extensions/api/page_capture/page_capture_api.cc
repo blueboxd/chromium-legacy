@@ -5,21 +5,21 @@
 #include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 
 #include <limits>
-#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/task/thread_pool.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -74,7 +74,7 @@ void PageCaptureSaveAsMHTMLFunction::SetTestDelegate(TestDelegate* delegate) {
 
 ExtensionFunction::ResponseAction PageCaptureSaveAsMHTMLFunction::Run() {
   params_ = SaveAsMHTML::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  EXTENSION_FUNCTION_VALIDATE(params_);
 
   std::string error;
   if (!CanCaptureCurrentPage(&error)) {
@@ -223,7 +223,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnFailure(const std::string& error) {
   Respond(Error(error));
 }
 
-void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
+void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int file_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = GetWebContents();
@@ -235,10 +235,10 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
   ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(source_process_id(),
                                                            mhtml_path_);
 
-  base::Value response(base::Value::Type::DICT);
-  response.SetStringKey("mhtmlFilePath", mhtml_path_.AsUTF8Unsafe());
-  response.SetIntKey("mhtmlFileLength", file_size);
-  response.SetIntKey("requestId", request_id());
+  base::Value::Dict response;
+  response.Set("mhtmlFilePath", mhtml_path_.AsUTF8Unsafe());
+  response.Set("mhtmlFileLength", file_size);
+  response.Set("requestId", request_id());
 
   // Add a reference, extending the lifespan of this extension function until
   // the response has been received by the renderer. This function generates a
@@ -251,7 +251,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
   if (is_from_service_worker())
     AddWorkerResponseTarget();
 
-  Respond(OneArgument(std::move(response)));
+  Respond(WithArguments(std::move(response)));
 }
 
 WebContents* PageCaptureSaveAsMHTMLFunction::GetWebContents() {

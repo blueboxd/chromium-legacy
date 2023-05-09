@@ -16,6 +16,7 @@
   E_CPONLY(kColorRefPrimary0, kUiColorsStart, kUiColorsStart) \
   E_CPONLY(kColorRefPrimary10) \
   E_CPONLY(kColorRefPrimary20) \
+  E_CPONLY(kColorRefPrimary25) \
   E_CPONLY(kColorRefPrimary30) \
   E_CPONLY(kColorRefPrimary40) \
   E_CPONLY(kColorRefPrimary50) \
@@ -28,8 +29,11 @@
   E_CPONLY(kColorRefPrimary100) \
   E_CPONLY(kColorRefSecondary0) \
   E_CPONLY(kColorRefSecondary10) \
+  E_CPONLY(kColorRefSecondary15) \
   E_CPONLY(kColorRefSecondary20) \
+  E_CPONLY(kColorRefSecondary25) \
   E_CPONLY(kColorRefSecondary30) \
+  E_CPONLY(kColorRefSecondary35) \
   E_CPONLY(kColorRefSecondary40) \
   E_CPONLY(kColorRefSecondary50) \
   E_CPONLY(kColorRefSecondary60) \
@@ -70,10 +74,12 @@
   E_CPONLY(kColorRefNeutral6) \
   E_CPONLY(kColorRefNeutral10) \
   E_CPONLY(kColorRefNeutral12) \
+  E_CPONLY(kColorRefNeutral15) \
   E_CPONLY(kColorRefNeutral17) \
   E_CPONLY(kColorRefNeutral20) \
   E_CPONLY(kColorRefNeutral22) \
   E_CPONLY(kColorRefNeutral24) \
+  E_CPONLY(kColorRefNeutral25) \
   E_CPONLY(kColorRefNeutral30) \
   E_CPONLY(kColorRefNeutral40) \
   E_CPONLY(kColorRefNeutral50) \
@@ -91,6 +97,7 @@
   E_CPONLY(kColorRefNeutral100) \
   E_CPONLY(kColorRefNeutralVariant0) \
   E_CPONLY(kColorRefNeutralVariant10) \
+  E_CPONLY(kColorRefNeutralVariant15) \
   E_CPONLY(kColorRefNeutralVariant20) \
   E_CPONLY(kColorRefNeutralVariant30) \
   E_CPONLY(kColorRefNeutralVariant40) \
@@ -130,8 +137,8 @@
   E_CPONLY(kColorSysOutline) \
   E_CPONLY(kColorSysSurfaceVariant) \
   /* Inverse. */ \
-  E_CPONLY(kColorSysInverseOnSurface) \
   E_CPONLY(kColorSysInversePrimary) \
+  E_CPONLY(kColorSysInverseOnSurface) \
   /* Surfaces. */ \
   E_CPONLY(kColorSysSurface) \
   E_CPONLY(kColorSysSurface1) \
@@ -140,38 +147,53 @@
   E_CPONLY(kColorSysSurface4) \
   E_CPONLY(kColorSysSurface5) \
   /* General. */ \
-  E_CPONLY(kColorSysOnSurfacePrimary) \
   E_CPONLY(kColorSysOnSurfaceSecondary) \
   E_CPONLY(kColorSysOnSurfaceSubtle) \
+  E_CPONLY(kColorSysOnSurfacePrimary) \
+  E_CPONLY(kColorSysOnSurfacePrimaryInactive) \
+  E_CPONLY(kColorSysTonalContainer) \
+  E_CPONLY(kColorSysOnTonalContainer) \
+  E_CPONLY(kColorSysTonalOutline) \
+  E_CPONLY(kColorSysNeutralOutline) \
+  E_CPONLY(kColorSysNeutralContainer) \
+  E_CPONLY(kColorSysDivider) \
   /* Chrome surfaces. */ \
   E_CPONLY(kColorSysBase) \
-  E_CPONLY(kColorSysHeader) \
-  E_CPONLY(kColorSysHeaderInactive) \
-  E_CPONLY(kColorSysOnBase) \
+  E_CPONLY(kColorSysBaseContainer) \
+  E_CPONLY(kColorSysBaseContainerElevated) \
   E_CPONLY(kColorSysOnBaseSecondary) \
   E_CPONLY(kColorSysOnBaseDivider) \
-  E_CPONLY(kColorSysOnBaseBorder) \
-  E_CPONLY(kColorSysOnHeaderContainer) \
-  E_CPONLY(kColorSysOnHeaderContainerInactive) \
+  E_CPONLY(kColorSysHeader) \
+  E_CPONLY(kColorSysHeaderInactive) \
+  E_CPONLY(kColorSysHeaderContainer) \
+  E_CPONLY(kColorSysHeaderContainerInactive) \
   E_CPONLY(kColorSysOnHeaderDivider) \
   E_CPONLY(kColorSysOnHeaderDividerInactive) \
   E_CPONLY(kColorSysOnHeaderPrimary) \
   E_CPONLY(kColorSysOnHeaderPrimaryInactive) \
-  E_CPONLY(kColorSysOnHeaderSecondary) \
-  E_CPONLY(kColorSysOnHeaderSecondaryInactive) \
+  /* States. */ \
+  E_CPONLY(kColorSysStateHoverOnProminent) \
+  E_CPONLY(kColorSysStateHoverOnSubtle) \
+  E_CPONLY(kColorSysStateRippleNeutralOnProminent) \
+  E_CPONLY(kColorSysStateRippleNeutralOnSubtle) \
+  E_CPONLY(kColorSysStateRipplePrimary) \
+  E_CPONLY(kColorSysStateFocusRing) \
+  E_CPONLY(kColorSysStateFocusHighlight) \
+  E_CPONLY(kColorSysStateDisabled) \
+  E_CPONLY(kColorSysStateDisabledContainer) \
+  E_CPONLY(kColorSysStateHoverCutout) \
+  E_CPONLY(kColorSysStateHoverInverseCutout) \
+  E_CPONLY(kColorSysStateOnHeaderHover) \
+  E_CPONLY(kColorSysStateHeaderHover) \
   /* Effects. */ \
   E_CPONLY(kColorSysShadow) \
-  /* States. */ \
+  /* Deprecated */ \
+  E_CPONLY(kColorSysOnBase) \
+  E_CPONLY(kColorSysOnBaseBorder) \
   E_CPONLY(kColorSysStateHover) \
   E_CPONLY(kColorSysStateFocus) \
   E_CPONLY(kColorSysStatePressed) \
   E_CPONLY(kColorSysStateDrag) \
-  E_CPONLY(kColorSysStateFocusRing) \
-  E_CPONLY(kColorSysStateDisabled) \
-  E_CPONLY(kColorSysStateDisabledContainer) \
-  /* Containers. */ \
-  E_CPONLY(kColorSysOnTonalContainer) \
-  E_CPONLY(kColorSysTonalContainer) \
   /* Core color concepts */ \
   /* kColorAccent is used in color_provider_css_colors_test.ts. */ \
   /* If changing the variable name, the variable name in the test needs to */ \
@@ -180,7 +202,8 @@
   E_CPONLY(kColorAccentWithGuaranteedContrastAtopPrimaryBackground) \
   E_CPONLY(kColorAlertHighSeverity) \
   E_CPONLY(kColorAlertLowSeverity) \
-  E_CPONLY(kColorAlertMediumSeverity) \
+  E_CPONLY(kColorAlertMediumSeverityIcon) \
+  E_CPONLY(kColorAlertMediumSeverityText) \
   E_CPONLY(kColorDisabledForeground) \
   E_CPONLY(kColorEndpointBackground) \
   E_CPONLY(kColorEndpointForeground) \
@@ -220,11 +243,9 @@
   E_CPONLY(kColorButtonBorder) \
   E_CPONLY(kColorButtonBorderDisabled) \
   E_CPONLY(kColorButtonForeground) \
-  E_CPONLY(kColorButtonForegroundChecked) \
   E_CPONLY(kColorButtonForegroundDisabled) \
   E_CPONLY(kColorButtonForegroundProminent) \
   E_CPONLY(kColorButtonForegroundTonal) \
-  E_CPONLY(kColorButtonForegroundUnchecked) \
   E_CPONLY(kColorMultitaskFeedbackButtonLabelBackground) \
   E_CPONLY(kColorMultitaskFeedbackButtonLabelForeground) \
   E_CPONLY(kColorMultitaskMenuNudgePulse) \
@@ -264,6 +285,9 @@
   E_CPONLY(kColorLinkForeground) \
   E_CPONLY(kColorLinkForegroundDisabled) \
   E_CPONLY(kColorLinkForegroundPressed) \
+  E_CPONLY(kColorListItemFolderIconBackground) \
+  E_CPONLY(kColorListItemFolderIconForeground) \
+  E_CPONLY(kColorListItemUrlFaviconBackground) \
   E_CPONLY(kColorLiveCaptionBubbleBackgroundDefault) \
   E_CPONLY(kColorLiveCaptionBubbleButtonIcon) \
   E_CPONLY(kColorLiveCaptionBubbleButtonIconDisabled) \
@@ -308,6 +332,9 @@
   E_CPONLY(kColorOverlayScrollbarStrokeHoveredLight) \
   E_CPONLY(kColorProgressBar) \
   E_CPONLY(kColorProgressBarPaused) \
+  E_CPONLY(kColorRadioButtonForegroundUnchecked) \
+  E_CPONLY(kColorRadioButtonForegroundDisabled) \
+  E_CPONLY(kColorRadioButtonForegroundChecked) \
   E_CPONLY(kColorScrollbarArrowBackgroundHovered) \
   E_CPONLY(kColorScrollbarArrowBackgroundPressed) \
   E_CPONLY(kColorScrollbarArrowForeground) \
@@ -350,26 +377,36 @@
   E_CPONLY(kColorTableHeaderBackground) \
   E_CPONLY(kColorTableHeaderForeground) \
   E_CPONLY(kColorTableHeaderSeparator) \
+  E_CPONLY(kColorSuggestionChipBorder) \
+  E_CPONLY(kColorSuggestionChipIcon) \
   E_CPONLY(kColorTextfieldBackground) \
   E_CPONLY(kColorTextfieldBackgroundDisabled) \
   E_CPONLY(kColorTextfieldForeground) \
   E_CPONLY(kColorTextfieldForegroundDisabled) \
-  E_CPONLY(kColorTextfieldForegroundInvalid) \
+  E_CPONLY(kColorTextfieldForegroundPlaceholderInvalid) \
   E_CPONLY(kColorTextfieldForegroundPlaceholder) \
   E_CPONLY(kColorTextfieldSelectionBackground) \
   E_CPONLY(kColorTextfieldSelectionForeground) \
   E_CPONLY(kColorTextfieldInvalidOutline) \
   E_CPONLY(kColorThrobber) \
   E_CPONLY(kColorThrobberPreconnect) \
+  E_CPONLY(kColorToggleButtonHover) \
+  E_CPONLY(kColorToggleButtonPressed) \
   E_CPONLY(kColorToggleButtonShadow) \
   E_CPONLY(kColorToggleButtonThumbOff) \
   E_CPONLY(kColorToggleButtonThumbOffDisabled) \
   E_CPONLY(kColorToggleButtonThumbOn) \
   E_CPONLY(kColorToggleButtonThumbOnDisabled) \
-  E_CPONLY(kColorToggleButtonThumbOnIcon) \
+  E_CPONLY(kColorToggleButtonThumbOnHover) \
   E_CPONLY(kColorToggleButtonTrackOff) \
   E_CPONLY(kColorToggleButtonTrackOn) \
   E_CPONLY(kColorToggleButtonTrackOnDisabled) \
+  E_CPONLY(kColorToolbarSearchFieldBackground) \
+  E_CPONLY(kColorToolbarSearchFieldBackgroundHover) \
+  E_CPONLY(kColorToolbarSearchFieldBackgroundPressed) \
+  E_CPONLY(kColorToolbarSearchFieldForeground) \
+  E_CPONLY(kColorToolbarSearchFieldForegroundPlaceholder) \
+  E_CPONLY(kColorToolbarSearchFieldIcon) \
   E_CPONLY(kColorTooltipBackground) \
   E_CPONLY(kColorTooltipForeground) \
   E_CPONLY(kColorTreeBackground) \

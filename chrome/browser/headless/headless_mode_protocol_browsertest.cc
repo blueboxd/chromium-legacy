@@ -157,9 +157,8 @@ void HeadlessModeProtocolBrowserTest::ProcessTestResult(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kResetResults)) {
     LOG(INFO) << "Updating expectations in " << expectation_path;
-    int result = base::WriteFile(expectation_path, test_result.data(),
-                                 static_cast<int>(test_result.size()));
-    CHECK(test_result.size() == static_cast<size_t>(result));
+    bool success = base::WriteFile(expectation_path, test_result);
+    CHECK(success);
   }
 
   std::string expectation;
@@ -216,5 +215,14 @@ HEADLESS_MODE_PROTOCOL_TEST(MAYBE_InputClipboardOps,
 #endif
 HEADLESS_MODE_PROTOCOL_TEST(MAYBE_ScreencastBasics,
                             "sanity/screencast-basics.js")
+
+// https://crbug.com/1424570
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_LargeBrowserWindowSize DISABLED_LargeBrowserWindowSize
+#else
+#define MAYBE_LargeBrowserWindowSize LargeBrowserWindowSize
+#endif
+HEADLESS_MODE_PROTOCOL_TEST(MAYBE_LargeBrowserWindowSize,
+                            "sanity/large-browser-window-size.js")
 
 }  // namespace headless

@@ -25,6 +25,14 @@ class MockPasswordStoreInterface : public PasswordStoreInterface {
               (const PasswordForm&, base::OnceClosure),
               (override));
   MOCK_METHOD(void,
+              UpdateLogins,
+              (const std::vector<PasswordForm>&, base::OnceClosure),
+              (override));
+  MOCK_METHOD(void,
+              AddLogins,
+              (const std::vector<PasswordForm>&, base::OnceClosure),
+              (override));
+  MOCK_METHOD(void,
               UpdateLoginWithPrimaryKey,
               (const PasswordForm&, const PasswordForm&, base::OnceClosure),
               (override));

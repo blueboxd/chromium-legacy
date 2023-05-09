@@ -1197,11 +1197,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // may otherwise be blocked.
   ScriptPromise hasStorageAccess(ScriptState* script_state);
   ScriptPromise requestStorageAccess(ScriptState* script_state);
-  ScriptPromise requestStorageAccessForOrigin(ScriptState* script_state,
-                                              const AtomicString& site);
-  // Returns whether the window has obtained storage access. Must be called on
-  // active documents.
-  bool HasStorageAccess() const;
+  ScriptPromise requestStorageAccessFor(ScriptState* script_state,
+                                        const AtomicString& site);
 
   // Fragment directive API, currently used to feature detect text-fragments.
   // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
@@ -1485,8 +1482,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   int RequestAnimationFrame(FrameCallback*);
   void CancelAnimationFrame(int id);
-  void ServiceScriptedAnimations(base::TimeTicks monotonic_animation_start_time,
-                                 bool can_throttle = false);
 
   int RequestIdleCallback(IdleTask*, const IdleRequestOptions*);
   void CancelIdleCallback(int id);
@@ -1547,12 +1542,14 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HTMLDialogElement* ActiveModalDialog() const;
 
+  HTMLElement* PopoverHintShowing() const { return popover_hint_showing_; }
+  void SetPopoverHintShowing(HTMLElement* element);
   HeapVector<Member<HTMLElement>>& PopoverStack() { return popover_stack_; }
   const HeapVector<Member<HTMLElement>>& PopoverStack() const {
     return popover_stack_;
   }
   bool PopoverAutoShowing() const { return !popover_stack_.empty(); }
-  HTMLElement* TopmostPopover() const;
+  HTMLElement* TopmostPopoverOrHint() const;
   HeapHashSet<Member<HTMLElement>>& PopoversWaitingToHide() {
     return popovers_waiting_to_hide_;
   }
@@ -1579,9 +1576,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Document& EnsureTemplateDocument();
   Document* TemplateDocumentHost() { return template_document_host_; }
 
-  // TODO(thestig): Rename these and related functions, since we can call them
-  // for controls outside of forms as well.
-  void DidAssociateFormControl(Element*);
+  void DidAddOrRemoveFormRelatedElement(Element*);
 
   void AddConsoleMessage(ConsoleMessage* message,
                          bool discard_duplicates = false) const;
@@ -2092,7 +2087,7 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   void AddMutationEventListenerTypeIfEnabled(ListenerType);
 
-  void DidAssociateFormControlsTimerFired(TimerBase*);
+  void DidAddOrRemoveFormRelatedElementsTimerFired(TimerBase*);
 
   void ClearFocusedElementTimerFired(TimerBase*);
 
@@ -2427,6 +2422,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // The stack of currently-displayed `popover=auto` elements. Elements in the
   // stack go from earliest (bottom-most) to latest (top-most).
   HeapVector<Member<HTMLElement>> popover_stack_;
+  // The `popover=hint` that is currently showing, if any.
+  Member<HTMLElement> popover_hint_showing_;
   // The popover (if any) that received the most recent pointerdown event.
   Member<const HTMLElement> popover_pointerdown_target_;
   // A set of popovers for which hidePopover() has been called, but animations
@@ -2481,7 +2478,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<Document> template_document_;
   Member<Document> template_document_host_;
 
-  HeapTaskRunnerTimer<Document> did_associate_form_controls_timer_;
+  HeapTaskRunnerTimer<Document> did_add_or_remove_form_related_elements_timer_;
 
   HeapHashSet<Member<SVGUseElement>> use_elements_needing_update_;
 

@@ -83,7 +83,7 @@ BASE_FEATURE(kNtpChromeCartModule,
 // on the New Tab Page, excluding the Realbox.
 BASE_FEATURE(kNtpComprehensiveTheming,
              "NtpComprehensiveTheming",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Comprehensive Theming color changes will be applied to the
 // Realbox on the New Tab Page.
@@ -114,6 +114,11 @@ BASE_FEATURE(kNtpHandleMostVisitedNavigationExplicitly,
 
 // If enabled, logo will be shown.
 BASE_FEATURE(kNtpLogo, "NtpLogo", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled, logo will fill up less vertical space.
+BASE_FEATURE(kNtpReducedLogoSpace,
+             "NtpReducedLogoSpace",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, middle slot promo will be shown.
 BASE_FEATURE(kNtpMiddleSlotPromo,
@@ -255,6 +260,11 @@ BASE_FEATURE(kNtpHistoryClustersModuleLoad,
              "NtpHistoryClustersModuleLoad",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, module headers will display an associated icon.
+BASE_FEATURE(kNtpModulesHeaderIcon,
+             "NtpModulesHeaderIcon",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<double>
     kNtpElementLuminosityChangeForLightBackgroundParam{
         &kNtpComprehensiveTheming,
@@ -292,6 +302,8 @@ const char kNtpDriveModuleCacheMaxAgeSParam[] =
     "NtpDriveModuleCacheMaxAgeSParam";
 const char kNtpDriveModuleExperimentGroupParam[] =
     "NtpDriveModuleExperimentGroupParam";
+const char kNtpHistoryClustersModuleDataParam[] =
+    "NtpRecipeTasksModuleDataParam";
 const char kNtpMiddleSlotPromoDismissalParam[] =
     "NtpMiddleSlotPromoDismissalParam";
 const char kNtpPhotosModuleDataParam[] = "NtpPhotosModuleDataParam";
@@ -313,8 +325,10 @@ const char kNtpHistoryClustersModuleBeginTimeDurationHoursParam[] =
     "NtpHistoryClustersModuleBeginTimeDurationHoursParam";
 const char kNtpHistoryClustersModuleMinimumImagesRequiredParam[] =
     "NtpHistoryClustersModuleMinimumImagesRequiredParam";
-const char kNtpHistoryClustersModuleCategoriesParam[] =
+const char kNtpHistoryClustersModuleCategoriesAllowlistParam[] =
     "NtpHistoryClustersModuleCategoriesParam";
+const char kNtpHistoryClustersModuleCategoriesBlocklistParam[] =
+    "NtpHistoryClustersModuleCategoriesBlocklistParam";
 
 base::TimeDelta GetModulesLoadTimeout() {
   std::string param_value = base::GetFieldTrialParamValueByFeature(

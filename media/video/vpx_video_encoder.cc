@@ -4,11 +4,12 @@
 
 #include "media/video/vpx_video_encoder.h"
 
+#include <algorithm>
+
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
-#include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/svc_scalability_mode.h"
@@ -61,27 +62,6 @@ vpx_enc_frame_flags_t vp8_3layers_temporal_flags[] = {
     VP8_UPDATE_NOTHING | VP8_EFLAG_NO_REF_ARF,
 };
 
-// Returns the number of threads.
-int GetNumberOfThreads(int width) {
-  // Default to 1 thread for less than VGA.
-  int desired_threads = 1;
-
-  if (width >= 3840)
-    desired_threads = 16;
-  else if (width >= 2560)
-    desired_threads = 8;
-  else if (width >= 1280)
-    desired_threads = 4;
-  else if (width >= 640)
-    desired_threads = 2;
-
-  // Clamp to the number of available logical processors/cores.
-  desired_threads =
-      std::min(desired_threads, base::SysInfo::NumberOfProcessors());
-
-  return desired_threads;
-}
-
 EncoderStatus SetUpVpxConfig(const VideoEncoder::Options& opts,
                              vpx_codec_enc_cfg_t* config) {
   if (opts.frame_size.width() <= 0 || opts.frame_size.height() <= 0)
@@ -102,7 +82,7 @@ EncoderStatus SetUpVpxConfig(const VideoEncoder::Options& opts,
   config->g_timebase.den = base::Time::kMicrosecondsPerSecond;
 
   // Set the number of threads based on the image width and num of cores.
-  config->g_threads = GetNumberOfThreads(opts.frame_size.width());
+  config->g_threads = GetNumberOfThreadsForSoftwareEncoding(opts.frame_size);
 
   // Insert keyframes at will with a given max interval
   if (opts.keyframe_interval.has_value()) {
@@ -120,6 +100,15 @@ EncoderStatus SetUpVpxConfig(const VideoEncoder::Options& opts,
         break;
       case Bitrate::Mode::kConstant:
         config->rc_end_usage = VPX_CBR;
+        break;
+      case Bitrate::Mode::kExternal:
+        // libvpx doesn't have a special rate control mode for per-frame
+        // quantizer. Instead we just set CBR and set
+        // VP9E_SET_QUANTIZER_ONE_PASS before each frame.
+        config->rc_end_usage = VPX_CBR;
+        // Let the whole AV1 quantizer range to be used.
+        config->rc_max_quantizer = 63;
+        config->rc_min_quantizer = 0;
         break;
     }
   } else {
@@ -275,6 +264,14 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
     return;
   }
 
+  if (options.bitrate.has_value() &&
+      options.bitrate->mode() == Bitrate::Mode::kExternal && !is_vp9) {
+    std::move(done_cb).Run(
+        EncoderStatus(EncoderStatus::Codes::kEncoderUnsupportedConfig,
+                      "Unsupported bitrate mode"));
+    return;
+  }
+
   auto vpx_error = vpx_codec_enc_config_default(iface, &codec_config_, 0);
   if (vpx_error != VPX_CODEC_OK) {
     auto status =
@@ -382,8 +379,9 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
     }
 
     // In CBR mode use aq-mode=3 is enabled for quality improvement
-    if (codec_config_.rc_end_usage == VPX_CBR)
+    if (codec_config_.rc_end_usage == VPX_CBR) {
       vpx_codec_control(codec.get(), VP9E_SET_AQ_MODE, 3);
+    }
   }
 
   options_ = options;
@@ -400,7 +398,7 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
 }
 
 void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
-                             bool key_frame,
+                             const EncodeOptions& encode_options,
                              EncoderStatusCB done_cb) {
   done_cb = BindCallbackToCurrentLoopIfNeeded(std::move(done_cb));
   if (!codec_) {
@@ -409,6 +407,7 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
     return;
   }
 
+  bool key_frame = encode_options.key_frame;
   if (!frame) {
     std::move(done_cb).Run(
         EncoderStatus(EncoderStatus::Codes::kEncoderFailedEncode,
@@ -562,6 +561,15 @@ void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
       flags |= vp8_layers_flags[index_in_temp_cycle];
       vpx_codec_control(codec_.get(), VP8E_SET_TEMPORAL_LAYER_ID, temporal_id);
     }
+  }
+
+  if (encode_options.quantizer.has_value()) {
+    DCHECK_EQ(options_.bitrate->mode(), Bitrate::Mode::kExternal);
+    // Convert double quantizer to an integer within codec's supported range.
+    int qp = static_cast<int>(std::lround(encode_options.quantizer.value()));
+    qp = std::clamp(qp, static_cast<int>(codec_config_.rc_min_quantizer),
+                    static_cast<int>(codec_config_.rc_max_quantizer));
+    vpx_codec_control(codec_.get(), VP9E_SET_QUANTIZER_ONE_PASS, qp);
   }
 
   TRACE_EVENT1("media", "vpx_codec_encode", "timestamp", frame->timestamp());

@@ -6,6 +6,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -29,6 +30,7 @@
 #include "ash/system/video_conference/video_conference_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/audio/audio_device.h"
@@ -63,19 +65,16 @@ class UnifiedSystemTrayTest
   ~UnifiedSystemTrayTest() override = default;
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kCameraEffectsSupportedByHardware);
+
     std::vector<base::test::FeatureRef> enabled_features;
     if (IsQsRevampEnabled()) {
       enabled_features.push_back(features::kQsRevamp);
     }
     if (IsVcControlsUiEnabled()) {
-      // Here we have to create the global instance of `CrasAudioHandler`
-      // before `FakeVideoConferenceTrayController`, so we do it here and not
-      // in `AshTestBase`.
-      CrasAudioClient::InitializeFake();
-      CrasAudioHandler::InitializeForTesting();
       fake_video_conference_tray_controller_ =
           std::make_unique<FakeVideoConferenceTrayController>();
-      set_create_global_cras_audio_handler(false);
       enabled_features.push_back(features::kVideoConference);
     }
     feature_list_.InitWithFeatures(enabled_features, {});
@@ -87,8 +86,6 @@ class UnifiedSystemTrayTest
 
     if (IsVcControlsUiEnabled()) {
       fake_video_conference_tray_controller_.reset();
-      CrasAudioHandler::Shutdown();
-      CrasAudioClient::Shutdown();
     }
   }
 
@@ -733,14 +730,9 @@ TEST_P(UnifiedSystemTrayTest,
   // switch and the VC tray is visible.
   EXPECT_FALSE(IsMicrophoneMuteToastShown());
 
+  // Make the VC tray not-visible and toggle again, now the toast is visible.
   state.has_media_app = false;
   fake_video_conference_tray_controller()->UpdateWithMediaState(state);
-
-  // Wait until the delay is completed, the VC tray should be visible now.
-  task_environment()->FastForwardBy(base::Seconds(12));
-  ASSERT_FALSE(vc_tray->GetVisible());
-
-  // Toggle again, now the toast is visible.
   ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(
       !cras_audio_handler->IsInputMuted());
   EXPECT_TRUE(IsMicrophoneMuteToastShown());

@@ -12,11 +12,11 @@ import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 
 import {getHotspotConfig} from 'chrome://resources/ash/common/hotspot/cros_hotspot_config.js';
+import {HotspotAllowStatus, HotspotInfo, HotspotState} from 'chrome://resources/ash/common/hotspot/cros_hotspot_config.mojom-webui.js';
 import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 'chrome://resources/ash/common/network/cr_policy_network_behavior_mojo.js';
 import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_mixin.js';
-import {HotspotAllowStatus, HotspotInfo, HotspotState} from 'chrome://resources/mojo/chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-webui.js';
 import {OncSource} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -54,7 +54,7 @@ class HotspotSummaryItemElement extends HotspotSummaryItemElementBase {
        */
       isHotspotToggleOn_: {
         type: Boolean,
-        observer: 'onHotspotToggleChanged_',
+        value: false,
       },
     };
   }
@@ -100,25 +100,6 @@ class HotspotSummaryItemElement extends HotspotSummaryItemElementBase {
     return '';
   }
 
-  /**
-   * Observer for isHotspotToggleOn_ that returns early until the previous
-   * value was not undefined to avoid wrongly toggling the HotspotInfo state.
-   */
-  private onHotspotToggleChanged_(
-      newValue: boolean, oldValue: boolean|undefined): void {
-    if (oldValue === undefined) {
-      return;
-    }
-    // If the toggle value changed but the toggle is disabled, the change came
-    // from CrosHotspotConfig, not the user. Don't attempt to turn the hotspot
-    // on or off.
-    if (this.isToggleDisabled_()) {
-      return;
-    }
-
-    this.setHotspotEnabledState_(newValue);
-  }
-
   private setHotspotEnabledState_(enabled: boolean): void {
     if (enabled) {
       getHotspotConfig().enableHotspot();
@@ -155,7 +136,8 @@ class HotspotSummaryItemElement extends HotspotSummaryItemElementBase {
     return this.getIndicatorTypeForSource(OncSource.kDevicePolicy);
   }
 
-  private announceHotspotToggleChange_(): void {
+  private onHotspotToggleChange_(): void {
+    this.setHotspotEnabledState_(this.isHotspotToggleOn_);
     getAnnouncerInstance().announce(
         this.isHotspotToggleOn_ ? this.i18n('hotspotEnabledA11yLabel') :
                                   this.i18n('hotspotDisabledA11yLabel'));

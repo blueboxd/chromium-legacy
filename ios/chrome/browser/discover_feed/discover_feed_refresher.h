@@ -5,17 +5,34 @@
 #ifndef IOS_CHROME_BROWSER_DISCOVER_FEED_DISCOVER_FEED_REFRESHER_H_
 #define IOS_CHROME_BROWSER_DISCOVER_FEED_DISCOVER_FEED_REFRESHER_H_
 
+enum class FeedRefreshTrigger;
+@class NSDate;
+
 // An interface to refresh the Discover Feed.
 class DiscoverFeedRefresher {
  public:
-  // Refreshes the Discover Feed, indicating whether the feed is visible at the
-  // time of the request.
-  virtual void RefreshFeed(bool feed_visible) = 0;
-
   // Refreshes the Discover Feed if needed. The implementer decides if a refresh
   // is needed or not. This should only be called when the feed is visible to
   // the user.
-  virtual void RefreshFeedIfNeeded() = 0;
+  // Deprecated.
+  virtual void RefreshFeedIfNeeded() {}
+
+  // Refreshes the Discover Feed. `trigger` describes the context of the
+  // refresh.
+  virtual void RefreshFeed(FeedRefreshTrigger trigger) = 0;
+
+  // Performs a background refresh for the feed. `completion` is called
+  // after success, failure, or timeout. The BOOL argument indicates whether the
+  // refresh was successful or a failure.
+  virtual void PerformBackgroundRefreshes(void (^completion)(BOOL)) = 0;
+
+  // Stops the background refresh task and cleans up any temporary objects. This
+  // is called by the OS when the task is taking too long.
+  virtual void HandleBackgroundRefreshTaskExpiration() = 0;
+
+  // The earliest datetime at which the next background refresh should be
+  // scheduled.
+  virtual NSDate* GetEarliestBackgroundRefreshBeginDate() = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_DISCOVER_FEED_DISCOVER_FEED_REFRESHER_H_

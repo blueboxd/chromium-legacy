@@ -34,8 +34,6 @@ using ::attribution_reporting::FilterPair;
 using ::attribution_reporting::mojom::SourceType;
 using ::testing::ElementsAre;
 
-using AttributionFilters = ::attribution_reporting::Filters;
-
 }  // namespace
 
 TEST(AggregatableAttributionUtilsTest, CreateAggregatableHistogram) {
@@ -51,29 +49,30 @@ TEST(AggregatableAttributionUtilsTest, CreateAggregatableHistogram) {
           *attribution_reporting::AggregatableTriggerData::Create(
               absl::MakeUint128(/*high=*/0, /*low=*/1024),
               /*source_keys=*/{"key1", "key3"},
-              FilterPair{.positive = *AttributionFilters::Create(
-                             {{"filter", {"value"}}})}),
+              FilterPair(
+                  /*positive=*/{{{"filter", {"value"}}}},
+                  /*negative=*/{})),
 
           // The second trigger data applies to "key2", "key4" is ignored.
           *attribution_reporting::AggregatableTriggerData::Create(
               absl::MakeUint128(/*high=*/0, /*low=*/2688),
               /*source_keys=*/{"key2", "key4"},
-              FilterPair{.positive =
-                             *AttributionFilters::Create({{"a", {"b", "c"}}})}),
+              FilterPair(/*positive=*/{{{"a", {"b", "c"}}}},
+                         /*negative=*/{})),
 
           // The third trigger will be ignored due to mismatched filters.
           *attribution_reporting::AggregatableTriggerData::Create(
               absl::MakeUint128(/*high=*/0, /*low=*/4096),
               /*source_keys=*/{"key1", "key2"},
-              FilterPair{.positive =
-                             *AttributionFilters::Create({{"filter", {}}})}),
+              FilterPair(/*positive=*/{{{"filter", {}}}},
+                         /*negative=*/{})),
 
           // The fourth trigger will be ignored due to matched not_filters.
           *attribution_reporting::AggregatableTriggerData::Create(
               absl::MakeUint128(/*high=*/0, /*low=*/4096),
               /*source_keys=*/{"key1", "key2"},
-              FilterPair{.negative = *AttributionFilters::Create(
-                             {{"filter", {"value"}}})})};
+              FilterPair(/*positive=*/{},
+                         /*negative=*/{{{"filter", {"value"}}}}))};
 
   absl::optional<attribution_reporting::FilterData> source_filter_data =
       attribution_reporting::FilterData::Create({{"filter", {"value"}}});
@@ -83,11 +82,9 @@ TEST(AggregatableAttributionUtilsTest, CreateAggregatableHistogram) {
       {{"key1", 32768}, {"key2", 1664}});
 
   std::vector<AggregatableHistogramContribution> contributions =
-      CreateAggregatableHistogram(
-          *source_filter_data, SourceType::kEvent, *source,
-          *attribution_reporting::AggregatableTriggerDataList::Create(
-              std::move(aggregatable_trigger_data)),
-          aggregatable_values);
+      CreateAggregatableHistogram(*source_filter_data, SourceType::kEvent,
+                                  *source, std::move(aggregatable_trigger_data),
+                                  aggregatable_values);
 
   // "key3" is not present as no value is found.
   EXPECT_THAT(

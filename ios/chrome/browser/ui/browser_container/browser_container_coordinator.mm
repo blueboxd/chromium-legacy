@@ -7,31 +7,24 @@
 #import <Availability.h>
 
 #import "base/check.h"
-#import "base/metrics/user_metrics.h"
-#import "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_payload.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
+#import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
+#import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_mediator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_edit_menu_handler.h"
 #import "ios/chrome/browser/ui/browser_container/edit_menu_alert_delegate.h"
-#import "ios/chrome/browser/ui/commands/activity_service_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
-#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/commands/share_highlight_command.h"
-#import "ios/chrome/browser/ui/link_to_text/link_to_text_consumer.h"
 #import "ios/chrome/browser/ui/link_to_text/link_to_text_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
 #import "ios/chrome/browser/ui/partial_translate/partial_translate_mediator.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/grit/ios_strings.h"
-#import "ui/base/l10n/l10n_util.h"
-#import "ui/strings/grit/ui_strings.h"
 #import "url/gurl.h"
 
 #if BUILDFLAG(IOS_SCREEN_TIME_ENABLED)
@@ -43,8 +36,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface BrowserContainerCoordinator () <LinkToTextConsumer,
-                                           EditMenuAlertDelegate>
+@interface BrowserContainerCoordinator () <EditMenuAlertDelegate>
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
 // Redefine property as readwrite.
@@ -63,8 +55,6 @@
     OverlayContainerCoordinator* webContentAreaOverlayContainerCoordinator;
 // The coodinator that manages ScreenTime.
 @property(nonatomic, strong) ChromeCoordinator* screenTimeCoordinator;
-// The handler for activity services commands.
-@property(nonatomic, weak) id<ActivityServiceCommands> activityServiceHandler;
 // Coordinator used to present alerts to the user.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 @end
@@ -91,11 +81,14 @@
                             modality:OverlayModality::kWebContentArea];
 
   self.linkToTextMediator =
-      [[LinkToTextMediator alloc] initWithWebStateList:webStateList
-                                              consumer:self];
+      [[LinkToTextMediator alloc] initWithWebStateList:webStateList];
+  self.linkToTextMediator.alertDelegate = self;
+  self.linkToTextMediator.activityServiceHandler = HandlerForProtocol(
+      browser->GetCommandDispatcher(), ActivityServiceCommands);
 
   self.browserEditMenuHandler = [[BrowserEditMenuHandler alloc] init];
   self.viewController.browserEditMenuHandler = self.browserEditMenuHandler;
+  self.browserEditMenuHandler.rootView = self.viewController.view;
   self.browserEditMenuHandler.linkToTextDelegate = self.linkToTextMediator;
 
   if (base::FeatureList::IsEnabled(kIOSEditMenuPartialTranslate)) {
@@ -124,8 +117,6 @@
   self.mediator =
       [[BrowserContainerMediator alloc] initWithWebStateList:webStateList
                               webContentAreaOverlayPresenter:overlayPresenter];
-  self.activityServiceHandler = HandlerForProtocol(
-      browser->GetCommandDispatcher(), ActivityServiceCommands);
 
   self.mediator.consumer = self.viewController;
 
@@ -147,47 +138,6 @@
   [super stop];
 }
 
-#pragma mark - LinkToTextConsumer
-
-- (void)generatedPayload:(LinkToTextPayload*)payload {
-  DCHECK(payload);
-  ShareHighlightCommand* command =
-      [[ShareHighlightCommand alloc] initWithURL:payload.URL
-                                           title:payload.title
-                                    selectedText:payload.selectedText
-                                      sourceView:payload.sourceView
-                                      sourceRect:payload.sourceRect];
-  [self.activityServiceHandler shareHighlight:command];
-}
-
-- (void)linkGenerationFailed {
-  self.alertCoordinator = [[AlertCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser
-                           title:l10n_util::GetNSString(
-                                     IDS_IOS_LINK_TO_TEXT_ERROR_TITLE)
-                         message:l10n_util::GetNSString(
-                                     IDS_IOS_LINK_TO_TEXT_ERROR_DESCRIPTION)];
-  [self.alertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_APP_OK)
-                action:^{
-                  base::RecordAction(base::UserMetricsAction(
-                      "SharedHighlights.LinkGenerated.Error.OK"));
-                }
-                 style:UIAlertActionStyleCancel];
-
-  __weak __typeof(self) weakSelf = self;
-  [self.alertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_SHARE_PAGE_BUTTON_LABEL)
-                action:^{
-                  base::RecordAction(base::UserMetricsAction(
-                      "SharedHighlights.LinkGenerated.Error.SharePage"));
-                  [weakSelf.activityServiceHandler sharePage];
-                }
-                 style:UIAlertActionStyleDefault];
-  [self.alertCoordinator start];
-}
-
 #pragma mark - EditMenuAlertDelegate
 
 - (void)showAlertWithTitle:(NSString*)title
@@ -201,7 +151,9 @@
   for (EditMenuAlertDelegateAction* action in actions) {
     [self.alertCoordinator addItemWithTitle:action.title
                                      action:action.action
-                                      style:action.style];
+                                      style:action.style
+                                  preferred:action.preferred
+                                    enabled:YES];
   }
   [self.alertCoordinator start];
 }

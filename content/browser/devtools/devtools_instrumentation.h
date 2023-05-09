@@ -322,12 +322,6 @@ void BuildAndReportBrowserInitiatedIssue(
     RenderFrameHostImpl* frame,
     blink::mojom::InspectorIssueInfoPtr info);
 
-// Produces a Heavy Ad Issue based on the parameters passed in.
-std::unique_ptr<protocol::Audits::InspectorIssue> GetHeavyAdIssue(
-    RenderFrameHostImpl* frame,
-    blink::mojom::HeavyAdResolutionStatus resolution,
-    blink::mojom::HeavyAdReason reason);
-
 void OnWebTransportHandshakeFailed(
     RenderFrameHostImpl* frame_host,
     const GURL& url,
@@ -391,6 +385,9 @@ void UpdateDeviceRequestPrompt(RenderFrameHost* render_frame_host,
 
 void CleanUpDeviceRequestPrompt(RenderFrameHost* render_frame_host,
                                 DevtoolsDeviceRequestPromptInfo* prompt_info);
+
+void WillShowFedCmDialog(RenderFrameHost* render_frame_host, bool* intercept);
+void OnFedCmAccountsDialogShown(RenderFrameHost* render_frame_host);
 
 }  // namespace devtools_instrumentation
 

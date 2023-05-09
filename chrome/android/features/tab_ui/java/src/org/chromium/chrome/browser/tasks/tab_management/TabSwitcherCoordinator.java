@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManagerFa
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -63,6 +62,7 @@ import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator.SystemUiScrimDelegate;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -159,7 +159,6 @@ public class TabSwitcherCoordinator
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler;
     private TabGridIphDialogCoordinator mTabGridIphDialogCoordinator;
     private TabSwitcherCustomViewManager mTabSwitcherCustomViewManager;
-    private Supplier<ShareDelegate> mShareDelegateSupplier;
     private SnackbarManager mTabSelectionEditorSnackbarManager;
 
     /** {@see TabManagementDelegate#createCarouselTabSwitcher} */
@@ -170,7 +169,7 @@ public class TabSwitcherCoordinator
             @NonNull BrowserControlsStateProvider browserControls,
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
-            @NonNull ViewGroup container, @NonNull Supplier<ShareDelegate> shareDelegateSupplier,
+            @NonNull ViewGroup container,
             @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             @NonNull ScrimCoordinator scrimCoordinator, @TabListMode int mode,
             @NonNull ViewGroup rootView,
@@ -192,7 +191,6 @@ public class TabSwitcherCoordinator
             mDynamicResourceLoaderSupplier = dynamicResourceLoaderSupplier;
             mSnackbarManager = snackbarManager;
             mModalDialogManager = modalDialogManager;
-            mShareDelegateSupplier = shareDelegateSupplier;
 
             // The snackbarManager for the TabSelectionEditor from the tab switcher side, with the
             // rootView as the default parentView. The parentView will be re-parented on show,
@@ -205,7 +203,9 @@ public class TabSwitcherCoordinator
             OneshotSupplier<TabGridDialogMediator.DialogController> dialogControllerSupplier = null;
             if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(activity)) {
                 mGridDialogScrimCoordinator =
-                        shouldUseNewScrim() ? createScrimCoordinator() : scrimCoordinator;
+                        DeviceFormFactor.isNonMultiDisplayContextOnTablet(mRootView.getContext())
+                        ? createScrimCoordinator()
+                        : scrimCoordinator;
                 mUsesTabGridDialogCoordinator = true;
                 dialogControllerSupplier =
                         new OneshotSupplier<TabGridDialogMediator.DialogController>() {
@@ -264,9 +264,8 @@ public class TabSwitcherCoordinator
                 int numRelatedTabs =
                         PseudoTab.getRelatedTabs(context, tab, tabModelSelector).size();
                 if (numRelatedTabs == 1) return tab.getTitle();
-                return activity.getResources().getQuantityString(
-                        R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs,
-                        numRelatedTabs);
+
+                return TabGroupTitleEditor.getDefaultTitle(context, numRelatedTabs);
             };
 
             long startTimeMs = SystemClock.uptimeMillis();
@@ -280,8 +279,7 @@ public class TabSwitcherCoordinator
             RecordHistogram.recordTimesHistogram("Android.TabSwitcher.SetupRecyclerView.Time",
                     SystemClock.uptimeMillis() - startTimeMs);
 
-            if (TabUiFeatureUtilities.isLaunchPolishEnabled()
-                    && TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(activity)) {
+            if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(activity)) {
                 mMediator.addTabSwitcherViewObserver(new TabSwitcherViewObserver() {
                     @Override
                     public void startedShowing() {}
@@ -418,18 +416,9 @@ public class TabSwitcherCoordinator
                 new TabGridDialogCoordinator(mActivity, mTabModelSelector, mTabContentManager,
                         mTabCreatorManager, mCoordinatorView, TabSwitcherCoordinator.this,
                         mMediator, TabSwitcherCoordinator.this::getTabGridDialogAnimationSourceView,
-                        mShareDelegateSupplier, mGridDialogScrimCoordinator,
-                        mTabListCoordinator.getTabGroupTitleEditor(), mRootView);
+                        mGridDialogScrimCoordinator, mTabListCoordinator.getTabGroupTitleEditor(),
+                        mRootView);
         return true;
-    }
-
-    /**
-     * Tablet Tab Switcher polish uses a scrim to show/hide tab switcher.
-     * Create a new scrim via a new scrim coordinator for tab group dialog.
-     * @return if tab switcher polish is enabled on tablets.
-     */
-    private boolean shouldUseNewScrim() {
-        return TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(mRootView.getContext());
     }
 
     private ScrimCoordinator createScrimCoordinator() {

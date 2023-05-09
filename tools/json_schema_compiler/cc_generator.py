@@ -186,9 +186,10 @@ class _Generator(object):
         namespace_prefix = ('%s::' % real_t.namespace.unix_name
                             if real_t.namespace != self._namespace
                             else '')
-        items.append('%s(%s%s)' % (prop.unix_name,
-                                   namespace_prefix,
-                                   self._type_helper.GetEnumNoneValue(t)))
+        items.append('{var_name}({namespace}{inti_value})'.format(
+                      var_name=prop.unix_name,
+                      namespace=namespace_prefix,
+                      inti_value=self._type_helper.GetEnumNoneValue(real_t)))
       elif prop.optional:
         continue
       elif t.property_type == PropertyType.INTEGER:
@@ -321,7 +322,7 @@ class _Generator(object):
         (c.Append('} else {')
           .Append('%%(dst)s->%%(name)s = %s%s;' %
              (namespace_prefix,
-              self._type_helper.GetEnumNoneValue(prop.type_))))
+              self._type_helper.GetEnumNoneValue(underlying_type))))
       c.Eblock('}')
     else:
       (c.Sblock(
@@ -631,7 +632,7 @@ class _Generator(object):
           c.Sblock('if (%s != %s%s) {' %
               (prop_var,
                maybe_namespace,
-               self._type_helper.GetEnumNoneValue(prop.type_)))
+               self._type_helper.GetEnumNoneValue(underlying_type)))
         else:
           c.Sblock('if (%s) {' % prop_var)
 
@@ -672,9 +673,19 @@ class _Generator(object):
     c.Append('base::Value result;')
     for choice in type_.choices:
       choice_var = 'as_%s' % choice.unix_name
-      # Enums cannot be wrapped with scoped_ptr, but the XXX_NONE enum value
-      # is equal to 0.
-      (c.Sblock('if (%s) {' % choice_var)
+
+      # Enum class values cannot be checked as a boolean, so they require
+      # specific handling when checking if they are engaged, by comparing it
+      # against kNone.
+      if (self._type_helper.FollowRef(choice).property_type ==
+                                            PropertyType.ENUM):
+        comparison_expr = '{enum_var} != {default_value}'.format(
+          enum_var=choice_var,
+          default_value=self._type_helper.GetEnumNoneValue(choice))
+      else:
+        comparison_expr = choice_var
+
+      (c.Sblock('if (%s) {' % comparison_expr)
        .Append('DCHECK(result.is_none()) << "Cannot set multiple choices for '
                '%s";' %
                type_.unix_name).Cblock(self._CreateValueFromType(
@@ -706,6 +717,8 @@ class _Generator(object):
       c.Concat(self._GeneratePropertyFunctions('Params', function.params))
       (c.Append('Params::Params() = default;')
         .Append('Params::~Params() = default;')
+        .Append('Params::Params(Params&& rhs) = default;')
+        .Append('Params& Params::operator=(Params&& rhs) = default;')
         .Append()
         .Cblock(self._GenerateFunctionParamsCreate(function))
       )
@@ -819,7 +832,7 @@ class _Generator(object):
       raise NotImplementedError('Conversion of %s to base::Value not '
                                 'implemented' % repr(type_.type_))
 
-  def _GenerateParamsCheck(self, function, var):
+  def _GenerateParamsCheck(self, function, var, failure_value):
     """Generates a check for the correct number of arguments when creating
     Params.
     """
@@ -838,10 +851,11 @@ class _Generator(object):
     (c.Concat(self._AppendError16(
         'u"expected %%(total)d arguments, got " '
         '+ base::NumberToString16(%%(var)s.size())'))
-      .Append('return nullptr;')
+      .Append('return %(failure_value)s;')
       .Eblock('}')
       .Substitute({
         'var': var,
+        'failure_value': failure_value,
         'required': num_required,
         'total': len(function.params),
     }))
@@ -856,14 +870,19 @@ class _Generator(object):
     c = Code()
 
     (c.Append('// static')
-      .Sblock('std::unique_ptr<Params> Params::Create(%s) {' %
+      .Sblock('absl::optional<Params> Params::Create(%s) {' %
                   self._GenerateParams([
                       'const base::Value::List& args']))
     )
     if self._generate_error_messages:
       c.Append('DCHECK(error);')
-    (c.Concat(self._GenerateParamsCheck(function, 'args'))
-      .Append('std::unique_ptr<Params> params(new Params());')
+
+    failure_value = 'absl::nullopt'
+    # As the default constructor of Params is private, std::optional is not
+    # allowed to construct the type in place, however we pass a default as a
+    # rvalue, which is precisely of the same effect.
+    (c.Concat(self._GenerateParamsCheck(function, 'args', failure_value))
+      .Append('absl::optional<Params> params((Params()));')
     )
 
     for param in function.params:
@@ -874,7 +893,6 @@ class _Generator(object):
       # incorrect or missing, those following it are not processed. Note that
       # for optional arguments, we allow missing arguments and proceed because
       # there may be other arguments following it.
-      failure_value = 'std::unique_ptr<Params>()'
       c.Append()
       value_var = param.unix_name + '_value'
       (c.Append('if (%(i)s < args.size() &&')
@@ -1282,7 +1300,7 @@ class _Generator(object):
         dst,
         prop.unix_name,
         namespace_prefix,
-        self._type_helper.GetEnumNoneValue(prop.type_)))
+        self._type_helper.GetEnumNoneValue(underlying_type)))
     return c
 
   def _AppendError16(self, error16):

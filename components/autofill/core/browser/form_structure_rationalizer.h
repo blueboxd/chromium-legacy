@@ -40,8 +40,12 @@ class FormStructureRationalizer {
   // when it considers necessary.
   void RationalizeFieldTypePredictions(LogManager* log_manager);
 
-  // Rationalize phone number fields in a given section, that is only fill
-  // the fields that are considered composing a first complete phone number.
+  // Ensures that only a single phone number (which can be split across multiple
+  // fields) is autofilled in the `section`. If the section contains multiple
+  // phone numbers, `set_only_fill_when_focused(true)` is set for the remaining
+  // fields.
+  // Contrary to the other rationaliation logic of this class, this one happens
+  // at filling time.
   void RationalizePhoneNumbersInSection(const Section& section);
 
  private:
@@ -51,10 +55,16 @@ class FormStructureRationalizer {
   // vector belong to the same group.
   class SectionedFieldsIndexes;
 
-  // A function to fine tune the credit cards related predictions. For example:
-  // lone credit card fields in an otherwise non-credit-card related form is
-  // unlikely to be correct, the function will override that prediction.
+  // Fine-tunes the credit cards related predictions. For example: lone credit
+  // card fields in an otherwise non-credit-card related form is unlikely to be
+  // correct, the function will override that prediction.
   void RationalizeCreditCardFieldPredictions(LogManager* log_manager);
+
+  // Sets the offsets of adjacent credit card number fields. For example:
+  // four adjacent card fields with `FormFieldData::max_length == 4` should
+  // likely be filled with the the first, second, third, and fourth,
+  // respectively, block of four digits.
+  void RationalizeCreditCardNumberOffsets(LogManager* log_manager);
 
   // Rewrites sequences of (street address, address_line2) into (address_line1,
   // address_line2) as server predictions sometimes introduce wrong street
@@ -65,6 +75,15 @@ class FormStructureRationalizer {
   // (street name, house number) as server predictions sometimes introduce wrong
   // street address predictions.
   void RationalizeStreetAddressAndHouseNumber(LogManager* log_manager);
+
+  // Depending on the existence of a preceding PHONE_HOME_COUNTRY_CODE field,
+  // a phone number's city code and city-and-number representation needs to be
+  // prefixed with a trunk prefix. Autofill treats trunk prefixes as separate
+  // types and distinguishes e.g. between PHONE_HOME_CITY_CODE and
+  // PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX.
+  // This function rationalizes types of city code and city-and-number fields
+  // accordingly.
+  void RationalizePhoneNumberTrunkTypes(LogManager* log_manager);
 
   // The rationalization is based on the visible fields, but should be applied
   // to the hidden select fields. This is because hidden 'select' fields are

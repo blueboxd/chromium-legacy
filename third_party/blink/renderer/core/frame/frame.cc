@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -340,17 +341,6 @@ void Frame::RenderFallbackContent() {
   // the fallback content should also dispatch an error event.
   To<HTMLObjectElement>(Owner())->RenderFallbackContent(
       HTMLObjectElement::ErrorEventPolicy::kDispatch);
-}
-
-void Frame::RenderFallbackContentWithResourceTiming(
-    mojom::blink::ResourceTimingInfoPtr timing,
-    const String& server_timing_value) {
-  auto* local_dom_window = To<LocalDOMWindow>(Parent()->DomWindow());
-  DOMWindowPerformance::performance(*local_dom_window)
-      ->AddResourceTimingWithUnparsedServerTiming(
-          std::move(timing), server_timing_value,
-          html_names::kObjectTag.LocalName());
-  RenderFallbackContent();
 }
 
 bool Frame::IsInFencedFrameTree() const {
@@ -875,6 +865,29 @@ void Frame::DetachFromParent() {
     }
   }
   Parent()->RemoveChild(this);
+}
+
+HeapVector<Member<Resource>> Frame::AllResourcesUnderFrame() {
+  DCHECK(base::FeatureList::IsEnabled(features::kMemoryCacheStrongReference));
+
+  HeapVector<Member<Resource>> resources;
+  if (IsLocalFrame()) {
+    if (auto* this_local_frame = DynamicTo<LocalFrame>(this)) {
+      HeapHashSet<Member<Resource>> local_frame_resources =
+          this_local_frame->GetDocument()
+              ->Fetcher()
+              ->MoveResourceStrongReferences();
+      for (Resource* resource : local_frame_resources) {
+        resources.push_back(resource);
+      }
+    }
+  }
+
+  for (Frame* child = Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    resources.AppendVector(child->AllResourcesUnderFrame());
+  }
+  return resources;
 }
 
 }  // namespace blink

@@ -19,7 +19,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -27,16 +26,19 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_dialog.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/printing/browser_printing_context_factory_for_test.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/printing/print_test_utils.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "chrome/browser/printing/test_print_preview_observer.h"
+#include "chrome/browser/printing/test_print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -57,6 +59,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fenced_frame_test_util.h"
@@ -137,306 +140,26 @@ using OnDidShowErrorDialog = base::RepeatingClosure;
 
 namespace {
 
-constexpr int kTestPrintingDpi = 72;
 constexpr int kTestPrinterCapabilitiesMaxCopies = 99;
-constexpr gfx::Size kTestPrinterCapabilitiesDpi(kTestPrintingDpi,
-                                                kTestPrintingDpi);
-constexpr int kTestPrintSettingsCopies = 42;
-
-const std::vector<gfx::Size> kTestPrinterCapabilitiesDefaultDpis{
-    kTestPrinterCapabilitiesDpi};
-const PrinterBasicInfoOptions kTestDummyPrintInfoOptions{{"opt1", "123"},
-                                                         {"opt2", "456"}};
-
 constexpr int kDefaultDocumentCookie = 1234;
+
+#if !BUILDFLAG(IS_CHROMEOS)
+constexpr gfx::Size kPhysicalSize = gfx::Size(612, 792);
+constexpr gfx::Rect kPrintableArea = gfx::Rect(0, 0, 612, 792);
+
+// The default margins are set to 1.0cm in //printing/print_settings.cc, which
+// is about 28 printer units. The resulting content size is 556 x 736.
+constexpr gfx::Size kExpectedContentSize = gfx::Size(556, 736);
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
+const PrinterSemanticCapsAndDefaults::Paper kTestPaper{
+    /*display_name=*/"Letter", /*vendor_id=*/"45",
+    /*size_um=*/gfx::Size(215900, 279400),
+    /*printable_area_um=*/gfx::Rect(0, 0, 215900, 279400)};
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 constexpr char kFakeDmToken[] = "fake-dm-token";
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-
-std::unique_ptr<PrintSettings> MakeDefaultPrintSettings(
-    const std::string& printer_name) {
-  // Setup a sample page setup, which is needed to pass checks in
-  // `PrintRenderFrameHelper` that the print params are valid.
-  constexpr gfx::Size kPhysicalSize = gfx::Size(200, 200);
-  constexpr gfx::Rect kPrintableArea = gfx::Rect(0, 0, 200, 200);
-  const PageMargins kRequestedMargins(0, 0, 5, 5, 5, 5);
-  const PageSetup kPageSetup(kPhysicalSize, kPrintableArea, kRequestedMargins,
-                             /*forced_margins=*/false,
-                             /*text_height=*/0);
-
-  auto settings = std::make_unique<PrintSettings>();
-  settings->set_copies(kTestPrintSettingsCopies);
-  settings->set_dpi(kTestPrintingDpi);
-  settings->set_page_setup_device_units(kPageSetup);
-  settings->set_device_name(base::ASCIIToUTF16(printer_name));
-  return settings;
-}
-
-std::unique_ptr<TestPrintingContext> MakeDefaultTestPrintingContext(
-    PrintingContext::Delegate* delegate,
-    bool skip_system_calls,
-    const std::string& printer_name) {
-  auto context =
-      std::make_unique<TestPrintingContext>(delegate, skip_system_calls);
-
-  context->SetDeviceSettings(printer_name,
-                             MakeDefaultPrintSettings(printer_name));
-  return context;
-}
-
-// Make some settings which are different than the generated defaults, to
-// be used if test calls `AskUserForSettings()`.
-std::unique_ptr<PrintSettings> MakeUserModifiedPrintSettings(
-    const std::string& printer_name) {
-  std::unique_ptr<PrintSettings> settings =
-      MakeDefaultPrintSettings(printer_name);
-  settings->set_copies(kTestPrintSettingsCopies + 1);
-  return settings;
-}
-
-void OnDidUpdatePrintSettings(
-    std::unique_ptr<PrintSettings>& snooped_settings,
-    scoped_refptr<PrintQueriesQueue> queue,
-    std::unique_ptr<PrinterQuery> printer_query,
-    mojom::PrintManagerHost::UpdatePrintSettingsCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(printer_query);
-  auto params = mojom::PrintPagesParams::New();
-  params->params = mojom::PrintParams::New();
-  if (printer_query->last_status() == mojom::ResultCode::kSuccess) {
-    RenderParamsFromPrintSettings(printer_query->settings(),
-                                  params->params.get());
-    params->params->document_cookie = printer_query->cookie();
-    params->pages = printer_query->settings().ranges();
-    snooped_settings =
-        std::make_unique<PrintSettings>(printer_query->settings());
-  }
-  bool canceled = printer_query->last_status() == mojom::ResultCode::kCanceled;
-
-  std::move(callback).Run(std::move(params), canceled);
-
-  if (printer_query->cookie() && printer_query->settings().dpi()) {
-    queue->QueuePrinterQuery(std::move(printer_query));
-  }
-}
-
-class BrowserPrintingContextFactoryForTest
-    : public PrintingContextFactoryForTest {
- public:
-  std::unique_ptr<PrintingContext> CreatePrintingContext(
-      PrintingContext::Delegate* delegate,
-      bool skip_system_calls) override {
-    auto context = MakeDefaultTestPrintingContext(delegate, skip_system_calls,
-                                                  printer_name_);
-
-    if (cancels_in_new_document_) {
-      context->SetNewDocumentCancels();
-    }
-    if (failed_error_for_new_document_)
-      context->SetNewDocumentFails();
-    if (access_denied_errors_for_new_document_)
-      context->SetNewDocumentBlockedByPermissions();
-#if BUILDFLAG(IS_WIN)
-    if (access_denied_errors_for_render_page_)
-      context->SetOnRenderPageBlockedByPermissions();
-    if (failed_error_for_render_page_number_) {
-      context->SetOnRenderPageFailsForPage(
-          failed_error_for_render_page_number_);
-    }
-#endif
-    if (access_denied_errors_for_render_document_)
-      context->SetOnRenderDocumentBlockedByPermissions();
-    if (access_denied_errors_for_document_done_)
-      context->SetDocumentDoneBlockedByPermissions();
-
-    if (fail_on_use_default_settings_)
-      context->SetUseDefaultSettingsFails();
-#if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
-    if (cancel_on_ask_user_for_settings_)
-      context->SetAskUserForSettingsCanceled();
-#endif
-
-    context->SetUserSettings(*MakeUserModifiedPrintSettings(printer_name_));
-
-    context->SetOnNewDocumentCallback(base::BindRepeating(
-        &BrowserPrintingContextFactoryForTest::OnNewDocument,
-        base::Unretained(this)));
-
-    return std::move(context);
-  }
-
-  void SetPrinterNameForSubsequentContexts(const std::string& printer_name) {
-    printer_name_ = printer_name;
-  }
-
-  void SetCancelErrorOnNewDocument(bool cause_errors) {
-    cancels_in_new_document_ = cause_errors;
-  }
-
-  void SetFailedErrorOnNewDocument(bool cause_errors) {
-    failed_error_for_new_document_ = cause_errors;
-  }
-
-  void SetAccessDeniedErrorOnNewDocument(bool cause_errors) {
-    access_denied_errors_for_new_document_ = cause_errors;
-  }
-
-#if BUILDFLAG(IS_WIN)
-  void SetAccessDeniedErrorOnRenderPage(bool cause_errors) {
-    access_denied_errors_for_render_page_ = cause_errors;
-  }
-
-  void SetFailedErrorForRenderPage(uint32_t page_number) {
-    failed_error_for_render_page_number_ = page_number;
-  }
-#endif
-
-  void SetAccessDeniedErrorOnRenderDocument(bool cause_errors) {
-    access_denied_errors_for_render_document_ = cause_errors;
-  }
-
-  void SetAccessDeniedErrorOnDocumentDone(bool cause_errors) {
-    access_denied_errors_for_document_done_ = cause_errors;
-  }
-
-  void SetFailErrorOnUseDefaultSettings() {
-    fail_on_use_default_settings_ = true;
-  }
-
-#if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
-  void SetCancelErrorOnAskUserForSettings() {
-    cancel_on_ask_user_for_settings_ = true;
-  }
-#endif
-
-  void OnNewDocument(const PrintSettings& settings) {
-    ++new_document_called_count_;
-    document_print_settings_ = settings;
-  }
-
-  int new_document_called_count() { return new_document_called_count_; }
-
-  const absl::optional<PrintSettings>& document_print_settings() const {
-    return document_print_settings_;
-  }
-
- private:
-  std::string printer_name_;
-  bool cancels_in_new_document_ = false;
-  bool failed_error_for_new_document_ = false;
-  bool access_denied_errors_for_new_document_ = false;
-#if BUILDFLAG(IS_WIN)
-  bool access_denied_errors_for_render_page_ = false;
-  uint32_t failed_error_for_render_page_number_ = 0;
-#endif
-  bool access_denied_errors_for_render_document_ = false;
-  bool access_denied_errors_for_document_done_ = false;
-  bool fail_on_use_default_settings_ = false;
-#if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
-  bool cancel_on_ask_user_for_settings_ = false;
-#endif
-  int new_document_called_count_ = 0;
-  absl::optional<PrintSettings> document_print_settings_;
-};
-
-class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
- public:
-  explicit PrintPreviewObserver(bool wait_for_loaded)
-      : PrintPreviewObserver(wait_for_loaded, /*pages_per_sheet=*/1) {}
-
-  PrintPreviewObserver(bool wait_for_loaded, int pages_per_sheet)
-      : pages_per_sheet_(pages_per_sheet), wait_for_loaded_(wait_for_loaded) {
-    PrintPreviewUI::SetDelegateForTesting(this);
-  }
-
-  PrintPreviewObserver(const PrintPreviewObserver&) = delete;
-  PrintPreviewObserver& operator=(const PrintPreviewObserver&) = delete;
-
-  ~PrintPreviewObserver() override {
-    PrintPreviewUI::SetDelegateForTesting(nullptr);
-  }
-
-  // Tests that use PrintPreviewObserver must call
-  // WaitUntilPreviewIsReady*() exactly once.
-  [[nodiscard]] content::WebContents*
-  WaitUntilPreviewIsReadyAndReturnPreviewDialog() {
-    if (rendered_page_count_ < expected_rendered_page_count_) {
-      base::RunLoop run_loop;
-      base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-      run_loop.Run();
-
-      if (queue_.has_value()) {
-        std::string message;
-        EXPECT_TRUE(queue_->WaitForMessage(&message));
-        EXPECT_EQ("\"success\"", message);
-      }
-    }
-
-    // Grab and reset `preview_dialog_` to avoid potential dangling pointers.
-    content::WebContents* dialog = preview_dialog_;
-    preview_dialog_ = nullptr;
-    return dialog;
-  }
-
-  // Wrapper for WaitUntilPreviewIsReadyAndReturnPreviewDialog() provided for
-  // convenience for callers that do not need the returned result.
-  void WaitUntilPreviewIsReady() {
-    std::ignore = WaitUntilPreviewIsReadyAndReturnPreviewDialog();
-  }
-
-  uint32_t rendered_page_count() const { return rendered_page_count_; }
-
- private:
-  // PrintPreviewUI::TestDelegate:
-  void DidGetPreviewPageCount(uint32_t page_count) override {
-    // `page_count` is the number of pages to be generated but doesn't take
-    // N-up into consideration.  Since `DidRenderPreviewPage()` is called after
-    // any N-up processing is performed, determine the number of times that
-    // function is expected to be called.
-    expected_rendered_page_count_ =
-        (page_count + pages_per_sheet_ - 1) / pages_per_sheet_;
-  }
-
-  // PrintPreviewUI::TestDelegate:
-  void DidRenderPreviewPage(content::WebContents* preview_dialog) override {
-    ++rendered_page_count_;
-    DVLOG(2) << "Rendered preview page " << rendered_page_count_
-             << " of a total expected " << expected_rendered_page_count_;
-    CHECK_LE(rendered_page_count_, expected_rendered_page_count_);
-    if (rendered_page_count_ == expected_rendered_page_count_ && run_loop_) {
-      run_loop_->Quit();
-      preview_dialog_ = preview_dialog;
-
-      if (wait_for_loaded_) {
-        // Instantiate `queue_` to listen for messages in `preview_dialog_`.
-        queue_.emplace(preview_dialog_);
-        content::ExecuteScriptAsync(
-            preview_dialog_.get(),
-            "window.addEventListener('message', event => {"
-            "  if (event.data.type === 'documentLoaded') {"
-            "    domAutomationController.send(event.data.load_state);"
-            "  }"
-            "});");
-      }
-    }
-  }
-
-  absl::optional<content::DOMMessageQueue> queue_;
-
-  // Rendered pages are provided after N-up processing, which will be different
-  // from the count provided to `DidGetPreviewPageCount()` when
-  // `pages_per_sheet_` is larger than one.
-  const int pages_per_sheet_;
-  uint32_t expected_rendered_page_count_ = 1;
-  uint32_t rendered_page_count_ = 0;
-
-  const bool wait_for_loaded_;
-  raw_ptr<content::WebContents> preview_dialog_ = nullptr;
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION base::RunLoop* run_loop_ = nullptr;
-};
 
 class TestPrintRenderFrame
     : public mojom::PrintRenderFrameInterceptorForTesting {
@@ -621,99 +344,6 @@ class PrintPreviewDoneObserver
 };
 
 }  // namespace
-
-class TestPrintViewManager : public PrintViewManager {
- public:
-  explicit TestPrintViewManager(content::WebContents* web_contents)
-      : PrintViewManager(web_contents) {}
-  TestPrintViewManager(content::WebContents* web_contents,
-                       OnDidCreatePrintJobCallback callback)
-      : PrintViewManager(web_contents),
-        on_did_create_print_job_(std::move(callback)) {}
-  TestPrintViewManager(const TestPrintViewManager&) = delete;
-  TestPrintViewManager& operator=(const TestPrintViewManager&) = delete;
-  ~TestPrintViewManager() override = default;
-
-  bool StartPrinting(content::WebContents* contents) {
-    auto* print_view_manager = TestPrintViewManager::FromWebContents(contents);
-    if (!print_view_manager)
-      return false;
-
-    content::RenderFrameHost* rfh_to_use = GetFrameToPrint(contents);
-    if (!rfh_to_use)
-      return false;
-
-    return print_view_manager->PrintNow(rfh_to_use);
-  }
-
-  void WaitUntilPreviewIsShownOrCancelled() {
-    base::RunLoop run_loop;
-    base::AutoReset<base::RunLoop*> auto_reset(&run_loop_, &run_loop);
-    run_loop.Run();
-  }
-
-  PrintSettings* snooped_settings() { return snooped_settings_.get(); }
-
-  const absl::optional<bool>& print_now_result() const {
-    return print_now_result_;
-  }
-
-  static TestPrintViewManager* CreateForWebContents(
-      content::WebContents* web_contents) {
-    auto manager = std::make_unique<TestPrintViewManager>(web_contents);
-    auto* manager_ptr = manager.get();
-    web_contents->SetUserData(PrintViewManager::UserDataKey(),
-                              std::move(manager));
-    return manager_ptr;
-  }
-
-  // `PrintViewManagerBase` overrides.
-  bool PrintNow(content::RenderFrameHost* rfh) override {
-    print_now_result_ = PrintViewManager::PrintNow(rfh);
-    return *print_now_result_;
-  }
-  bool CreateNewPrintJob(std::unique_ptr<PrinterQuery> query) override {
-    if (!PrintViewManager::CreateNewPrintJob(std::move(query)))
-      return false;
-    if (on_did_create_print_job_)
-      on_did_create_print_job_.Run(print_job_.get());
-    return true;
-  }
-
- protected:
-  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
-  // #addr-of
-  RAW_PTR_EXCLUSION base::RunLoop* run_loop_ = nullptr;
-
- private:
-  void PrintPreviewAllowedForTesting() override {
-    if (run_loop_) {
-      run_loop_->Quit();
-    }
-  }
-
-  // printing::mojom::PrintManagerHost:
-  void UpdatePrintSettings(int32_t cookie,
-                           base::Value::Dict job_settings,
-                           UpdatePrintSettingsCallback callback) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    std::unique_ptr<PrinterQuery> printer_query =
-        queue_->PopPrinterQuery(cookie);
-    if (!printer_query) {
-      printer_query =
-          queue_->CreatePrinterQuery(content::GlobalRenderFrameHostId());
-    }
-    auto* printer_query_ptr = printer_query.get();
-    printer_query_ptr->SetSettings(
-        std::move(job_settings),
-        base::BindOnce(&OnDidUpdatePrintSettings, std::ref(snooped_settings_),
-                       queue_, std::move(printer_query), std::move(callback)));
-  }
-
-  std::unique_ptr<PrintSettings> snooped_settings_;
-  absl::optional<bool> print_now_result_;
-  OnDidCreatePrintJobCallback on_did_create_print_job_;
-};
 
 class TestPrintViewManagerForDLP : public TestPrintViewManager {
  public:
@@ -919,9 +549,7 @@ class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
   void CompleteScriptedPrint(content::RenderFrameHost* rfh,
                              mojom::ScriptedPrintParamsPtr params,
                              ScriptedPrintCallback callback) override {
-    auto print_params = mojom::PrintPagesParams::New();
-    print_params->params = mojom::PrintParams::New();
-    std::move(callback).Run(std::move(print_params));
+    std::move(callback).Run(nullptr);
 
     for (auto& observer : GetObservers())
       observer.OnScriptedPrint();
@@ -1013,6 +641,7 @@ class PrintBrowserTest : public InProcessBrowserTest {
     default_caps->copies_max = kTestPrinterCapabilitiesMaxCopies;
     default_caps->dpis = kTestPrinterCapabilitiesDefaultDpis;
     default_caps->default_dpi = kTestPrinterCapabilitiesDpi;
+    default_caps->papers.push_back(kTestPaper);
     test_print_backend_->AddValidPrinter(
         printer_name, std::move(default_caps),
         std::make_unique<PrinterBasicInfo>(printer_info));
@@ -1029,8 +658,8 @@ class PrintBrowserTest : public InProcessBrowserTest {
   }
 
   void PrintAndWaitUntilPreviewIsReady(const PrintParams& params) {
-    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false,
-                                                params.pages_per_sheet);
+    TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false,
+                                                    params.pages_per_sheet);
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
                /*print_renderer=*/mojo::NullAssociatedRemote(),
@@ -1047,8 +676,8 @@ class PrintBrowserTest : public InProcessBrowserTest {
   }
 
   void PrintAndWaitUntilPreviewIsReadyAndLoaded(const PrintParams& params) {
-    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true,
-                                                params.pages_per_sheet);
+    TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true,
+                                                    params.pages_per_sheet);
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
                /*print_renderer=*/mojo::NullAssociatedRemote(),
@@ -1196,14 +825,9 @@ class BackForwardCachePrintBrowserTest : public PrintBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{::features::kBackForwardCache, {{}}},
-         {::features::kBackForwardCacheTimeToLiveControl,
-          // Set a very long TTL before expiration (longer than the test
-          // timeout) so tests that are expecting deletion don't pass when
-          // they shouldn't.
-          {{"time_to_live_seconds", "3600"}}}},
-        // Allow BackForwardCache for all devices regardless of their memory.
-        {::features::kBackForwardCacheMemoryControls});
+        content::GetDefaultEnabledBackForwardCacheFeaturesForTesting(
+            /*ignore_outstanding_network_request=*/false),
+        content::GetDefaultDisabledBackForwardCacheFeaturesForTesting());
 
     PrintBrowserTest::SetUpCommandLine(command_line);
   }
@@ -1261,7 +885,7 @@ class PrintExtensionBrowserTest : public extensions::ExtensionBrowserTest {
   ~PrintExtensionBrowserTest() override = default;
 
   void PrintAndWaitUntilPreviewIsReady() {
-    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
+    TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
                /*print_renderer=*/mojo::NullAssociatedRemote(),
@@ -1778,7 +1402,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
       subframe_rph, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
   // Adds the observer to get the status for the preview.
-  PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
+  TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
   StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
              /*print_renderer=*/mojo::NullAssociatedRemote(),
              /*print_preview_disabled=*/false, /*has_selection*/ false);
@@ -2106,7 +1730,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
   GURL url(embedded_test_server()->GetURL("/printing/multipage.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
-  PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
+  TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
   StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
              /*print_renderer=*/mojo::NullAssociatedRemote(),
              /*print_preview_disabled=*/false, /*has_selection=*/false);
@@ -2155,7 +1779,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, WindowDotPrint) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
+  TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
   content::ExecuteScriptAsync(web_contents->GetPrimaryMainFrame(),
                               "window.print();");
   print_preview_observer.WaitUntilPreviewIsReady();
@@ -2178,7 +1802,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
   PrintPreviewDoneObserver done_observer(rfh, GetPrintRenderFrame(rfh).get());
 
   // Load Print Preview and make sure the beforeprint event fired.
-  PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
+  TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
   content::ExecuteScriptAsync(rfh, "window.print();");
   print_preview_observer.WaitUntilPreviewIsReady();
   EXPECT_EQ(true, content::EvalJs(rfh, "firedBeforePrint"));
@@ -2696,7 +2320,7 @@ class SystemAccessProcessPrintBrowserTestBase
 
   void PrintAfterPreviewIsReadyAndLoaded() {
     // First invoke the Print Preview dialog with `StartPrint()`.
-    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
+    TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
                /*print_renderer=*/mojo::NullAssociatedRemote(),
                /*print_preview_disabled=*/false,
@@ -2722,7 +2346,7 @@ class SystemAccessProcessPrintBrowserTestBase
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
   void SystemPrintFromPreviewOnceReadyAndLoaded(bool wait_for_callback) {
     // First invoke the Print Preview dialog with `StartPrint()`.
-    PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
+    TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
                /*print_renderer=*/mojo::NullAssociatedRemote(),
                /*print_preview_disabled=*/false,
@@ -3093,26 +2717,15 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
 
   PrintAndWaitUntilPreviewIsReady();
 
-  EXPECT_EQ(rendered_page_count(), 3u);
+  EXPECT_EQ(3u, rendered_page_count());
 
-  ASSERT_TRUE(print_view_manager.snooped_settings());
-  EXPECT_EQ(print_view_manager.snooped_settings()->copies(),
-            kTestPrintSettingsCopies);
-#if BUILDFLAG(IS_LINUX) && BUILDFLAG(USE_CUPS)
-  // Collect just the keys to compare the info options vs. advanced settings.
-  std::vector<std::string> advanced_setting_keys;
-  std::vector<std::string> print_info_options_keys;
-  const PrintSettings::AdvancedSettings& advanced_settings =
-      print_view_manager.snooped_settings()->advanced_settings();
-  for (const auto& advanced_setting : advanced_settings) {
-    advanced_setting_keys.push_back(advanced_setting.first);
-  }
-  for (const auto& option : kTestDummyPrintInfoOptions) {
-    print_info_options_keys.push_back(option.first);
-  }
-  EXPECT_THAT(advanced_setting_keys,
-              testing::UnorderedElementsAreArray(print_info_options_keys));
-#endif  // BUILDFLAG(IS_LINUX) && BUILDFLAG(USE_CUPS)
+  const mojom::PrintPagesParamsPtr& snooped_params =
+      print_view_manager.snooped_params();
+  ASSERT_TRUE(snooped_params);
+  EXPECT_EQ(kTestPrinterCapabilitiesDpi, snooped_params->params->dpi);
+  EXPECT_EQ(kPhysicalSize, snooped_params->params->page_size);
+  EXPECT_EQ(kPrintableArea, snooped_params->params->printable_area);
+  EXPECT_EQ(kExpectedContentSize, snooped_params->params->content_size);
 }
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
@@ -3152,6 +2765,24 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
   EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
+
+#if BUILDFLAG(IS_LINUX) && BUILDFLAG(USE_CUPS)
+  absl::optional<PrintSettings> settings = document_print_settings();
+  ASSERT_TRUE(settings);
+  // Collect just the keys to compare the info options vs. advanced settings.
+  std::vector<std::string> advanced_setting_keys;
+  std::vector<std::string> print_info_options_keys;
+  const PrintSettings::AdvancedSettings& advanced_settings =
+      settings->advanced_settings();
+  for (const auto& advanced_setting : advanced_settings) {
+    advanced_setting_keys.push_back(advanced_setting.first);
+  }
+  for (const auto& option : kTestDummyPrintInfoOptions) {
+    print_info_options_keys.push_back(option.first);
+  }
+  EXPECT_THAT(advanced_setting_keys,
+              testing::UnorderedElementsAreArray(print_info_options_keys));
+#endif  // BUILDFLAG(IS_LINUX) && BUILDFLAG(USE_CUPS)
 }
 
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,

@@ -90,6 +90,7 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_properties.h"
+#include "components/desks_storage/core/desk_template_util.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/policy/policy_constants.h"
@@ -2826,6 +2827,24 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, SwitchToDifferentDesk) {
   EXPECT_EQ(desk_uuid_, desk_uuid);
 }
 
+// Tests retrieve an existing desk.
+IN_PROC_BROWSER_TEST_F(DesksClientTest, GetDeskByValidDeskId) {
+  base::GUID desk_uuid = DesksClient::Get()->GetActiveDesk();
+  auto result = DesksClient::Get()->GetDeskByID(desk_uuid);
+
+  ASSERT_TRUE(result.has_value());
+  EXPECT_EQ(result.value()->uuid(), desk_uuid);
+}
+
+// Tests retrieve an non-exist desk should return error.
+IN_PROC_BROWSER_TEST_F(DesksClientTest, GetDeskByInvalidDeskId) {
+  auto result = DesksClient::Get()->GetDeskByID(base::GUID::GenerateRandomV4());
+
+  ASSERT_FALSE(result.has_value());
+  EXPECT_EQ(result.error(),
+            DesksClient::DeskActionError::kResourceNotFoundError);
+}
+
 // Tests that floating workspace template can be captured with fixed uuid.
 IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureFloatingWorkspaceTemplateTest) {
   // Create a new browser and add a few tabs to it.
@@ -2834,8 +2853,37 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureFloatingWorkspaceTemplateTest) {
       CaptureActiveDeskAndSaveTemplate(
           ash::DeskTemplateType::kFloatingWorkspace);
   EXPECT_TRUE(desk_template->uuid().is_valid());
-  EXPECT_EQ(desk_template->uuid(),
-            base::GUID::ParseLowercase(ash::kFloatingWorkspaceTemplateUuid));
+  EXPECT_EQ(
+      desk_template->uuid(),
+      base::GUID::ParseLowercase(
+          desks_storage::desk_template_util::kFloatingWorkspaceTemplateUuid));
+}
+
+// Tests that floating workspace templates do not count towards template counts
+// for saved desks functionality.
+IN_PROC_BROWSER_TEST_F(DesksClientTest, FloatingWorkspaceOnSavedDesksUI) {
+  // Create a new browser and add a few tabs to it.
+  CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2)});
+  std::unique_ptr<ash::DeskTemplate> desk_template =
+      CaptureActiveDeskAndSaveTemplate(
+          ash::DeskTemplateType::kFloatingWorkspace);
+  EXPECT_TRUE(desk_template->uuid().is_valid());
+  EXPECT_EQ(
+      desk_template->uuid(),
+      base::GUID::ParseLowercase(
+          desks_storage::desk_template_util::kFloatingWorkspaceTemplateUuid));
+
+  auto* desk_model = DesksClient::Get()->GetDeskModel();
+  ASSERT_EQ(0u, desk_model->GetEntryCount());
+
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+
+  // Tests that since we have no saved desk right now, so the library button is
+  // hidden.
+  views::Button* zero_state_templates_button = ash::GetZeroStateLibraryButton();
+  ASSERT_TRUE(zero_state_templates_button);
+  EXPECT_FALSE(zero_state_templates_button->GetVisible());
 }
 
 class DesksTemplatesClientLacrosTest : public InProcessBrowserTest {

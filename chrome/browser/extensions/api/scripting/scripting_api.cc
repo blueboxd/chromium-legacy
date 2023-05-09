@@ -579,8 +579,8 @@ ScriptingExecuteScriptFunction::ScriptingExecuteScriptFunction() = default;
 ScriptingExecuteScriptFunction::~ScriptingExecuteScriptFunction() = default;
 
 ExtensionFunction::ResponseAction ScriptingExecuteScriptFunction::Run() {
-  std::unique_ptr<api::scripting::ExecuteScript::Params> params(
-      api::scripting::ExecuteScript::Params::Create(args()));
+  absl::optional<api::scripting::ExecuteScript::Params> params =
+      api::scripting::ExecuteScript::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   injection_ = std::move(params->injection);
 
@@ -746,8 +746,8 @@ ScriptingInsertCSSFunction::ScriptingInsertCSSFunction() = default;
 ScriptingInsertCSSFunction::~ScriptingInsertCSSFunction() = default;
 
 ExtensionFunction::ResponseAction ScriptingInsertCSSFunction::Run() {
-  std::unique_ptr<api::scripting::InsertCSS::Params> params(
-      api::scripting::InsertCSS::Params::Create(args()));
+  absl::optional<api::scripting::InsertCSS::Params> params =
+      api::scripting::InsertCSS::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   injection_ = std::move(params->injection);
@@ -847,8 +847,8 @@ ScriptingRemoveCSSFunction::ScriptingRemoveCSSFunction() = default;
 ScriptingRemoveCSSFunction::~ScriptingRemoveCSSFunction() = default;
 
 ExtensionFunction::ResponseAction ScriptingRemoveCSSFunction::Run() {
-  std::unique_ptr<api::scripting::RemoveCSS::Params> params(
-      api::scripting::RemoveCSS::Params::Create(args()));
+  absl::optional<api::scripting::RemoveCSS::Params> params =
+      api::scripting::RemoveCSS::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   api::scripting::CSSInjection& injection = params->injection;
@@ -927,8 +927,8 @@ ScriptingRegisterContentScriptsFunction::
 
 ExtensionFunction::ResponseAction
 ScriptingRegisterContentScriptsFunction::Run() {
-  std::unique_ptr<api::scripting::RegisterContentScripts::Params> params(
-      api::scripting::RegisterContentScripts::Params::Create(args()));
+  absl::optional<api::scripting::RegisterContentScripts::Params> params =
+      api::scripting::RegisterContentScripts::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::vector<api::scripting::RegisteredContentScript>& scripts =
@@ -1010,6 +1010,12 @@ ScriptingRegisterContentScriptsFunction::Run() {
 void ScriptingRegisterContentScriptsFunction::OnContentScriptFilesValidated(
     std::set<std::string> persistent_script_ids,
     ValidateContentScriptsResult result) {
+  // We cannot proceed if the `browser_context` is not valid as the
+  // `ExtensionSystem` will not exist.
+  if (!browser_context()) {
+    return;
+  }
+
   auto error = std::move(result.second);
   auto scripts = std::move(result.first);
   ExtensionUserScriptLoader* loader =
@@ -1051,8 +1057,8 @@ ScriptingGetRegisteredContentScriptsFunction::
 
 ExtensionFunction::ResponseAction
 ScriptingGetRegisteredContentScriptsFunction::Run() {
-  std::unique_ptr<api::scripting::GetRegisteredContentScripts::Params> params(
-      api::scripting::GetRegisteredContentScripts::Params::Create(args()));
+  absl::optional<api::scripting::GetRegisteredContentScripts::Params> params =
+      api::scripting::GetRegisteredContentScripts::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   const absl::optional<api::scripting::ContentScriptFilter>& filter =
@@ -1093,7 +1099,8 @@ ScriptingUnregisterContentScriptsFunction::
 
 ExtensionFunction::ResponseAction
 ScriptingUnregisterContentScriptsFunction::Run() {
-  auto params(api::scripting::UnregisterContentScripts::Params::Create(args()));
+  auto params =
+      api::scripting::UnregisterContentScripts::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   absl::optional<api::scripting::ContentScriptFilter>& filter = params->filter;
@@ -1151,8 +1158,8 @@ ScriptingUpdateContentScriptsFunction::
     ~ScriptingUpdateContentScriptsFunction() = default;
 
 ExtensionFunction::ResponseAction ScriptingUpdateContentScriptsFunction::Run() {
-  std::unique_ptr<api::scripting::UpdateContentScripts::Params> params(
-      api::scripting::UpdateContentScripts::Params::Create(args()));
+  absl::optional<api::scripting::UpdateContentScripts::Params> params =
+      api::scripting::UpdateContentScripts::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::vector<api::scripting::RegisteredContentScript>& scripts =
@@ -1273,6 +1280,12 @@ ExtensionFunction::ResponseAction ScriptingUpdateContentScriptsFunction::Run() {
 void ScriptingUpdateContentScriptsFunction::OnContentScriptFilesValidated(
     std::set<std::string> persistent_script_ids,
     ValidateContentScriptsResult result) {
+  // We cannot proceed if the `browser_context` is not valid as the
+  // `ExtensionSystem` will not exist.
+  if (!browser_context()) {
+    return;
+  }
+
   auto error = std::move(result.second);
   auto scripts = std::move(result.first);
   ExtensionUserScriptLoader* loader =

@@ -14,14 +14,17 @@
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service_test_base.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/apps/app_platform_metrics_retriever.h"
 #include "components/reporting/proto/synced/metric_data.pb.h"
 #include "components/reporting/util/test_support_callbacks.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/protos/app_types.pb.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::StrEq;
 
@@ -29,34 +32,6 @@ namespace reporting {
 namespace {
 
 constexpr char kTestAppId[] = "TestApp";
-
-// Test delegate that stubs out `AppEventsObserver` interactions with the
-// `AppServiceProxyFactory`.
-class TestDelegate : public AppEventsObserver::Delegate {
- public:
-  TestDelegate(bool is_app_service_available,
-               ::apps::AppPlatformMetrics* app_platform_metrics)
-      : is_app_service_available_(is_app_service_available),
-        app_platform_metrics_(app_platform_metrics) {}
-  TestDelegate(const TestDelegate& other) = delete;
-  TestDelegate& operator=(const TestDelegate& other) = delete;
-  ~TestDelegate() override = default;
-
-  // AppEventsObserver::Delegate:
-  bool IsAppServiceAvailableForProfile(Profile* profile) override {
-    return is_app_service_available_;
-  }
-
-  // AppEventsObserver::Delegate:
-  ::apps::AppPlatformMetrics* GetAppPlatformMetricsForProfile(
-      Profile* profile) override {
-    return app_platform_metrics_.get();
-  }
-
- private:
-  const bool is_app_service_available_;
-  const raw_ptr<::apps::AppPlatformMetrics> app_platform_metrics_;
-};
 
 // Fake `AppPublisher` used by the test to simulate app launches.
 class FakePublisher : public ::apps::AppPublisher {
@@ -88,9 +63,24 @@ class FakePublisher : public ::apps::AppPublisher {
                ::apps::LoadIconCallback callback));
 };
 
-class AppEventsObserverTest
-    : public ::apps::AppPlatformMetricsServiceTestBase,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+// Mock retriever for the `AppPlatformMetrics` component.
+class MockAppPlatformMetricsRetriever : public AppPlatformMetricsRetriever {
+ public:
+  MockAppPlatformMetricsRetriever() : AppPlatformMetricsRetriever(nullptr) {}
+  MockAppPlatformMetricsRetriever(const MockAppPlatformMetricsRetriever&) =
+      delete;
+  MockAppPlatformMetricsRetriever& operator=(
+      const MockAppPlatformMetricsRetriever&) = delete;
+  ~MockAppPlatformMetricsRetriever() override = default;
+
+  MOCK_METHOD(void,
+              GetAppPlatformMetrics,
+              (AppPlatformMetricsCallback callback),
+              (override));
+};
+
+class AppEventsObserverTest : public ::apps::AppPlatformMetricsServiceTestBase,
+                              public ::testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
     ::apps::AppPlatformMetricsServiceTestBase::SetUp();
@@ -100,11 +90,16 @@ class AppEventsObserverTest
                   ::apps::Readiness::kReady, ::apps::InstallSource::kPlayStore);
 
     // Set up `AppEventsObserver` with relevant test params.
-    auto delegate = std::make_unique<TestDelegate>(
-        IsAppServiceAvailableForProfile(),
-        app_platform_metrics_service()->AppPlatformMetrics());
-    app_events_observer_ =
-        AppEventsObserver::CreateForTest(profile(), std::move(delegate));
+    auto mock_app_platform_metrics_retriever =
+        std::make_unique<MockAppPlatformMetricsRetriever>();
+    EXPECT_CALL(*mock_app_platform_metrics_retriever, GetAppPlatformMetrics(_))
+        .WillOnce([this](AppPlatformMetricsRetriever::AppPlatformMetricsCallback
+                             callback) {
+          std::move(callback).Run(
+              app_platform_metrics_service()->AppPlatformMetrics());
+        });
+    app_events_observer_ = AppEventsObserver::CreateForTest(
+        std::move(mock_app_platform_metrics_retriever));
     app_events_observer_->SetReportingEnabled(IsReportingEnabled());
   }
 
@@ -113,11 +108,7 @@ class AppEventsObserverTest
     ::apps::AppPlatformMetricsServiceTestBase::TearDown();
   }
 
-  bool IsAppServiceAvailableForProfile() const {
-    return ::testing::get<0>(GetParam());
-  }
-
-  bool IsReportingEnabled() const { return ::testing::get<1>(GetParam()); }
+  bool IsReportingEnabled() const { return GetParam(); }
 
   std::unique_ptr<AppEventsObserver> app_events_observer_;
 };
@@ -132,7 +123,7 @@ TEST_P(AppEventsObserverTest, OnAppInstalled) {
                 /*publisher_id=*/"", ::apps::Readiness::kReady,
                 ::apps::InstallSource::kBrowser);
 
-  if (IsAppServiceAvailableForProfile() && IsReportingEnabled()) {
+  if (IsReportingEnabled()) {
     // Verify data being reported.
     const MetricData& result = test_event.result();
     ASSERT_TRUE(result.has_event_data());
@@ -157,8 +148,7 @@ TEST_P(AppEventsObserverTest, OnAppInstalled) {
         app_install_data.app_install_time(),
         Eq(::apps::ApplicationInstallTime::APPLICATION_INSTALL_TIME_INIT));
   } else {
-    // Should not report any data if app service unavailable or reporting is
-    // disabled for profile.
+    // Should not report any data if reporting is disabled.
     ASSERT_TRUE(test_event.no_result());
   }
 }
@@ -174,7 +164,7 @@ TEST_P(AppEventsObserverTest, OnAppLaunched) {
   proxy->Launch(kTestAppId, ui::EF_NONE, apps::LaunchSource::kFromCommandLine,
                 nullptr);
 
-  if (IsAppServiceAvailableForProfile() && IsReportingEnabled()) {
+  if (IsReportingEnabled()) {
     // Verify data being reported.
     const MetricData& result = test_event.result();
     ASSERT_TRUE(result.has_event_data());
@@ -192,8 +182,7 @@ TEST_P(AppEventsObserverTest, OnAppLaunched) {
                 Eq(::apps::ApplicationLaunchSource::
                        APPLICATION_LAUNCH_SOURCE_COMMAND_LINE));
   } else {
-    // Should not report any data if app service unavailable or reporting is
-    // disabled for profile.
+    // Should not report any data if reporting is disabled.
     ASSERT_TRUE(test_event.no_result());
   }
 }
@@ -208,7 +197,7 @@ TEST_P(AppEventsObserverTest, OnAppUninstalled) {
   FakePublisher fake_publisher(proxy, ::apps::AppType::kArc);
   proxy->UninstallSilently(kTestAppId, ::apps::UninstallSource::kAppList);
 
-  if (IsAppServiceAvailableForProfile() && IsReportingEnabled()) {
+  if (IsReportingEnabled()) {
     // Verify data being reported.
     const MetricData& result = test_event.result();
     ASSERT_TRUE(result.has_event_data());
@@ -228,18 +217,31 @@ TEST_P(AppEventsObserverTest, OnAppUninstalled) {
                 Eq(::apps::ApplicationUninstallSource::
                        APPLICATION_UNINSTALL_SOURCE_APP_LIST));
   } else {
-    // Should not report any data if app service unavailable or reporting is
-    // disabled for profile.
+    // Should not report any data if reporting is disabled.
     ASSERT_TRUE(test_event.no_result());
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    AppEventsObserverTests,
-    AppEventsObserverTest,
-    ::testing::Combine(
-        ::testing::Bool() /* true - app service available for profile*/,
-        ::testing::Bool()) /* true - reporting enabled*/);
+TEST_P(AppEventsObserverTest, OnAppPlatformMetricsDestroyed) {
+  test::TestEvent<MetricData> test_event;
+  app_events_observer_->SetOnEventObservedCallback(test_event.repeating_cb());
+
+  // Reset `AppPlatformMetricsService` to destroy the `AppPlatformMetrics`
+  // component.
+  ResetAppPlatformMetricsService();
+
+  // Verify observer is unregistered by attempting to install an app and no
+  // metric data being reported.
+  static constexpr char app_id[] = "TestNewApp";
+  InstallOneApp(app_id, ::apps::AppType::kStandaloneBrowser,
+                /*publisher_id=*/"", ::apps::Readiness::kReady,
+                ::apps::InstallSource::kBrowser);
+  ASSERT_TRUE(test_event.no_result());
+}
+
+INSTANTIATE_TEST_SUITE_P(AppEventsObserverTests,
+                         AppEventsObserverTest,
+                         ::testing::Bool() /* true - reporting enabled*/);
 
 }  // namespace
 }  // namespace reporting

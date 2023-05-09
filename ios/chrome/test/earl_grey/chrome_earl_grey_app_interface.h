@@ -57,6 +57,9 @@
 // the operation failed.
 + (NSError*)removeBrowsingCache;
 
+// Persists the current list of tabs to disk immediately.
++ (void)saveSessionImmediately;
+
 // Opens `URL` using some connected scene.
 + (void)sceneOpenURL:(NSString*)spec;
 
@@ -220,6 +223,9 @@
 
 // Returns the number of open incognito tabs, in window with given number.
 + (NSUInteger)incognitoTabCountInWindowWithNumber:(int)windowNumber;
+
+// Returns a key window from the connected scenes.
++ (UIWindow*)keyWindow;
 
 #pragma mark - WebState Utilities (EG2)
 
@@ -539,6 +545,9 @@
 // Returns whether SF Symbols are used.
 + (BOOL)isSFSymbolEnabled;
 
+// Returns whether UIButtonConfiguration changes are enabled.
++ (BOOL)isUIButtonConfigurationEnabled;
+
 #pragma mark - ContentSettings
 
 // Gets the current value of the popup content setting preference for the
@@ -551,6 +560,11 @@
 
 // Resets the desktop content setting to its default value.
 + (void)resetDesktopContentSetting;
+
+#pragma mark - Default Utilities (EG2)
+
+// Stores a value for the provided key in NSUserDefaults.
++ (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName;
 
 #pragma mark - Pref Utilities (EG2)
 

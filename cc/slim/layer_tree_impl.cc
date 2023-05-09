@@ -10,7 +10,9 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/adapters.h"
+#include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/slim/frame_data.h"
 #include "cc/slim/frame_sink_impl.h"
 #include "cc/slim/layer.h"
 #include "cc/slim/layer_tree_client.h"
@@ -19,11 +21,17 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
+#include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/frame_deadline.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_util.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc::slim {
 
@@ -41,9 +49,15 @@ LayerTreeImpl::PresentationCallbackInfo&
 LayerTreeImpl::PresentationCallbackInfo::operator=(PresentationCallbackInfo&&) =
     default;
 
-LayerTreeImpl::LayerTreeImpl(LayerTreeClient* client) : client_(client) {}
+LayerTreeImpl::LayerTreeImpl(LayerTreeClient* client,
+                             uint32_t num_unneeded_begin_frame_before_stop)
+    : client_(client),
+      num_unneeded_begin_frame_before_stop_(
+          num_unneeded_begin_frame_before_stop) {}
 
-LayerTreeImpl::~LayerTreeImpl() = default;
+LayerTreeImpl::~LayerTreeImpl() {
+  SetRoot(nullptr);
+}
 
 cc::UIResourceManager* LayerTreeImpl::GetUIResourceManager() {
   return &ui_resource_manager_;
@@ -116,6 +130,7 @@ void LayerTreeImpl::RequestCopyOfOutput(
     }
   }
   copy_requests_for_next_frame_.push_back(std::move(request));
+  SetNeedsDraw();
 }
 
 base::OnceClosure LayerTreeImpl::DeferBeginFrame() {
@@ -199,8 +214,14 @@ bool LayerTreeImpl::BeginFrame(
     viz::HitTestRegionList& out_hit_test_region_list) {
   // Skip any delayed BeginFrame messages that arrive even after we no longer
   // need it.
-  if (!NeedsBeginFrames()) {
-    frame_sink_->SetNeedsBeginFrame(false);
+  if (!NeedsDraw()) {
+    num_begin_frames_with_no_draw_++;
+    frame_sink_->SetNeedsBeginFrame(NeedsBeginFrames());
+    return false;
+  }
+  num_begin_frames_with_no_draw_ = 0u;
+
+  if (num_unacked_frames_) {
     return false;
   }
 
@@ -217,7 +238,7 @@ bool LayerTreeImpl::BeginFrame(
   // need for another frame.
   needs_draw_ = false;
 
-  if (!root_) {
+  if (!root_ || device_viewport_rect_.IsEmpty()) {
     UpdateNeedsBeginFrame();
     return false;
   }
@@ -229,10 +250,13 @@ bool LayerTreeImpl::BeginFrame(
 }
 
 void LayerTreeImpl::DidReceiveCompositorFrameAck() {
+  DCHECK_GT(num_unacked_frames_, 0u);
+  num_unacked_frames_--;
   client_->DidReceiveCompositorFrameAck();
 }
 
 void LayerTreeImpl::DidSubmitCompositorFrame() {
+  num_unacked_frames_++;
   client_->DidSubmitCompositorFrame();
 }
 
@@ -347,11 +371,16 @@ void LayerTreeImpl::SetNeedsDraw() {
   UpdateNeedsBeginFrame();
 }
 
-bool LayerTreeImpl::NeedsBeginFrames() const {
+bool LayerTreeImpl::NeedsDraw() const {
   if (!visible_ || !frame_sink_ || num_defer_begin_frame_ > 0u) {
     return false;
   }
   return client_needs_one_begin_frame_ || needs_draw_;
+}
+
+bool LayerTreeImpl::NeedsBeginFrames() const {
+  return NeedsDraw() ||
+         num_begin_frames_with_no_draw_ < num_unneeded_begin_frame_before_stop_;
 }
 
 void LayerTreeImpl::GenerateCompositorFrame(
@@ -361,12 +390,9 @@ void LayerTreeImpl::GenerateCompositorFrame(
     viz::HitTestRegionList& out_hit_test_region_list) {
   // TODO(crbug.com/1408128): Only has a very simple and basic compositor frame
   // generation. Some missing features include:
-  // * Support multiple render passes (non-axis aligned clip, filters)
   // * Damage tracking
   // * Occlusion culling
-  // * Visible rect (ie clip) on quads
-  // * Surface embedding fields (referenced surfaces, activation dependency,
-  //   deadline)
+  // * Ensure entire viewport is covered by quads.
   TRACE_EVENT0("cc", "slim::LayerTreeImpl::ProduceFrame");
 
   for (auto& resource_request :
@@ -381,6 +407,11 @@ void LayerTreeImpl::GenerateCompositorFrame(
         break;
     }
   }
+
+  out_hit_test_region_list.flags = viz::HitTestRegionFlags::kHitTestMine |
+                                   viz::HitTestRegionFlags::kHitTestMouse |
+                                   viz::HitTestRegionFlags::kHitTestTouch;
+  out_hit_test_region_list.bounds = device_viewport_rect_;
 
   auto render_pass = viz::CompositorRenderPass::Create();
   render_pass->SetNew(viz::CompositorRenderPassId(root_->id()),
@@ -399,12 +430,22 @@ void LayerTreeImpl::GenerateCompositorFrame(
   top_controls_visible_height_.reset();
   out_frame.metadata.display_transform_hint = display_transform_hint_;
 
-  Draw(*root_, *render_pass, /*transform_to_target=*/gfx::Transform(),
-       /*clip_from_parent=*/nullptr);
+  FrameData frame_data(out_hit_test_region_list.regions);
+  Draw(*root_, out_frame, *render_pass, frame_data,
+       /*parent_transform_to_root=*/gfx::Transform(),
+       /*parent_transform_to_target=*/gfx::Transform(),
+       /*parent_clip_in_target=*/nullptr, gfx::RectF(device_viewport_rect_),
+       /*opacity=*/1.0f);
 
   render_pass->copy_requests = std::move(copy_requests_for_next_frame_);
   copy_requests_for_next_frame_.clear();
   out_frame.render_pass_list.push_back(std::move(render_pass));
+  out_frame.metadata.activation_dependencies =
+      std::vector<viz::SurfaceId>(frame_data.activation_dependencies.begin(),
+                                  frame_data.activation_dependencies.end());
+  out_frame.metadata.deadline = viz::FrameDeadline(
+      args.frame_time, frame_data.deadline_in_frames.value_or(0u),
+      args.interval, frame_data.use_default_lower_bound_deadline);
 
   for (const auto& pass : out_frame.render_pass_list) {
     for (const auto* quad : pass->quad_list) {
@@ -424,41 +465,221 @@ void LayerTreeImpl::GenerateCompositorFrame(
 }
 
 void LayerTreeImpl::Draw(Layer& layer,
+                         viz::CompositorFrame& frame,
                          viz::CompositorRenderPass& parent_pass,
-                         const gfx::Transform& transform_to_target,
-                         const gfx::Rect* clip_from_parent) {
-  if (layer.hide_layer_and_subtree()) {
+                         FrameData& data,
+                         const gfx::Transform& parent_transform_to_root,
+                         const gfx::Transform& parent_transform_to_target,
+                         const gfx::RectF* parent_clip_in_target,
+                         const gfx::RectF& clip_in_parent,
+                         float parent_opacity) {
+  DCHECK(!clip_in_parent.IsEmpty());
+  if (layer.hide_layer_and_subtree() || layer.opacity() == 0.0f) {
     return;
   }
 
-  gfx::Transform transform_to_parent = layer.ComputeTransformToParent();
+  absl::optional<gfx::Transform> transform_from_parent =
+      layer.ComputeTransformFromParent();
+  // If a 2d transform isn't invertible, then it must map the whole 2d space to
+  // a single line or pointer, neither is visible.
+  if (!transform_from_parent) {
+    DLOG(WARNING) << "Skipping layer subtree from non-invertible transform.";
+    return;
+  }
 
-  // New transform is: parent transform x layer transform.
-  gfx::Transform new_transform_to_target = transform_to_target;
-  new_transform_to_target.PreConcat(transform_to_parent);
+  // Compute new clip in layer space.
+  gfx::RectF clip_in_layer = transform_from_parent->MapRect(clip_in_parent);
+  if (layer.masks_to_bounds()) {
+    clip_in_layer.Intersect(
+        gfx::RectF(layer.bounds().width(), layer.bounds().height()));
+  }
+  if (clip_in_layer.IsEmpty()) {
+    return;
+  }
 
-  bool use_new_clip = false;
-  gfx::Rect new_clip;
-  // Drop non-axis aligned clip instead of using new render pass.
-  // TODO(crbug.com/1408128): Clip in layer space (visible rect) for clip
-  // that is not an exact integer.
-  if (layer.masks_to_bounds() &&
-      new_transform_to_target.Preserves2dAxisAlignment()) {
-    new_clip.set_size(layer.bounds());
-    new_clip = new_transform_to_target.MapRect(new_clip);
-    if (clip_from_parent) {
-      new_clip.Intersect(*clip_from_parent);
+  gfx::Transform transform_to_target = parent_transform_to_target;
+  gfx::Transform transform_to_root = parent_transform_to_root;
+  {
+    // new_transform = parent_transform x layer_to_parent.
+    const gfx::Transform transform_to_parent = layer.ComputeTransformToParent();
+    transform_to_target.PreConcat(transform_to_parent);
+    transform_to_root.PreConcat(transform_to_parent);
+  }
+
+  {
+    const bool is_root = root_.get() == &layer;
+    const bool filters_needs_pass = layer.HasFilters() && !is_root;
+    const bool clip_needs_pass =
+        !is_root && layer.masks_to_bounds() &&
+        !transform_to_target.Preserves2dAxisAlignment();
+    const bool opacity_needs_pass =
+        layer.opacity() != 1.0f && layer.GetNumDrawingLayersInSubtree() > 1;
+    if (!filters_needs_pass && !clip_needs_pass && !opacity_needs_pass) {
+      // Does not need new render pass.
+      // Compute new clip in target space.
+      gfx::RectF new_clip_in_target(gfx::SizeF(layer.bounds()));
+      const gfx::RectF* clip_in_target = parent_clip_in_target;
+      if (layer.masks_to_bounds()) {
+        new_clip_in_target = transform_to_target.MapRect(new_clip_in_target);
+        if (parent_clip_in_target) {
+          new_clip_in_target.Intersect(*parent_clip_in_target);
+        }
+        if (!new_clip_in_target.Contains(gfx::RectF(parent_pass.output_rect))) {
+          clip_in_target = &new_clip_in_target;
+        }
+      }
+
+      DrawChildrenAndAppendQuads(layer, frame, parent_pass, data,
+                                 transform_to_root, transform_to_target,
+                                 clip_in_target, clip_in_layer,
+                                 parent_opacity * layer.opacity());
+      return;
     }
-    use_new_clip = true;
   }
-  const gfx::Rect* clip = use_new_clip ? &new_clip : clip_from_parent;
 
+  std::unique_ptr<viz::CompositorRenderPass> new_pass;
+  gfx::Rect new_pass_content_bounds;
+  // Scale can be applied when drawing layers into the new pass, or when
+  // drawing the new pass into its target pass. Generally prefer the former to
+  // avoid visual artifacts when scaling the output of the new pass. Therefore
+  // the space of the new pass is the space of the layer with
+  // `scale_to_new_pass` applied.
+  // Another way to think about this: to_parent is split into scale_to_new_pass
+  // and new_pass_to_parent such that:
+  // to_parent = new_pass_to_parent x scale_to_new_pass
+  gfx::Vector2dF scale_to_new_pass;
+  gfx::Transform transform_new_pass_to_parent_target;
+  {
+    // Compute `scale_to_new_pass` first.
+    scale_to_new_pass = gfx::ComputeTransform2dScaleComponents(
+        transform_to_root, /*fallback_value=*/1.0f);
+    // Only allow content scale to scale down (to save memory). Slim
+    // compositor does support any vector content that is then rastered, so
+    // there is no need to scale up a render pass to avoid visual artifacts.
+    scale_to_new_pass.SetToMin({1.0f, 1.0f});
+    DCHECK_NE(scale_to_new_pass.x(), 0.0f);
+    DCHECK_NE(scale_to_new_pass.y(), 0.0f);
+
+    // Compute "from new pass" transforms from "from layer" transforms by
+    // applying inverse scale.
+    float inverse_scale_x = 1.0f / scale_to_new_pass.x();
+    float inverse_scale_y = 1.0f / scale_to_new_pass.y();
+    transform_new_pass_to_parent_target = transform_to_target;
+    transform_new_pass_to_parent_target.Scale(inverse_scale_x, inverse_scale_y);
+    gfx::Transform new_pass_transform_to_root = transform_to_root;
+    new_pass_transform_to_root.Scale(inverse_scale_x, inverse_scale_y);
+
+    // Target is the new pass, so transform is just a scale.
+    transform_to_target =
+        gfx::Transform::MakeScale(scale_to_new_pass.x(), scale_to_new_pass.y());
+
+    // First clip in layer space, then transform to parent target space.
+    new_pass_content_bounds.set_size(layer.bounds());
+    new_pass_content_bounds.Intersect(gfx::ToEnclosedRect(clip_in_layer));
+    new_pass_content_bounds =
+        transform_to_target.MapRect(new_pass_content_bounds);
+    // Clip to max texture size.
+    int max_texture_size = frame_sink_->GetMaxTextureSize();
+    new_pass_content_bounds.set_width(
+        std::min(new_pass_content_bounds.width(), max_texture_size));
+    new_pass_content_bounds.set_height(
+        std::min(new_pass_content_bounds.height(), max_texture_size));
+
+    new_pass = viz::CompositorRenderPass::Create();
+    // Note output_rect and damage_rect are updated below.
+    viz::CompositorRenderPassId new_pass_id(layer.id());
+    new_pass->SetNew(new_pass_id, /*output_rect=*/new_pass_content_bounds,
+                     /*damage_rect=*/new_pass_content_bounds,
+                     new_pass_transform_to_root);
+  }
+
+  // If a new pass is created, then there is no target clip when drawing into
+  // the new pass since the bounds of the new pass already has any necessary
+  // clip applied.
+  const gfx::RectF* clip_in_target = nullptr;
+  DrawChildrenAndAppendQuads(layer, frame, *new_pass, data, transform_to_root,
+                             transform_to_target, clip_in_target, clip_in_layer,
+                             /*opacity=*/1.0f);
+
+  if (new_pass->quad_list.empty()) {
+    // Throw away new pass if it has no quads.
+    return;
+  }
+  viz::SharedQuadState* shared_quad_state =
+      parent_pass.CreateAndAppendSharedQuadState();
+  // Any clip introduced by this layer is already applied by the bounds of the
+  // new pass, so only need to apply any clips in parents target that came
+  // from parent.
+  absl::optional<gfx::Rect> clip_opt;
+  if (parent_clip_in_target) {
+    clip_opt = gfx::ToEnclosingRect(*parent_clip_in_target);
+  }
+  // TODO(crbug.com/1408128): Revisit contents_opaque when implementing
+  // occlusion culling.
+  shared_quad_state->SetAll(
+      transform_new_pass_to_parent_target, new_pass_content_bounds,
+      new_pass_content_bounds, gfx::MaskFilterInfo(), clip_opt,
+      /*contents_opaque=*/false, parent_opacity * layer.opacity(),
+      SkBlendMode::kSrcOver, 0);
+  auto* quad =
+      parent_pass.CreateAndAppendDrawQuad<viz::CompositorRenderPassDrawQuad>();
+
+  // Union through quad list in new pass to compute content rect.
+  gfx::Rect content_rect;
+  for (const auto* new_pass_quad : new_pass->quad_list) {
+    content_rect.Union(
+        new_pass_quad->shared_quad_state->quad_to_target_transform.MapRect(
+            new_pass_quad->rect));
+  }
+  content_rect.Intersect(new_pass_content_bounds);
+
+  gfx::RectF tex_coord_rect(gfx::Rect(content_rect.size()));
+  quad->SetAll(shared_quad_state, content_rect, content_rect,
+               /*needs_blending=*/true, new_pass->id,
+               /*mask_resource_id=*/viz::kInvalidResourceId,
+               /*mask_uv_rect=*/gfx::RectF(),
+               /*mask_texture_size=*/gfx::Size(),
+               /*filters_scale=*/scale_to_new_pass,
+               /*filters_origin=*/gfx::PointF(), tex_coord_rect,
+               /*force_anti_aliasing_off=*/false,
+               /*backdrop_filter_quality=*/1.f,
+               /*intersects_damage_under=*/true);
+
+  // TODO(crbug.com/1408128): Properly implement damage, including setting
+  // `has_damage_from_contributing_content`.
+  new_pass->output_rect = content_rect;
+  new_pass->damage_rect = content_rect;
+  frame.render_pass_list.push_back(std::move(new_pass));
+}
+
+void LayerTreeImpl::DrawChildrenAndAppendQuads(
+    Layer& layer,
+    viz::CompositorFrame& frame,
+    viz::CompositorRenderPass& render_pass,
+    FrameData& data,
+    const gfx::Transform& transform_to_root,
+    const gfx::Transform& transform_to_target,
+    const gfx::RectF* clip_in_target,
+    const gfx::RectF& clip_in_layer,
+    float opacity) {
   for (auto& child : base::Reversed(layer.children())) {
-    Draw(*child, parent_pass, new_transform_to_target, clip);
+    Draw(*child, frame, render_pass, data, transform_to_root,
+         transform_to_target, clip_in_target, clip_in_layer, opacity);
   }
 
-  if (!layer.bounds().IsEmpty() && layer.HasDrawableContent()) {
-    layer.AppendQuads(parent_pass, new_transform_to_target, clip);
+  gfx::Rect integer_clip_in_target;
+  if (clip_in_target) {
+    integer_clip_in_target = gfx::ToEnclosingRect(*clip_in_target);
+  }
+  // Viz expects the visible rect to be a subrect of layer_rect (ie `bounds()`).
+  // So intersect here unconditionally in case this layer is not
+  // `masks_to_bounds()`.
+  gfx::RectF clip(layer.bounds().width(), layer.bounds().height());
+  clip.Intersect(clip_in_layer);
+  if (!clip_in_layer.IsEmpty() && layer.HasDrawableContent()) {
+    layer.AppendQuads(render_pass, data, transform_to_root, transform_to_target,
+                      clip_in_target ? &integer_clip_in_target : nullptr,
+                      /*visible_rect=*/gfx::ToEnclosingRect(clip), opacity);
   }
 }
 

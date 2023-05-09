@@ -17,14 +17,14 @@ source_set("control") {
   ]
   public_deps = [
     "//base",
-    "//components/cast_streaming/public/mojom",
+    "//components/cast_streaming/common:mojom",
     "//mojo/public/cpp/bindings",
   ]
   deps = [
     "//components/cast_streaming/browser/common",
     "//components/cast_streaming/browser/control/remoting",
-    "//components/cast_streaming/public:remoting_utils",
     "//media",
+    "//media/cast/openscreen:remoting_utils",
     "//media/mojo/common",
     "//media/mojo/mojom",
     "//third_party/openscreen/src/cast/streaming:receiver",

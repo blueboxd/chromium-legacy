@@ -86,6 +86,14 @@ class EventRewriterChromeOS : public EventRewriter {
     // always return false if |should_supress| is true.
     virtual void SuppressModifierKeyRewrites(bool should_supress) = 0;
 
+    // Returns whether or not Meta + Top Row Keys should be rewritten. Should
+    // return correctly with respect to the values set in
+    // |SuppressMetaTopRowKeyRewrites|.
+    virtual bool RewriteMetaTopRowKeyComboEvents() const = 0;
+
+    // Set whether or not Meta + Top Row Keys key events should be rewritten.
+    virtual void SuppressMetaTopRowKeyComboRewrites(bool should_suppress) = 0;
+
     // Returns true if get keyboard remapped preference value successfully and
     // the value will be stored in |value|.
     virtual bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
@@ -95,7 +103,7 @@ class EventRewriterChromeOS : public EventRewriter {
     // function keys instead of having them rewritten into back, forward,
     // brightness, volume, etc. or if the user has specified that they desire
     // top-row keys to be treated as function keys globally.
-    virtual bool TopRowKeysAreFunctionKeys() const = 0;
+    virtual bool TopRowKeysAreFunctionKeys(int device_id) const = 0;
 
     // Returns true if the |key_code| and |flags| have been resgistered for
     // extensions and EventRewriterChromeOS will not rewrite the event.
@@ -238,7 +246,7 @@ class EventRewriterChromeOS : public EventRewriter {
   // By default the top row (F1-F12) keys are system keys for back, forward,
   // brightness, volume, etc. However, windows for v2 apps can optionally
   // request raw function keys for these keys.
-  bool ForceTopRowAsFunctionKeys() const;
+  bool ForceTopRowAsFunctionKeys(int device_id) const;
 
   // Adds a device to |device_id_to_info_| only if no failure occurs in
   // identifying the keyboard, and returns the device type of this keyboard

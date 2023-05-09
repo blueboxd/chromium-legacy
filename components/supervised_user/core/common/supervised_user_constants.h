@@ -22,7 +22,6 @@ extern const char kForceSafeSearch[];
 extern const char kGeolocationDisabled[];
 extern const char kSafeSitesEnabled[];
 extern const char kSigninAllowed[];
-extern const char kUserName[];
 
 // A special supervised user ID used for child accounts.
 extern const char kChildAccountSUID[];
@@ -42,8 +41,9 @@ extern const base::FilePath::CharType kSupervisedUserSettingsFilename[];
 // Filename for denylist.
 extern const base::FilePath::CharType kDenylistFilename[];
 
+extern const char kSyncGoogleDashboardURL[];
+
 // URLs for RPCs in the KidsManagement service.
-GURL KidsManagementGetFamilyProfileURL();
 GURL KidsManagementGetFamilyMembersURL();
 GURL KidsManagementPermissionRequestsURL();
 GURL KidsManagementClassifyURLRequestURL();

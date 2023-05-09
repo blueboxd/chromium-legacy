@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/shared_image_format.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_image/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -84,7 +85,7 @@ constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_PROTECTED | SHARED_IMAGE_USAGE_VIDEO_DECODE |
     SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
     SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU | SHARED_IMAGE_USAGE_CPU_UPLOAD |
-    SHARED_IMAGE_USAGE_CPU_WRITE;
+    SHARED_IMAGE_USAGE_CPU_WRITE | SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
 
 ExternalVkImageBackingFactory::ExternalVkImageBackingFactory(
     scoped_refptr<SharedContextState> context_state)
@@ -201,16 +202,17 @@ bool ExternalVkImageBackingFactory::IsSupported(
   }
 #endif
 
-  if (gmb_type != gfx::EMPTY_BUFFER && !CanImportGpuMemoryBuffer(gmb_type)) {
-    return false;
+  if (gmb_type == gfx::EMPTY_BUFFER) {
+    if (usage & SHARED_IMAGE_USAGE_CPU_WRITE) {
+      // Only CPU writable when the client provides a NativePixmap.
+      return false;
+    }
+  } else {
+    if (!CanImportGpuMemoryBuffer(gmb_type)) {
+      return false;
+    }
   }
 
-  // TODO(crbug.com/969114): Not all shared image factory implementations
-  // support concurrent read/write usage.
-  constexpr uint32_t kInvalidUsages = SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
-  if (usage & kInvalidUsages) {
-    return false;
-  }
   if (thread_safe) {
     LOG(ERROR) << "ExternalVkImageBackingFactory currently do not support "
                   "cross-thread usage.";

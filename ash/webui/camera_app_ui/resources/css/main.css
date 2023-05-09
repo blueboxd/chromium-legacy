@@ -80,10 +80,6 @@ input[type=checkbox] {
   -webkit-appearance: none;
 }
 
-[tabindex] {
-  outline: none; /* Prevent default focus ring style. */
-}
-
 [i18n-text] {
   user-select: none;
 }
@@ -91,10 +87,6 @@ input[type=checkbox] {
 .cancel-animate {
   animation: none !important;
   transition: none !important;
-}
-
-.circle button {
-  border-radius: 50%;
 }
 
 .buttons {
@@ -361,6 +353,11 @@ body:is(:not(.recording), .enable-gif-recording, .should-handle-intent-result) :
   display: none;
 }
 
+/* TODO(b/236800499): Handle pause for time-lapse recording */
+body.record-type-time-lapse #pause-recordvideo {
+  display: none;
+}
+
 #video-snapshot-holder {
   bottom: calc(var(--shutter-vertical-center) + 84px);
   transform: translate(50%, 50%);
@@ -413,7 +410,7 @@ body.taking #start-takephoto:active {
 #recordvideo,
 #pause-recordvideo {
   --dot-size: 25%;
-  --durtaion: 180ms;
+  --duration: 180ms;
   --red: #f44336;
   --square-delay: 45ms;
   --square-size: calc(100% / 3);
@@ -423,7 +420,7 @@ body.taking #start-takephoto:active {
   border-radius: 50%;
   height: var(--size);
   position: relative;
-  transition: var(--durtaion) var(--standard-easing);
+  transition: var(--duration) var(--standard-easing);
   width: var(--size);
 }
 
@@ -447,7 +444,7 @@ body.taking.video #recordvideo:hover {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  transition: var(--durtaion) var(--standard-easing);
+  transition: var(--duration) var(--standard-easing);
   width: var(--dot-size);
 }
 
@@ -468,7 +465,7 @@ body:not(.recording-ui-paused).video #pause-recordvideo .red-dot {
   opacity: 0;
   position: absolute;
   top: 50%;
-  transition: var(--durtaion) var(--square-delay) var(--standard-easing);
+  transition: var(--duration) var(--square-delay) var(--standard-easing);
   width: 0;
 }
 
@@ -508,7 +505,7 @@ body.video.taking #recordvideo {
   background: transparent;
 }
 
-body:is(:not(.video), .record-type-gif) #toggle-mic,
+body:is(:not(.video), .record-type-gif, .record-type-time-lapse) #toggle-mic,
 body:not(.multi-camera) #switch-device {
   visibility: hidden;
 }
@@ -630,9 +627,6 @@ body:not(.enable-ptz) #open-ptz-panel {
 }
 
 #open-ptz-panel {
-  --ripple-spread-ratio: 2;
-  --ripple-start-radius: 18px;
-
   background-image: url(/images/camera_button_ptz_panel_off.svg);
 }
 
@@ -699,7 +693,6 @@ body.doc-mode-reviewing #open-settings {
 }
 
 #view-camera,
-#view-document-mode-dialog,
 #view-document-review,
 #view-option-panel,
 #view-ptz-panel,
@@ -728,7 +721,6 @@ body.doc-mode-reviewing #open-settings {
 }
 
 body.view-camera #view-camera,
-body.view-document-mode-dialog #view-document-mode-dialog,
 body.view-document-review #view-document-review,
 body.view-option-panel #view-option-panel,
 body.view-ptz-panel #view-ptz-panel,
@@ -920,20 +912,15 @@ body.use-fake-camera #view-expert-settings label.require-chromeos-vcd {
   position: absolute;
   right: 0;
   top: 0;
-  transition: visibility 500ms;
-  visibility: hidden;
 }
 
 body:not(.streaming) #expert-controls,
 body:not(.streaming) #open-settings,
 body:not(.streaming) #options-group,
 body:not(.streaming) #preview-focus,
+body:not(.streaming) #preview-grid,
 body:not(.streaming) #toggle-mic {
   visibility: hidden;
-}
-
-body:not(.streaming) #preview-grid {
-  display: none;
 }
 
 body:not(.expert) #settings-expert,
@@ -953,10 +940,6 @@ body:not(.custom-video-parameters) #expert-controls>.video-option-row {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-}
-
-body.grid #preview-grid {
-  visibility: visible;
 }
 
 body.grid.grid-4x4 #preview-grid-horizontal::before {
@@ -1018,12 +1001,12 @@ body.grid.grid-4x4 #preview-grid-vertical::before {
 
 #preview-grid-horizontal,
 #preview-grid-horizontal::before {
-  transition: height 500ms;
+  transition: height 500ms, visibility 500ms;
 }
 
 #preview-grid-vertical,
 #preview-grid-vertical::before {
-  transition: width 500ms;
+  transition: width 500ms, visibility 500ms;
 }
 
 #record-time {
@@ -1069,29 +1052,6 @@ body:not(.recording-ui-paused) #record-time [i18n-text=record_video_paused_msg] 
 
 #record-time #record-time-msg {
   margin-inline-start: 8px;
-}
-
-@media print {
-  html {
-    height: 100%;  /* Required for printing. */
-  }
-
-  body {
-    height: auto;
-    overflow: visible;
-    position: static;
-    width: 100%;
-  }
-
-  /* Reset background colors. */
-  body {
-    background: transparent;
-  }
-
-  /* Hide the buttons. */
-  .buttons {
-    display: none;
-  }
 }
 
 #spoken_msg {
@@ -1515,8 +1475,11 @@ body:not(.video) #settings-video-resolution {
   background-image: url(/images/camera_button_fps_60_checked.svg);
 }
 
+[tabindex] {
+  outline: none; /* Prevent default focus ring style. */
+}
+
 [tabindex='0'] {
-  outline: none;
   outline-offset: 3px;
 }
 

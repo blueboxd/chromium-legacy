@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert_ts.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 
 import {InputDeviceSettingsProviderInterface, Keyboard, KeyboardObserverInterface, KeyboardSettings, Mouse, MouseObserverInterface, MouseSettings, PointingStick, PointingStickObserverInterface, PointingStickSettings, Touchpad, TouchpadObserverInterface, TouchpadSettings} from './input_device_settings_types.js';
 
@@ -75,6 +75,10 @@ export class FakeMethodResolver {
 export class FakeInputDeviceSettingsProvider implements
     InputDeviceSettingsProviderInterface {
   private methods: FakeMethodResolver = new FakeMethodResolver();
+  private keyboardObservers: KeyboardObserverInterface[] = [];
+  private pointingStickObservers: PointingStickObserverInterface[] = [];
+  private mouseObservers: MouseObserverInterface[] = [];
+  private touchpadObservers: TouchpadObserverInterface[] = [];
 
   constructor() {
     // Setup method resolvers.
@@ -86,6 +90,13 @@ export class FakeInputDeviceSettingsProvider implements
 
   setFakeKeyboards(keyboards: Keyboard[]): void {
     this.methods.setResult('fakeKeyboards', keyboards);
+    this.notifyKeboardListUpdated();
+  }
+
+  async getConnectedKeyboards(): Promise<{keyboards: Keyboard[]}> {
+    // TODO(wangdanny): Remove this function once https://crrev.com/c/4337720
+    // is submitted.
+    assertNotReached();
   }
 
   getConnectedKeyboardSettings(): Promise<Keyboard[]> {
@@ -94,6 +105,7 @@ export class FakeInputDeviceSettingsProvider implements
 
   setFakeTouchpads(touchpads: Touchpad[]): void {
     this.methods.setResult('fakeTouchpads', touchpads);
+    this.notifyTouchpadListUpdated();
   }
 
   getConnectedTouchpadSettings(): Promise<Touchpad[]> {
@@ -102,6 +114,7 @@ export class FakeInputDeviceSettingsProvider implements
 
   setFakeMice(mice: Mouse[]): void {
     this.methods.setResult('fakeMice', mice);
+    this.notifyMouseListUpdated();
   }
 
   getConnectedMouseSettings(): Promise<Mouse[]> {
@@ -110,6 +123,7 @@ export class FakeInputDeviceSettingsProvider implements
 
   setFakePointingSticks(pointingSticks: PointingStick[]): void {
     this.methods.setResult('fakePointingSticks', pointingSticks);
+    this.notifyPointingStickListUpdated();
   }
 
   getConnectedPointingStickSettings(): Promise<PointingStick[]> {
@@ -156,20 +170,51 @@ export class FakeInputDeviceSettingsProvider implements
     this.methods.setResult('fakePointingSticks', pointingSticks);
   }
 
-  observeKeyboardSettings(_observer: KeyboardObserverInterface): void {
-    // TODO(yyhyyh): Implement observeKeyboardSettings().
+  notifyKeboardListUpdated(): void {
+    const keyboards = this.methods.getResult('fakeKeyboards');
+    for (const observer of this.keyboardObservers) {
+      observer.onKeyboardListUpdated(keyboards);
+    }
   }
 
-  observeTouchpadSettings(_observer: TouchpadObserverInterface): void {
-    // TODO(yyhyyh): Implement observeTouchpadSettings().
+  notifyTouchpadListUpdated(): void {
+    const touchpads = this.methods.getResult('fakeTouchpads');
+    for (const observer of this.touchpadObservers) {
+      observer.onTouchpadListUpdated(touchpads);
+    }
   }
 
-  observeMouseSettings(_observer: MouseObserverInterface): void {
-    // TODO(yyhyyh): Implement observeMouseSettings().
+  notifyMouseListUpdated(): void {
+    const mice = this.methods.getResult('fakeMice');
+    for (const observer of this.mouseObservers) {
+      observer.onMouseListUpdated(mice);
+    }
   }
 
-  observePointingStickSettings(_observer: PointingStickObserverInterface):
-      void {
-    // TODO(yyhyyh): Implement observePointingStickSettings().
+  notifyPointingStickListUpdated(): void {
+    const pointingSticks = this.methods.getResult('fakePointingSticks');
+    for (const observer of this.pointingStickObservers) {
+      observer.onPointingStickListUpdated(pointingSticks);
+    }
+  }
+
+  observeKeyboardSettings(observer: KeyboardObserverInterface): void {
+    this.keyboardObservers.push(observer);
+    this.notifyKeboardListUpdated();
+  }
+
+  observeTouchpadSettings(observer: TouchpadObserverInterface): void {
+    this.touchpadObservers.push(observer);
+    this.notifyTouchpadListUpdated();
+  }
+
+  observeMouseSettings(observer: MouseObserverInterface): void {
+    this.mouseObservers.push(observer);
+    this.notifyMouseListUpdated();
+  }
+
+  observePointingStickSettings(observer: PointingStickObserverInterface): void {
+    this.pointingStickObservers.push(observer);
+    this.notifyPointingStickListUpdated();
   }
 }

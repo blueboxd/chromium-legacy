@@ -22,6 +22,13 @@ namespace content {
 // This function returns whether the BrowsingInstance should change following
 // COOP rules defined in:
 // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
+//
+// The SiteInstance selection model heavily relies on this function to be
+// correct, and documents these assumptions, many of which would crash the
+// browser if incorrect. In particular, it assumes that returning a value of
+// CoopSwapResult::kSwapRelated means that the current browsing context group
+// will NOT be found suitable for reuse, as that would effectively mean no swap
+// has happened.
 CoopSwapResult ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
     network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
     const url::Origin& initiator_origin,
@@ -164,10 +171,7 @@ CrossOriginOpenerPolicyStatus::SanitizeResponse(
   // is not "unsafe-none". This ensures a COOP document does not inherit any
   // property from an opener.
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-  // Don't apply the limitation to a fenced frame because the fenced frame
-  // has its own set of forced sandbox flags and it also supports COOP.
   if (coop.value != network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone &&
-      !frame_tree_node_->IsInFencedFrameTree() &&
       (frame_tree_node_->pending_frame_policy().sandbox_flags !=
        network::mojom::WebSandboxFlags::kNone)) {
     // Blob and Filesystem documents' cross-origin-opener-policy values are
@@ -197,9 +201,13 @@ void CrossOriginOpenerPolicyStatus::EnforceCOOP(
     const network::CrossOriginOpenerPolicy& response_coop,
     const url::Origin& response_origin,
     const net::NetworkAnonymizationKey& network_anonymization_key) {
-  // COOP only applies to top level browsing contexts.
-  if (!frame_tree_node_->IsMainFrame())
+  // COOP only applies to top level browsing contexts. Embedded content
+  // considered "top-level", that cannot always provide a separate process
+  // (Fenced frames, portals, etc.) should not be able to specify their own COOP
+  // header value. Therefore we use IsOutermostMainFrame.
+  if (!frame_tree_node_->IsOutermostMainFrame()) {
     return;
+  }
 
   const GURL& response_url = navigation_request_->common_params().url;
   const GURL& response_referrer_url =
@@ -453,8 +461,11 @@ void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
       // ```
       network::IsUrlPotentiallyTrustworthy(response_url) &&
       // The COOP header must be ignored outside of the top-level context. It is
-      // removed as a defensive measure.
-      frame_tree_node_->IsMainFrame()) {
+      // removed as a defensive measure. Embedded content considered
+      // "top-level", that cannot always provide a separate process (Fenced
+      // frames, portals, etc.) should not be able to specify their own COOP
+      // header value. Therefore we use IsOutermostMainFrame.
+      frame_tree_node_->IsOutermostMainFrame()) {
     return;
   }
 

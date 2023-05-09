@@ -103,7 +103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.BrowsingDataLifetime.Duration.BrowserShutdownDeletion"
-    units="ms" expires_after="2023-08-08">
+    units="ms" expires_after="2023-10-01">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -115,7 +115,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.BrowsingDataLifetime.Duration.Scheduled{DeletionType}Deletion"
-    units="ms" expires_after="2023-04-01">
+    units="ms" expires_after="2023-10-01">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -131,7 +131,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.BrowsingDataLifetime.State.BrowserShutdownDeletion"
-    enum="BooleanStartedCompleted" expires_after="2023-04-01">
+    enum="BooleanStartedCompleted" expires_after="2023-10-01">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -140,7 +140,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.BrowsingDataLifetime.State.Scheduled{DeletionType}Deletion"
-    enum="BooleanStartedCompleted" expires_after="2023-04-01">
+    enum="BooleanStartedCompleted" expires_after="2023-10-01">
   <owner>ydago@chromium.org</owner>
   <owner>dullweber@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -471,7 +471,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.UserDeletedFromTab"
-    enum="ClearBrowsingDataTab" expires_after="2023-07-02">
+    enum="ClearBrowsingDataTab" expires_after="2023-09-03">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -482,7 +482,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.DidMakeQuery" enum="BooleanQueried"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -1846,7 +1846,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DatabaseSqliteError" enum="SqliteLoggedResultCode"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>sophiechang@chromium.org</owner>
   <owner>asully@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -1868,7 +1868,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DomainCount1Day_V2" units="domains"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -1896,17 +1896,41 @@ chromium-metrics-reviews@google.com.
     Note: for users syncing between multiple devices, this count may include
     some URLs/domains that weren't visited on this device. In other words, some
     domains may be counted for multiple client_ids even though they were only
-    visited once, on one device. However, at this time (Feb 2020), only URLs
-    navigated to via the omnibox (&quot;typed URLs&quot;) are synced, not all
-    visited URLs. There are no plans to change this behavior. As such, because
-    the mis-counting only occurs for users who are syncing across multiple
-    devices and only for a subset of visited URLs, the effect of double-counting
-    is likely to be small.
+    visited once, on one device. For Chrome M113 or later, you probably want to
+    look at DomainCount1Day_V3 instead.
+  </summary>
+</histogram>
+
+<histogram name="History.DomainCount1Day_V3" units="domains"
+    expires_after="2023-07-02">
+  <owner>mpearson@chromium.org</owner>
+  <owner>mjzhang@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <improvement direction="HIGHER_IS_BETTER"/>
+  <summary>
+    Number of unique domains visited by the user within a calendar day in user's
+    local timezone. For each regular profile (not incognito, guest, system,
+    etc.), reported at profile open (which usually happens at startup) for each
+    unreported day (up to 7 days) prior to the current date, and also reported
+    once every 24 hours thereafter for the latest unreported day, while the
+    profile remains open. If no domains are visited in a given day, a count of 0
+    will be reported for that day.
+
+    Warning about delayed data: Chrome may upload logs on a given day without
+    uploading this histogram. This can happen because Chrome uploads logs
+    initially upon startup. This histogram is emitted shortly _after_ startup.
+    In the case of short sessions, it's possible the log with this histogram did
+    not have time to be uploaded. Generally the log will be cached and uploaded
+    the next time the user starts Chrome. We should still get one count per
+    calendar day; it simply may not be on the day the metric was computed.
+    (Exception: on Android before M-91, sometimes these emitted histograms were
+    lost due to lack of robust &quot;background logging&quot;.)
   </summary>
 </histogram>
 
 <histogram name="History.DomainCount28Day_V2" units="domains"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -1934,17 +1958,41 @@ chromium-metrics-reviews@google.com.
     Note: for users syncing between multiple devices, this count may include
     some URLs/domains that weren't visited on this device. In other words, some
     domains may be counted for multiple client_ids even though they were only
-    visited once, on one device. However, at this time (Feb 2020), only URLs
-    navigated to via the omnibox (&quot;typed URLs&quot;) are synced, not all
-    visited URLs. There are no plans to change this behavior. As such, because
-    the mis-counting only occurs for users who are syncing across multiple
-    devices and only for a subset of visited URLs, the effect of double-counting
-    is likely to be small.
+    visited once, on one device. For Chrome M113 or later, you probably want to
+    look at DomainCount28Day_V3 instead.
+  </summary>
+</histogram>
+
+<histogram name="History.DomainCount28Day_V3" units="domains"
+    expires_after="2023-07-02">
+  <owner>mpearson@chromium.org</owner>
+  <owner>mjzhang@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Number of unique domains visited by the user within a 28 calendar day period
+    in user's local timezone. For each regular profile (not incognito, guest,
+    system, etc.), reported at profile open (which usually happens at startup)
+    for each unreported 28-day period (up to 7 periods) ending on the current
+    day, current day - 1, current day - 2, etc. Also reported once every 24
+    hours thereafter for the latest unreported period, while the profile remains
+    open. If no domains are visited during a 28-day period, a count of 0 will be
+    reported for that period.
+
+    Warning about delayed data: Chrome may upload logs on a given day without
+    uploading this histogram. This can happen because Chrome uploads logs
+    initially upon startup. This histogram is emitted shortly _after_ startup.
+    In the case of short sessions, it's possible the log with this histogram did
+    not have time to be uploaded. Generally the log will be cached and uploaded
+    the next time the user starts Chrome. We should still get one count per
+    calendar day; it simply may not be on the day the metric was computed.
+    (Exception: on Android before M-91, sometimes these emitted histograms were
+    lost due to lack of robust &quot;background logging&quot;.)
   </summary>
 </histogram>
 
 <histogram name="History.DomainCount7Day_V2" units="domains"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -1972,17 +2020,41 @@ chromium-metrics-reviews@google.com.
     Note: for users syncing between multiple devices, this count may include
     some URLs/domains that weren't visited on this device. In other words, some
     domains may be counted for multiple client_ids even though they were only
-    visited once, on one device. However, at this time (Feb 2020), only URLs
-    navigated to via the omnibox (&quot;typed URLs&quot;) are synced, not all
-    visited URLs. There are no plans to change this behavior. As such, because
-    the mis-counting only occurs for users who are syncing across multiple
-    devices and only for a subset of visited URLs, the effect of double-counting
-    is likely to be small.
+    visited once, on one device. For Chrome M113 or later, you probably want to
+    look at DomainCount7Day_V3 instead.
+  </summary>
+</histogram>
+
+<histogram name="History.DomainCount7Day_V3" units="domains"
+    expires_after="2023-07-02">
+  <owner>mpearson@chromium.org</owner>
+  <owner>mjzhang@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
+  <component>UI&gt;Browser&gt;History</component>
+  <summary>
+    Number of unique domains visited by the user within a 7 calendar day period
+    in user's local timezone. For each regular profile (not incognito, guest,
+    system, etc.), reported at profile open (which usually happens at startup)
+    for each unreported 7-day period (up to 7 periods) ending on the current
+    day, current day - 1, current day - 2, etc. Also reported once every 24
+    hours thereafter for the latest unreported period, while the profile remains
+    open. If no domains are visited during a 7-day period, a count 0 will be
+    reported for that period.
+
+    Warning about delayed data: Chrome may upload logs on a given day without
+    uploading this histogram. This can happen because Chrome uploads logs
+    initially upon startup. This histogram is emitted shortly _after_ startup.
+    In the case of short sessions, it's possible the log with this histogram did
+    not have time to be uploaded. Generally the log will be cached and uploaded
+    the next time the user starts Chrome. We should still get one count per
+    calendar day; it simply may not be on the day the metric was computed.
+    (Exception: on Android before M-91, sometimes these emitted histograms were
+    lost due to lack of robust &quot;background logging&quot;.)
   </summary>
 </histogram>
 
 <histogram name="History.DomainCountQueryTime_V2" units="ms"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -2170,7 +2242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryDBItemCount" units="typed URLs"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>sky@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2282,7 +2354,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.MonthlyHostCount" units="hosts"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2524,7 +2596,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.URLTableCount" units="URLs" expires_after="2023-07-09">
+<histogram name="History.URLTableCount" units="URLs" expires_after="2023-09-10">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2546,7 +2618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.WeeklyHostCount" units="hosts"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2605,39 +2677,6 @@ chromium-metrics-reviews@google.com.
 
     This histogram is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
-  </summary>
-</histogram>
-
-<histogram name="HistoryPage.OtherDevicesMenu.OpenAll.TabsPerWindow"
-    units="units" expires_after="2020-07-01">
-  <owner>markchang@chromium.org</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    The number of tabs created in each window when a user executes &quot;Open
-    all&quot; menu item from a session menu in the &quot;Tabs from other
-    devices&quot; section of the history page.
-  </summary>
-</histogram>
-
-<histogram name="HistoryPage.OtherDevicesMenu.OpenAll.TotalTabs" units="units"
-    expires_after="2020-07-01">
-  <owner>markchang@chromium.org</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    Total number of tabs opened when a user executes &quot;Open all&quot; menu
-    item from a session menu in the &quot;Tabs from other devices&quot; section
-    of the history page.
-  </summary>
-</histogram>
-
-<histogram name="HistoryPage.OtherDevicesMenu.OpenAll.TotalWindows"
-    units="units" expires_after="2020-07-01">
-  <owner>markchang@chromium.org</owner>
-  <component>UI&gt;Browser&gt;History</component>
-  <summary>
-    Total number of windows opened when a user executes &quot;Open all&quot;
-    menu item from a session menu in the &quot;Tabs from other devices&quot;
-    section of the history page.
   </summary>
 </histogram>
 

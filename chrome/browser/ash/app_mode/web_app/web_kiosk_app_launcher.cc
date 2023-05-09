@@ -18,9 +18,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
-#include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
+#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "components/account_id/account_id.h"
@@ -191,16 +191,8 @@ void WebKioskAppLauncher::LaunchApp() {
   CHECK(browser_->window());
   browser_->window()->Show();
 
-  WebKioskAppManager::Get()->InitSession(browser_, browser_->profile());
   observers_.NotifyAppLaunched();
-  observers_.NotifyAppWindowCreated();
-}
-
-void WebKioskAppLauncher::RestartLauncher() {
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  install_task_.reset();
-
-  Initialize();
+  observers_.NotifyAppWindowCreated(browser_->app_name());
 }
 
 void WebKioskAppLauncher::OnStateChanged() {
@@ -217,7 +209,6 @@ void WebKioskAppLauncher::OnExoWindowCreated(aura::Window* window) {
 
   CHECK(crosapi::browser_util::IsLacrosWindow(window));
   exo::WMHelper::GetInstance()->RemoveExoWindowObserver(this);
-  WebKioskAppManager::Get()->InitSession(nullptr, profile_);
 
   // NOTE: There is a known issue (crbug/1220680) that causes an obvious twinkle
   // when an exo window is launched in a fullscreen mode. This short delay is

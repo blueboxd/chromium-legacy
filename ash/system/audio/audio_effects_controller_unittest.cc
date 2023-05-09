@@ -6,9 +6,12 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/system/video_conference/effects/video_conference_tray_effects_manager_types.h"
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "ash/test/ash_test_base.h"
+#include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/ash/components/dbus/audio/cras_audio_client.h"
@@ -30,6 +33,8 @@ class AudioEffectsControllerTest : public NoSessionAshTestBase {
   // NoSessionAshTestBase:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures({features::kVideoConference}, {});
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kCameraEffectsSupportedByHardware);
 
     // Here we have to create the global instance of `CrasAudioHandler` before
     // `FakeVideoConferenceTrayController`, so we do it here and not in
@@ -84,7 +89,7 @@ TEST_F(AudioEffectsControllerTest, NoiseCancellationNotSupported) {
 
   // `AudioEffectsController` reports noise that cancellation is not-supported.
   EXPECT_FALSE(audio_effects_controller()->IsEffectSupported(
-      AudioEffectsController::AudioEffectId::kNoiseCancellation));
+      VcEffectId::kNoiseCancellation));
 }
 
 TEST_F(AudioEffectsControllerTest, NoiseCancellationSupported) {
@@ -96,7 +101,13 @@ TEST_F(AudioEffectsControllerTest, NoiseCancellationSupported) {
 
   // `AudioEffectsController` reports that noise cancellation is supported.
   EXPECT_TRUE(audio_effects_controller()->IsEffectSupported(
-      AudioEffectsController::AudioEffectId::kNoiseCancellation));
+      VcEffectId::kNoiseCancellation));
+
+  // Makes sure the dependency flag is set when the effect is supported.
+  auto* effect = audio_effects_controller()->GetEffect(0);
+  ASSERT_EQ(VcEffectId::kNoiseCancellation, effect->id());
+  EXPECT_EQ(VcHostedEffect::ResourceDependency::kMicrophone,
+            effect->dependency_flags());
 }
 
 TEST_F(AudioEffectsControllerTest, NoiseCancellationNotEnabled) {
@@ -111,13 +122,13 @@ TEST_F(AudioEffectsControllerTest, NoiseCancellationNotEnabled) {
 
   // Noise cancellation effect state is disabled.
   absl::optional<int> effect_state = audio_effects_controller()->GetEffectState(
-      AudioEffectsController::AudioEffectId::kNoiseCancellation);
+      VcEffectId::kNoiseCancellation);
   EXPECT_TRUE(effect_state.has_value());
   EXPECT_EQ(effect_state, 0);
 
   cras_audio_handler()->SetNoiseCancellationState(true);
   effect_state = audio_effects_controller()->GetEffectState(
-      AudioEffectsController::AudioEffectId::kNoiseCancellation);
+      VcEffectId::kNoiseCancellation);
   EXPECT_TRUE(effect_state.has_value());
   EXPECT_EQ(effect_state, 1);
 }
@@ -134,7 +145,7 @@ TEST_F(AudioEffectsControllerTest, NoiseCancellationEnabled) {
 
   // Noise cancellation effect state is disabled.
   absl::optional<int> effect_state = audio_effects_controller()->GetEffectState(
-      AudioEffectsController::AudioEffectId::kNoiseCancellation);
+      VcEffectId::kNoiseCancellation);
   EXPECT_TRUE(effect_state.has_value());
   EXPECT_EQ(effect_state, 1);
 }
@@ -154,7 +165,7 @@ TEST_F(AudioEffectsControllerTest, NoiseCancellationSetNotEnabled) {
 
   // User pressed the noise cancellation toggle.
   audio_effects_controller()->OnEffectControlActivated(
-      AudioEffectsController::AudioEffectId::kNoiseCancellation, absl::nullopt);
+      VcEffectId::kNoiseCancellation, absl::nullopt);
 
   // State should now be disabled.
   EXPECT_FALSE(cras_audio_handler()->GetNoiseCancellationState());
@@ -175,7 +186,7 @@ TEST_F(AudioEffectsControllerTest, NoiseCancellationSetEnabled) {
 
   // User pressed the noise cancellation toggle.
   audio_effects_controller()->OnEffectControlActivated(
-      AudioEffectsController::AudioEffectId::kNoiseCancellation, absl::nullopt);
+      VcEffectId::kNoiseCancellation, absl::nullopt);
 
   // State should now be enabled.
   EXPECT_TRUE(cras_audio_handler()->GetNoiseCancellationState());
@@ -186,8 +197,8 @@ TEST_F(AudioEffectsControllerTest, LiveCaptionNotSupported) {
 
   // No live caption feature flags enabled, so `AudioEffectsController` reports
   // that live caption is not supported.
-  EXPECT_FALSE(audio_effects_controller()->IsEffectSupported(
-      AudioEffectsController::AudioEffectId::kLiveCaption));
+  EXPECT_FALSE(
+      audio_effects_controller()->IsEffectSupported(VcEffectId::kLiveCaption));
 }
 
 TEST_F(AudioEffectsControllerTest, LiveCaptionSupported) {
@@ -201,8 +212,8 @@ TEST_F(AudioEffectsControllerTest, LiveCaptionSupported) {
 
   // Live caption feature flags are enabled, so `AudioEffectsController` reports
   // that live caption is supported.
-  EXPECT_TRUE(audio_effects_controller()->IsEffectSupported(
-      AudioEffectsController::AudioEffectId::kLiveCaption));
+  EXPECT_TRUE(
+      audio_effects_controller()->IsEffectSupported(VcEffectId::kLiveCaption));
 }
 
 TEST_F(AudioEffectsControllerTest, LiveCaptionNotEnabled) {
@@ -222,8 +233,8 @@ TEST_F(AudioEffectsControllerTest, LiveCaptionNotEnabled) {
   EXPECT_FALSE(controller->live_caption().enabled());
 
   // Live caption effect state is disabled.
-  absl::optional<int> state = audio_effects_controller()->GetEffectState(
-      AudioEffectsController::AudioEffectId::kLiveCaption);
+  absl::optional<int> state =
+      audio_effects_controller()->GetEffectState(VcEffectId::kLiveCaption);
   EXPECT_TRUE(state.has_value());
   EXPECT_FALSE(state.value());
 }
@@ -245,8 +256,8 @@ TEST_F(AudioEffectsControllerTest, LiveCaptionEnabled) {
   EXPECT_TRUE(controller->live_caption().enabled());
 
   // Live caption effect state is enabled.
-  absl::optional<int> state = audio_effects_controller()->GetEffectState(
-      AudioEffectsController::AudioEffectId::kLiveCaption);
+  absl::optional<int> state =
+      audio_effects_controller()->GetEffectState(VcEffectId::kLiveCaption);
   EXPECT_TRUE(state.has_value());
   EXPECT_TRUE(state.value());
 }
@@ -268,8 +279,8 @@ TEST_F(AudioEffectsControllerTest, LiveCaptionSetNotEnabled) {
   EXPECT_TRUE(controller->live_caption().enabled());
 
   // User pressed the live caption toggle.
-  audio_effects_controller()->OnEffectControlActivated(
-      AudioEffectsController::AudioEffectId::kLiveCaption, absl::nullopt);
+  audio_effects_controller()->OnEffectControlActivated(VcEffectId::kLiveCaption,
+                                                       absl::nullopt);
 
   // Live caption is now disabled.
   EXPECT_FALSE(controller->live_caption().enabled());
@@ -292,8 +303,8 @@ TEST_F(AudioEffectsControllerTest, LiveCaptionSetEnabled) {
   EXPECT_FALSE(controller->live_caption().enabled());
 
   // User pressed the live caption toggle.
-  audio_effects_controller()->OnEffectControlActivated(
-      AudioEffectsController::AudioEffectId::kLiveCaption, absl::nullopt);
+  audio_effects_controller()->OnEffectControlActivated(VcEffectId::kLiveCaption,
+                                                       absl::nullopt);
 
   // Live caption is now enabled.
   EXPECT_TRUE(controller->live_caption().enabled());

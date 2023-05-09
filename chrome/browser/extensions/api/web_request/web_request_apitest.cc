@@ -143,6 +143,10 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/ozone/buildflags.h"
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+
 using content::WebContents;
 
 namespace extensions {
@@ -345,7 +349,13 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
  public:
   explicit ExtensionWebRequestApiTest(
       ContextType context_type = ContextType::kFromManifest)
-      : ExtensionApiTest(context_type) {}
+      : ExtensionApiTest(context_type) {
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having to
+        // disable this feature.
+        /*disabled_features=*/{features::kHttpsUpgrades});
+  }
   ExtensionWebRequestApiTest(const ExtensionWebRequestApiTest&) = delete;
   ExtensionWebRequestApiTest& operator=(const ExtensionWebRequestApiTest&) =
       delete;
@@ -403,6 +413,7 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   std::vector<std::unique_ptr<TestExtensionDir>> test_dirs_;
   std::unique_ptr<NavigateTabMessageHandler> navigationHandler_;
 };
@@ -432,6 +443,12 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
 
 class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
  public:
+  DevToolsFrontendInWebRequestApiTest() {
+    // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having to
+    // disable this feature.
+    feature_list_.InitAndDisableFeature(features::kHttpsUpgrades);
+  }
+
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -506,6 +523,7 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
         base::StringPrintf("HTTP/1.0 200 OK\n%s\n", content_type.c_str());
   }
 
+  base::test::ScopedFeatureList feature_list_;
   base::FilePath test_root_dir_;
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   std::unique_ptr<NavigateTabMessageHandler> navigationHandler_;
@@ -1042,7 +1060,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
 // Tests redirects around workers. To test service workers, the HTTPS test
 // server is used.
 // TODO(crbug.com/1413434): test is flaky on linux-chromeos-rel.
-#if BUILDFLAG(IS_CHROMEOS)
+// TODO(crbug.com/1422191): test is flaky on Mac10.14.
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
 #define MAYBE_WebRequestRedirectsWorkers DISABLED_WebRequestRedirectsWorkers
 #else
 #define MAYBE_WebRequestRedirectsWorkers WebRequestRedirectsWorkers
@@ -1267,8 +1286,14 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
 // Check that reloading an extension that runs in incognito split mode and
 // has two active background pages with registered events does not crash the
 // browser. Regression test for http://crbug.com/224094
+// Flaky on linux-lacros. See http://crbug.com/1423252
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_IncognitoSplitModeReload DISABLED_IncognitoSplitModeReload
+#else
+#define MAYBE_IncognitoSplitModeReload IncognitoSplitModeReload
+#endif
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
-                       IncognitoSplitModeReload) {
+                       MAYBE_IncognitoSplitModeReload) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Wait for rules to be set up.
   ExtensionTestMessageListener listener("done");
@@ -4873,7 +4898,12 @@ class RedirectInfoWebRequestApiTest
     : public testing::WithParamInterface<RITestParams>,
       public ExtensionApiTest {
  public:
-  RedirectInfoWebRequestApiTest() : ExtensionApiTest(GetParam().context_type) {}
+  RedirectInfoWebRequestApiTest() : ExtensionApiTest(GetParam().context_type) {
+    // TODO(crbug.com/1394910): Use HTTPS URLs in tests to avoid having to
+    // disable this feature.
+    feature_list_.InitAndDisableFeature(features::kHttpsUpgrades);
+  }
+
   ~RedirectInfoWebRequestApiTest() override = default;
   RedirectInfoWebRequestApiTest(const RedirectInfoWebRequestApiTest&) = delete;
   RedirectInfoWebRequestApiTest& operator=(
@@ -4920,6 +4950,7 @@ class RedirectInfoWebRequestApiTest
 
  private:
   TestExtensionDir test_dir_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -6174,10 +6205,25 @@ IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest, TestOnAuthRequired) {
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 }
 
+// The build flag OZONE_PLATFORM_WAYLAND is only available on
+// Linux or ChromeOS, so this simplifies the next set of ifdefs.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(OZONE_PLATFORM_WAYLAND)
+#define OZONE_PLATFORM_WAYLAND
+#endif  // BUILDFLAG(OZONE_PLATFORM_WAYLAND)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Tests the behavior of an extension that registers an event listener
 // asynchronously.
 // Regression test for https://crbug.com/1397879.
-IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest, AsyncListenerRegistration) {
+// Flaky on linux-lacros and linux-wayland-rel. See https://crbug.com/1423018
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OZONE_PLATFORM_WAYLAND)
+#define MAYBE_AsyncListenerRegistration DISABLED_AsyncListenerRegistration
+#else
+#define MAYBE_AsyncListenerRegistration AsyncListenerRegistration
+#endif
+IN_PROC_BROWSER_TEST_F(ManifestV3WebRequestApiTest,
+                       MAYBE_AsyncListenerRegistration) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   static constexpr char kManifest[] =
       R"({

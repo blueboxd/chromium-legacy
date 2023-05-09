@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_ADDRESS_EDITOR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_ADDRESS_EDITOR_VIEW_H_
 
+#include <memory>
 #include <unordered_map>
 
-#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/address_editor_controller.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -17,6 +17,7 @@ namespace views {
 class Combobox;
 class Textfield;
 class View;
+class Label;
 }  // namespace views
 
 class AddressEditorController;
@@ -26,7 +27,8 @@ namespace autofill {
 class AddressEditorView : public views::View {
  public:
   METADATA_HEADER(AddressEditorView);
-  explicit AddressEditorView(AddressEditorController* controller);
+  explicit AddressEditorView(
+      std::unique_ptr<AddressEditorController> controller);
   AddressEditorView(const AddressEditorView&) = delete;
   AddressEditorView& operator=(const AddressEditorView&) = delete;
   ~AddressEditorView() override;
@@ -38,8 +40,10 @@ class AddressEditorView : public views::View {
   // returns it.
   const autofill::AutofillProfile& GetAddressProfile();
 
+  void SetCountryCodeForTesting(const std::string& code);
   void SetTextInputFieldValueForTesting(autofill::ServerFieldType type,
                                         const std::u16string& value);
+  std::u16string GetValidationErrorForTesting() const;
 
  private:
   // Creates the whole editor view to go within the editor dialog. It
@@ -71,10 +75,18 @@ class AddressEditorView : public views::View {
   // synchronously.
   void OnDataChanged();
 
+  // Checks all fields and updates their visual status accordingly.
+  void Validate();
+
+  std::unique_ptr<AddressEditorController> controller_;
+
   // Map from TextField to the object that describes it
   std::unordered_map<views::Textfield*, const EditorField> text_fields_;
   const std::string locale_;
-  raw_ptr<AddressEditorController, DanglingUntriaged> controller_;
+  views::Label* validation_error_ = nullptr;
+
+  // 1 subscription to text changes per field.
+  std::vector<base::CallbackListSubscription> field_change_callbacks_;
 
   base::WeakPtrFactory<AddressEditorView> weak_ptr_factory_{this};
 };

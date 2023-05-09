@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
@@ -27,6 +28,11 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::InterestGroupAdDataView,
     return ad.render_url;
   }
 
+  static const absl::optional<std::string>& size_group(
+      const blink::InterestGroup::Ad& ad) {
+    return ad.size_group;
+  }
+
   static const absl::optional<std::string>& metadata(
       const blink::InterestGroup::Ad& ad) {
     return ad.metadata;
@@ -34,31 +40,6 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::InterestGroupAdDataView,
 
   static bool Read(blink::mojom::InterestGroupAdDataView data,
                    blink::InterestGroup::Ad* out);
-};
-
-template <>
-struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::InterestGroupSizeDataView,
-                                        blink::InterestGroup::Size> {
-  static double width(const blink::InterestGroup::Size& size) {
-    return size.width;
-  }
-
-  static blink::InterestGroup::Size::LengthUnit width_units(
-      const blink::InterestGroup::Size& size) {
-    return size.width_units;
-  }
-
-  static double height(const blink::InterestGroup::Size& size) {
-    return size.height;
-  }
-
-  static blink::InterestGroup::Size::LengthUnit height_units(
-      const blink::InterestGroup::Size& size) {
-    return size.height_units;
-  }
-
-  static bool Read(blink::mojom::InterestGroupSizeDataView data,
-                   blink::InterestGroup::Size* out);
 };
 
 template <>
@@ -139,9 +120,9 @@ struct BLINK_COMMON_EXPORT
     return interest_group.bidding_wasm_helper_url;
   }
 
-  static const absl::optional<GURL>& daily_update_url(
+  static const absl::optional<GURL>& update_url(
       const blink::InterestGroup& interest_group) {
-    return interest_group.daily_update_url;
+    return interest_group.update_url;
   }
 
   static const absl::optional<GURL>& trusted_bidding_signals_url(
@@ -169,8 +150,7 @@ struct BLINK_COMMON_EXPORT
     return interest_group.ad_components;
   }
 
-  static const absl::optional<
-      base::flat_map<std::string, blink::InterestGroup::Size>>&
+  static const absl::optional<base::flat_map<std::string, blink::AdSize>>&
   ad_sizes(const blink::InterestGroup& interest_group) {
     return interest_group.ad_sizes;
   }

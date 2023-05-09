@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Zipping <ph name="NUMBER_OF_ITEMS" /> items…</translation>
 <translation id="1722687688096767818">Adding profile…</translation>
 <translation id="1726100011689679555">Name servers</translation>
+<translation id="1727562178154619254">Ready to sync</translation>
 <translation id="1729953886957086472">German (Germany)</translation>
 <translation id="1730235522912993863">Chinese Cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> items copied.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Image resolution</translation>
 <translation id="1972984168337863910">Expand files feedback panels</translation>
 <translation id="1995337122023280937">Go to file location</translation>
-<translation id="1999709132469742660">File access by all URLs</translation>
 <translation id="2001796770603320721">Manage in Drive</translation>
 <translation id="2009067268969781306">Formatting a drive will delete all data stored on it. This action cannot be undone.</translation>
 <translation id="2025955442973426285">Tigrinya</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Latin American</translation>
 <translation id="5330145655348521461">These files opened on a different desktop. Move to <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) to view it.</translation>
 <translation id="5330512191124428349">Get info</translation>
-<translation id="5337538975554986899">File access by all URLs except <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Manage Bruschetta sharing</translation>
 <translation id="535792325654997756">Person with cats</translation>
 <translation id="5358764674931277">Frame rate</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">An error occurred during installation of your Linux application.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Copy operation failed, unexpected error: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">New search features available</translation>
 <translation id="5926082595146149752">Dutch (Netherlands) with US International PC keyboard</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, activate after device setup</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Certificates not loaded</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Share folder with Bruschetta</translation>
+<translation id="6750737795876287924">Current directory</translation>
 <translation id="6751256176799620176">1 folder selected</translation>
 <translation id="6755827872271341378">Chrome OS Flex device</translation>
 <translation id="6790428901817661496">Play</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Folders</translation>
 <translation id="6976795442547527108">Lion</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">All time</translation>
 <translation id="6989942356279143254">Swedish</translation>
 <translation id="6990081529015358884">You have run out of space</translation>
 <translation id="6993826899923627728">These items are in your bin</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">No recent images</translation>
 <translation id="7460898608667578234">Ukrainian</translation>
 <translation id="7469894403370665791">Automatically connect to this network</translation>
-<translation id="7481358317100446445">Ready</translation>
 <translation id="7486315294984620427">To drop files in Parallels Desktop, the file must be copied to Windows files.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam phonetic</translation>
@@ -941,6 +940,7 @@
 <translation id="8492972329130824181">Home network is not available. Mobile data roaming must be enabled to connect.</translation>
 <translation id="8499098729323186194">Extracting <ph name="NUMBER_OF_ITEMS" /> items…</translation>
 <translation id="8502913769543567768">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, activate after device setup, managed by your administrator</translation>
+<translation id="8512483403832814140">Any time</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="853494022971700746">French (France)</translation>
 <translation id="8540608333167683902">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, details</translation>

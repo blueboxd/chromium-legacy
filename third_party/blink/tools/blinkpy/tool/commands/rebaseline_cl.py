@@ -202,8 +202,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if options.fill_missing:
             self.fill_in_missing_results(test_baseline_set)
 
-        self.rebaseline(options, test_baseline_set)
-        return 0
+        return self.rebaseline(options, test_baseline_set)
 
     def check_ok_to_run(self):
         unstaged_baselines = self.unstaged_baselines()
@@ -291,17 +290,19 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             _log.info('Could not read test names from %s', filename)
         return self._make_test_baseline_set_for_tests(tests, builds_to_results)
 
-    def _make_test_baseline_set_for_tests(self, tests, builds_to_results):
+    def _make_test_baseline_set_for_tests(self, test_patterns,
+                                          builds_to_results):
         """Determines the set of test baselines to fetch from a list of tests.
 
         Args:
-            tests: A list of tests.
+            tests_patterns: A list of test patterns (e.g., directories).
             builds_to_results: A dict mapping Builds to lists of WebTestResults.
 
         Returns:
             A TestBaselineSet object.
         """
-        test_baseline_set = TestBaselineSet(self._tool)
+        test_baseline_set = TestBaselineSet(self._tool.builders)
+        tests = self._tool.port_factory.get().tests(test_patterns)
         for test, (build, builder_results) in itertools.product(
                 tests, builds_to_results.items()):
             for step_results in builder_results:
@@ -337,7 +338,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 for f in files_in_cl if f.startswith(test_base)
             }
 
-        test_baseline_set = TestBaselineSet(self._tool, prefix_mode=False)
+        test_baseline_set = TestBaselineSet(self._tool.builders)
         for build, builder_results in builds_to_results.items():
             for step_results in builder_results:
                 tests_to_rebaseline = self._tests_to_rebaseline(
@@ -419,17 +420,17 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             self._tool.builders.port_name_for_builder_name(b)
             for b in self.selected_try_bots
         }
-        for test_prefix in test_baseline_set.test_prefixes():
-            build_port_pairs = test_baseline_set.build_port_pairs(test_prefix)
+        for test in test_baseline_set.all_tests():
+            build_port_pairs = test_baseline_set.build_port_pairs(test)
             missing_ports = all_ports - {p for _, p in build_port_pairs}
             if not missing_ports:
                 continue
-            _log.info('For %s:', test_prefix)
+            _log.info('For %s:', test)
             for port in sorted(missing_ports):
                 build = self._choose_fill_in_build(port, build_port_pairs)
                 _log.info('Using "%s" build %d for %s.', build.builder_name,
                           build.build_number, port)
-                test_baseline_set.add(test_prefix, build, port_name=port)
+                test_baseline_set.add(test, build, port_name=port)
         return test_baseline_set
 
     def _choose_fill_in_build(self, target_port, build_port_pairs):

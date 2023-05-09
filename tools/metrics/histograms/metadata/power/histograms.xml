@@ -737,7 +737,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.AmbientLightOnResume" units="lux"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>bkersten@chromium.org</owner>
   <owner>slangley@chromium.org</owner>
   <summary>
@@ -1082,7 +1082,7 @@ chromium-metrics-reviews@google.com.
   <token key="BatteryCapacityType" variants="BatteryCapacityType"/>
 </histogram>
 
-<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2023-06-25">
+<histogram name="Power.BatteryPercentDrop" units="%" expires_after="2023-08-27">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -1142,17 +1142,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS remaining battery charge as percent of the maximum battery charge,
     sampled when charging starts.
-  </summary>
-</histogram>
-
-<histogram name="Power.BatterySamplingDelay" units="microseconds"
-    expires_after="2023-04-16">
-  <owner>etiennep@chromium.org</owner>
-  <owner>fdoray@chromium.org</owner>
-  <summary>
-    The delay in microseconds between the time a battery charge level query was
-    schedule and the time the state is made available, reported everytime the
-    battery charge level is sampled. Reported for all users on Windows and Mac.
   </summary>
 </histogram>
 
@@ -1425,7 +1414,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.DimEvent{PowerSource}" enum="PowerDimEvent"
-    expires_after="2023-03-01">
+    expires_after="2024-03-01">
   <owner>mqg@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
   <summary>
@@ -1681,7 +1670,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.ForegroundRadio.Wakeups.Cell.30Seconds"
-    enum="RadioSignalLevel" expires_after="2023-06-28">
+    enum="RadioSignalLevel" expires_after="2023-08-27">
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@google.com</owner>
   <owner>skyostil@chromium.org</owner>
@@ -2039,7 +2028,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.LockEvent{PowerSource}" enum="PowerLockEvent"
-    expires_after="2023-03-01">
+    expires_after="2024-03-01">
   <owner>mqg@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
   <summary>
@@ -2119,7 +2108,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PC10inS0ixRuntimeResidencyRate" units="%"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>skardach@google.com</owner>
   <owner>svenva@google.com</owner>
   <owner>chromeos-platform-power@google.com</owner>
@@ -2138,7 +2127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PC10RuntimeResidencyRate" units="%"
-    expires_after="2023-06-30">
+    expires_after="2023-09-03">
   <owner>skardach@google.com</owner>
   <owner>svenva@google.com</owner>
   <owner>chromeos-platform-power@google.com</owner>
@@ -2195,7 +2184,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressInLaptopMode"
-    enum="PowerButtonPressType" expires_after="2023-07-02">
+    enum="PowerButtonPressType" expires_after="2023-09-03">
   <owner>minch@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -2206,7 +2195,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressInTabletMode"
-    enum="PowerButtonPressType" expires_after="2023-07-02">
+    enum="PowerButtonPressType" expires_after="2023-09-03">
   <owner>minch@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -2408,7 +2397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.{HpsEvent}.DurationSeconds" units="seconds"
-    expires_after="2023-03-01">
+    expires_after="2024-03-01">
   <owner>mqg@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
   <summary>
@@ -2427,7 +2416,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.DimImminent.Action" enum="PowerMLDimImminentAction"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -2437,7 +2426,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.ModelDim.Result" enum="PowerMLFinalResult"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -2447,7 +2436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.ModelNoDim.Result" enum="PowerMLFinalResult"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -2522,7 +2511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCanceledDuration" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>
@@ -2534,7 +2523,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimModel.RequestCompleteDuration" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-10">
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <owner>napper@chromium.org</owner>

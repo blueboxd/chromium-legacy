@@ -96,7 +96,7 @@ AuctionWorkletDevToolsAgentHost::~AuctionWorkletDevToolsAgentHost() = default;
 
 void AuctionWorkletDevToolsAgentHost::WorkletDestroyed() {
   worklet_ = nullptr;
-  auto retain_this = ForceDetachAllSessionsImpl();
+  ForceDetachAllSessions();
   associated_agent_remote_.reset();
 }
 

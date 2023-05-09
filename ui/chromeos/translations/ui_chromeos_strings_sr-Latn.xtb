@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Stavke (<ph name="NUMBER_OF_ITEMS" />) se dodaju u datoteku...</translation>
 <translation id="1722687688096767818">Dodaje se profil…</translation>
 <translation id="1726100011689679555">Serveri imena</translation>
+<translation id="1727562178154619254">Spremno za sinhronizaciju</translation>
 <translation id="1729953886957086472">nemački (Nemačka)</translation>
 <translation id="1730235522912993863">kineski, čangčije</translation>
 <translation id="1731889557567069540">Kopiranih stavki: <ph name="NUMBER_OF_ITEMS" />.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Rezolucija slike</translation>
 <translation id="1972984168337863910">Proširi okna za povratne informacije o datotekama</translation>
 <translation id="1995337122023280937">Idi na lokaciju datoteke</translation>
-<translation id="1999709132469742660">Pristup fajlu preko svih URL-ova</translation>
 <translation id="2001796770603320721">Upravljajte na Disku</translation>
 <translation id="2009067268969781306">Formatiranjem diska izbrisaće se svi podaci sačuvani na njemu. Ova radnja ne može da se opozove.</translation>
 <translation id="2025955442973426285">tigrinja</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Latinska Amerika</translation>
 <translation id="5330145655348521461">Ove datoteke su otvorene na drugom profilu. Pređite na <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) da biste ih pogledali.</translation>
 <translation id="5330512191124428349">Preuzmi podatke</translation>
-<translation id="5337538975554986899">Pristup fajlu preko svih URL-ova osim <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Upravljajte deljenjem sa virtuelnom mašinom Bruschetta</translation>
 <translation id="535792325654997756">Osoba sa mačkama</translation>
 <translation id="5358764674931277">Brzina kadrova</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Došlo je do greške tokom instaliranja Linux aplikacije.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Operacija kopiranja nije uspela, neočekivana greška: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Dostupne su nove funkcije pretrage</translation>
 <translation id="5926082595146149752">holandski (Holandija) sa američkom internacionalnom tastaturom za računar</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, aktiviraj posle podešavanja uređaja</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Sertifikati nisu otpremljeni</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Delite folder sa virtuelnom mašinom Bruschetta</translation>
+<translation id="6750737795876287924">Aktuelni direktorijum</translation>
 <translation id="6751256176799620176">Izabran je 1 folder</translation>
 <translation id="6755827872271341378">Chrome OS Flex uređaj</translation>
 <translation id="6790428901817661496">Pusti</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Direktorijumi</translation>
 <translation id="6976795442547527108">Lav</translation>
 <translation id="6979158407327259162">Google disk</translation>
-<translation id="6979737339423435258">Oduvek</translation>
 <translation id="6989942356279143254">švedski</translation>
 <translation id="6990081529015358884">Ponestalo vam je prostora</translation>
 <translation id="6993826899923627728">Ove stavke su u otpadu</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Nema nedavnih slika</translation>
 <translation id="7460898608667578234">ukrajinski</translation>
 <translation id="7469894403370665791">Automatski se povezuj sa ovom mrežom</translation>
-<translation id="7481358317100446445">Spremno</translation>
 <translation id="7486315294984620427">Da biste otpustili fajlove na Parallels Desktop, morate da ih kopirate u Windows fajlove.</translation>
 <translation id="749452993132003881">hiragana</translation>
 <translation id="7495372004724182530">fonetski malajalam</translation>
@@ -941,6 +940,7 @@
 <translation id="8492972329130824181">Kućna mreža nije dostupna. Prenos podataka u romingu mora da bude omogućen radi povezivanja.</translation>
 <translation id="8499098729323186194">Izdvajaju se stavke (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="8502913769543567768"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, aktiviraj posle podešavanja uređaja, upravlja administrator</translation>
+<translation id="8512483403832814140">Bilo kada</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="853494022971700746">francuski (Francuska)</translation>
 <translation id="8540608333167683902"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, detalji</translation>

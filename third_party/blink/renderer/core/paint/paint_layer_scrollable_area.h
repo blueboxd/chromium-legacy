@@ -47,6 +47,7 @@
 #include "base/check_op.h"
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -622,11 +623,16 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return last_cull_rect_update_scroll_position_;
   }
 
+  CompositorElementId GetScrollCornerElementId() const;
+
  private:
   // This also updates main thread scrolling reasons and the LayoutBox's
   // background paint location.
   bool ComputeNeedsCompositedScrolling(
       bool force_prefer_compositing_to_lcd_text);
+  int ComputeHypotheticalScrollbarThickness(
+      ScrollbarOrientation,
+      bool should_include_overlay_thickness) const;
 
   bool NeedsScrollbarReconstruction() const;
 
@@ -658,10 +664,25 @@ class CORE_EXPORT PaintLayerScrollableArea final
     kDependsOnOverflow,
     kOverflowIndependent
   };
+  enum ComputeScrollbarExistenceReason {
+    kLayout,
+    kStyleChange,
+    kOverflowRecalc,
+    kRootScrollerChange,
+  };
   void ComputeScrollbarExistence(
+      ComputeScrollbarExistenceReason,
       bool& needs_horizontal_scrollbar,
       bool& needs_vertical_scrollbar,
       ComputeScrollbarExistenceOption = kDependsOnOverflow) const;
+
+  void TraceComputeScrollbarExistence(ComputeScrollbarExistenceReason reason,
+                                      bool needs_horizontal_scrollbar,
+                                      bool needs_vertical_scrollbar,
+                                      ComputeScrollbarExistenceOption option,
+                                      bool early_exit,
+                                      mojom::blink::ScrollbarMode h_mode,
+                                      mojom::blink::ScrollbarMode v_mode) const;
 
   // If the content fits entirely in the area without auto scrollbars, returns
   // true to try to remove them. This is a heuristic and can be incorrect if the
@@ -786,6 +807,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   // MainThreadScrollingReason due to the properties of the LayoutObject
   uint32_t non_composited_main_thread_scrolling_reasons_;
+
+  // These are cached after layout to avoid computation of custom scrollbar
+  // dimensions (requiring layout) outside of a lifecycle update.
+  int hypothetical_horizontal_scrollbar_thickness_ = 0;
+  int hypothetical_vertical_scrollbar_thickness_ = 0;
 
   // These are not bitfields because they need to be passed as references.
   bool horizontal_scrollbar_previously_was_overlay_ = false;

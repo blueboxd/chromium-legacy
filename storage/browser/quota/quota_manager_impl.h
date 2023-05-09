@@ -21,6 +21,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list_types.h"
+#include "base/scoped_observation_traits.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -32,11 +34,13 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "storage/browser/quota/quota_availability.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_database.h"
 #include "storage/browser/quota/quota_internals.mojom.h"
+#include "storage/browser/quota/quota_manager_observer.mojom.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -380,8 +384,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void GetStatistics(GetStatisticsCallback callback) override;
   void RetrieveBucketsTable(RetrieveBucketsTableCallback callback) override;
   void GetGlobalUsageForInternals(
-      storage::mojom::StorageType storage_type,
+      blink::mojom::StorageType storage_type,
       GetGlobalUsageForInternalsCallback callback) override;
+  // Used from quota-internals page to test behavior of the storage pressure
+  // callback.
+  void SimulateStoragePressure(const url::Origin& origin_url) override;
+  void IsSimulateStoragePressureAvailable(
+      IsSimulateStoragePressureAvailableCallback callback) override;
 
   // QuotaEvictionHandler.
   void EvictExpiredBuckets(StatusCallback done) override;
@@ -483,6 +492,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   }
 
   bool is_db_disabled_for_testing() { return db_disabled_; }
+
+  void AddObserver(
+      mojo::PendingRemote<storage::mojom::QuotaManagerObserver> observer);
 
  protected:
   ~QuotaManagerImpl() override;
@@ -666,11 +678,18 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void DidRazeForReBootstrap(QuotaError raze_and_reopen_result);
   void OnComplete(QuotaError result);
 
+  void NotifyUpdatedBucket(const QuotaErrorOr<BucketInfo>& result);
+  void OnBucketDeleted(
+      base::OnceCallback<void(QuotaErrorOr<mojom::BucketTableEntryPtr>)>
+          callback,
+      QuotaErrorOr<mojom::BucketTableEntryPtr> result);
+
   void DidGetQuotaSettingsForBucketCreation(
       const BucketInitParams& bucket_params,
       base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback,
       const QuotaSettings& settings);
-  void DidGetBucket(base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback,
+  void DidGetBucket(bool notify_update_bucket,
+                    base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback,
                     QuotaErrorOr<BucketInfo> result);
   void DidGetBucketCheckExpiration(
       const BucketInitParams& params,
@@ -694,15 +713,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
       base::OnceCallback<void(QuotaErrorOr<std::set<BucketInfo>>)> callback,
       QuotaErrorOr<std::set<BucketInfo>> result);
   void DidGetModifiedBetween(GetBucketsCallback callback,
-                             blink::mojom::StorageType type,
                              QuotaErrorOr<std::set<BucketLocator>> result);
 
   void MaybeRunStoragePressureCallback(const blink::StorageKey& storage_key,
                                        int64_t total_space,
                                        int64_t available_space);
-  // Used from quota-internals page to test behavior of the storage pressure
-  // callback.
-  void SimulateStoragePressure(const url::Origin& origin_url) override;
 
   // Evaluates disk statistics to identify storage pressure
   // (low disk space availability) and starts the storage
@@ -829,6 +844,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   std::map<BucketDataDeleter*, std::unique_ptr<BucketDataDeleter>>
       bucket_data_deleters_;
   std::unique_ptr<StorageKeyGathererTask> storage_key_gatherer_;
+
+  mojo::RemoteSet<storage::mojom::QuotaManagerObserver> observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -38,7 +38,6 @@ ci.defaults.set(
     free_space = builders.free_space.standard,
     build_numbers = True,
     execution_timeout = 3 * time.hour,
-    goma_backend = None,
     service_account = (
         "chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com"
     ),
@@ -60,7 +59,7 @@ def fyi_reclient_staging_builder(
             "chromium-cq-staging-builder@chops-service-accounts.iam.gserviceaccount.com"
         ),
         reclient_version = "staging",
-        reclient_scandeps_server = False,
+        reclient_scandeps_server = True,
         **kwargs):
     trusted_instance = reclient_instance % "trusted"
     unstrusted_instance = reclient_instance % "untrusted"
@@ -114,12 +113,17 @@ def fyi_reclient_test_builder(
         name,
         console_view_category,
         **kwargs):
+    reclient_bootstrap_env = kwargs.pop("reclient_bootstrap_env", {})
+    reclient_bootstrap_env.update({
+        "RBE_compression_threshold": "4000000",
+    })
     return fyi_reclient_staging_builder(
         name = name,
         console_view_category = console_view_category,
         reclient_instance = "rbe-chromium-%s-test",
         reclient_version = "test",
         untrusted_service_account = ci.DEFAULT_SERVICE_ACCOUNT,
+        reclient_bootstrap_env = reclient_bootstrap_env,
         **kwargs
     )
 
@@ -159,7 +163,6 @@ fyi_reclient_test_builder(
     ),
     os = os.LINUX_DEFAULT,
     console_view_category = "linux",
-    reclient_scandeps_server = True,
 )
 
 fyi_reclient_staging_builder(
@@ -213,33 +216,6 @@ fyi_reclient_test_builder(
     reclient_profiler_service = "reclient-mac",
 )
 
-fyi_reclient_test_builder(
-    name = "Mac Builder reclient scandeps test",
-    builder_spec = builder_config.copy_from(
-        "ci/Mac Builder",
-        lambda spec: structs.evolve(
-            spec,
-            gclient_config = structs.extend(
-                spec.gclient_config,
-                apply_configs = [
-                    "reclient_test",
-                ],
-            ),
-            build_gs_bucket = "chromium-fyi-archive",
-        ),
-    ),
-    builderless = True,
-    cores = None,
-    os = os.MAC_DEFAULT,
-    console_view_category = "mac",
-    priority = 35,
-    reclient_bootstrap_env = {
-        "GLOG_vmodule": "bridge*=2",
-    },
-    reclient_profiler_service = "reclient-mac",
-    reclient_scandeps_server = True,
-)
-
 fyi_reclient_staging_builder(
     name = "Win x64 Builder reclient staging",
     builder_spec = builder_config.copy_from(
@@ -260,6 +236,7 @@ fyi_reclient_staging_builder(
     os = os.WINDOWS_ANY,
     console_view_category = "win",
     execution_timeout = 5 * time.hour,
+    reclient_scandeps_server = False,
 )
 
 fyi_reclient_test_builder(
@@ -282,6 +259,7 @@ fyi_reclient_test_builder(
     os = os.WINDOWS_ANY,
     console_view_category = "win",
     execution_timeout = 5 * time.hour,
+    reclient_scandeps_server = False,
 )
 
 fyi_reclient_staging_builder(
@@ -304,6 +282,7 @@ fyi_reclient_staging_builder(
     ),
     os = os.LINUX_DEFAULT,
     console_view_category = "linux",
+    reclient_scandeps_server = False,
 )
 
 fyi_reclient_test_builder(
@@ -326,6 +305,7 @@ fyi_reclient_test_builder(
     ),
     os = os.LINUX_DEFAULT,
     console_view_category = "linux",
+    reclient_scandeps_server = False,
 )
 
 fyi_reclient_test_builder(
@@ -351,33 +331,6 @@ fyi_reclient_test_builder(
     reclient_bootstrap_env = {
         "GLOG_vmodule": "bridge*=2",
     },
-    xcode = xcode.x14main,
-)
-
-fyi_reclient_test_builder(
-    name = "ios-simulator reclient scandeps test",
-    builder_spec = builder_config.copy_from(
-        "ci/ios-simulator",
-        lambda spec: structs.evolve(
-            spec,
-            gclient_config = structs.extend(
-                spec.gclient_config,
-                apply_configs = [
-                    "reclient_test",
-                ],
-            ),
-            build_gs_bucket = "chromium-fyi-archive",
-        ),
-    ),
-    builderless = True,
-    cores = None,
-    os = os.MAC_DEFAULT,
-    console_view_category = "ios",
-    priority = 35,
-    reclient_bootstrap_env = {
-        "GLOG_vmodule": "bridge*=2",
-    },
-    reclient_scandeps_server = True,
     xcode = xcode.x14main,
 )
 
@@ -457,32 +410,6 @@ fyi_reclient_test_builder(
     },
 )
 
-fyi_reclient_test_builder(
-    name = "mac-arm64-rel reclient scandeps test",
-    builder_spec = builder_config.copy_from(
-        "ci/mac-arm64-rel",
-        lambda spec: structs.evolve(
-            spec,
-            gclient_config = structs.extend(
-                spec.gclient_config,
-                apply_configs = [
-                    "reclient_test",
-                ],
-            ),
-            build_gs_bucket = "chromium-fyi-archive",
-        ),
-    ),
-    builderless = True,
-    cores = None,
-    os = os.MAC_DEFAULT,
-    console_view_category = "mac",
-    priority = 35,
-    reclient_bootstrap_env = {
-        "GLOG_vmodule": "bridge*=2",
-    },
-    reclient_scandeps_server = True,
-)
-
 ci.builder(
     name = "Comparison Linux (reclient vs reclient remote links)",
     executable = "recipe:reclient_reclient_comparison",
@@ -516,6 +443,7 @@ ci.builder(
         "RBE_use_unified_uploads": "false",
         "RBE_experimental_sysroot_do_not_upload": "true",
         "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+        "RBE_compression_threshold": "4000000",
     },
     reclient_cache_silo = "Comparison Linux remote links - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,

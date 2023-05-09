@@ -9,6 +9,7 @@
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">Otkriven je zaštitni zid</translation>
 <translation id="1075811647922107217">Veličina stranice</translation>
+<translation id="1082009148392559545">Čuvar ekrana se preuzima</translation>
 <translation id="1094693127011229778">IP adresa nije dostupna</translation>
 <translation id="1113892970288677790">Odaberite neke od izabranih ilustracija i slika</translation>
 <translation id="1119447706177454957">Interna greška</translation>
@@ -90,6 +91,7 @@
 <translation id="1717874160321062422">Upravljaju <ph name="FIRST_MANAGER" /> i <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">Serveri imena</translation>
 <translation id="1731082422893354635">Bluetooth tačped</translation>
+<translation id="1738949837603788263"><ph name="ZONE_NUMBER" />. zona</translation>
 <translation id="1745577949879301685">Učitavanje slika nije uspelo. Proverite mrežnu vezu ili probajte da ponovo učitate sliku.</translation>
 <translation id="1751249301761991853">Lično</translation>
 <translation id="1753496554272155572">Izađite iz pregleda pozadine</translation>
@@ -163,6 +165,7 @@
 <translation id="2346474577291266260">Odličan (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2364498172489649528">Prošlo</translation>
+<translation id="2367335866686097760">Taster za mapiranje tastera</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">Pošalji izveštaj sa povratnim informacijama</translation>
 <translation id="2407209115954268704">Status zaključavanja SIM kartice</translation>
@@ -235,10 +238,11 @@
 <translation id="319101249942218879">Slika avatara je promenjena</translation>
 <translation id="3192947282887913208">Audio datoteke</translation>
 <translation id="3199982728237701504">Uvlačenje dokumenta (dvostrano)</translation>
+<translation id="3211671540163313381">D-pad za mapiranje tastera</translation>
 <translation id="3226405216343213872">Traže se skeneri</translation>
+<translation id="3226657629376379887">Meni sa radnjama za raspored</translation>
 <translation id="3246869037381808805">Zadaci štampanja stariji od 1 dana se uklanjaju</translation>
 <translation id="3268178239013324452">Nije uspelo – vrata su otvorena</translation>
-<translation id="3275506277319227640">Fiksiraj u smeru <ph name="DIRECTION" /></translation>
 <translation id="3275729367986477355">Slika avatara</translation>
 <translation id="3283504360622356314">{0,plural, =1{Izmeni fajl}one{Izmeni fajlove}few{Izmeni fajlove}other{Izmeni fajlove}}</translation>
 <translation id="3286515922899063534"><ph name="CURRENT" /> GHz</translation>
@@ -275,7 +279,6 @@
 <translation id="3595596368722241419">Baterija je puna</translation>
 <translation id="3600339377155080675">Preslikajte ekran</translation>
 <translation id="3602290021589620013">Pregled</translation>
-<translation id="360282891121575443">Drugi korisnici mogu da ažuriraju slike u deljenim albumima. Ako dođe do promene na dnevnom nivou, možda će se prikazati pozadine koje trenutno nisu u albumu.</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Promenite pozadinu</translation>
 <translation id="360565022852130722">WiFi mreža je obezbeđena slabim protokolom WEP 802.1x</translation>
@@ -357,7 +360,6 @@
 <translation id="4311195029067684288">Potpuno</translation>
 <translation id="4333390807948134856">Taster <ph name="KEY_NAME" /> je pritisnut</translation>
 <translation id="435692326371619097">Upravljajte podešavanjima naziva pristupne tačke mreže. Nazivi pristupnih tačaka uspostavljaju vezu između mobilne mreže i interneta. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
-<translation id="4370033095251616914">Fiksiraj na manjoj strani</translation>
 <translation id="4378373042927530923">Nije pokrenuto</translation>
 <translation id="4378551569595875038">Povezuje se...</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -568,6 +570,7 @@
 <translation id="6117895505466548728"><ph name="TITLE" />, još <ph name="NUMBER" /> albuma</translation>
 <translation id="6122191549521593678">Onlajn</translation>
 <translation id="6122277663991249694">Usluga metoda unosa za Chrome OS</translation>
+<translation id="6136285399872347291">taster za brisanje unazad</translation>
 <translation id="6137767437444130246">Korisnički sertifikat</translation>
 <translation id="6146993107019042706">Da biste završili, unesite novu lozinku</translation>
 <translation id="6147514244879357420">PNG</translation>
@@ -597,6 +600,7 @@
 <translation id="636850387210749493">Prijavljivanje za izdanje za preduzeća</translation>
 <translation id="6379086450106841622">Dodirni ekran</translation>
 <translation id="6381741036071372448">Testirajte tastaturu</translation>
+<translation id="6382182670717268353">Pregled Čuvara ekrana</translation>
 <translation id="6388847657025262518">Mehanizam za uvlačenje dokumenata na skeneru je zaglavljen. Proverite mehanizam i probajte ponovo.</translation>
 <translation id="6394634179843537518">Dodajte fajl</translation>
 <translation id="6410257289063177456">Datoteke slika</translation>
@@ -615,6 +619,7 @@
 <translation id="650266656685499220">Da biste napravili albume, idite u Google slike</translation>
 <translation id="6516990319416533844">Da biste testirali brzinu punjenja baterije, dozvolite da se baterija malo isprazni</translation>
 <translation id="6517239166834772319">Istražite</translation>
+<translation id="6526200165918397681">Prepoznaj pozadinu</translation>
 <translation id="6527081081771465939">Nepoznat bezbednosni protokol za WiFi</translation>
 <translation id="6535178685492749208">Oflajn ste. Povratne informacije će biti poslate kasnije.</translation>
 <translation id="65587193855025101">Položeno</translation>
@@ -634,7 +639,6 @@
 <translation id="6657585470893396449">Lozinka</translation>
 <translation id="6659594942844771486">Kartica</translation>
 <translation id="6692996468359469499">Pronađite informacije u vezi sa vašim izborom</translation>
-<translation id="6698459586333070823">Drugi korisnici mogu da ažuriraju deljene albume</translation>
 <translation id="6704062477274546131">DNS razrešavanje</translation>
 <translation id="6723839937902243910">Energija</translation>
 <translation id="6723847290197874913">Pozadinsko osvetljenje tastature</translation>
@@ -671,6 +675,7 @@
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Neuspešno – ovlašćenje nije uspelo</translation>
 <translation id="7103252855940681301"><ph name="INDEX" />. uređaj od <ph name="COUNT" /> sa nazivom <ph name="NAME" />.</translation>
+<translation id="7108668606237948702">enter</translation>
 <translation id="7130438335435247835">Naziv pristupne tačke (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Server imena}one{Serveri imena}few{Serveri imena}other{Serveri imena}}</translation>
 <translation id="7143207342074048698">Povezivanje</translation>
@@ -685,6 +690,7 @@
 <translation id="7177485034254901881"><ph name="MANAGER" /> upravlja ovim <ph name="DEVICE_TYPE" /> uređajem. Administratori mogu da konfigurišu uređaj daljinski.</translation>
 <translation id="7180611975245234373">Osveži</translation>
 <translation id="7180865173735832675">Prilagodi</translation>
+<translation id="7184043045742675738">Kliknite na bilo koji taster da biste prilagodili dugme. Promenite položaj tastera pomoću tastera miša ili tastera sa strelicama.</translation>
 <translation id="7212734716605298123">Ažuriranja firmvera za eksterne uređaje</translation>
 <translation id="7216409898977639127">Mobilni operater</translation>
 <translation id="725133483556299729">Izaberite imejl</translation>
@@ -726,6 +732,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">USB dodirni ekran</translation>
 <translation id="7595982850646262331">Još <ph name="TIME_VALUE" /></translation>
+<translation id="7613724632293948900">Promenite položaj pomoću tastera miša ili tastera sa strelicama.</translation>
 <translation id="7620771111601174153">Saznajte više u Centru za pomoć</translation>
 <translation id="763165478673169849">Vreme poslednjeg resetovanja</translation>
 <translation id="7648838807254605802">Veliko HTTPS kašnjenje</translation>
@@ -789,7 +796,6 @@
 <translation id="8226628635270268143">Odaberite omiljene slike i albume</translation>
 <translation id="8227119283605456246">Priloži datoteku</translation>
 <translation id="8230672074305416752">Pingovanje podrazumevanog mrežnog prolaza nije uspelo</translation>
-<translation id="8242426110754782860">Nastavi</translation>
 <translation id="8246209727385807362">Nepoznat mobilni operater</translation>
 <translation id="827422111966801947">Tamnoplava</translation>
 <translation id="8286154143153872371">Povežite se na mrežu i ponovo učitajte stranicu da biste videli pozadinu.</translation>
@@ -800,6 +806,7 @@
 <translation id="8318753676953949627">Nema slika</translation>
 <translation id="8336739000755212683">Promenite sliku naloga na uređaju</translation>
 <translation id="8347227221149377169">Zadaci štampanja</translation>
+<translation id="8351855506390808906">Tačka kontakta za mapiranje tastera</translation>
 <translation id="8352772353338965963">Dodajte nalog za višestruko prijavljivanje. Svim prijavljenim nalozima se može pristupiti bez lozinke, pa ovu funkciju treba koristiti samo sa pouzdanim nalozima.</translation>
 <translation id="8364946094152050673">Prazni serveri za imena</translation>
 <translation id="8372477600026034341">Dodatni hostovi</translation>
@@ -848,6 +855,7 @@
 <translation id="8798441408945964110">Naziv dobavljača</translation>
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="8818152010000655963">Pozadina</translation>
+<translation id="8820457400746201697">Premestite plavu tačku kontakta u radnju. Izaberite odgovarajući taster da biste ga prilagodili.</translation>
 <translation id="8834539327799336565">Trenutno povezani</translation>
 <translation id="8845001906332463065">Zatražite pomoć</translation>
 <translation id="8855781559874488009">Ne možete da se povežete sa HTTP veb-sajtovima kroz zaštitni zid</translation>
@@ -896,7 +904,7 @@
 <translation id="9137526406337347448">Google usluge</translation>
 <translation id="9138630967333032450">Levi taster shift</translation>
 <translation id="9149391708638971077">Pokreni test memorije</translation>
-<translation id="9157515863513902090">Fiksiraj na većoj strani</translation>
+<translation id="9161276708550942948">razmak</translation>
 <translation id="9173638680043580060">Preostalo je manje od minuta</translation>
 <translation id="917720651393141712">Testiraj</translation>
 <translation id="9188992814426075118">Tastatura može automatski da se podudara sa pozadinom</translation>

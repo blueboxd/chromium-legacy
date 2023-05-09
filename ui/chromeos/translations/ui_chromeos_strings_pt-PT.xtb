@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">A comprimir <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="1722687688096767818">A adicionar o perfil…</translation>
 <translation id="1726100011689679555">Servidores de nomes</translation>
+<translation id="1727562178154619254">Tudo pronto para sincronizar</translation>
 <translation id="1729953886957086472">Alemão (Alemanha)</translation>
 <translation id="1730235522912993863">Chinês cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> itens copiados.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Resolução da imagem</translation>
 <translation id="1972984168337863910">Expandir painéis de comentários dos ficheiros</translation>
 <translation id="1995337122023280937">Aceder à localização do ficheiro</translation>
-<translation id="1999709132469742660">O acesso ao ficheiro por todos os URLs</translation>
 <translation id="2001796770603320721">Gerir no Drive</translation>
 <translation id="2009067268969781306">Ao formatar uma unidade, todos os dados aí armazenados são eliminados. Não é possível anular esta ação.</translation>
 <translation id="2025955442973426285">Tigrínia</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Latino-americano</translation>
 <translation id="5330145655348521461">Estes ficheiros foram abertos num ambiente de trabalho diferente. Mova para <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para ver.</translation>
 <translation id="5330512191124428349">Obter informações</translation>
-<translation id="5337538975554986899">O acesso ao ficheiro por todos os URLs, exceto <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Gerir partilha da Bruschetta</translation>
 <translation id="535792325654997756">Pessoa com gatos</translation>
 <translation id="5358764674931277">Velocidade de fotogramas</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Ocorreu um erro durante a instalação da sua aplicação para Linux.</translation>
 <translation id="5912396950572065471">Formato</translation>
 <translation id="5913638992615760742">Falha na operação de cópia, erro inesperado: <ph name="ERROR_MESSAGE" />.</translation>
+<translation id="5918480239180455431">Novas funcionalidades de pesquisa disponíveis</translation>
 <translation id="5926082595146149752">Neerlandês (Países Baixos) com o teclado de PC americano internacional</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ativar após a configuração do dispositivo</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Certificados não carregados</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [ <ph name="ISSUED_TO" /> ]</translation>
 <translation id="6740270213273127264">Partilhe a pasta com a Bruschetta</translation>
+<translation id="6750737795876287924">Diretório atual</translation>
 <translation id="6751256176799620176">1 pasta selecionada</translation>
 <translation id="6755827872271341378">Dispositivo com ChromeOS Flex</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6976795442547527108">Leão</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Sempre</translation>
 <translation id="6989942356279143254">Sueco</translation>
 <translation id="6990081529015358884">Já não tem espaço</translation>
 <translation id="6993826899923627728">Estes itens estão no lixo</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Sem imagens recentes</translation>
 <translation id="7460898608667578234">Ucraniano</translation>
 <translation id="7469894403370665791">Ligar automaticamente a esta rede</translation>
-<translation id="7481358317100446445">Pronta</translation>
 <translation id="7486315294984620427">Para largar ficheiros no Parallels Desktop, o ficheiro tem de ser copiado para os ficheiros do Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Fonética malaiala</translation>
@@ -941,6 +940,7 @@
 <translation id="8492972329130824181">A rede doméstica não está disponível. O roaming de dados móveis tem de estar ativado para estabelecer a ligação.</translation>
 <translation id="8499098729323186194">A extrair <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="8502913769543567768">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, Ativar após a configuração do dispositivo, Gerida pelo administrador</translation>
+<translation id="8512483403832814140">Qualquer hora</translation>
 <translation id="8521441079177373948">Reino Unido</translation>
 <translation id="853494022971700746">Francês (França)</translation>
 <translation id="8540608333167683902">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, detalhes</translation>

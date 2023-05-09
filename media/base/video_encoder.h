@@ -25,6 +25,8 @@ class VideoFrame;
 MEDIA_EXPORT uint32_t GetDefaultVideoEncodeBitrate(gfx::Size frame_size,
                                                    uint32_t framerate);
 
+MEDIA_EXPORT int GetNumberOfThreadsForSoftwareEncoding(gfx::Size frame_size);
+
 // Encoded video frame, its data and metadata.
 struct MEDIA_EXPORT VideoEncoderOutput {
   VideoEncoderOutput();
@@ -81,6 +83,17 @@ class MEDIA_EXPORT VideoEncoder {
     HevcOptions hevc;
   };
 
+  struct MEDIA_EXPORT EncodeOptions {
+    explicit EncodeOptions(bool key_frame);
+    EncodeOptions();
+    EncodeOptions(const EncodeOptions&);
+    ~EncodeOptions();
+    bool key_frame = false;
+    // Per-frame codec-specific quantizer value.
+    // Should only be used when encoder configured with kExternal bitrate mode.
+    absl::optional<double> quantizer;
+  };
+
   // A sequence of codec specific bytes, commonly known as extradata.
   // If available, it should be given to the decoder as part of the
   // decoder config.
@@ -106,7 +119,7 @@ class MEDIA_EXPORT VideoEncoder {
     ~PendingEncode();
     EncoderStatusCB done_callback;
     scoped_refptr<VideoFrame> frame;
-    bool key_frame;
+    EncodeOptions options;
   };
 
   VideoEncoder();
@@ -140,7 +153,7 @@ class MEDIA_EXPORT VideoEncoder {
   // Encode() does not expect EOS frames, use Flush() to finalize the stream
   // and harvest the outputs.
   virtual void Encode(scoped_refptr<VideoFrame> frame,
-                      bool key_frame,
+                      const EncodeOptions& options,
                       EncoderStatusCB done_cb) = 0;
 
   // Adjust encoder options and the output callback for future frames, executing

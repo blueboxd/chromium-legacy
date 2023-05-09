@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_PERSONALIZATION_APP_AMBIENT_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_PERSONALIZATION_APP_AMBIENT_PROVIDER_IMPL_H_
 
+#include "ash/ambient/ambient_ui_settings.h"
 #include "ash/constants/ambient_theme.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
@@ -65,7 +66,7 @@ class PersonalizationAppAmbientProviderImpl
 
   // Notify WebUI the latest values.
   void OnAmbientModeEnabledChanged();
-  void OnAnimationThemeChanged();
+  void OnAmbientUiSettingsChanged();
   void OnTemperatureUnitChanged();
   void OnTopicSourceChanged();
   void OnAlbumsChanged();
@@ -76,7 +77,7 @@ class PersonalizationAppAmbientProviderImpl
 
   bool IsAmbientModeEnabled();
 
-  ash::AmbientTheme GetCurrentAnimationTheme();
+  AmbientUiSettings GetCurrentUiSettings();
 
   // Update the local `settings_` to server.
   void UpdateSettings();
@@ -104,10 +105,8 @@ class PersonalizationAppAmbientProviderImpl
   // Update topic source if needed.
   void MaybeUpdateTopicSource(ash::AmbientModeTopicSource topic_source);
 
-  void FetchGooglePhotosAlbumsPreviews(
-      const std::vector<std::string>& album_ids);
-  void OnGooglePhotosAlbumsPreviewsFetched(
-      const std::vector<GURL>& preview_urls);
+  void FetchPreviewImages();
+  void OnPreviewsFetched(const std::vector<GURL>& preview_urls);
 
   ash::PersonalAlbum* FindPersonalAlbumById(const std::string& album_id);
 
@@ -156,6 +155,9 @@ class PersonalizationAppAmbientProviderImpl
   // Whether there are pending updates.
   bool has_pending_updates_for_backend_ = false;
 
+  // Whether to update previews when `UpdateSettings()` returns successfully.
+  bool needs_update_previews_ = false;
+
   // A flag to record if the user has seen the ambient mode page.
   bool page_viewed_ = false;
 
@@ -167,7 +169,7 @@ class PersonalizationAppAmbientProviderImpl
   base::WeakPtrFactory<PersonalizationAppAmbientProviderImpl>
       read_weak_factory_{this};
   base::WeakPtrFactory<PersonalizationAppAmbientProviderImpl>
-      google_photos_albums_previews_weak_factory_{this};
+      previews_weak_factory_{this};
 };
 
 }  // namespace ash::personalization_app

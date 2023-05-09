@@ -729,6 +729,8 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_SAVE_BUTTON_ARIA_LABEL},
       {"tabDiscardingExceptionsHeader",
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_HEADER},
+      {"tabDiscardingExceptionsAdditionalSites",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADDITIONAL_SITES},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -1143,10 +1145,15 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_PASSWORD_ROW_PASSWORD_DETAIL_PAGE},
     {"importMenuItem", IDS_SETTINGS_PASSWORDS_IMPORT_MENU_ITEM},
     {"importPasswordsTitle", IDS_SETTINGS_PASSWORDS_IMPORT_TITLE},
+    {"importPasswordsErrorTitle", IDS_SETTINGS_PASSWORDS_IMPORT_ERROR_TITLE},
+    {"importPasswordsCompleteTitle",
+     IDS_SETTINGS_PASSWORDS_IMPORT_COMPLETE_TITLE},
+    {"importPasswordsSuccessTitle",
+     IDS_SETTINGS_PASSWORDS_IMPORT_SUCCESS_TITLE},
     {"importPasswordsChooseFile", IDS_SETTINGS_PASSWORDS_IMPORT_CHOOSE_FILE},
     {"importPasswordsSuccessTip", IDS_SETTINGS_PASSWORDS_IMPORT_SUCCESS_TIP},
-    {"importPasswordsFailuresSummary",
-     IDS_SETTINGS_PASSWORDS_IMPORT_FAILURES_SUMMARY},
+    {"importPasswordsDeleteFileOption",
+     IDS_SETTINGS_PASSWORDS_IMPORT_DELETE_FILE_OPTION},
     {"importPasswordsMissingPassword",
      IDS_SETTINGS_PASSWORDS_IMPORT_MISSING_PASSWORD},
     {"importPasswordsMissingURL", IDS_SETTINGS_PASSWORDS_IMPORT_MISSING_URL},
@@ -1322,8 +1329,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                             /*log_manager=*/nullptr));
 
   html_source->AddBoolean("showIbansSettings",
-                          base::FeatureList::IsEnabled(
-                              autofill::features::kAutofillFillIbanFields));
+                          autofill::ShouldShowIbanOnSettingsPage(
+                              personal_data->GetCountryCodeForExperimentGroup(),
+                              profile->GetPrefs()));
 
   html_source->AddBoolean(
       "fidoAuthenticationAvailableForAutofill",
@@ -1833,8 +1841,13 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   html_source->AddBoolean(
       "showChromeRootStoreCertificates",
-      GetChromeCertVerifierServiceParams(/*localstate=*/nullptr)
-          ->use_chrome_root_store);
+#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
+      GetChromeCertVerifierServiceParams(/*local_state=*/nullptr)
+          ->use_chrome_root_store
+#else
+      true
+#endif
+  );
 
   html_source->AddString("chromeRootStoreHelpCenterURL",
                          chrome::kChromeRootStoreSettingsHelpCenterURL);
@@ -2600,6 +2613,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_ALL_SITES_SORT_METHOD_STORAGE},
     {"siteSettingsAllSitesSortMethodName",
      IDS_SETTINGS_SITE_SETTINGS_ALL_SITES_SORT_METHOD_NAME},
+    {"siteSettingsFileSystemSiteListEditHeader",
+     IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_EDIT_HEADER},
+    {"siteSettingsFileSystemSiteListViewHeader",
+     IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_VIEW_HEADER},
     {"siteSettingsSiteEntryPartitionedLabel",
      IDS_SETTINGS_SITE_SETTINGS_SITE_ENTRY_PARTITIONED_LABEL},
     {"siteSettingsSiteRepresentationSeparator",

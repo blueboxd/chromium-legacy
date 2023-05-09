@@ -6,13 +6,17 @@
 
 #include <memory>
 
+#include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_installer.h"
+#include "chrome/browser/ash/bruschetta/bruschetta_pref_names.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +57,18 @@ class BruschettaInstallerViewBrowserTest : public DialogBrowserTest {
   BruschettaInstallerViewBrowserTest& operator=(
       const BruschettaInstallerViewBrowserTest&) = delete;
 
-  void SetUpOnMainThread() override {}
+  void SetUpOnMainThread() override {
+    base::Value::Dict pref;
+
+    base::Value::Dict config;
+    config.Set(prefs::kPolicyEnabledKey,
+               static_cast<int>(prefs::PolicyEnabledState::INSTALL_ALLOWED));
+    config.Set(prefs::kPolicyNameKey, "Config name");
+
+    pref.Set("test-config", std::move(config));
+    browser()->profile()->GetPrefs()->SetDict(prefs::kBruschettaVMConfiguration,
+                                              std::move(pref));
+  }
 
   void ShowUi(const std::string& name) override {
     BruschettaInstallerView::Show(browser()->profile(), GetBruschettaAlphaId());
@@ -116,20 +131,40 @@ IN_PROC_BROWSER_TEST_F(BruschettaInstallerViewBrowserTest, InstallThenCancel) {
 
 IN_PROC_BROWSER_TEST_F(BruschettaInstallerViewBrowserTest, InstallThenError) {
   ShowUi("default");
+  base::RunLoop run_loop;
   EXPECT_CALL(*installer_, Install);
   EXPECT_CALL(*installer_, Cancel).Times(AtLeast(1));
+  EXPECT_FALSE(view_->progress_bar_for_testing()->GetVisible());
 
+  // Accept, then we're in the installing state.
   view_->AcceptDialog();
   EXPECT_EQ(nullptr, view_->GetOkButton());
   EXPECT_NE(nullptr, view_->GetCancelButton());
+  EXPECT_TRUE(view_->progress_bar_for_testing()->GetVisible());
   EXPECT_EQ(view_->GetPrimaryMessage(),
             l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_ONGOING_TITLE));
 
+  // Fail, then we're in the cleaning up state.
   view_->Error(BruschettaInstallResult::kStartVmFailed);
-  EXPECT_NE(nullptr, view_->GetOkButton());
-  EXPECT_NE(nullptr, view_->GetCancelButton());
+  EXPECT_EQ(nullptr, view_->GetOkButton());
+  EXPECT_EQ(nullptr, view_->GetCancelButton());
+  EXPECT_TRUE(view_->progress_bar_for_testing()->GetVisible());
   EXPECT_EQ(view_->GetPrimaryMessage(),
             l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_ERROR_TITLE));
+  EXPECT_EQ(
+      view_->GetSecondaryMessage(),
+      l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_CLEANING_UP_MESSAGE));
+
+  // Run cleanup to completion, now we're in the error state.
+  run_loop.RunUntilIdle();
+  EXPECT_NE(nullptr, view_->GetOkButton());
+  EXPECT_NE(nullptr, view_->GetCancelButton());
+  EXPECT_FALSE(view_->progress_bar_for_testing()->GetVisible());
+  EXPECT_EQ(view_->GetPrimaryMessage(),
+            l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_ERROR_TITLE));
+  EXPECT_NE(
+      view_->GetSecondaryMessage(),
+      l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_CLEANING_UP_MESSAGE));
 
   view_->CancelDialog();
   ASSERT_TRUE(view_->GetWidget()->IsClosed());
@@ -164,6 +199,7 @@ IN_PROC_BROWSER_TEST_F(BruschettaInstallerViewBrowserTest, InstallThenSuccess) {
 
 IN_PROC_BROWSER_TEST_F(BruschettaInstallerViewBrowserTest, InstallWithRetry) {
   ShowUi("default");
+  base::RunLoop run_loop;
   EXPECT_CALL(*installer_, Install);
   EXPECT_CALL(*installer_, Cancel).Times(0);
 
@@ -171,13 +207,17 @@ IN_PROC_BROWSER_TEST_F(BruschettaInstallerViewBrowserTest, InstallWithRetry) {
   view_->AcceptDialog();
   EXPECT_EQ(nullptr, view_->GetOkButton());
   EXPECT_NE(nullptr, view_->GetCancelButton());
+  EXPECT_TRUE(view_->progress_bar_for_testing()->GetVisible());
   EXPECT_EQ(view_->GetPrimaryMessage(),
             l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_ONGOING_TITLE));
 
   // An error happened
   view_->Error(BruschettaInstallResult::kStartVmFailed);
+  // Let the cleanup step complete.
+  run_loop.RunUntilIdle();
   EXPECT_NE(nullptr, view_->GetOkButton());
   EXPECT_NE(nullptr, view_->GetCancelButton());
+  EXPECT_FALSE(view_->progress_bar_for_testing()->GetVisible());
   EXPECT_EQ(view_->GetPrimaryMessage(),
             l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_ERROR_TITLE));
 
@@ -188,6 +228,7 @@ IN_PROC_BROWSER_TEST_F(BruschettaInstallerViewBrowserTest, InstallWithRetry) {
   view_->AcceptDialog();
   EXPECT_EQ(nullptr, view_->GetOkButton());
   EXPECT_NE(nullptr, view_->GetCancelButton());
+  EXPECT_TRUE(view_->progress_bar_for_testing()->GetVisible());
   EXPECT_EQ(view_->GetPrimaryMessage(),
             l10n_util::GetStringUTF16(IDS_BRUSCHETTA_INSTALLER_ONGOING_TITLE));
 }

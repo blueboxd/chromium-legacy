@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Compression de <ph name="NUMBER_OF_ITEMS" /> éléments en cours…</translation>
 <translation id="1722687688096767818">Ajout du profil en cours…</translation>
 <translation id="1726100011689679555">Serveurs de noms</translation>
+<translation id="1727562178154619254">Prêt à synchroniser</translation>
 <translation id="1729953886957086472">Allemand (Allemagne)</translation>
 <translation id="1730235522912993863">Chinois (cangjie)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> éléments copiés</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Résolution de l'image</translation>
 <translation id="1972984168337863910">Développer les panneaux de commentaires sur les fichiers</translation>
 <translation id="1995337122023280937">Accéder au dossier du fichier</translation>
-<translation id="1999709132469742660">Accès aux fichiers par toutes les URL</translation>
 <translation id="2001796770603320721">Gérer dans Google Disque</translation>
 <translation id="2009067268969781306">Le formatage d'un lecteur effacera toutes les données qu'il contient. Cette action est irréversible.</translation>
 <translation id="2025955442973426285">Tigrina</translation>
@@ -543,7 +543,6 @@
 <translation id="5323213332664049067">Amérique latine</translation>
 <translation id="5330145655348521461">Ces fichiers sont ouverts sur un autre bureau. Utilisez le compte de <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) pour les afficher.</translation>
 <translation id="5330512191124428349">En savoir plus</translation>
-<translation id="5337538975554986899">Accès aux fichiers par toutes les URL sauf <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Gérer le partage Bruschetta</translation>
 <translation id="535792325654997756">Personne avec des chats</translation>
 <translation id="5358764674931277">Fréquence d'images</translation>
@@ -616,6 +615,7 @@
 <translation id="5911887972742538906">Une erreur s'est produite lors de l'installation de votre application Linux.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Échec de la copie en raison d'une erreur inattendue : <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Nouvelles fonctionnalités de recherche offertes</translation>
 <translation id="5926082595146149752">Néerlandais (Pays-Bas) avec clavier international américain (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, activé après la configuration de l'appareil</translation>
@@ -705,6 +705,7 @@
 <translation id="6732801395666424405">Certificats non chargés</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Partager le dossier avec Bruschetta</translation>
+<translation id="6750737795876287924">Répertoire actuel</translation>
 <translation id="6751256176799620176">1 dossier sélectionné</translation>
 <translation id="6755827872271341378">Appareil Chrome OS Flex</translation>
 <translation id="6790428901817661496">Jouer</translation>
@@ -742,7 +743,6 @@
 <translation id="6973630695168034713">Dossiers</translation>
 <translation id="6976795442547527108">Lion</translation>
 <translation id="6979158407327259162">Google Disque</translation>
-<translation id="6979737339423435258">Toutes les périodes</translation>
 <translation id="6989942356279143254">Suédois</translation>
 <translation id="6990081529015358884">Vous avez utilisé tout l'espace de stockage.</translation>
 <translation id="6993826899923627728">Ces éléments se trouvent dans la corbeille</translation>
@@ -798,7 +798,6 @@
 <translation id="7458955835361612701">Aucune image récente</translation>
 <translation id="7460898608667578234">Ukrainien</translation>
 <translation id="7469894403370665791">Se connecter automatiquement à ce réseau</translation>
-<translation id="7481358317100446445">Prêt</translation>
 <translation id="7486315294984620427">Pour déposer des fichiers dans Parallels Desktop, le fichier doit être copié dans le dossier Fichiers Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam (phonétique)</translation>

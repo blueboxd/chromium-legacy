@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {KeyboardBacklight, KeyboardBacklightActionName, KeyboardBacklightObserver, SetBacklightColorAction, SetShouldShowNudgeAction, SetWallpaperColorAction} from 'chrome://personalization/js/personalization_app.js';
+import {KeyboardBacklight, KeyboardBacklightActionName, KeyboardBacklightObserver, SetCurrentBacklightStateAction, SetShouldShowNudgeAction, SetWallpaperColorAction} from 'chrome://personalization/js/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -37,70 +37,83 @@ suite('KeyboardBacklightTest', function() {
     keyboardBacklightElement = initElement(KeyboardBacklight);
     const labelContainer = keyboardBacklightElement.shadowRoot!.getElementById(
         'keyboardBacklightLabel');
-    assertTrue(!!labelContainer);
-    const text = labelContainer.querySelector('p');
+    assertTrue(!!labelContainer, 'keyboard backlight label should be shown.');
+    const text = labelContainer!.querySelector('p');
     assertTrue(!!text);
     assertEquals(
         keyboardBacklightElement.i18n('keyboardBacklightTitle'),
         text.textContent);
-
+    const colorSelectorElement =
+        keyboardBacklightElement.shadowRoot!.querySelector('color-selector') as
+        HTMLElement;
+    assertTrue(
+        !!colorSelectorElement, 'color-selector element should be displayed.');
     const selectorContainer =
-        keyboardBacklightElement.shadowRoot!.getElementById('selector');
+        colorSelectorElement.shadowRoot!.getElementById('selector');
     assertTrue(!!selectorContainer);
-    const colorContainers =
-        selectorContainer.querySelectorAll('.color-container');
+    const colorContainers = selectorContainer!.querySelectorAll('.selectable');
     assertEquals(9, colorContainers!.length);
   });
 
   test('sets backlight color when a color preset is clicked', async () => {
     keyboardBacklightElement = initElement(KeyboardBacklight);
+    const colorSelectorElement =
+        keyboardBacklightElement.shadowRoot!.querySelector('color-selector') as
+        HTMLElement;
+    assertTrue(
+        !!colorSelectorElement, 'color-selector element should be displayed.');
     const selectorContainer =
-        keyboardBacklightElement.shadowRoot!.getElementById('selector');
+        colorSelectorElement.shadowRoot!.getElementById('selector');
     assertTrue(!!selectorContainer);
-    const colorContainers =
-        selectorContainer.querySelectorAll('.color-container');
+    const colorContainers = selectorContainer!.querySelectorAll('.selectable');
     assertEquals(9, colorContainers!.length);
 
     personalizationStore.setReducersEnabled(true);
     personalizationStore.expectAction(
-        KeyboardBacklightActionName.SET_BACKLIGHT_COLOR);
+        KeyboardBacklightActionName.SET_CURRENT_BACKLIGHT_STATE);
     (colorContainers[1] as HTMLElement).click();
     await keyboardBacklightProvider.whenCalled('setBacklightColor');
 
-    const action = await personalizationStore.waitForAction(
-                       KeyboardBacklightActionName.SET_BACKLIGHT_COLOR) as
-        SetBacklightColorAction;
-    assertTrue(!!action.backlightColor);
-    assertTrue(!!personalizationStore.data.keyboardBacklight.backlightColor);
+    const action =
+        await personalizationStore.waitForAction(
+            KeyboardBacklightActionName.SET_CURRENT_BACKLIGHT_STATE) as
+        SetCurrentBacklightStateAction;
+    assertTrue(!!action.currentBacklightState);
+    assertTrue(
+        !!personalizationStore.data.keyboardBacklight.currentBacklightState);
   });
 
   test('sets backlight color in store on first load', async () => {
     personalizationStore.expectAction(
-        KeyboardBacklightActionName.SET_BACKLIGHT_COLOR);
+        KeyboardBacklightActionName.SET_CURRENT_BACKLIGHT_STATE);
     keyboardBacklightElement = initElement(KeyboardBacklight);
     await keyboardBacklightProvider.whenCalled('setKeyboardBacklightObserver');
-    keyboardBacklightProvider.fireOnBacklightColorChanged(
-        keyboardBacklightProvider.backlightColor);
-    const action = await personalizationStore.waitForAction(
-                       KeyboardBacklightActionName.SET_BACKLIGHT_COLOR) as
-        SetBacklightColorAction;
-    assertEquals(
-        keyboardBacklightProvider.backlightColor, action.backlightColor);
+    keyboardBacklightProvider.fireOnBacklightStateChanged(
+        keyboardBacklightProvider.currentBacklightState);
+    const action =
+        await personalizationStore.waitForAction(
+            KeyboardBacklightActionName.SET_CURRENT_BACKLIGHT_STATE) as
+        SetCurrentBacklightStateAction;
+    assertDeepEquals(
+        keyboardBacklightProvider.currentBacklightState,
+        action.currentBacklightState);
   });
 
   test('sets backlight color data in store on changed', async () => {
     await keyboardBacklightProvider.whenCalled('setKeyboardBacklightObserver');
 
     personalizationStore.expectAction(
-        KeyboardBacklightActionName.SET_BACKLIGHT_COLOR);
+        KeyboardBacklightActionName.SET_CURRENT_BACKLIGHT_STATE);
     keyboardBacklightProvider.keyboardBacklightObserverRemote!
-        .onBacklightColorChanged(keyboardBacklightProvider.backlightColor);
+        .onBacklightStateChanged(
+            keyboardBacklightProvider.currentBacklightState);
 
-    const {backlightColor} =
+    const {currentBacklightState} =
         await personalizationStore.waitForAction(
-            KeyboardBacklightActionName.SET_BACKLIGHT_COLOR) as
-        SetBacklightColorAction;
-    assertEquals(keyboardBacklightProvider.backlightColor, backlightColor);
+            KeyboardBacklightActionName.SET_CURRENT_BACKLIGHT_STATE) as
+        SetCurrentBacklightStateAction;
+    assertDeepEquals(
+        keyboardBacklightProvider.currentBacklightState, currentBacklightState);
   });
 
   test('sets wallpaper color in store on first load', async () => {
@@ -121,11 +134,16 @@ suite('KeyboardBacklightTest', function() {
     personalizationStore.expectAction(
         KeyboardBacklightActionName.SET_SHOULD_SHOW_NUDGE);
     keyboardBacklightElement = initElement(KeyboardBacklight);
+    const colorSelectorElement =
+        keyboardBacklightElement.shadowRoot!.querySelector('color-selector') as
+        HTMLElement;
+    assertTrue(
+        !!colorSelectorElement, 'color-selector element should be displayed.');
     const action = await personalizationStore.waitForAction(
                        KeyboardBacklightActionName.SET_SHOULD_SHOW_NUDGE) as
         SetShouldShowNudgeAction;
     assertTrue(action.shouldShowNudge);
-    assertTrue(!!keyboardBacklightElement.shadowRoot!.querySelector('#toast'));
+    assertTrue(!!colorSelectorElement.shadowRoot!.querySelector('#toast'));
   });
 
   test('automatically dismisses toast after 3 seconds', async () => {
@@ -140,6 +158,12 @@ suite('KeyboardBacklightTest', function() {
         };
 
     keyboardBacklightElement = initElement(KeyboardBacklight);
+    const colorSelectorElement =
+        keyboardBacklightElement.shadowRoot!.querySelector('color-selector') as
+        HTMLElement;
+    assertTrue(
+        !!colorSelectorElement, 'color-selector element should be displayed.');
+
     // Create and render the toast.
     personalizationStore.data.keyboardBacklight.shouldShowNudge = true;
     personalizationStore.notifyObservers();
@@ -166,7 +190,8 @@ suite('KeyboardBacklightTest', function() {
   test(
       'shows customization button if multi-zone rgb keyboard is supported',
       async () => {
-        loadTimeData.overrideValues({isMultiZoneRgbKeyboardSupported: true});
+        loadTimeData.overrideValues(
+            {keyboardBacklightZoneCount: keyboardBacklightProvider.zoneCount});
         keyboardBacklightElement = initElement(KeyboardBacklight);
         const customizationButton =
             keyboardBacklightElement.shadowRoot!.getElementById(
@@ -175,7 +200,8 @@ suite('KeyboardBacklightTest', function() {
       });
 
   test('clicking on customization button opens a dialog', async () => {
-    loadTimeData.overrideValues({isMultiZoneRgbKeyboardSupported: true});
+    loadTimeData.overrideValues(
+        {keyboardBacklightZoneCount: keyboardBacklightProvider.zoneCount});
     keyboardBacklightElement = initElement(KeyboardBacklight);
     const customizationButton =
         keyboardBacklightElement.shadowRoot!.getElementById(
@@ -192,5 +218,76 @@ suite('KeyboardBacklightTest', function() {
         !!keyboardBacklightElement.shadowRoot!.querySelector(
             'zone-customization'),
         'dialog exists after button is clicked');
+  });
+
+  test('shows wallpaper color at the end with multi-zone enabled', async () => {
+    loadTimeData.overrideValues(
+        {keyboardBacklightZoneCount: keyboardBacklightProvider.zoneCount});
+
+    keyboardBacklightElement = initElement(KeyboardBacklight);
+    const colorSelectorElement =
+        keyboardBacklightElement.shadowRoot!.querySelector('color-selector') as
+        HTMLElement;
+    assertTrue(
+        !!colorSelectorElement, 'color-selector element should be displayed.');
+
+    const selectorContainer =
+        colorSelectorElement.shadowRoot!.getElementById('selector');
+    assertTrue(!!selectorContainer);
+    const colorContainers = selectorContainer!.querySelectorAll('.selectable');
+    assertEquals(9, colorContainers!.length);
+    assertEquals(
+        'Wallpaper color', (colorContainers[8] as HTMLElement).ariaLabel);
+    assertEquals(0, selectorContainer!.querySelectorAll('.divider').length);
+    assertTrue(!!colorSelectorElement?.shadowRoot!.getElementById(
+        'wallpaperColorDescription'));
+  });
+
+  test(
+      'shows wallpaper color button at the beginning with multi-zone disabled',
+      async () => {
+        loadTimeData.overrideValues({keyboardBacklightZoneCount: 0});
+
+        keyboardBacklightElement = initElement(KeyboardBacklight);
+        const colorSelectorElement =
+            keyboardBacklightElement.shadowRoot!.querySelector(
+                'color-selector') as HTMLElement;
+        assertTrue(
+            !!colorSelectorElement,
+            'color-selector element should be displayed.');
+
+        const selectorContainer =
+            colorSelectorElement.shadowRoot!.getElementById('selector');
+        assertTrue(!!selectorContainer);
+        const colorContainers =
+            selectorContainer!.querySelectorAll('.selectable');
+        assertEquals(9, colorContainers!.length);
+        assertEquals(
+            'Wallpaper color', (colorContainers[0] as HTMLElement).ariaLabel);
+        assertEquals(1, selectorContainer!.querySelectorAll('.divider').length);
+        assertFalse(!!keyboardBacklightElement?.shadowRoot!.getElementById(
+            'wallpaperColorDescription'));
+      });
+
+  test('displays zone selector in customization dialog', async () => {
+    loadTimeData.overrideValues(
+        {keyboardBacklightZoneCount: keyboardBacklightProvider.zoneCount});
+    keyboardBacklightElement = initElement(KeyboardBacklight);
+    personalizationStore.notifyObservers();
+    const customizationButton =
+        keyboardBacklightElement.shadowRoot!.getElementById(
+            'zoneCustomizationButton');
+    assertTrue(!!customizationButton);
+    customizationButton!.click();
+    await waitAfterNextRender(keyboardBacklightElement);
+    const zoneCustomizationElement =
+        keyboardBacklightElement.shadowRoot!.querySelector(
+            'zone-customization');
+    assertTrue(!!zoneCustomizationElement);
+    const zoneButtons =
+        zoneCustomizationElement.shadowRoot!.querySelectorAll('.zone-button');
+    assertEquals(
+        5, zoneButtons!.length,
+        '5 zones should display in customization dialog');
   });
 });

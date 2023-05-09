@@ -32,10 +32,9 @@ the code that should be served at runtime.
 
 * WebUI build rules should only be used directly or via the wrapper rules
   documented here ([build_webui](#build_webui),
-  [build_webui_tests](#build_webui_tests),
-  [build_cr_component](#build_cr_component)). If
-  you want to use any of the rules below from within another tool or script,
-  please get a review from one of the cross-platform, non-backend WebUI
+  [build_webui_tests](#build_webui_tests). If you want to use any of the rules
+  below from within another tool or script, please get a review from one of the
+  cross-platform, non-backend WebUI
   [OWNERS](https://source.chromium.org/chromium/chromium/src/+/main:ui/webui/PLATFORM_OWNERS).
 
 ## WebUI build rules
@@ -327,10 +326,12 @@ deps: Lists any targets responsible for generating |input_files|,
 manifest_files: List of manifest files listing additional files that should be
                 added to the grd.
 grdp_files: List of .grdp files that should be included in the grd. Generally
-            such files are also created with generate_grd().
+            such files are also created with generate_grd(). This option can
+            only be used if a .grd file is produced, since .grdp files can't be
+            nested.
 grd_prefix: The prefix to use for the grd resource IDs. Resources will be named
             with the following pattern: IDR_GRD_PREFIX_INPUT_FILE_PATH
-out_grd: The output grd file to write.
+out_grd: The output grd file to write. Must end with either '.grd' or '.grdp'.
 resource_path_rewrites: Paths to rewrite. In general, the path in input_files,
                         or the path listed in a manifest, will be used as the
                         resource path, i.e. "foo/bar.js" will have that path
@@ -439,13 +440,14 @@ ts_library("build_ts")
 merge_js_source_maps("merge_source_maps")
 optimize_webui("build_bundle")
 generate_grd("build_grd")
+generate_grd("build_grdp")
 grit("resources")
 
 Some targets are only conditionally defined based on build_webui() input
 parameters.
 
-Only the ":build_ts" and ":resources" targets are public and can be referred to
-from other parts of the build.
+Only ":build_ts", ":resources" and ":build_grdp" targets are public and can be
+referred to from other parts of the build.
 ```
 
 #### **Arguments**
@@ -481,27 +483,34 @@ mojo_files_deps: List of Mojo targets that generate |mojo_files|. Must be
 
 TypeScript (ts_library()) related params:
 ts_composite: See |composite| in ts_library(). Defaults to false, optional.
+ts_out_dir: See |out_dir| in ts_library(). Optional parameter, defaults
+            '$target_gen_dir/tsc'
 ts_definitions: See |definitions| in ts_library(). Optional parameter.
 ts_deps: See |deps| in ts_library(). Optional parameter.
 ts_extra_deps: See |extra_deps| in ts_library(). Optional parameter.
 ts_path_mappings: See |path_mappings| in ts_library(). Optional parameter.
-ts_use_local_config: Whether to pass a local "tsconfig_base.json" file as the
-                     |tsconfig_base| to ts_library(). Optional, defaults to true.
-                     If false, the default //tools/typescript/tsconfig_base.json
-                     will be used.
+ts_tsconfig_base: The tsconfig file to use for ts_library(). Optional, defaults
+                  to "//tools/typescript/tsconfig_base_polymer.json" for Polymer
+                  UIs (i.e. UIs that specify |web_component_files| and/or
+                  |icons_html_files| and do not set |html_to_wrapper_template|
+                  to "native"). Defaults to
+                  "//tools/typescript/tsconfig_base.json" for non-Polymer UIs.
 
 HTML/CSS/JS optimization related params:
 optimize: Specifies whether any optimization steps will be used, defaults to
           false. When true, html_to_wrapper() and css_to_wrapper() will be
           invoked with the |minify| flag on, to minify HTML/CSS code.
-          optimize_webui() will be invoked to bundle+minify JS code (using
-          Rollup and Terser). |optimize_webui_host| and
-          |optimize_webui_in_files| must be specified if |optimize| is true.
+          If |optimize_webui_in_files| is provided then optimize_webui() will be
+          invoked to bundle+minify JS code (using Rollup and Terser).
+          |optimize_webui_host| must be specified if |optimize_webui_in_files|
+          is provided.
 optimize_webui_excludes: See |excludes| in optimize_webui(). Optional.
 optimize_webui_host: See |host| in optimize_webui().
 optimize_webui_in_files: See |in_files| in optimize_webui().
 
 Other params:
+generate_grdp: Whether to generate grdp file instead of a grd file. Defaults to
+               false.
 grd_prefix: See |grd_prefix| in generate_grd(). Required parameter.
 grd_resource_path_prefix: See |resource_path_prefix| in generate_grd(). Optional
                           parameter.
@@ -601,6 +610,9 @@ List of files params:
 files: Required parameter. List of all test related files.
 
 TypeScript (ts_library()) related params:
+ts_tsconfig_base: See |tsconfig_base| in ts_library(). Optional parameter. If
+                  not provided the default configuration at
+                  '//chrome/test/data/webui/tsconfig_base.json' is used.
 ts_definitions: See |definitions| in ts_library(). Optional parameter.
 ts_deps: See |deps| in ts_library(). Required parameter.
 ts_path_mappings: See |path_mappings| in ts_library(). Optional parameter.
@@ -640,102 +652,6 @@ build_webui_tests("build") {
   ]
 }
 
-```
-
-### **build_cr_component**
-
-The flow diagram below shows a high level view of how a typical modern
-cr_component is built
-
-![cr_component build pipeline flow diagram](images/webui_build_cr_component.png)
-
-```
-This umbrella rule captures the most common build pipeline
-configuration for building WebUI cr_components and aims to hide the complexity
-of having to define multiple other targets directly. Using build_cr_component()
-is the recommended approach for any code that resides under
-ui/webui/resources/cr_components/.
-
-Under the cover, build_cr_component() defines the following targets
-
-preprocess_if_expr("preprocess")
-html_to_wrapper("html_wrapper_files")
-css_to_wrapper("css_wrapper_files")
-copy("copy_mojo")
-ts_library("build_ts")
-generate_grd("build_grd")
-
-Some targets are only conditionally defined based on build_cr_component() input
-parameters.
-
-Only the ":build_ts" and ":generate_grd" targets are public and can be referred
-to from other parts of the build.
-```
-
-#### **Arguments**
-```
-
-List of files params:
-static_files: Same as build_webui()
-web_component_files: Same as build_webui()
-non_web_component_files: Same as build_webui()
-icons_html_files: Same as build_webui()
-css_files: Same as build_webui()
-mojo_files: Same as build_webui()
-mojo_files_deps: Same as build_webui()
-
-TypeScript (ts_library()) related params:
-tsc_dir: See |output_dir| in ts_library()
-ts_definitions: Same as build_webui()
-ts_deps: Same as build_webui()
-ts_extra_deps: Same as build_webui()
-ts_path_mappings: Same as build_webui()
-ts_use_local_config: Same as build_webui()
-
-Other params:
-grd_prefix: See |grd_prefix| in generate_grd(). Required parameter.
-resource_path_prefix: See |resource_path_prefix| in generate_grd(). Required
-                      parameter.
-optimize: Optional parameter, defaults to false. If specified it is passed as
-          the |minify| parameter to the underlying html_to_wrapper() and
-          css_to_wrapper() targets.
-```
-
-#### **Example**
-```
-import("//ui/webui/resources/cr_components/build_cr_component.gni")
-
-build_cr_component("build") {
-  grd_prefix = "cr_components_history_clusters"
-
-  web_component_files = [
-    "cluster.ts",
-    "url_visit.ts",
-  ]
-
-  non_web_component_files = [
-    "browser_proxy.ts",
-    "utils.ts",
-  ]
-
-  css_files = [
-    "shared_vars.css",
-  ]
-
-  mojo_files_deps = [ ":mojo_bindings_ts__generator" ]
-  mojo_files = [ "$root_gen_dir/ui/webui/resources/cr_components/history_clusters/history_clusters.mojom-webui.ts" ]
-
-  tsc_dir = "$root_gen_dir/ui/webui/resources/tsc/cr_components/history_clusters"
-  ts_definitions = [ "//tools/typescript/definitions/metrics_private.d.ts" ]
-  ts_deps = [
-    "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources/cr_elements:build_ts",
-    "//ui/webui/resources/js:build_ts",
-    "//ui/webui/resources/mojo:library",
-  ]
-
-  optimize = optimize_webui
-}
 ```
 
 ## Example build configurations

@@ -164,13 +164,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.Frame{ScoreType}"
-    units="pixels" expires_after="M97">
+    units="pixels" expires_after="2024-03-13">
   <owner>flackr@chromium.org</owner>
-  <owner>joalmei@microsoft.com</owner>
+  <owner>input-dev@chromium.org</owner>
   <summary>
-    Overshoot distance in pixels between a predicted scroll position and the
-    corresponding interpolated real scroll position that occurred at the frame
-    time.
+    NOTE: this metric was expired from M97 to 2023-03-14. Overshoot distance in
+    pixels between a predicted scroll position and the corresponding
+    interpolated real scroll position that occurred at the frame time.
 
     The difference between {ScoreType} and Frame{ScoreType} is the former uses
     prediction time and the later uses frame time.
@@ -185,40 +185,41 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.PredictionJitter"
-    units="pixels" expires_after="2022-05-08">
+    units="pixels" expires_after="2024-03-13">
   <owner>flackr@chromium.org</owner>
-  <owner>joalmei@microsoft.com</owner>
+  <owner>input-dev@chromium.org</owner>
   <summary>
-    Euclidean distance in pixels between two successive variations of touch
-    scroll deltas which are the difference between a predicted scroll position
-    and its corresponding interpolated real position that occurred at prediction
-    time.
+    NOTE: this metric was expired from M97 to 2023-03-14. Euclidean distance in
+    pixels between two successive variations of touch scroll deltas which are
+    the difference between a predicted scroll position and its corresponding
+    interpolated real position that occurred at prediction time.
 
     Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.VisualJitter" units="pixels"
-    expires_after="2022-05-08">
+    expires_after="2024-03-13">
   <owner>flackr@chromium.org</owner>
-  <owner>joalmei@microsoft.com</owner>
+  <owner>input-dev@chromium.org</owner>
   <summary>
-    Euclidean distance in pixels between two successive variations of touch
-    scroll deltas which are the difference between a predicted scroll position
-    and the interpolated real position that occurred at frame time.
+    NOTE: this metric was expired from M97 to 2023-03-14. Euclidean distance in
+    pixels between two successive variations of touch scroll deltas which are
+    the difference between a predicted scroll position and the interpolated real
+    position that occurred at frame time.
 
     Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.{ScoreType}" units="pixels"
-    expires_after="M97">
+    expires_after="2024-03-13">
   <owner>flackr@chromium.org</owner>
-  <owner>joalmei@microsoft.com</owner>
+  <owner>input-dev@chromium.org</owner>
   <summary>
-    Overshoot distance in pixels between a predicted scroll position and the
-    corresponding interpolated real scroll position that occurred at the frame
-    time.
+    NOTE: this metric was expired from M97 to 2023-03-14. Overshoot distance in
+    pixels between a predicted scroll position and the corresponding
+    interpolated real scroll position that occurred at the frame time.
 
     Team: input-dev@chromium.org.
   </summary>
@@ -613,7 +614,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2"
-    units="microseconds" expires_after="2023-07-09">
+    units="microseconds" expires_after="2023-09-10">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -640,7 +641,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TotalEvents" units="counts"
-    expires_after="2023-06-18">
+    expires_after="2023-08-27">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -873,7 +874,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.PassiveListeners" enum="EventResultType"
-    expires_after="2023-06-25">
+    expires_after="2023-08-27">
   <owner>dtapuska@chromium.org</owner>
   <summary>
     The result of handling of MouseWheel, TouchStart, TouchMove, TouchEnd events

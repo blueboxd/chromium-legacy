@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/navigation_api/navigate_event_dispatch_params.h"
@@ -37,9 +36,7 @@ class NavigationTransition;
 class RegisteredEventListener;
 class SerializedScriptValue;
 
-class CORE_EXPORT NavigationApi final
-    : public EventTargetWithInlineData,
-      public ExecutionContextLifecycleObserver {
+class CORE_EXPORT NavigationApi final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -116,13 +113,10 @@ class CORE_EXPORT NavigationApi final
   //   (See https://github.com/WICG/navigation-api/issues/137 for more on why
   //   they must be ignored.) This distinction is handled via the |reason|
   //   argument.
-  // - If the frame is destroyed without canceling ongoing navigations, e.g. due
-  //   to a cross-document navigation, then we need to detach any outstanding
-  //   promise resolvers. This is handled via |ContextDestroyed()| below.
   void InformAboutCanceledNavigation(
       CancelNavigationReason reason = CancelNavigationReason::kOther);
 
-  // Called when a traverse is cancelled in the browser process.
+  // Called when a traverse is cancelled before its navigate event is fired.
   void TraverseCancelled(const String& key,
                          mojom::blink::TraverseCancelledReason reason);
 
@@ -130,30 +124,21 @@ class CORE_EXPORT NavigationApi final
 
   // EventTargetWithInlineData overrides:
   const AtomicString& InterfaceName() const final;
-  ExecutionContext* GetExecutionContext() const final {
-    return ExecutionContextLifecycleObserver::GetExecutionContext();
-  }
+  ExecutionContext* GetExecutionContext() const final { return window_; }
   void AddedEventListener(const AtomicString&, RegisteredEventListener&) final;
   void RemovedEventListener(const AtomicString&,
                             const RegisteredEventListener&) final;
 
   void Trace(Visitor*) const final;
 
- protected:
-  // ExecutionContextLifecycleObserver implementation:
-  void ContextDestroyed() override;
-
  private:
   friend class NavigateReaction;
-  friend class NavigationApiNavigation;
   NavigationHistoryEntry* GetEntryForRestore(
       const mojom::blink::NavigationApiHistoryEntryPtr&);
   void PopulateKeySet();
-  void FinalizeWithAbortedNavigationError(ScriptState*,
-                                          NavigationApiNavigation*);
-  void ResolvePromisesAndFireNavigateSuccessEvent(NavigationApiNavigation*);
-  void RejectPromisesAndFireNavigateErrorEvent(NavigationApiNavigation*,
-                                               ScriptValue);
+  void AbortOngoingNavigation(ScriptState*);
+  void DidFinishOngoingNavigation();
+  void DidFailOngoingNavigation(ScriptValue);
 
   NavigationResult* PerformNonTraverseNavigation(
       ScriptState*,
@@ -166,7 +151,6 @@ class CORE_EXPORT NavigationApi final
       const String& method_name_for_error_message);
 
   void PromoteUpcomingNavigationToOngoing(const String& key);
-  void CleanupApiNavigation(NavigationApiNavigation&);
 
   scoped_refptr<SerializedScriptValue> SerializeState(const ScriptValue&,
                                                       ExceptionState&);

@@ -250,8 +250,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest,
   EXPECT_NE(app_browser, browser());
   EXPECT_TRUE(
       AppBrowserController::IsForWebApp(app_browser, url_info.app_id()));
-  EXPECT_EQ(content::RenderFrameHost::WebExposedIsolationLevel::
-                kMaybeIsolatedApplication,
+  EXPECT_EQ(content::WebExposedIsolationLevel::kMaybeIsolatedApplication,
             app_frame->GetWebExposedIsolationLevel());
 }
 
@@ -279,8 +278,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(app_browser, browser());
   EXPECT_TRUE(
       AppBrowserController::IsForWebApp(app_browser, url_info.app_id()));
-  EXPECT_EQ(content::RenderFrameHost::WebExposedIsolationLevel::
-                kMaybeIsolatedApplication,
+  EXPECT_EQ(content::WebExposedIsolationLevel::kMaybeIsolatedApplication,
             app_frame->GetWebExposedIsolationLevel());
 }
 
@@ -520,9 +518,11 @@ class IsolatedWebAppBrowserServiceWorkerPushTest
                                                /*user_visible=*/true),
              blink::mojom::PermissionStatus::GRANTED);
 
+    // A second auto-generated notifications will be shown.
+    // See PushMessagingNotificationManager::EnforceUserVisibleOnlyRequirements.
     base::RunLoop run_loop;
     base::RepeatingClosure quit_barrier =
-        base::BarrierClosure(2 /* num_closures */, run_loop.QuitClosure());
+        base::BarrierClosure(/*num_closures=*/3, run_loop.QuitClosure());
     push_service->SetMessageCallbackForTesting(quit_barrier);
     notification_tester_->SetNotificationAddedClosure(quit_barrier);
     push_service->OnMessage(app_identifier.app_id(), message);
@@ -545,14 +545,9 @@ class IsolatedWebAppBrowserServiceWorkerPushTest
       scoped_testing_factory_installer_;
 };
 
-// TODO(crbug.com/1333966): Enable the test when permissions storage work for
-// isolated-app:// scheme. Currently permission settings aren't being stored
-// because permissions component doesn't support isolated-app:// scheme.  See
-// `ContentSettingsPattern::FromURL` and
-// `ContentSettingsPattern::FromURLNoWildcard` for details.
 IN_PROC_BROWSER_TEST_F(
     IsolatedWebAppBrowserServiceWorkerPushTest,
-    DISABLED_ServiceWorkerPartitionedWhenWakingUpDueToPushNotification) {
+    ServiceWorkerPartitionedWhenWakingUpDueToPushNotification) {
   int64_t service_worker_version_id =
       InstallIsolatedWebAppAndWaitForServiceWorker();
 
@@ -625,7 +620,7 @@ var kApplicationServerKey = new Uint8Array([
   // a push notification, then click on it.
   auto notifications = notification_tester_->GetDisplayedNotificationsForType(
       NotificationHandler::Type::WEB_PERSISTENT);
-  EXPECT_EQ(notifications.size(), 1UL);
+  EXPECT_EQ(notifications.size(), 2UL);
 
   BrowserWaiter browser_waiter(nullptr);
   notification_tester_->SimulateClick(NotificationHandler::Type::WEB_PERSISTENT,
@@ -641,8 +636,7 @@ var kApplicationServerKey = new Uint8Array([
   auto* new_storage_partition = new_app_frame->GetStoragePartition();
   EXPECT_EQ(new_storage_partition, storage_partition_);
   EXPECT_EQ(new_app_frame->GetWebExposedIsolationLevel(),
-            content::RenderFrameHost::WebExposedIsolationLevel::
-                kMaybeIsolatedApplication);
+            content::WebExposedIsolationLevel::kMaybeIsolatedApplication);
   EXPECT_TRUE(AppBrowserController::IsWebApp(new_app_window));
 }
 

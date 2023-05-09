@@ -480,10 +480,10 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
       for (ExtensionSet::const_iterator i = dependents->begin();
            i != dependents->end(); i++) {
         base::Value::List sm_event_args;
-        base::Value sm_info(base::Value::Type::DICT);
-        sm_info.SetStringKey(kInstallReason, kInstallReasonSharedModuleUpdate);
-        sm_info.SetStringKey(kInstallPreviousVersion, old_version.GetString());
-        sm_info.SetStringKey(kInstallId, extension_id);
+        base::Value::Dict sm_info;
+        sm_info.Set(kInstallReason, kInstallReasonSharedModuleUpdate);
+        sm_info.Set(kInstallPreviousVersion, old_version.GetString());
+        sm_info.Set(kInstallId, extension_id);
         sm_event_args.Append(std::move(sm_info));
         auto sm_event = std::make_unique<Event>(
             events::RUNTIME_ON_INSTALLED, runtime::OnInstalled::kEventName,
@@ -624,17 +624,16 @@ ExtensionFunction::ResponseAction RuntimeOpenOptionsPageFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction RuntimeSetUninstallURLFunction::Run() {
-  std::unique_ptr<api::runtime::SetUninstallURL::Params> params(
-      api::runtime::SetUninstallURL::Params::Create(args()));
+  absl::optional<api::runtime::SetUninstallURL::Params> params =
+      api::runtime::SetUninstallURL::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(params);
   if (!params->url.empty() && !GURL(params->url).SchemeIsHTTPOrHTTPS()) {
     return RespondNow(Error(kInvalidUrlError, params->url));
   }
 
   ExtensionPrefs::Get(browser_context())
-      ->UpdateExtensionPref(
-          extension_id(), kUninstallUrl,
-          std::make_unique<base::Value>(std::move(params->url)));
+      ->UpdateExtensionPref(extension_id(), kUninstallUrl,
+                            base::Value(std::move(params->url)));
   return RespondNow(NoArguments());
 }
 
@@ -662,7 +661,7 @@ void RuntimeRequestUpdateCheckFunction::CheckComplete(
   api::runtime::RequestUpdateCheck::Results::Result return_result;
   return_result.status = result.status;
   return_result.version = absl::optional<std::string>(result.version);
-  Respond(OneArgument(base::Value(return_result.ToValue())));
+  Respond(WithArguments(return_result.ToValue()));
 }
 
 ExtensionFunction::ResponseAction RuntimeRestartFunction::Run() {
@@ -682,9 +681,9 @@ ExtensionFunction::ResponseAction RuntimeRestartAfterDelayFunction::Run() {
     return RespondNow(Error(kErrorOnlyKioskModeAllowed));
   }
 
-  std::unique_ptr<api::runtime::RestartAfterDelay::Params> params(
-      api::runtime::RestartAfterDelay::Params::Create(args()));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  absl::optional<api::runtime::RestartAfterDelay::Params> params =
+      api::runtime::RestartAfterDelay::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
   int seconds = params->seconds;
 
   if (seconds <= 0 && seconds != -1) {
@@ -742,7 +741,7 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
   base::Value::Dict dict;
   dict.Set("fileSystemId", filesystem.id());
   dict.Set("baseName", relative_path);
-  return RespondNow(OneArgument(base::Value(std::move(dict))));
+  return RespondNow(WithArguments(std::move(dict)));
 }
 
 }  // namespace extensions

@@ -256,9 +256,17 @@ static bool ConvertFontFamilyName(
                cssValueID == CSSValueID::kMath) {
       family_name = font_family_names::kMath;
     }
+    // Something went wrong with the conversion or retrieving the name from
+    // preferences for the specific generic family.
+    if (family_name.empty()) {
+      return false;
+    }
   }
 
-  return !family_name.empty();
+  // Empty font family names (converted from CSSFontFamilyValue above) are
+  // acceptable for defining and matching against
+  // @font-faces, compare https://github.com/w3c/csswg-drafts/issues/4510.
+  return !family_name.IsNull();
 }
 
 FontDescription::FamilyDescription StyleBuilderConverterBase::ConvertFontFamily(
@@ -1273,6 +1281,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
   }
 
   GridTrackList& track_sizes = computed_grid_track_list.track_sizes;
+  auto& track_list = track_sizes.NGTrackList();
   Vector<GridTrackSize, 1>& auto_repeat_track_sizes =
       computed_grid_track_list.auto_repeat_track_sizes;
 
@@ -1288,6 +1297,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
           is_first_repeat);
       if (computed_grid_track_list.IsSubgriddedAxis()) {
         ++current_named_grid_line;
+        track_list.IncrementNonAutoRepeatLineCount();
       }
     } else {
       DCHECK_EQ(computed_grid_track_list.axis_type,
@@ -1306,6 +1316,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
     if (identifier_value &&
         identifier_value->GetValueID() == CSSValueID::kSubgrid) {
       computed_grid_track_list.axis_type = GridAxisType::kSubgriddedAxis;
+      track_list.SetAxisType(GridAxisType::kSubgriddedAxis);
       ++curr_value;
     }
   }
@@ -1336,9 +1347,11 @@ void StyleBuilderConverter::ConvertGridTrackList(
         repeated_track_sizes.push_back(
             ConvertGridTrackSize(state, *auto_repeat_value));
       }
-      track_sizes.NGTrackList().AddRepeater(
-          repeated_track_sizes, static_cast<NGGridTrackRepeater::RepeatType>(
-                                    computed_grid_track_list.auto_repeat_type));
+      track_list.AddRepeater(repeated_track_sizes,
+                             static_cast<NGGridTrackRepeater::RepeatType>(
+                                 computed_grid_track_list.auto_repeat_type),
+                             /* repeat_count */ 1,
+                             /* repeat_number_of_lines */ auto_repeat_index);
       DCHECK(auto_repeat_track_sizes.empty());
       auto_repeat_track_sizes = std::move(repeated_track_sizes);
       computed_grid_track_list.auto_repeat_insertion_point =
@@ -1366,17 +1379,16 @@ void StyleBuilderConverter::ConvertGridTrackList(
                 ConvertGridTrackSize(state, *integer_repeat_value));
           }
         }
-        track_sizes.NGTrackList().AddRepeater(
-            repeater_track_sizes, NGGridTrackRepeater::RepeatType::kInteger,
-            repetitions);
+        track_list.AddRepeater(repeater_track_sizes,
+                               NGGridTrackRepeater::RepeatType::kInteger,
+                               repetitions);
       }
       continue;
     }
 
     ConvertLineNameOrTrackSize(**curr_value);
     if (!curr_value->Get()->IsGridLineNamesValue()) {
-      track_sizes.NGTrackList().AddRepeater(
-          {ConvertGridTrackSize(state, **curr_value)});
+      track_list.AddRepeater({ConvertGridTrackSize(state, **curr_value)});
     }
   }
 
@@ -2556,16 +2568,8 @@ StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
     const CSSValue& value,
     bool is_animation_tainted) {
   // TODO(andruud): Produce tokens directly from CSSValue.
-  String text = value.CssText();
-
-  CSSTokenizer tokenizer(text);
-  Vector<CSSParserToken> tokens;
-  tokens.AppendVector(tokenizer.TokenizeToEOF());
-
-  return CSSVariableData::Create(
-      CSSTokenizedValue{CSSParserTokenRange{tokens}, StringView{text}},
-      is_animation_tainted,
-      /*needs_variable_resolution=*/false);
+  return CSSVariableData::Create(value.CssText(), is_animation_tainted,
+                                 /*needs_variable_resolution=*/false);
 }
 
 namespace {

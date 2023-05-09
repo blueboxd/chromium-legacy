@@ -20,8 +20,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
-#include "components/os_crypt/os_crypt.h"
-#include "components/os_crypt/os_crypt_mocker.h"
+#include "components/os_crypt/sync/os_crypt.h"
+#include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/base/features.h"
@@ -105,8 +105,7 @@ bool WriteLocalEncryptedTrustedVaultFile(
   if (!OSCrypt::EncryptString(proto.SerializeAsString(), &encrypted_content)) {
     return false;
   }
-  return base::WriteFile(path, encrypted_content.c_str(),
-                         encrypted_content.size()) != -1;
+  return base::WriteFile(path, encrypted_content);
 }
 
 sync_pb::LocalTrustedVault ReadLocalTrustedVaultFile(
@@ -926,7 +925,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
 
   // Clear data for |account_info|, keys should be removed and device
   // registration attempt should be triggered.
-  backend()->ClearDataForAccount(account_info);
+  backend()->ClearLocalDataForAccount(account_info);
 
   // Callback should be called immediately.
   base::MockCallback<StandaloneTrustedVaultBackend::FetchKeysCallback>

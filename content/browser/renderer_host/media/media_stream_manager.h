@@ -40,6 +40,8 @@
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/permission_controller.h"
 #include "media/base/video_facing.h"
+#include "media/capture/mojom/video_capture.mojom.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
@@ -436,6 +438,16 @@ class CONTENT_EXPORT MediaStreamManager
                                       bool is_from_timer);
 #endif
 
+  void RegisterDispatcherHost(
+      std::unique_ptr<blink::mojom::MediaStreamDispatcherHost> host,
+      mojo::PendingReceiver<blink::mojom::MediaStreamDispatcherHost> receiver);
+  size_t num_dispatcher_hosts() const { return dispatcher_hosts_.size(); }
+
+  void RegisterVideoCaptureHost(
+      std::unique_ptr<media::mojom::VideoCaptureHost> host,
+      mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver);
+  size_t num_video_capture_hosts() const { return video_capture_hosts_.size(); }
+
  private:
   friend class MediaStreamManagerTest;
   FRIEND_TEST_ALL_PREFIXES(MediaStreamManagerTest, DesktopCaptureDeviceStopped);
@@ -770,12 +782,18 @@ class CONTENT_EXPORT MediaStreamManager
   // tests / web tests via the command line flag --use-fake-ui-for-media-stream.
   base::RepeatingCallback<std::unique_ptr<FakeMediaStreamUIProxy>(void)>
       fake_ui_factory_;
+
   // The fake UI doesn't work for getUserMedia desktop captures, so in general
   // we won't use it for them, even if fake_ui_factory_ is set (see
   // crbug.com/919485).
   // Some unittests do still require the fake ui to be used for all captures, so
   // set this indicator to true.
   bool use_fake_ui_for_gum_desktop_capture_ = false;
+
+  // If `true`, the fake UI factory is used only for cameras and microphones,
+  // and NOT for any form of screen-capture, regardless if that screen-capture
+  // is getDisplayMedia-driven or getUserMedia-driven.
+  bool use_fake_ui_only_for_camera_and_microphone_ = false;
 
   // Observes changes of captured tabs' CaptureHandleConfig and reports
   // this changes back to their capturers. This object lives on the UI thread
@@ -790,6 +808,10 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Provider of system power change logging to the WebRTC logs.
   MediaStreamPowerLogger power_logger_;
+
+  mojo::UniqueReceiverSet<blink::mojom::MediaStreamDispatcherHost>
+      dispatcher_hosts_;
+  mojo::UniqueReceiverSet<media::mojom::VideoCaptureHost> video_capture_hosts_;
 
   GenerateStreamTestCallback generate_stream_test_callback_;
 };

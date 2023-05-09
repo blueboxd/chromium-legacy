@@ -8,7 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ptr_exclusion.h"
-#include "chrome/browser/download/bubble/download_bubble_controller.h"
+#include "base/time/time.h"
+#include "chrome/browser/download/bubble/download_bubble_ui_controller.h"
 #include "chrome/browser/download/bubble/download_display.h"
 #include "chrome/browser/download/bubble/download_icon_state.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -114,9 +115,29 @@ class FakeDownloadBubbleUIController : public DownloadBubbleUIController {
   void UpdateOfflineItem(int index, OfflineItemState state) {
     offline_items_[index].state = state;
   }
+  std::vector<DownloadUIModelPtr> GetInProgressItems() override {
+    std::vector<DownloadUIModelPtr> in_progress_models;
+    for (auto* item : in_progress_download_items_) {
+      in_progress_models.push_back(DownloadItemModel::Wrap(item));
+    }
+    for (const auto& item : offline_items_) {
+      if (item.state == OfflineItemState::IN_PROGRESS) {
+        in_progress_models.push_back(
+            OfflineItemModel::Wrap(offline_manager_for_testing(), item));
+      }
+    }
+    return in_progress_models;
+  }
+  void AddInProgressItemForTesting(download::DownloadItem* item) {
+    in_progress_download_items_.insert(item);
+  }
+  void RemoveInProgressItemForTesting(download::DownloadItem* item) {
+    in_progress_download_items_.erase(item);
+  }
 
  protected:
   OfflineItemList offline_items_;
+  std::set<download::DownloadItem*> in_progress_download_items_;
 };
 
 class MockDownloadCoreService : public DownloadCoreService {
@@ -252,6 +273,10 @@ class DownloadDisplayControllerTest : public testing::Test {
     // will generally set this to false in OnNewItem().
     DownloadItemModel(&item(index)).SetActionedOn(false);
 
+    if (state == download::DownloadItem::IN_PROGRESS) {
+      bubble_controller().AddInProgressItemForTesting(&(item(index)));
+    }
+
     std::vector<download::DownloadItem*> items;
     for (size_t i = 0; i < items_.size(); ++i) {
       items.push_back(&item(i));
@@ -300,8 +325,10 @@ class DownloadDisplayControllerTest : public testing::Test {
           .WillRepeatedly(Return(in_progress_count_));
       DownloadPrefs::FromDownloadManager(&manager())
           ->SetLastCompleteTime(base::Time::Now());
+      bubble_controller().RemoveInProgressItemForTesting(&(item(item_index)));
     } else {
       EXPECT_CALL(item(item_index), IsDone()).WillRepeatedly(Return(false));
+      bubble_controller().AddInProgressItemForTesting(&(item(item_index)));
     }
     controller().OnUpdatedItem(
         state == DownloadState::COMPLETE,
@@ -471,16 +498,16 @@ TEST_F(DownloadDisplayControllerTest, UpdateToolbarButtonState) {
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/false));
 
-  task_environment_.FastForwardBy(base::Hours(23));
+  task_environment_.FastForwardBy(base::Minutes(58));
   // The display is still showing because the last download is less than 1
-  // day ago.
+  // hour ago.
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/false));
 
-  task_environment_.FastForwardBy(base::Hours(1));
+  task_environment_.FastForwardBy(base::Minutes(2));
   // The display should stop showing once the last download is more than 1
-  // day ago.
+  // hour ago.
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/false, /*detail_shown=*/false,
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/false));
@@ -751,9 +778,9 @@ TEST_F(DownloadDisplayControllerTest, InitialState_OldLastDownload) {
   InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
                    download::DownloadItem::COMPLETE);
   base::Time current_time = base::Time::Now();
-  // Set the last complete time to more than 1 day ago.
+  // Set the last complete time to more than 1 hour ago.
   DownloadPrefs::FromDownloadManager(&manager())
-      ->SetLastCompleteTime(current_time - base::Hours(25));
+      ->SetLastCompleteTime(current_time - base::Minutes(61));
 
   DownloadDisplayController controller(&display(), browser(),
                                        &bubble_controller());
@@ -766,9 +793,9 @@ TEST_F(DownloadDisplayControllerTest, InitialState_NewLastDownload) {
   InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
                    download::DownloadItem::COMPLETE);
   base::Time current_time = base::Time::Now();
-  // Set the last complete time to less than 1 day ago.
+  // Set the last complete time to less than 1 hour ago.
   DownloadPrefs::FromDownloadManager(&manager())
-      ->SetLastCompleteTime(current_time - base::Hours(23));
+      ->SetLastCompleteTime(current_time - base::Minutes(59));
 
   DownloadDisplayController controller(&display(), browser(),
                                        &bubble_controller());
@@ -779,7 +806,7 @@ TEST_F(DownloadDisplayControllerTest, InitialState_NewLastDownload) {
 
   // The display should stop showing once the last download is more than 1 day
   // ago.
-  task_environment_.FastForwardBy(base::Hours(1));
+  task_environment_.FastForwardBy(base::Minutes(1));
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/false, /*detail_shown=*/false,
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/false));
@@ -801,9 +828,9 @@ TEST_F(DownloadDisplayControllerTest, InitialState_InProgressDownload) {
 TEST_F(DownloadDisplayControllerTest,
        InitialState_NewLastDownloadWithEmptyItem) {
   base::Time current_time = base::Time::Now();
-  // Set the last complete time to less than 1 day ago.
+  // Set the last complete time to less than 1 hour ago.
   DownloadPrefs::FromDownloadManager(&manager())
-      ->SetLastCompleteTime(current_time - base::Hours(23));
+      ->SetLastCompleteTime(current_time - base::Minutes(59));
 
   DownloadDisplayController controller(&display(), browser(),
                                        &bubble_controller());

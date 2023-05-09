@@ -775,6 +775,17 @@ static void AdjustStyleForInert(ComputedStyleBuilder& builder,
     builder.SetIsInertIsInherited(false);
     return;
   }
+
+  if (auto& base_data = builder.BaseData()) {
+    if (RuntimeEnabledFeatures::InertDisplayTransitionEnabled() &&
+        base_data->GetBaseComputedStyle()->Display() == EDisplay::kNone) {
+      // Elements which are transitioning to display:none should become inert:
+      // https://github.com/w3c/csswg-drafts/issues/8389
+      builder.SetIsInert(true);
+      builder.SetIsInertIsInherited(false);
+      return;
+    }
+  }
 }
 
 void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyleBuilder& builder) {
@@ -843,8 +854,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
     if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
       if ((element && element->IsInTopLayer()) ||
-          builder.StyleType() == kPseudoIdBackdrop ||
-          builder.StyleType() == kPseudoIdViewTransition) {
+          builder.StyleType() == kPseudoIdBackdrop) {
         builder.SetTopLayer(ETopLayer::kBrowser);
       }
     }
@@ -855,7 +865,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // to 'absolute'. Root elements that are in the top layer should just
     // be left alone because the fullscreen.css doesn't apply any style to
     // them.
-    if (builder.TopLayer() == ETopLayer::kBrowser && !is_document_element) {
+    if ((builder.TopLayer() == ETopLayer::kBrowser && !is_document_element) ||
+        builder.StyleType() == kPseudoIdViewTransition) {
       if (builder.GetPosition() == EPosition::kStatic ||
           builder.GetPosition() == EPosition::kRelative) {
         builder.SetPosition(EPosition::kAbsolute);
@@ -931,7 +942,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     builder.SetForcesStackingContext(true);
   }
 
-  if (builder.TopLayer() == ETopLayer::kBrowser) {
+  if (builder.TopLayer() == ETopLayer::kBrowser ||
+      builder.StyleType() == kPseudoIdViewTransition) {
     builder.SetForcesStackingContext(true);
   }
 

@@ -38,8 +38,7 @@ void WontCompile() {
 
 void WontCompile() {
   constexpr auto InvalidRawPtrTrait = ~base::RawPtrTraits::kEmpty;
-  raw_ptr<int, DisableDanglingPtrDetection | InvalidRawPtrTrait |
-                   DegradeToNoOpWhenMTE>
+  raw_ptr<int, DisableDanglingPtrDetection | InvalidRawPtrTrait>
       p;
 }
 
@@ -225,6 +224,66 @@ void WontCompile() {
   // Fake error on 64-bit to match the expectation.
   static_assert(false, "no viable overloaded '-='");
 #endif  // !BUILDFLAG(HAS_64_BIT_POINTERS)
+}
+
+#elif defined(NCTEST_CROSS_KIND_CONVERSION_FROM_MAY_DANGLE) // [r"static assertion failed due to requirement '\(base::RawPtrTraits\)0U == \(\(base::RawPtrTraits\)1U | RawPtrTraits::kMayDangle\)'"]
+
+void WontCompile() {
+  raw_ptr<int, base::RawPtrTraits::kMayDangle> ptr = new int(3);
+  [[maybe_unused]] raw_ptr<int> ptr2(ptr);
+}
+
+#elif defined(NCTEST_CROSS_KIND_CONVERSION_FROM_DUMMY) // [r"static assertion failed due to requirement '\(base::RawPtrTraits\)0U == \(\(base::RawPtrTraits\)1U | RawPtrTraits::kMayDangle\)'"]
+
+void WontCompile() {
+  raw_ptr<int, base::RawPtrTraits::kDummyForTest> ptr = new int(3);
+  [[maybe_unused]] raw_ptr<int, base::RawPtrTraits::kMayDangle> ptr2(ptr);
+}
+
+#elif defined(NCTEST_CROSS_KIND_MOVE_CONVERSION_FROM_MAY_DANGLE) // [r"static assertion failed due to requirement '\(base::RawPtrTraits\)0U == \(\(base::RawPtrTraits\)1U | RawPtrTraits::kMayDangle\)'"]
+
+void WontCompile() {
+  raw_ptr<int, base::RawPtrTraits::kMayDangle> ptr = new int(3);
+  [[maybe_unused]] raw_ptr<int> ptr2(std::move(ptr));
+}
+
+#elif defined(NCTEST_CROSS_KIND_MOVE_CONVERSION_FROM_DUMMY) // [r"static assertion failed due to requirement '\(base::RawPtrTraits\)0U == \(\(base::RawPtrTraits\)1U | RawPtrTraits::kMayDangle\)'"]
+
+void WontCompile() {
+  raw_ptr<int, base::RawPtrTraits::kDummyForTest> ptr = new int(3);
+  [[maybe_unused]] raw_ptr<int, base::RawPtrTraits::kMayDangle> ptr2(std::move(ptr));
+}
+
+#elif defined(NCTEST_CROSS_KIND_ASSIGNMENT_FROM_MAY_DANGLE) // [r"static assertion failed due to requirement '\(base::RawPtrTraits\)1U == \(\(base::RawPtrTraits\)16U | RawPtrTraits::kMayDangle\)'"]
+
+void WontCompile() {
+  raw_ptr<int, base::RawPtrTraits::kMayDangle> ptr = new int(3);
+  raw_ptr<int> ptr2;
+  ptr2 = ptr;
+}
+
+#elif defined(NCTEST_CROSS_KIND_ASSIGNMENT_FROM_DUMMY) // [r"static assertion failed due to requirement '\(base::RawPtrTraits\)1U == \(\(base::RawPtrTraits\)16U | RawPtrTraits::kMayDangle\)'"]
+
+void WontCompile() {
+  raw_ptr<int, base::RawPtrTraits::kDummyForTest> ptr = new int(3);
+  raw_ptr<int, base::RawPtrTraits::kMayDangle> ptr2;
+  ptr2 = ptr;
+}
+
+#elif defined(NCTEST_CROSS_KIND_MOVE_ASSIGNMENT_FROM_MAY_DANGLE) // [r"static assertion failed due to requirement '\(base::RawPtrTraits\)1U == \(\(base::RawPtrTraits\)16U | RawPtrTraits::kMayDangle\)'"]
+
+void WontCompile() {
+  raw_ptr<int, base::RawPtrTraits::kMayDangle> ptr = new int(3);
+  raw_ptr<int> ptr2;
+  ptr2 = std::move(ptr);
+}
+
+#elif defined(NCTEST_CROSS_KIND_MOVE_ASSIGNMENT_FROM_DUMMY) // [r"static assertion failed due to requirement '\(base::RawPtrTraits\)1U == \(\(base::RawPtrTraits\)16U | RawPtrTraits::kMayDangle\)'"]
+
+void WontCompile() {
+  raw_ptr<int, base::RawPtrTraits::kDummyForTest> ptr = new int(3);
+  raw_ptr<int, base::RawPtrTraits::kMayDangle> ptr2;
+  ptr2 = std::move(ptr);
 }
 
 #endif

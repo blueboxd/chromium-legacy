@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/api/autofill_private/autofill_private_api.h"
 
 #include <stddef.h>
-#include <memory>
+
 #include <utility>
 
 #include "base/guid.h"
@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
@@ -199,9 +200,9 @@ ExtensionFunction::ResponseAction AutofillPrivateGetAccountInfoFunction::Run() {
 // AutofillPrivateSaveAddressFunction
 
 ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
-  std::unique_ptr<api::autofill_private::SaveAddress::Params> parameters =
+  absl::optional<api::autofill_private::SaveAddress::Params> parameters =
       api::autofill_private::SaveAddress::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
@@ -316,7 +317,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
     personal_data->AddProfile(profile);
   }
 
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -346,10 +347,10 @@ ExtensionFunction::ResponseAction AutofillPrivateGetCountryListFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AutofillPrivateGetAddressComponentsFunction::Run() {
-  std::unique_ptr<api::autofill_private::GetAddressComponents::Params>
+  absl::optional<api::autofill_private::GetAddressComponents::Params>
       parameters =
           api::autofill_private::GetAddressComponents::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   std::vector<std::vector<autofill::ExtendedAddressUiComponent>> lines;
   std::string language_code;
@@ -398,9 +399,9 @@ ExtensionFunction::ResponseAction AutofillPrivateGetAddressListFunction::Run() {
 // AutofillPrivateSaveCreditCardFunction
 
 ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
-  std::unique_ptr<api::autofill_private::SaveCreditCard::Params> parameters =
+  absl::optional<api::autofill_private::SaveCreditCard::Params> parameters =
       api::autofill_private::SaveCreditCard::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
@@ -452,7 +453,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
   if (use_existing_card) {
     // Only updates when the card info changes.
     if (existing_card && existing_card->Compare(credit_card) == 0)
-      return RespondNow(WithArguments());
+      return RespondNow(NoArguments());
 
     // Record when nickname is updated.
     if (credit_card.HasNonEmptyValidNickname() &&
@@ -472,16 +473,16 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
     }
   }
 
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillPrivateRemoveEntryFunction
 
 ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
-  std::unique_ptr<api::autofill_private::RemoveEntry::Params> parameters =
+  absl::optional<api::autofill_private::RemoveEntry::Params> parameters =
       api::autofill_private::RemoveEntry::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
@@ -495,7 +496,7 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
 
   personal_data->RemoveByGUID(parameters->guid);
 
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -503,21 +504,21 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AutofillPrivateValidatePhoneNumbersFunction::Run() {
-  std::unique_ptr<api::autofill_private::ValidatePhoneNumbers::Params>
+  absl::optional<api::autofill_private::ValidatePhoneNumbers::Params>
       parameters =
           api::autofill_private::ValidatePhoneNumbers::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
-  api::autofill_private::ValidatePhoneParams* params = &parameters->params;
+  api::autofill_private::ValidatePhoneParams& params = parameters->params;
 
   // Extract the phone numbers into a base::Value::List.
   base::Value::List phone_numbers;
-  for (auto phone_number : params->phone_numbers) {
+  for (auto phone_number : params.phone_numbers) {
     phone_numbers.Append(phone_number);
   }
 
-  RemoveDuplicatePhoneNumberAtIndex(params->index_of_new_number,
-                                    params->country_code, phone_numbers);
+  RemoveDuplicatePhoneNumberAtIndex(params.index_of_new_number,
+                                    params.country_code, phone_numbers);
 
   return RespondNow(WithArguments(std::move(phone_numbers)));
 }
@@ -526,9 +527,9 @@ AutofillPrivateValidatePhoneNumbersFunction::Run() {
 // AutofillPrivateMaskCreditCardFunction
 
 ExtensionFunction::ResponseAction AutofillPrivateMaskCreditCardFunction::Run() {
-  std::unique_ptr<api::autofill_private::MaskCreditCard::Params> parameters =
+  absl::optional<api::autofill_private::MaskCreditCard::Params> parameters =
       api::autofill_private::MaskCreditCard::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
@@ -538,7 +539,7 @@ ExtensionFunction::ResponseAction AutofillPrivateMaskCreditCardFunction::Run() {
 
   personal_data->ResetFullServerCard(parameters->guid);
 
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -596,7 +597,7 @@ AutofillPrivateMigrateCreditCardsFunction::Run() {
   local_card_migration_manager->GetMigratableCreditCards();
   local_card_migration_manager->AttemptToOfferLocalCardMigration(
       /*is_from_settings_page=*/true);
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -612,7 +613,7 @@ AutofillPrivateLogServerCardLinkClickedFunction::Run() {
     return RespondNow(Error(kErrorDataUnavailable));
 
   personal_data->LogServerCardLinkClicked();
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -630,24 +631,24 @@ AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction::Run() {
   if (!credit_card_access_manager)
     return RespondNow(Error(kErrorDataUnavailable));
 
-  std::unique_ptr<
+  absl::optional<
       api::autofill_private::SetCreditCardFIDOAuthEnabledState::Params>
       parameters = api::autofill_private::SetCreditCardFIDOAuthEnabledState::
           Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   credit_card_access_manager->OnSettingsPageFIDOAuthToggled(
       parameters->enabled);
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillPrivateSaveIbanFunction
 
 ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
-  std::unique_ptr<api::autofill_private::SaveIban::Params> parameters =
+  absl::optional<api::autofill_private::SaveIban::Params> parameters =
       api::autofill_private::SaveIban::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
@@ -716,6 +717,17 @@ ExtensionFunction::ResponseAction AutofillPrivateGetIbanListFunction::Run() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateIsValidIbanFunction
+
+ExtensionFunction::ResponseAction AutofillPrivateIsValidIbanFunction::Run() {
+  absl::optional<api::autofill_private::IsValidIban::Params> parameters =
+      api::autofill_private::IsValidIban::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+  return RespondNow(WithArguments(
+      autofill::IBAN::IsValid(base::UTF8ToUTF16(parameters->iban_value))));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // AutofillPrivateGetUpiIdListFunction
 
 ExtensionFunction::ResponseAction AutofillPrivateGetUpiIdListFunction::Run() {
@@ -733,9 +745,9 @@ ExtensionFunction::ResponseAction AutofillPrivateGetUpiIdListFunction::Run() {
 // AutofillPrivateAddVirtualCardFunction
 
 ExtensionFunction::ResponseAction AutofillPrivateAddVirtualCardFunction::Run() {
-  std::unique_ptr<api::autofill_private::AddVirtualCard::Params> parameters =
+  absl::optional<api::autofill_private::AddVirtualCard::Params> parameters =
       api::autofill_private::AddVirtualCard::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   // Get the PersonalDataManager to retrieve the card based on the id.
   autofill::PersonalDataManager* personal_data_manager =
@@ -766,7 +778,7 @@ ExtensionFunction::ResponseAction AutofillPrivateAddVirtualCardFunction::Run() {
 
   virtual_card_enrollment_manager->InitVirtualCardEnroll(
       *card, autofill::VirtualCardEnrollmentSource::kSettingsPage);
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -774,9 +786,9 @@ ExtensionFunction::ResponseAction AutofillPrivateAddVirtualCardFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AutofillPrivateRemoveVirtualCardFunction::Run() {
-  std::unique_ptr<api::autofill_private::RemoveVirtualCard::Params> parameters =
+  absl::optional<api::autofill_private::RemoveVirtualCard::Params> parameters =
       api::autofill_private::RemoveVirtualCard::Params::Create(args());
-  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
 
   // Get the PersonalDataManager to retrieve the card based on the id.
   autofill::PersonalDataManager* personal_data_manager =
@@ -808,7 +820,7 @@ AutofillPrivateRemoveVirtualCardFunction::Run() {
   virtual_card_enrollment_manager->Unenroll(
       card->instrument_id(),
       /*virtual_card_enrollment_update_response_callback=*/absl::nullopt);
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

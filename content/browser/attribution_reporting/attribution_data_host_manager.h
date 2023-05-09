@@ -5,16 +5,10 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_DATA_HOST_MANAGER_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_DATA_HOST_MANAGER_H_
 
-#include <stdint.h>
-
-#include <string>
-
 #include "base/memory/weak_ptr.h"
 #include "components/attribution_reporting/registration_type.mojom-forward.h"
 #include "content/browser/attribution_reporting/attribution_beacon_id.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-forward.h"
 #include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom-forward.h"
@@ -33,20 +27,15 @@ class Origin;
 
 namespace content {
 
-class BrowserContext;
-
 struct AttributionInputEvent;
 struct GlobalRenderFrameHostId;
 
 // Interface responsible for coordinating `AttributionDataHost`s received from
 // the renderer.
-class CONTENT_EXPORT AttributionDataHostManager
+class AttributionDataHostManager
     : public base::SupportsWeakPtr<AttributionDataHostManager> {
  public:
-  static AttributionDataHostManager* FromBrowserContext(BrowserContext*);
-
-  AttributionDataHostManager();
-  virtual ~AttributionDataHostManager();
+  virtual ~AttributionDataHostManager() = default;
 
   // Registers a new data host with the browser process for the given context
   // origin. This is only called for events which are not associated with a
@@ -69,13 +58,13 @@ class CONTENT_EXPORT AttributionDataHostManager
       const blink::AttributionSrcToken& attribution_src_token,
       AttributionInputEvent input_event) = 0;
 
-  // Notifies the manager that an attribution enabled navigation has registered
-  // a source header. May be called multiple times for the same navigation.
-  // Important: `header_value` is untrusted. Passes the topmost ancestor of the
+  // Notifies the manager that an attribution-enabled navigation has sent a
+  // response. May be called multiple times for the same navigation.
+  // Important: `headers` is untrusted. Passes the topmost ancestor of the
   // initiator render frame for obtaining the page access report.
   virtual void NotifyNavigationRedirectRegistration(
       const blink::AttributionSrcToken& attribution_src_token,
-      std::string header_value,
+      const net::HttpResponseHeaders* headers,
       attribution_reporting::SuitableOrigin reporting_origin,
       const attribution_reporting::SuitableOrigin& source_origin,
       AttributionInputEvent input_event,
@@ -94,16 +83,10 @@ class CONTENT_EXPORT AttributionDataHostManager
       bool is_within_fenced_frame,
       GlobalRenderFrameHostId render_frame_id) = 0;
 
-  // Notifies the manager that a navigation failed and should no longer be
-  // tracked. The navigation was associated with a data host if
-  // `attribution_src_token` is not `absl::nullopt`.
+  // Notifies the manager that a navigation associated with a data host failed
+  // and should no longer be tracked.
   virtual void NotifyNavigationFailure(
-      const absl::optional<blink::AttributionSrcToken>& attribution_src_token,
-      int64_t navigation_id) = 0;
-
-  // Notifies the manager that a navigation finished. This may arrive before or
-  // after the beacon data.
-  virtual void NotifyNavigationSuccess(int64_t navigation_id) = 0;
+      const blink::AttributionSrcToken& attribution_src_token) = 0;
 
   // Notifies the manager that a fenced frame reporting beacon was initiated
   // for reportEvent or for an automatic beacon and should be tracked.
@@ -115,7 +98,7 @@ class CONTENT_EXPORT AttributionDataHostManager
       BeaconId beacon_id,
       attribution_reporting::SuitableOrigin source_origin,
       bool is_within_fenced_frame,
-      absl::optional<AttributionInputEvent> input_event,
+      AttributionInputEvent input_event,
       GlobalRenderFrameHostId render_frame_id) = 0;
 
   // Notifies the manager that a beacon has been sent.

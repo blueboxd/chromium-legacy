@@ -271,6 +271,11 @@ void WebSettingsImpl::SetPrimaryHoverType(mojom::blink::HoverType type) {
   dev_tools_emulator_->SetPrimaryHoverType(type);
 }
 
+void WebSettingsImpl::SetOutputDeviceUpdateAbilityType(
+    mojom::blink::OutputDeviceUpdateAbilityType type) {
+  dev_tools_emulator_->SetOutputDeviceUpdateAbilityType(type);
+}
+
 void WebSettingsImpl::SetPreferHiddenVolumeControls(bool enabled) {
   settings_->SetPreferHiddenVolumeControls(enabled);
 }
@@ -481,8 +486,8 @@ void WebSettingsImpl::SetAntialiasedClips2dCanvasEnabled(bool enabled) {
   settings_->SetAntialiasedClips2dCanvasEnabled(enabled);
 }
 
-void WebSettingsImpl::SetPreferCompositingToLCDTextEnabled(bool enabled) {
-  dev_tools_emulator_->SetPreferCompositingToLCDTextEnabled(enabled);
+void WebSettingsImpl::SetLCDTextPreference(LCDTextPreference preference) {
+  dev_tools_emulator_->SetLCDTextPreference(preference);
 }
 
 void WebSettingsImpl::SetHideDownloadUI(bool hide) {

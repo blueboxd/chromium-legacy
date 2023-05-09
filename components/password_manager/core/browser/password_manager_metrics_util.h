@@ -630,6 +630,27 @@ enum class PasswordsImportDesktopInteractions {
   kMaxValue = kCanceledBeforeFileSelect,
 };
 
+// Represents different user interactions related to managing credentials from
+// the password management bubble opened from the key icon in omnibox.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Always keep this enum in sync with the
+// corresponding PasswordManagementBubbleInteractions in enums.xml.
+enum class PasswordManagementBubbleInteractions {
+  kManagePasswordsButtonClicked = 0,
+  kGooglePasswordManagerLinkClicked = 1,
+  kCredentialRowClicked = 2,
+  kUsernameCopyButtonClicked = 3,
+  kPasswordCopyButtonClicked = 4,
+  kPasswordShowButtonClicked = 5,
+  kUsernameEditButtonClicked = 6,
+  kUsernameAdded = 7,
+  kNoteEditButtonClicked = 8,
+  kNoteAdded = 9,
+  kNoteEdited = 10,
+  kNoteDeleted = 11,
+  kMaxValue = kNoteDeleted,
+};
+
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
     PasswordAccountStorageUsageLevel usage_level);
 
@@ -810,6 +831,12 @@ void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
 void LogUserInteractionsWhenAddingCredentialFromSettings(
     AddCredentialFromSettingsUserInteractions
         add_credential_from_settings_user_interaction);
+
+// Log the user interaction events with a revamped password management bubble
+// opened from the key icon in omnibox.
+void LogUserInteractionsInPasswordManagementBubble(
+    PasswordManagementBubbleInteractions
+        password_management_bubble_interaction);
 
 // Wraps |callback| into another callback that measures the elapsed time between
 // construction and actual execution of the callback. Records the result to

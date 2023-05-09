@@ -485,8 +485,8 @@ Status ConfigureHeadlessSession(Session* session,
     download_directory = capabilities.prefs->FindStringByDottedPath(
         "download.default_directory");
     if (!download_directory) {
-      download_directory = capabilities.prefs->FindStringByDottedPath(
-          "download.default_directory");
+      download_directory =
+          capabilities.prefs->FindString("download.default_directory");
     }
   }
   session->headless_download_directory = std::make_unique<std::string>(
@@ -818,12 +818,8 @@ Status ExecuteGetWindowHandles(Session* session,
     return status;
 
   if (session->webSocketUrl) {
-    std::string mapper_view_id;
-    // TODO(chromedriver:4181): How do we know for sure that the first page is
-    // the mapper?
-    status = session->chrome->GetWebViewIdForFirstTab(&mapper_view_id,
-                                                      session->w3c_compliant);
-    auto it = base::ranges::find(web_view_ids, mapper_view_id);
+    auto it =
+        base::ranges::find(web_view_ids, session->bidi_mapper_web_view_id);
     if (it != web_view_ids.end()) {
       web_view_ids.erase(it);
     }
@@ -1066,15 +1062,14 @@ Status ExecuteGetLocation(Session* session,
     return Status(kUnknownError,
                   "Location must be set before it can be retrieved");
   }
-  base::Value location(base::Value::Type::DICT);
-  location.SetDoubleKey("latitude", session->overridden_geoposition->latitude);
-  location.SetDoubleKey("longitude",
-                        session->overridden_geoposition->longitude);
-  location.SetDoubleKey("accuracy", session->overridden_geoposition->accuracy);
+  base::Value::Dict location;
+  location.Set("latitude", session->overridden_geoposition->latitude);
+  location.Set("longitude", session->overridden_geoposition->longitude);
+  location.Set("accuracy", session->overridden_geoposition->accuracy);
   // Set a dummy altitude to make WebDriver clients happy.
   // https://code.google.com/p/chromedriver/issues/detail?id=281
-  location.SetDoubleKey("altitude", 0);
-  *value = base::Value::ToUniquePtrValue(location.Clone());
+  location.Set("altitude", 0);
+  *value = base::Value::ToUniquePtrValue(base::Value(std::move(location)));
   return Status(kOk);
 }
 

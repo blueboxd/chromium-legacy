@@ -516,14 +516,14 @@ H AbslHashValue(H hash_state, const std::shared_ptr<T>& ptr) {
 // the same character sequence. These types are:
 //
 //  - `absl::Cord`
-//  - `std::string` (and std::basic_string<char, std::char_traits<char>, A> for
-//      any allocator A)
+//  - `std::string` (and std::basic_string<T, std::char_traits<T>, A> for
+//      any allocator A and any T in {char, wchar_t, char16_t, char32_t})
 //  - `absl::string_view` and `std::string_view`
 //
-// For simplicity, we currently support only `char` strings. This support may
-// be broadened, if necessary, but with some caution - this overload would
-// misbehave in cases where the traits' `eq()` member isn't equivalent to `==`
-// on the underlying character type.
+// For simplicity, we currently support only strings built on `char`, `wchar_t`,
+// `char16_t`, or `char32_t`. This support may be broadened, if necessary, but
+// with some caution - this overload would misbehave in cases where the traits'
+// `eq()` member isn't equivalent to `==` on the underlying character type.
 template <typename H>
 H AbslHashValue(H hash_state, absl::string_view str) {
   return H::combine(
@@ -1074,6 +1074,7 @@ class ABSL_DLL MixingHashState : public HashStateBase<MixingHashState> {
 
   // Reads 1 to 3 bytes from p. Zero pads to fill uint32_t.
   static uint32_t Read1To3(const unsigned char* p, size_t len) {
+    // The trick used by this implementation is to avoid branches if possible.
     unsigned char mem0 = p[0];
     unsigned char mem1 = p[len / 2];
     unsigned char mem2 = p[len - 1];
@@ -1083,7 +1084,7 @@ class ABSL_DLL MixingHashState : public HashStateBase<MixingHashState> {
     unsigned char significant0 = mem0;
 #else
     unsigned char significant2 = mem0;
-    unsigned char significant1 = mem1;
+    unsigned char significant1 = len == 2 ? mem0 : mem1;
     unsigned char significant0 = mem2;
 #endif
     return static_cast<uint32_t>(significant0 |                     //

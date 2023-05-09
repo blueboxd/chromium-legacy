@@ -15,8 +15,6 @@
 #include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
-#include "content/common/aggregatable_report.mojom.h"
-#include "content/common/private_aggregation_features.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/worklet_utils/private_aggregation_utils.h"
@@ -25,6 +23,7 @@
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
 #include "v8/include/v8-exception.h"
 #include "v8/include/v8-external.h"
 #include "v8/include/v8-function-callback.h"
@@ -80,45 +79,58 @@ ConvertBigIntToBucketOffset(v8::Local<v8::BigInt> bigint,
       /*is_negative=*/sign_bit);
 }
 
-// TODO(qingxinwu): Factor out common code shared between this function and
-// GetSignalValue to reduce duplicate code.
-absl::optional<auction_worklet::mojom::SignalBucketPtr> GetSignalBucket(
-    v8::Isolate* isolate,
-    v8::Local<v8::Value> input) {
-  DCHECK(input->IsObject());
-  gin::Dictionary result_dict(isolate, input.As<v8::Object>());
-
+absl::optional<auction_worklet::mojom::BaseValue> GetBaseValue(
+    gin::Dictionary& dictionary) {
   std::string base_value_string;
-  if (!result_dict.Get("baseValue", &base_value_string)) {
+  if (!dictionary.Get("baseValue", &base_value_string)) {
     return absl::nullopt;
   }
+  return BaseValueStringToEnum(base_value_string);
+}
 
-  absl::optional<auction_worklet::mojom::BaseValue> base_value_opt =
-      BaseValueStringToEnum(base_value_string);
-  if (!base_value_opt.has_value()) {
-    return absl::nullopt;
-  }
-
+// Returns scale field in `dictionary` if it exists and is valid. Returns 1.0
+// if it does not exist. Returns absl::nullopt if it exists but is invalid.
+absl::optional<double> GetScale(gin::Dictionary& dictionary) {
   double scale = 1.0;
   v8::Local<v8::Value> js_scale;
-  if (result_dict.Get("scale", &js_scale) && !js_scale.IsEmpty() &&
+  if (dictionary.Get("scale", &js_scale) && !js_scale.IsEmpty() &&
       !js_scale->IsNullOrUndefined()) {
     if (!js_scale->IsNumber()) {
       return absl::nullopt;
     }
-    // TODO(qingxinwu): Return empty if scale is NaN or infinite.
     scale = js_scale.As<v8::Number>()->Value();
+    if (!std::isfinite(scale)) {
+      return absl::nullopt;
+    }
+  }
+  return scale;
+}
+
+absl::optional<auction_worklet::mojom::SignalBucketPtr> GetSignalBucket(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> input) {
+  CHECK(input->IsObject());
+  gin::Dictionary result_dict(isolate, input.As<v8::Object>());
+
+  absl::optional<auction_worklet::mojom::BaseValue> base_value_opt =
+      GetBaseValue(result_dict);
+  if (!base_value_opt.has_value()) {
+    return absl::nullopt;
+  }
+
+  absl::optional<double> scale_opt = GetScale(result_dict);
+  if (!scale_opt.has_value()) {
+    return absl::nullopt;
   }
 
   v8::Local<v8::Value> js_offset;
   if (!result_dict.Get("offset", &js_offset) || js_offset.IsEmpty() ||
       js_offset->IsNullOrUndefined()) {
-    return auction_worklet::mojom::SignalBucket::New(base_value_opt.value(),
-                                                     scale,
+    return auction_worklet::mojom::SignalBucket::New(*base_value_opt,
+                                                     *scale_opt,
                                                      /*offset=*/nullptr);
   }
 
-  auction_worklet::mojom::BucketOffsetPtr offset;
   // Offset must be BigInt for bucket.
   if (!js_offset->IsBigInt()) {
     return absl::nullopt;
@@ -127,49 +139,36 @@ absl::optional<auction_worklet::mojom::SignalBucketPtr> GetSignalBucket(
   // TODO(qingxinwu): `error` is ignored currently. Report it and consider
   // surfacing more informative errors like "offset must be BigInt for bucket".
   std::string error;
-  absl::optional<auction_worklet::mojom::BucketOffsetPtr> maybe_offset =
+  absl::optional<auction_worklet::mojom::BucketOffsetPtr> offset_opt =
       ConvertBigIntToBucketOffset(js_offset.As<v8::BigInt>(), &error);
-  if (!maybe_offset.has_value()) {
+  if (!offset_opt.has_value()) {
     return nullptr;
   }
-  offset = std::move(maybe_offset.value());
-  return auction_worklet::mojom::SignalBucket::New(base_value_opt.value(),
-                                                   scale, std::move(offset));
+  return auction_worklet::mojom::SignalBucket::New(*base_value_opt, *scale_opt,
+                                                   std::move(*offset_opt));
 }
 
 absl::optional<auction_worklet::mojom::SignalValuePtr> GetSignalValue(
     v8::Isolate* isolate,
     v8::Local<v8::Value> input) {
-  DCHECK(input->IsObject());
+  CHECK(input->IsObject());
   gin::Dictionary result_dict(isolate, input.As<v8::Object>());
 
-  std::string base_value_string;
-  if (!result_dict.Get("baseValue", &base_value_string)) {
-    return absl::nullopt;
-  }
-
   absl::optional<auction_worklet::mojom::BaseValue> base_value_opt =
-      BaseValueStringToEnum(base_value_string);
+      GetBaseValue(result_dict);
   if (!base_value_opt.has_value()) {
     return absl::nullopt;
   }
 
-  double scale = 1.0;
-  v8::Local<v8::Value> js_scale;
-  if (result_dict.Get("scale", &js_scale) && !js_scale.IsEmpty() &&
-      !js_scale->IsNullOrUndefined()) {
-    if (!js_scale->IsNumber()) {
-      return absl::nullopt;
-    }
-    // TODO(b/266615909): Disallow scale being NaN or infinite.
-    scale = js_scale.As<v8::Number>()->Value();
+  absl::optional<double> scale_opt = GetScale(result_dict);
+  if (!scale_opt.has_value()) {
+    return absl::nullopt;
   }
 
   v8::Local<v8::Value> js_offset;
   if (!result_dict.Get("offset", &js_offset) || js_offset.IsEmpty() ||
       js_offset->IsNullOrUndefined()) {
-    return auction_worklet::mojom::SignalValue::New(base_value_opt.value(),
-                                                    scale,
+    return auction_worklet::mojom::SignalValue::New(*base_value_opt, *scale_opt,
                                                     /*offset=*/0);
   }
 
@@ -178,51 +177,29 @@ absl::optional<auction_worklet::mojom::SignalValuePtr> GetSignalValue(
     return absl::nullopt;
   }
   int32_t offset = js_offset.As<v8::Int32>()->Value();
-  return auction_worklet::mojom::SignalValue::New(base_value_opt.value(), scale,
+  return auction_worklet::mojom::SignalValue::New(*base_value_opt, *scale_opt,
                                                   offset);
 }
 
-auction_worklet::mojom::AggregatableReportForEventContributionPtr
-ParseForEventContribution(v8::Isolate* isolate,
-                          const std::string& event_type,
-                          v8::Local<v8::Value> arg_contribution,
-                          std::string* error) {
-  gin::Dictionary dict(isolate);
-  bool success = gin::ConvertFromV8(isolate, arg_contribution, &dict);
-  DCHECK(success);
-
-  v8::Local<v8::Value> js_bucket;
-  v8::Local<v8::Value> js_value;
-
-  if (!dict.Get("bucket", &js_bucket) || js_bucket.IsEmpty() ||
-      js_bucket->IsNullOrUndefined()) {
-    *error =
-        "Invalid or missing bucket in reportContributionForEvent's argument";
-    return nullptr;
-  }
-
-  if (!dict.Get("value", &js_value) || js_value.IsEmpty() ||
-      js_value->IsNullOrUndefined()) {
-    *error =
-        "Invalid or missing value in reportContributionForEvent's argument";
-    return nullptr;
-  }
-
+// Returns contribution's bucket from `js_value`. Returns nullptr if there is an
+// error.
+auction_worklet::mojom::ForEventSignalBucketPtr GetBucket(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> js_bucket,
+    std::string* error) {
   auction_worklet::mojom::ForEventSignalBucketPtr bucket;
-  auction_worklet::mojom::ForEventSignalValuePtr value;
-
   if (js_bucket->IsBigInt()) {
     std::string bucket_error;
     absl::optional<absl::uint128> maybe_bucket =
         worklet_utils::ConvertBigIntToUint128(js_bucket.As<v8::BigInt>(),
                                               &bucket_error);
     if (!maybe_bucket.has_value()) {
-      DCHECK(base::IsStringUTF8(bucket_error));
+      CHECK(base::IsStringUTF8(bucket_error));
       *error = bucket_error;
       return nullptr;
     }
     bucket = auction_worklet::mojom::ForEventSignalBucket::NewIdBucket(
-        maybe_bucket.value());
+        *maybe_bucket);
   } else if (js_bucket->IsObject()) {
     absl::optional<auction_worklet::mojom::SignalBucketPtr>
         maybe_signal_bucket_ptr = GetSignalBucket(isolate, js_bucket);
@@ -231,12 +208,21 @@ ParseForEventContribution(v8::Isolate* isolate,
       return nullptr;
     }
     bucket = auction_worklet::mojom::ForEventSignalBucket::NewSignalBucket(
-        std::move(maybe_signal_bucket_ptr.value()));
+        std::move(*maybe_signal_bucket_ptr));
   } else {
     *error = "Bucket must be a BigInt or a dictionary";
     return nullptr;
   }
+  return bucket;
+}
 
+// Returns contribution's value from `js_value`. Returns nullptr if there is an
+// error.
+auction_worklet::mojom::ForEventSignalValuePtr GetValue(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> js_value,
+    std::string* error) {
+  auction_worklet::mojom::ForEventSignalValuePtr value;
   if (js_value->IsInt32()) {
     int int_value = js_value.As<v8::Int32>()->Value();
     value = auction_worklet::mojom::ForEventSignalValue::NewIntValue(int_value);
@@ -252,12 +238,50 @@ ParseForEventContribution(v8::Isolate* isolate,
       return nullptr;
     }
     value = auction_worklet::mojom::ForEventSignalValue::NewSignalValue(
-        std::move(maybe_signal_value_ptr.value()));
+        std::move(*maybe_signal_value_ptr));
   } else if (js_value->IsBigInt()) {
     *error = "Value cannot be a BigInt";
     return nullptr;
   } else {
     *error = "Value must be an integer or a dictionary";
+    return nullptr;
+  }
+  return value;
+}
+
+auction_worklet::mojom::AggregatableReportForEventContributionPtr
+ParseForEventContribution(v8::Isolate* isolate,
+                          const std::string& event_type,
+                          v8::Local<v8::Value> arg_contribution,
+                          std::string* error) {
+  gin::Dictionary dict(isolate);
+  bool success = gin::ConvertFromV8(isolate, arg_contribution, &dict);
+  CHECK(success);
+
+  v8::Local<v8::Value> js_bucket;
+  if (!dict.Get("bucket", &js_bucket) || js_bucket.IsEmpty() ||
+      js_bucket->IsNullOrUndefined()) {
+    *error =
+        "Invalid or missing bucket in reportContributionForEvent's argument";
+    return nullptr;
+  }
+
+  v8::Local<v8::Value> js_value;
+  if (!dict.Get("value", &js_value) || js_value.IsEmpty() ||
+      js_value->IsNullOrUndefined()) {
+    *error =
+        "Invalid or missing value in reportContributionForEvent's argument";
+    return nullptr;
+  }
+
+  auction_worklet::mojom::ForEventSignalBucketPtr bucket =
+      GetBucket(isolate, std::move(js_bucket), error);
+  if (!bucket) {
+    return nullptr;
+  }
+  auction_worklet::mojom::ForEventSignalValuePtr value =
+      GetValue(isolate, std::move(js_value), error);
+  if (!value) {
     return nullptr;
   }
 
@@ -282,8 +306,8 @@ PrivateAggregationBindings::~PrivateAggregationBindings() = default;
 
 void PrivateAggregationBindings::FillInGlobalTemplate(
     v8::Local<v8::ObjectTemplate> global_template) {
-  if (!base::FeatureList::IsEnabled(content::kPrivateAggregationApi) ||
-      !content::kPrivateAggregationApiEnabledInFledge.Get()) {
+  if (!base::FeatureList::IsEnabled(blink::features::kPrivateAggregationApi) ||
+      !blink::features::kPrivateAggregationApiEnabledInFledge.Get()) {
     return;
   }
 
@@ -302,8 +326,7 @@ void PrivateAggregationBindings::FillInGlobalTemplate(
       v8_helper_->CreateStringFromLiteral("sendHistogramReport"),
       send_histogram_report_template);
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kPrivateAggregationApiFledgeExtensions)) {
+  if (blink::features::kPrivateAggregationApiFledgeExtensionsEnabled.Get()) {
     v8::Local<v8::FunctionTemplate> report_contribution_for_event_template =
         v8::FunctionTemplate::New(
             v8_helper_->isolate(),
@@ -346,7 +369,7 @@ PrivateAggregationBindings::TakePrivateAggregationRequests() {
         return auction_worklet::mojom::PrivateAggregationRequest::New(
             std::move(contribution),
             // TODO(alexmt): consider allowing this to be set
-            content::mojom::AggregationServiceMode::kDefault,
+            blink::mojom::AggregationServiceMode::kDefault,
             debug_mode_details_.Clone());
       });
   private_aggregation_contributions_.clear();
@@ -360,7 +383,7 @@ void PrivateAggregationBindings::SendHistogramReport(
       static_cast<PrivateAggregationBindings*>(
           v8::External::Cast(*args.Data())->Value());
 
-  content::mojom::AggregatableReportHistogramContributionPtr contribution =
+  blink::mojom::AggregatableReportHistogramContributionPtr contribution =
       worklet_utils::ParseSendHistogramReportArguments(
           gin::Arguments(args),
           bindings->private_aggregation_permissions_policy_allowed_);
@@ -407,7 +430,7 @@ void PrivateAggregationBindings::ReportContributionForEvent(
           ParseForEventContribution(isolate, event_type, args[1], &error);
 
   if (contribution.is_null()) {
-    DCHECK(base::IsStringUTF8(error));
+    CHECK(base::IsStringUTF8(error));
     isolate->ThrowException(v8::Exception::TypeError(
         v8_helper->CreateUtf8String(error).ToLocalChecked()));
     return;

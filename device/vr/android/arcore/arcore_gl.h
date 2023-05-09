@@ -20,6 +20,7 @@
 #include "device/vr/public/cpp/xr_frame_sink_client.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/public/mojom/xr_session.mojom.h"
 #include "device/vr/util/fps_meter.h"
 #include "device/vr/util/sliding_average.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -48,7 +49,7 @@ class WindowAndroid;
 namespace device {
 
 class ArCore;
-class ArCoreSessionUtils;
+class XrJavaCoordinator;
 class ArCoreFactory;
 class ArImageTransport;
 class WebXrPresentationState;
@@ -109,7 +110,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   ~ArCoreGl() override;
 
   void Initialize(
-      ArCoreSessionUtils* session_utils,
+      XrJavaCoordinator* session_utils,
       ArCoreFactory* arcore_factory,
       XrFrameSinkClient* xr_frame_sink_client,
       gfx::AcceleratedWidget drawing_widget,
@@ -385,7 +386,7 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
   absl::optional<float> floor_height_estimate_;
 
   // Touch-related data.
-  // Android will report touch events via MotionEvent - see ArImmersiveOverlay
+  // Android will report touch events via MotionEvent - see XrImmersiveOverlay
   // for details.
   struct ScreenTouchEvent {
     gfx::PointF screen_last_touch;

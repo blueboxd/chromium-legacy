@@ -380,19 +380,20 @@ interface PrintManagerHost {
   IsPrintingEnabled() => (bool printing_enabled);
 
   // Requests the print settings from the user. This step is about showing
-  // UI to the user to select the final print settings.
+  // UI to the user to select the final print settings. If the user cancels or
+  // an error occurs, return null.
   [Sync]
-  ScriptedPrint(ScriptedPrintParams params) => (PrintPagesParams settings);
+  ScriptedPrint(ScriptedPrintParams params) => (PrintPagesParams? settings);
 
   // Tells the browser printing failed.
   PrintingFailed(int32 cookie, PrintFailureReason reason);
 
-  // Updates the current print settings with new |job_settings|.
+  // Updates the current print settings with new |job_settings|. If an error
+  // occurs, return null.
   [EnableIf=enable_print_preview, Sync]
   UpdatePrintSettings(
-      int32 cookie,
       mojo_base.mojom.DictionaryValue job_settings)
-      => (PrintPagesParams current_settings, bool canceled);
+      => (PrintPagesParams? current_settings);
 
   // Tells the browser to set up the print preview requested by the script. It
   // runs a nested run loop in the renderer until print preview for

@@ -150,10 +150,7 @@
 #include "base/native_library.h"
 #include "base/rand_util.h"
 #include "content/public/common/zygote/sandbox_support_linux.h"
-#include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
-#include "third_party/skia/include/core/SkFontMgr.h"
-#include "third_party/skia/include/ports/SkFontMgr_android.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -184,6 +181,11 @@
 #include "content/public/common/zygote/zygote_handle.h"
 #include "content/zygote/zygote_main.h"
 #include "media/base/media_switches.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_ZYGOTE)
+#include "base/rand_util.h"
+#include "chromeos/startup/startup_switches.h"
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -298,7 +300,6 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
   // Append any switches from the browser process that need to be forwarded on
   // to the zygote/renderers.
   static const char* const kForwardSwitches[] = {
-    switches::kAndroidFontsPath,
     switches::kClearKeyCdmPathForTesting,
     switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
     // Need to tell the zygote that it is headless so that we don't try to use
@@ -315,6 +316,9 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
     switches::kVModule,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     switches::kEnableResourcesFileSharing,
+#endif
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    chromeos::switches::kZygoteHugepageRemap,
 #endif
   };
   cmd_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
@@ -356,6 +360,20 @@ void InitializeZygoteSandboxForBrowserProcess(
     return;
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // We determine whether to enable the zygote hugepage remap feature. We store
+  // the result in the current command line. This will automatically propagate
+  // to zygotes via LaunchZygoteHelper. Later,
+  // ChromeBrowserMainExtraPartsMetrics::PreBrowserStart will register the
+  // synthetic field trial.
+  // This is a 50/50 trial.
+  const bool enable_hugepage = base::RandInt(/*min=*/0, /*max=*/1) == 1;
+  if (enable_hugepage) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kZygoteHugepageRemap);
+  }
+#endif
+
   // Tickle the zygote host so it forks now.
   ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
   if (!parsed_command_line.HasSwitch(switches::kNoUnsandboxedZygote)) {
@@ -390,7 +408,7 @@ void PreloadPepperPlugins() {
     }
   }
 }
-#endif
+#endif  // BUILDFLAG(ENABLE_PPAPI)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // Loads registered library CDMs but does not initialize them. This is needed by
@@ -407,8 +425,15 @@ void PreloadLibraryCdms() {
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-#if BUILDFLAG(USE_ZYGOTE)
 void PreSandboxInit() {
+  // Ensure the /dev/urandom is opened.
+  base::GetUrandomFD();
+
+  // May use sysinfo(), sched_getaffinity(), and open various /sys/ and /proc/
+  // files.
+  base::SysInfo::AmountOfPhysicalMemory();
+  base::SysInfo::NumberOfProcessors();
+
   // Pre-acquire resources needed by BoringSSL. See
   // https://boringssl.googlesource.com/boringssl/+/HEAD/SANDBOXING.md
   CRYPTO_pre_sandbox_init();
@@ -434,46 +459,11 @@ void PreSandboxInit() {
   }
 #endif
 
-  // Set the android SkFontMgr for blink. We need to ensure this is done
-  // before the sandbox is initialized to allow the font manager to access
-  // font configuration files on disk.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAndroidFontsPath)) {
-    std::string android_fonts_dir =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kAndroidFontsPath);
-
-    if (android_fonts_dir.size() > 0 && android_fonts_dir.back() != '/')
-      android_fonts_dir += '/';
-
-    SkFontMgr_Android_CustomFonts custom;
-    custom.fSystemFontUse =
-        SkFontMgr_Android_CustomFonts::SystemFontUse::kOnlyCustom;
-    custom.fBasePath = android_fonts_dir.c_str();
-
-    std::string font_config;
-    std::string fallback_font_config;
-    if (android_fonts_dir.find("kitkat") != std::string::npos) {
-      font_config = android_fonts_dir + "system_fonts.xml";
-      fallback_font_config = android_fonts_dir + "fallback_fonts.xml";
-      custom.fFallbackFontsXml = fallback_font_config.c_str();
-    } else {
-      font_config = android_fonts_dir + "fonts.xml";
-      custom.fFallbackFontsXml = nullptr;
-    }
-    custom.fFontsXml = font_config.c_str();
-    custom.fIsolated = true;
-
-    blink::WebFontRenderStyle::SetSkiaFontManager(
-        SkFontMgr_New_Android(&custom));
-  }
-
   // Preload and cache the results since the methods may use the prlimit64
   // system call that is not allowed by all sandbox types.
   base::internal::CanUseBackgroundThreadTypeForWorkerThread();
   base::internal::CanUseUtilityThreadTypeForWorkerThread();
 }
-#endif  // BUILDFLAG(USE_ZYGOTE)
 
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
@@ -620,10 +610,6 @@ int NO_STACK_PROTECTOR RunZygote(ContentMainDelegate* delegate) {
   std::vector<std::unique_ptr<ZygoteForkDelegate>> zygote_fork_delegates;
   delegate->ZygoteStarting(&zygote_fork_delegates);
   media::InitializeMediaLibrary();
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  PreSandboxInit();
-#endif
 
   // This function call can return multiple times, once per fork().
   if (!ZygoteMain(std::move(zygote_fork_delegates))) {
@@ -838,7 +824,7 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
 // On Android, AtExitManager is set up when library is loaded.
 // A consequence of this is that you can't use the ctor/dtor-based
 // TRACE_EVENT methods on Linux or iOS builds till after we set this up.
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   if (!content_main_params_->ui_task) {
     // When running browser tests, don't create a second AtExitManager as that
     // interfers with shutdown when objects created before ContentMain is
@@ -1021,6 +1007,17 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
     // SeatbeltExecServer.
     CHECK(sandbox::Seatbelt::IsSandboxed());
   }
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  // In sandboxed processes and zygotes, certain resource should be pre-warmed
+  // as they cannot be initialized under a sandbox. In addition, loading these
+  // resources in zygotes (including the unsandboxed zygote) allows them to be
+  // initialized just once in the zygote, rather than in every forked child
+  // process.
+  if (!sandbox::policy::IsUnsandboxedSandboxType(
+          sandbox::policy::SandboxTypeFromCommandLine(command_line)) ||
+      process_type == switches::kZygoteProcess) {
+    PreSandboxInit();
+  }
 #endif
 
   delegate_->SandboxInitialized(process_type);
@@ -1113,9 +1110,6 @@ int NO_STACK_PROTECTOR ContentMainRunnerImpl::Run() {
   main_params.sandbox_info = content_main_params_->sandbox_info;
 #elif BUILDFLAG(IS_MAC)
   main_params.autorelease_pool = content_main_params_->autorelease_pool;
-#elif BUILDFLAG(IS_IOS)
-  main_params.argc = content_main_params_->argc;
-  main_params.argv = content_main_params_->argv;
 #endif
 
   const bool start_minimal_browser = content_main_params_->minimal_browser_mode;

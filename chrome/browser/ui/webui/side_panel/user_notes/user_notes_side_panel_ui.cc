@@ -34,8 +34,16 @@ UserNotesSidePanelUI::UserNotesSidePanelUI(content::WebUI* web_ui)
       {"addANote", IDS_ADD_NEW_USER_NOTE_PLACEHOLDER_TEXT},
       {"allNotes", IDS_ALL_NOTES},
       {"cancel", IDS_CANCEL},
+      {"currentTab", IDS_USER_NOTES_CURRENT_TAB_HEADER},
       {"delete", IDS_DELETE},
       {"edit", IDS_EDIT},
+      {"emptyTitle", IDS_USER_NOTES_EMPTY_STATE_TITLE},
+      {"emptyBody", IDS_USER_NOTES_EMPTY_STATE_BODY},
+      {"emptyTitleGuest", IDS_USER_NOTES_EMPTY_STATE_TITLE_GUEST},
+      {"emptyBodyGuest", IDS_USER_NOTES_EMPTY_STATE_BODY_GUEST},
+      {"openInNewTab", IDS_USER_NOTES_MENU_OPEN_IN_NEW_TAB},
+      {"openInNewWindow", IDS_USER_NOTES_MENU_OPEN_IN_NEW_WINDOW},
+      {"openInIncognitoWindow", IDS_USER_NOTES_MENU_OPEN_IN_INCOGNITO},
       {"sortByType", IDS_BOOKMARKS_SORT_BY_TYPE},
       {"sortNewest", IDS_BOOKMARKS_SORT_NEWEST},
       {"sortMenuAriaLabel", IDS_USER_NOTES_SORT_MENU_A11Y_LABEL},
@@ -53,6 +61,7 @@ UserNotesSidePanelUI::UserNotesSidePanelUI(content::WebUI* web_ui)
     source->AddBoolean("sortByNewest",
                        pref_service->GetBoolean(prefs::kUserNotesSortByNewest));
   }
+  source->AddBoolean("guestMode", profile->IsGuestSession());
 
   source->AddString(
       "chromeRefresh2023Attribute",

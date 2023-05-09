@@ -335,29 +335,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForSubSelector(
   //
   // In all of those cases we need to skip matching the pseudo classes after the
   // pseudo element on the originating element.
-  if (context.in_rightmost_compound && dynamic_pseudo != kPseudoIdNone &&
-      context.pseudo_id == kPseudoIdNone) {
-    // We are in the rightmost compound and have matched a pseudo element
-    // (dynamic_pseudo is not kPseudoIdNone), which means we are looking at
-    // pseudo classes after the pseudo element. We are also matching the
-    // originating element (context.pseudo_id is kPseudoIdnone), which means we
-    // are matching for tracking the existence of such pseudo elements which
-    // results in SetHasPseudoElementStyle() on the originating element's
-    // ComputedStyle.
-    if (!next_context.has_scrollbar_pseudo &&
-        dynamic_pseudo == kPseudoIdScrollbar) {
-      // Fail ::-webkit-scrollbar:hover because HasPseudoElementStyle for
-      // scrollbars will remove the native scrollbar. Having only
-      // ::-webkit-scrollbar rules that have pseudo class modifiers will end up
-      // with not adding a custom scrollbar which means we end up with no
-      // scrollbar.
-      return kSelectorFailsCompletely;
-    }
-    // This means we will end up with false positives for pseudo elements like
-    // ::before with only pseudo class modifiers where we end up trying to
-    // create the pseudo element but end up not doing it because we have no
-    // matching rules without modifiers. That is also already the case if you
-    // have ::before elements without content properties.
+  if (dynamic_pseudo != kPseudoIdNone && context.pseudo_id == kPseudoIdNone) {
     return kSelectorMatches;
   }
 
@@ -378,7 +356,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
   if ((!context.is_sub_selector || context.in_nested_complex_selector) &&
       (context.element->IsLink() || (relation != CSSSelector::kDescendant &&
                                      relation != CSSSelector::kChild))) {
-    next_context.is_inside_visited_link = false;
+    next_context.match_visited = false;
   }
 
   next_context.in_rightmost_compound = false;
@@ -394,7 +372,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
     case CSSSelector::kDescendant:
       if (next_context.selector->GetPseudoType() == CSSSelector::kPseudoScope) {
         if (next_context.selector->IsLastInTagHistory()) {
-          if (context.scope->IsDocumentFragment()) {
+          if (context.scope && context.scope->IsDocumentFragment()) {
             return kSelectorMatches;
           }
         }
@@ -410,7 +388,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
           return kSelectorFailsCompletely;
         }
         if (next_context.element->IsLink()) {
-          next_context.is_inside_visited_link = false;
+          next_context.match_visited = false;
         }
       }
       return kSelectorFailsCompletely;
@@ -1195,7 +1173,7 @@ bool SelectorChecker::CheckPseudoHas(const SelectorCheckingContext& context,
   DCHECK(document.GetCheckPseudoHasCacheScope());
   SelectorCheckingContext sub_context(has_anchor_element);
   sub_context.scope = context.scope;
-  // sub_context.is_inside_visited_link is false (by default) to disable
+  // sub_context.match_visited is false (by default) to disable
   // :visited matching when it is in the :has argument
   sub_context.is_inside_has_pseudo_class = true;
   sub_context.pseudo_has_in_rightmost_compound = context.in_rightmost_compound;
@@ -1509,9 +1487,9 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoWebkitAnyLink:
       return element.IsLink();
     case CSSSelector::kPseudoLink:
-      return element.IsLink() && !context.is_inside_visited_link;
+      return element.IsLink() && !context.match_visited;
     case CSSSelector::kPseudoVisited:
-      return element.IsLink() && context.is_inside_visited_link;
+      return element.IsLink() && context.match_visited;
     case CSSSelector::kPseudoDrag:
       if (mode_ == kResolvingStyle) {
         if (!context.in_rightmost_compound) {
@@ -1862,7 +1840,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return !toggle->ValueMatches(State(0));
       }
     }
-    case CSSSelector::kPseudoParentUnparsed:
+    case CSSSelector::kPseudoUnparsed:
       // Only kept around for parsing; can never match anything
       // (because we don't know what it's supposed to mean).
       return false;
@@ -1874,6 +1852,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       result.SetFlag(MatchFlag::kAffectedByInitial);
       return true;
     }
+    case CSSSelector::kPseudoTrue:
+      return true;
     case CSSSelector::kPseudoUnknown:
     default:
       NOTREACHED();
@@ -2406,20 +2386,18 @@ bool SelectorChecker::ElementIsScopingLimit(
 
 bool SelectorChecker::CheckInStyleScope(const SelectorCheckingContext& context,
                                         MatchResult& result) const {
-  SelectorCheckingContext local_context(context);
+  const StyleScopeActivations& activations =
+      EnsureActivations(context, *context.style_scope);
 
-  // TODO(crbug.com/1280240): We can probably skip this if the main selector
-  // contained :scope.
-
-  for (; local_context.element;
-       local_context.element = ParentElement(local_context)) {
-    if (CheckPseudoScope(local_context, result)) {
-      return true;
-    }
-    // TODO(crbug.com/1280240): Early-out if there are no activations.
+  if (activations.empty()) {
+    return false;
   }
 
-  return false;
+  for (const StyleScopeActivation& activation : activations) {
+    result.proximity = std::min(activation.proximity, result.proximity);
+  }
+
+  return true;
 }
 
 }  // namespace blink

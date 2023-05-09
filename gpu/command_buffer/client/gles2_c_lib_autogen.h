@@ -1681,6 +1681,25 @@ void GL_APIENTRY GLES2CopySharedImageINTERNAL(GLint xoffset,
   gles2::GetGLContext()->CopySharedImageINTERNAL(
       xoffset, yoffset, x, y, width, height, unpack_flip_y, mailboxes);
 }
+void GL_APIENTRY
+GLES2ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
+                                     const void* dst_color_space,
+                                     GLuint dst_color_space_size,
+                                     GLuint dst_size,
+                                     GLuint dst_width,
+                                     GLuint dst_height,
+                                     GLuint dst_color_type,
+                                     GLuint dst_alpha_type,
+                                     GLuint dst_row_bytes,
+                                     GLint src_x,
+                                     GLint src_y,
+                                     GLint plane_index,
+                                     void* pixels) {
+  gles2::GetGLContext()->ReadbackARGBImagePixelsINTERNAL(
+      mailbox, dst_color_space, dst_color_space_size, dst_size, dst_width,
+      dst_height, dst_color_type, dst_alpha_type, dst_row_bytes, src_x, src_y,
+      plane_index, pixels);
+}
 void GL_APIENTRY GLES2EnableiOES(GLenum target, GLuint index) {
   gles2::GetGLContext()->EnableiOES(target, index);
 }
@@ -1718,6 +1737,57 @@ GLboolean GL_APIENTRY GLES2IsEnablediOES(GLenum target, GLuint index) {
 }
 void GL_APIENTRY GLES2ProvokingVertexANGLE(GLenum provokeMode) {
   gles2::GetGLContext()->ProvokingVertexANGLE(provokeMode);
+}
+void GL_APIENTRY
+GLES2FramebufferMemorylessPixelLocalStorageANGLE(GLint plane,
+                                                 GLenum internalformat) {
+  gles2::GetGLContext()->FramebufferMemorylessPixelLocalStorageANGLE(
+      plane, internalformat);
+}
+void GL_APIENTRY
+GLES2FramebufferTexturePixelLocalStorageANGLE(GLint plane,
+                                              GLuint backingtexture,
+                                              GLint level,
+                                              GLint layer) {
+  gles2::GetGLContext()->FramebufferTexturePixelLocalStorageANGLE(
+      plane, backingtexture, level, layer);
+}
+void GL_APIENTRY
+GLES2FramebufferPixelLocalClearValuefvANGLE(GLint plane, const GLfloat* value) {
+  gles2::GetGLContext()->FramebufferPixelLocalClearValuefvANGLE(plane, value);
+}
+void GL_APIENTRY
+GLES2FramebufferPixelLocalClearValueivANGLE(GLint plane, const GLint* value) {
+  gles2::GetGLContext()->FramebufferPixelLocalClearValueivANGLE(plane, value);
+}
+void GL_APIENTRY
+GLES2FramebufferPixelLocalClearValueuivANGLE(GLint plane, const GLuint* value) {
+  gles2::GetGLContext()->FramebufferPixelLocalClearValueuivANGLE(plane, value);
+}
+void GL_APIENTRY GLES2BeginPixelLocalStorageANGLE(GLsizei count,
+                                                  const GLenum* loadops) {
+  gles2::GetGLContext()->BeginPixelLocalStorageANGLE(count, loadops);
+}
+void GL_APIENTRY GLES2EndPixelLocalStorageANGLE(GLsizei count,
+                                                const GLenum* storeops) {
+  gles2::GetGLContext()->EndPixelLocalStorageANGLE(count, storeops);
+}
+void GL_APIENTRY GLES2PixelLocalStorageBarrierANGLE() {
+  gles2::GetGLContext()->PixelLocalStorageBarrierANGLE();
+}
+void GL_APIENTRY
+GLES2GetFramebufferPixelLocalStorageParameterfvANGLE(GLint plane,
+                                                     GLenum pname,
+                                                     GLfloat* params) {
+  gles2::GetGLContext()->GetFramebufferPixelLocalStorageParameterfvANGLE(
+      plane, pname, params);
+}
+void GL_APIENTRY
+GLES2GetFramebufferPixelLocalStorageParameterivANGLE(GLint plane,
+                                                     GLenum pname,
+                                                     GLint* params) {
+  gles2::GetGLContext()->GetFramebufferPixelLocalStorageParameterivANGLE(
+      plane, pname, params);
 }
 
 namespace gles2 {
@@ -3074,6 +3144,11 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glCopySharedImageINTERNAL),
     },
     {
+        "glReadbackARGBImagePixelsINTERNAL",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glReadbackARGBImagePixelsINTERNAL),
+    },
+    {
         "glEnableiOES",
         reinterpret_cast<GLES2FunctionPointer>(glEnableiOES),
     },
@@ -3108,6 +3183,53 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glProvokingVertexANGLE",
         reinterpret_cast<GLES2FunctionPointer>(glProvokingVertexANGLE),
+    },
+    {
+        "glFramebufferMemorylessPixelLocalStorageANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glFramebufferMemorylessPixelLocalStorageANGLE),
+    },
+    {
+        "glFramebufferTexturePixelLocalStorageANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glFramebufferTexturePixelLocalStorageANGLE),
+    },
+    {
+        "glFramebufferPixelLocalClearValuefvANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glFramebufferPixelLocalClearValuefvANGLE),
+    },
+    {
+        "glFramebufferPixelLocalClearValueivANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glFramebufferPixelLocalClearValueivANGLE),
+    },
+    {
+        "glFramebufferPixelLocalClearValueuivANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glFramebufferPixelLocalClearValueuivANGLE),
+    },
+    {
+        "glBeginPixelLocalStorageANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(glBeginPixelLocalStorageANGLE),
+    },
+    {
+        "glEndPixelLocalStorageANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(glEndPixelLocalStorageANGLE),
+    },
+    {
+        "glPixelLocalStorageBarrierANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(glPixelLocalStorageBarrierANGLE),
+    },
+    {
+        "glGetFramebufferPixelLocalStorageParameterfvANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glGetFramebufferPixelLocalStorageParameterfvANGLE),
+    },
+    {
+        "glGetFramebufferPixelLocalStorageParameterivANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glGetFramebufferPixelLocalStorageParameterivANGLE),
     },
     {
         nullptr,

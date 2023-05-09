@@ -223,30 +223,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         return;
       }
 
-      BrowserAccessibilityManager* root_manager = GetManagerForRootFrame();
-      if (root_manager) {
-        BrowserAccessibilityManagerMac* root_manager_mac =
-            root_manager->ToBrowserAccessibilityManagerMac();
-        id window = root_manager_mac->GetWindow();
-        if ([window isKindOfClass:[NSAccessibilityRemoteUIElement class]]) {
-          // ui::NSAccessibilityLiveRegionChangedNotification seems to require
-          // application be active. Use the announcement API to get around on
-          // PWA. Announcement requires active window, so send the announcement
-          // notification to the PWA related window. same work around like
-          // https://chromium-review.googlesource.com/c/chromium/src/+/3257815
-          std::string live_status =
-              node->GetStringAttribute(ax::mojom::StringAttribute::kLiveStatus);
-          NSAccessibilityPriorityLevel priority_level =
-              live_status == "assertive" ? NSAccessibilityPriorityHigh
-                                         : NSAccessibilityPriorityMedium;
-          PostAnnouncementNotification(
-              base::SysUTF16ToNSString(wrapper->GetTextContentUTF16()),
-              [root_manager_mac->GetParentView() window], priority_level);
-          return;
-        }
-      }
-
-      if (base::mac::IsOS10_13()) {
+      if (base::mac::IsAtMostOS10_13()) {
         // Use the announcement API to get around OS <= 10.13 VoiceOver bug
         // where it stops announcing live regions after the first time focus
         // leaves any content area.

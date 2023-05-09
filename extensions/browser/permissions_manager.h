@@ -56,6 +56,7 @@ class PermissionsManager : public KeyedService {
     std::set<url::Origin> permitted_sites;
   };
 
+  // The extension's requested site access for an extension.
   struct ExtensionSiteAccess {
     // The extension has access to the current domain.
     bool has_site_access = false;
@@ -74,7 +75,14 @@ class PermissionsManager : public KeyedService {
     bool withheld_all_sites_access = false;
   };
 
-  // The user's site setting for a given site.
+  // The user's selected site access for an extension.
+  enum class UserSiteAccess {
+    kOnClick,
+    kOnSite,
+    kOnAllSites,
+  };
+
+  // The user's selected site setting for a given site.
   enum class UserSiteSetting {
     // All extensions that request access are granted access in the site.
     kGrantAllExtensions,
@@ -96,11 +104,18 @@ class PermissionsManager : public KeyedService {
 
   class Observer {
    public:
+    // Called when `user_permissions_` have been updated for an extension.
     virtual void OnUserPermissionsSettingsChanged(
         const UserPermissionsSettings& settings) {}
+
+    // Called when permissions have been updated for an extension.
     virtual void OnExtensionPermissionsUpdated(const Extension& extension,
                                                const PermissionSet& permissions,
                                                UpdateReason reason) {}
+
+    // Called when an extension's ability to show site access requests in the
+    // toolbar has been updated.
+    virtual void OnShowAccessRequestsInToolbarChanged() {}
   };
 
   explicit PermissionsManager(content::BrowserContext* browser_context);
@@ -120,7 +135,7 @@ class PermissionsManager : public KeyedService {
   //  Updates the user site settings for the given `origin` to be
   //  `site_settings`.
   void UpdateUserSiteSetting(const url::Origin& origin,
-                             PermissionsManager::UserSiteSetting site_setting);
+                             UserSiteSetting site_setting);
 
   // Adds `origin` to the list of sites the user has blocked all
   // extensions from running on. If `origin` is in permitted_sites, it will
@@ -145,6 +160,13 @@ class PermissionsManager : public KeyedService {
 
   // Returns the user's site setting for `origin`.
   UserSiteSetting GetUserSiteSetting(const url::Origin& origin) const;
+
+  // Returns the user's selected site access for `extension` in `gurl`.
+  // This can only be called if the url is not restricted, and if the user can
+  // configure site access for the extension (which excludes things like policy
+  // extensions) or if the extension has active tab permission.
+  UserSiteAccess GetUserSiteAccess(const Extension& extension,
+                                   const GURL& gurl) const;
 
   // Returns the current access level for the extension on the specified `url`.
   ExtensionSiteAccess GetSiteAccess(const Extension& extension,
@@ -176,6 +198,16 @@ class PermissionsManager : public KeyedService {
   // This may only be called for extensions that can be affected (i.e., for
   // which CanAffectExtension() returns true). Anything else will DCHECK.
   bool HasWithheldHostPermissions(const Extension& extension) const;
+
+  // Returns true if this extension uses the activeTab permission and would
+  // probably be able to to access the given `url`. The actual checks when an
+  // activeTab extension tries to run are a little more complicated and can be
+  // seen in ExtensionActionRunner and ActiveTabPermissionGranter.
+  // Note: The rare cases where this gets it wrong should only be for false
+  // positives, where it reports that the extension wants access but it can't
+  // actually be given access when it tries to run.
+  bool HasActiveTabAndCanAccess(const Extension& extension,
+                                const GURL& url) const;
 
   // Returns the effective list of runtime-granted permissions for a given
   // `extension` from its prefs. ExtensionPrefs doesn't store the valid schemes
@@ -214,6 +246,9 @@ class PermissionsManager : public KeyedService {
                                          const PermissionSet& permissions,
                                          UpdateReason reason);
 
+  // Notifies `observers_`that show access requests in toolbar pref changed.
+  void NotifyShowAccessRequestsInToolbarChanged();
+
   // Adds or removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -240,8 +275,8 @@ class PermissionsManager : public KeyedService {
       const Extension& extension,
       const PermissionSet& user_permitted_set);
 
-  // Notifies observers of a permissions change.
-  void NotifyObserversOfChange();
+  // Notifies `observers_` that user permissions have changed.
+  void NotifyUserPermissionSettingsChanged();
 
   base::ObserverList<Observer>::Unchecked observers_;
 

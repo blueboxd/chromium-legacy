@@ -80,7 +80,7 @@ fuzzer_test("libsrtp_fuzzer") {
 }
 
 libpng_seed_corpuses = [
-  "//components/viz/test/data",
+  "//components/test/data/viz",
   "//third_party/blink/web_tests/images/png-suite/samples",
   "//third_party/blink/web_tests/images/resources/pngfuzz",
 ]
@@ -389,10 +389,7 @@ fuzzer_test("hash_fuzzer") {
 action("gen_javascript_parser_proto") {
   # Only targets in this file and the top-level visibility target can
   # depend on this.
-  visibility = [
-    ":*",
-    "//:gn_visibility",
-  ]
+  visibility = [ ":*" ]
 
   script = "generate_javascript_parser_proto.py"
 
@@ -475,9 +472,6 @@ proto_library("command_buffer_fuzzer_proto") {
 }
 
 fuzzer_test("command_buffer_fuzzer") {
-  # Tell ClusterFuzz to ignore this fuzzer for now.
-  additional_configs = [ "//testing/libfuzzer:no_clusterfuzz" ]
-
   sources = [
     "command_buffer_fuzzer/cmd_buf_fuzz.cc",
     "command_buffer_fuzzer/cmd_buf_fuzz.h",
@@ -514,6 +508,7 @@ fuzzer_test("command_buffer_fuzzer") {
     "//components/viz/common:resource_format",
     "//components/viz/test:test_support",  # TODO: huge; is there something more
                                            # targeted?
+    "//content/public/common:static_switches",
     "//gpu:gles2",
     "//gpu:gpu",
     "//gpu:test_support",

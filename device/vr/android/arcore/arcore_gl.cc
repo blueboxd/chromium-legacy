@@ -24,12 +24,13 @@
 #include "device/vr/android/arcore/ar_image_transport.h"
 #include "device/vr/android/arcore/arcore.h"
 #include "device/vr/android/arcore/arcore_math_utils.h"
-#include "device/vr/android/arcore/arcore_session_utils.h"
 #include "device/vr/android/arcore/type_converters.h"
 #include "device/vr/android/web_xr_presentation_state.h"
+#include "device/vr/android/xr_java_coordinator.h"
 #include "device/vr/public/cpp/xr_frame_sink_client.h"
 #include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/public/mojom/xr_session.mojom.h"
 #include "device/vr/util/transform_utils.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -166,7 +167,7 @@ bool ArCoreGl::CanRenderDOMContent() {
 }
 
 void ArCoreGl::Initialize(
-    ArCoreSessionUtils* session_utils,
+    XrJavaCoordinator* session_utils,
     ArCoreFactory* arcore_factory,
     XrFrameSinkClient* xr_frame_sink_client,
     gfx::AcceleratedWidget drawing_widget,
@@ -834,9 +835,8 @@ void ArCoreGl::CopyCameraImageToFramebuffer() {
   // Draw the current camera texture to the output default framebuffer now, if
   // available.
   if (have_camera_image_) {
-    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-    ar_image_transport_->CopyCameraImageToFramebuffer(screen_size_,
-                                                      uv_transform_);
+    ar_image_transport_->CopyCameraImageToFramebuffer(
+        /*framebuffer=*/0, screen_size_, uv_transform_);
     have_camera_image_ = false;
   }
 
@@ -1307,9 +1307,8 @@ void ArCoreGl::OnTransportFrameAvailable(const gfx::Transform& uv_transform) {
   // Don't use the viewport bounds here, those already got applied
   // when copying the mailbox image to the transfer Surface
   // in ProcessFrameFromMailbox.
-  glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, 0);
-  ar_image_transport_->CopyDrawnImageToFramebuffer(webxr_.get(), screen_size_,
-                                                   uv_transform);
+  ar_image_transport_->CopyDrawnImageToFramebuffer(
+      webxr_.get(), /*framebuffer=*/0, screen_size_, uv_transform);
 
   FinishFrame(frame_index);
 

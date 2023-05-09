@@ -16,10 +16,10 @@
 #include <vector>
 
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
-#include "extensions/common/activation_sequence.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_context.h"
@@ -454,48 +454,6 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_EventAckWorker,
                      int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */,
                      int /* event_id */)
-
-// Tells the browser that an extension service worker context was initialized,
-// but possibly didn't start executing its top-level JavaScript.
-IPC_MESSAGE_CONTROL3(ExtensionHostMsg_DidInitializeServiceWorkerContext,
-                     std::string /* extension_id */,
-                     int64_t /* service_worker_version_id */,
-                     int /* worker_thread_id */)
-
-// Tells the browser that an extension service worker context has started and
-// finished executing its top-level JavaScript.
-// Start corresponds to EmbeddedWorkerInstance::OnStarted notification.
-//
-// TODO(lazyboy): This is a workaround: ideally this IPC should be redundant
-// because it directly corresponds to EmbeddedWorkerInstance::OnStarted message.
-// However, because OnStarted message is on different mojo IPC pipe, and most
-// extension IPCs are on legacy IPC pipe, this IPC is necessary to ensure FIFO
-// ordering of this message with rest of the extension IPCs.
-// Two possible solutions to this:
-//   - Associate extension IPCs with Service Worker IPCs. This can be done (and
-//     will be a requirement) when extension IPCs are moved to mojo, but
-//     requires resolving or defining ordering dependencies amongst the
-//     extension messages, and any additional messages in Chrome.
-//   - Make Service Worker IPCs channel-associated so that there's FIFO
-//     guarantee between extension IPCs and Service Worker IPCs. This isn't
-//     straightforward as it changes SW IPC ordering with respect of rest of
-//     Chrome.
-// See https://crbug.com/879015#c4 for details.
-IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStartServiceWorkerContext,
-                     std::string /* extension_id */,
-                     extensions::ActivationSequence /* activation_sequence */,
-                     GURL /* service_worker_scope */,
-                     int64_t /* service_worker_version_id */,
-                     int /* worker_thread_id */)
-
-// Tells the browser that an extension service worker context has been
-// destroyed.
-IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStopServiceWorkerContext,
-                     std::string /* extension_id */,
-                     extensions::ActivationSequence /* activation_sequence */,
-                     GURL /* service_worker_scope */,
-                     int64_t /* service_worker_version_id */,
-                     int /* worker_thread_id */)
 
 // Optional Ack message sent to the browser to notify that the response to a
 // function has been processed.

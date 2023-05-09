@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">항목 <ph name="NUMBER_OF_ITEMS" />개 압축 중...</translation>
 <translation id="1722687688096767818">프로필 추가 중...</translation>
 <translation id="1726100011689679555">네임서버</translation>
+<translation id="1727562178154619254">동기화 준비됨</translation>
 <translation id="1729953886957086472">독일어(독일)</translation>
 <translation id="1730235522912993863">중국어(창힐수입법)</translation>
 <translation id="1731889557567069540">항목 <ph name="NUMBER_OF_ITEMS" />개를 복사했습니다.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">이미지 해상도</translation>
 <translation id="1972984168337863910">파일 의견 패널 펼치기</translation>
 <translation id="1995337122023280937">파일 위치로 이동</translation>
-<translation id="1999709132469742660">모든 URL에서 파일 액세스</translation>
 <translation id="2001796770603320721">드라이브에서 관리</translation>
 <translation id="2009067268969781306">드라이브를 포맷하면 드라이브에 저장된 데이터가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.</translation>
 <translation id="2025955442973426285">티그리냐어</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">남미 언어</translation>
 <translation id="5330145655348521461">파일이 다른 데스크톱에서 열려 있습니다. 파일을 보려면 <ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)(으)로 이동하세요.</translation>
 <translation id="5330512191124428349">정보 보기</translation>
-<translation id="5337538975554986899"><ph name="NON_RESTRICTED_DESTINATIONS" />을(를) 제외한 모든 URL에서 파일 액세스</translation>
 <translation id="5344246330454251646">Bruschetta 공유 관리</translation>
 <translation id="535792325654997756">고양이들과 함께 있는 사람</translation>
 <translation id="5358764674931277">프레임 속도</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Linux 애플리케이션을 설치하는 중에 오류가 발생했습니다.</translation>
 <translation id="5912396950572065471">포맷</translation>
 <translation id="5913638992615760742">복사 작업에 실패했습니다. 예상치 않은 오류: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">새로운 검색결과 기능 사용 가능</translation>
 <translation id="5926082595146149752">네덜란드어(네덜란드, 미국 국제 PC 키보드)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">네트워크 <ph name="NETWORK_COUNT" />개 중 <ph name="NETWORK_INDEX" />번째, <ph name="NETWORK_NAME" />, 기기 설정 후 활성화</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">인증서를 로드하지 못했습니다.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" />[<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Bruschetta와 폴더 공유</translation>
+<translation id="6750737795876287924">현재 디렉터리</translation>
 <translation id="6751256176799620176">폴더 1개 선택됨</translation>
 <translation id="6755827872271341378">ChromeOS Flex 기기</translation>
 <translation id="6790428901817661496">재생</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">폴더</translation>
 <translation id="6976795442547527108">사자</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">전체 기간</translation>
 <translation id="6989942356279143254">스웨덴어</translation>
 <translation id="6990081529015358884">저장 공간이 부족합니다.</translation>
 <translation id="6993826899923627728">항목이 휴지통에 있습니다</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">최근 이미지 없음</translation>
 <translation id="7460898608667578234">우크라이나어</translation>
 <translation id="7469894403370665791">네트워크에 자동 연결</translation>
-<translation id="7481358317100446445">준비</translation>
 <translation id="7486315294984620427">Parallels Desktop에 파일을 드롭하려면 파일을 Windows 파일 폴더로 복사해야 합니다.</translation>
 <translation id="749452993132003881">히라가나</translation>
 <translation id="7495372004724182530">말라얄람어(표음)</translation>

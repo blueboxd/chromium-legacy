@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">מתבצע כיווץ של <ph name="NUMBER_OF_ITEMS" /> פריטים…</translation>
 <translation id="1722687688096767818">בתהליך הוספת פרופיל…</translation>
 <translation id="1726100011689679555">שרתי שמות</translation>
+<translation id="1727562178154619254">הקבצים מוכנים לסנכרון</translation>
 <translation id="1729953886957086472">גרמנית (גרמניה)</translation>
 <translation id="1730235522912993863">‏סינית Cangjie</translation>
 <translation id="1731889557567069540">הועתקו <ph name="NUMBER_OF_ITEMS" /> פריטים.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">רזולוציית תמונה</translation>
 <translation id="1972984168337863910">הרחבת חלוניות המשוב של קבצים</translation>
 <translation id="1995337122023280937">מעבר אל מיקום הקובץ</translation>
-<translation id="1999709132469742660">‏גישה לקובץ מכל כתובות ה-URL</translation>
 <translation id="2001796770603320721">‏ניהול ב-Drive</translation>
 <translation id="2009067268969781306">פירמוט של התקן אחסון מוחק את כל הנתונים שמאוחסנים בו. לא ניתן לבטל את הפעולה הזו.</translation>
 <translation id="2025955442973426285">תיגרינית</translation>
@@ -543,7 +543,6 @@
 <translation id="5323213332664049067">אמריקאית לטינית</translation>
 <translation id="5330145655348521461">הקבצים האלה נפתחו בשולחן עבודה אחר. יש לעבור אל <ph name="USER_NAME" />‏ (<ph name="MAIL_ADDRESS" />) כדי להציג אותם.</translation>
 <translation id="5330512191124428349">פרטי קובץ</translation>
-<translation id="5337538975554986899">‏גישה לקובץ מכל כתובות ה-URL מלבד <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">‏ניהול השיתוף עם Bruschetta</translation>
 <translation id="535792325654997756">אדם עם חתולים</translation>
 <translation id="5358764674931277">קצב פריימים</translation>
@@ -616,6 +615,7 @@
 <translation id="5911887972742538906">‏קרתה שגיאה במהלך ההתקנה של אפליקציית Linux.</translation>
 <translation id="5912396950572065471">פורמט</translation>
 <translation id="5913638992615760742">פעולת ההעתקה נכשלה, שגיאה בלתי צפויה: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">יש תכונות חיפוש חדשות</translation>
 <translation id="5926082595146149752">‏הולנדית (הולנד) עם מקלדת בינלאומית של ארה"ב ל-PC</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, הפעלה בסיום הגדרת המכשיר</translation>
@@ -705,6 +705,7 @@
 <translation id="6732801395666424405">האישורים לא נטענו</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> ‏[<ph name="ISSUED_TO" />]‏</translation>
 <translation id="6740270213273127264">‏שיתוף התיקייה עם Bruschetta</translation>
+<translation id="6750737795876287924">הספרייה הנוכחית</translation>
 <translation id="6751256176799620176">תיקייה אחת נבחרה</translation>
 <translation id="6755827872271341378">‏מכשיר עם ChromeOS Flex</translation>
 <translation id="6790428901817661496">הפעלה</translation>
@@ -742,7 +743,6 @@
 <translation id="6973630695168034713">תיקיות</translation>
 <translation id="6976795442547527108">אריה</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">משחר ההיסטוריה</translation>
 <translation id="6989942356279143254">שוודית</translation>
 <translation id="6990081529015358884">לא נשאר לך מקום פנוי</translation>
 <translation id="6993826899923627728">הפריטים האלה נמצאים באשפה</translation>
@@ -798,7 +798,6 @@
 <translation id="7458955835361612701">אין תמונות מהזמן האחרון</translation>
 <translation id="7460898608667578234">אוקראינית</translation>
 <translation id="7469894403370665791">התחברות באופן אוטומטי לרשת זו.</translation>
-<translation id="7481358317100446445">מוכן</translation>
 <translation id="7486315294984620427">‏כדי לשחרר קובץ ב-Parallels Desktop, צריך להעתיק אותו לקובצי Windows.</translation>
 <translation id="749452993132003881">היראגאנה</translation>
 <translation id="7495372004724182530">מליאלאם פונטית</translation>

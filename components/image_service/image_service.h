@@ -75,6 +75,7 @@ class ImageService : public KeyedService {
 
   // Callback for `FetchOptimizationGuideImage`.
   void OnOptimizationGuideImageFetched(
+      mojom::ClientId client_id,
       ResultCallback callback,
       const GURL& url,
       const base::flat_map<
@@ -92,6 +93,10 @@ class ImageService : public KeyedService {
   // The History consent filter, used for most clients.
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       personalized_data_collection_consent_helper_;
+
+  // The Bookmarks consent filter.
+  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
+      bookmarks_data_collection_consent_helper_;
 
   base::WeakPtrFactory<ImageService> weak_factory_{this};
 };

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/imagecapture/image_capture.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -17,6 +18,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_stringsequence.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_constrain_boolean_parameters.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_constrain_dom_string_parameters.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_constrain_double_range.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_constrain_point_2d_parameters.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_fill_light_mode.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_settings_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
@@ -40,23 +46,120 @@
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
+enum class ImageCapture::MediaTrackConstraintSetType {
+  kBasic,
+  // TODO(crbug.com/1408091): Remove this. The first advanced constraint set
+  //                          should not be special.
+  kFirstAdvanced,
+  kAdvanced
+};
+
+namespace {
+
 using BackgroundBlurMode = media::mojom::blink::BackgroundBlurMode;
 using FillLightMode = media::mojom::blink::FillLightMode;
 using MeteringMode = media::mojom::blink::MeteringMode;
 using RedEyeReduction = media::mojom::blink::RedEyeReduction;
 
-namespace {
+using MediaTrackConstraintSetType = ImageCapture::MediaTrackConstraintSetType;
 
 const char kNoServiceError[] = "ImageCapture service unavailable.";
 
 const char kInvalidStateTrackError[] =
     "The associated Track is in an invalid state";
+
+// This adapter simplifies iteration over all basic and advanced
+// MediaTrackConstraintSets in a MediaTrackConstraints.
+// A MediaTrackConstraints is itself a (basic) MediaTrackConstraintSet and it
+// may contain advanced MediaTrackConstraintSets.
+class AllConstraintSets {
+ public:
+  class ForwardIterator {
+   public:
+    ForwardIterator(const MediaTrackConstraints* constraints, wtf_size_t index)
+        : constraints_(constraints), index_(index) {}
+    const MediaTrackConstraintSet* operator*() const {
+      if (index_ == 0u) {
+        // The basic constraint set.
+        return constraints_;
+      }
+      // The advanced constraint sets.
+      wtf_size_t advanced_index = index_ - 1u;
+      return constraints_->advanced()[advanced_index];
+    }
+    ForwardIterator& operator++() {
+      ++index_;
+      return *this;
+    }
+    ForwardIterator operator++(int) {
+      return ForwardIterator(constraints_, index_++);
+    }
+    bool operator==(const ForwardIterator& other) const {
+      // Equality between iterators related to different MediaTrackConstraints
+      // objects is not defined.
+      DCHECK_EQ(constraints_, other.constraints_);
+      return index_ == other.index_;
+    }
+    bool operator!=(const ForwardIterator& other) const {
+      return !(*this == other);
+    }
+
+   private:
+    Persistent<const MediaTrackConstraints> constraints_;
+    wtf_size_t index_;
+  };
+
+  explicit AllConstraintSets(const MediaTrackConstraints* constraints)
+      : constraints_(constraints) {}
+  ForwardIterator begin() const {
+    return ForwardIterator(GetConstraints(), 0u);
+  }
+  ForwardIterator end() const {
+    const auto* constraints = GetConstraints();
+    return ForwardIterator(
+        constraints,
+        constraints->hasAdvanced() ? 1u + constraints->advanced().size() : 1u);
+  }
+
+  const MediaTrackConstraints* GetConstraints() const { return constraints_; }
+
+ private:
+  Persistent<const MediaTrackConstraints> constraints_;
+};
+
+// This adapter simplifies iteration over supported basic and advanced
+// MediaTrackConstraintSets in a MediaTrackConstraints.
+// A MediaTrackConstraints is itself a (basic) MediaTrackConstraintSet and it
+// may contain advanced MediaTrackConstraintSets. So far, only the basic
+// MediaTrackConstraintSet and the first advanced MediaTrackConstraintSet are
+// supported by this implementation.
+// TODO(crbug.com/1408091): Add support for advanced constraint sets beyond
+// the first one and remove this helper class.
+class AllSupportedConstraintSets {
+ public:
+  using ForwardIterator = AllConstraintSets::ForwardIterator;
+
+  explicit AllSupportedConstraintSets(const MediaTrackConstraints* constraints)
+      : all_constraint_sets_(constraints) {}
+  ForwardIterator begin() const { return all_constraint_sets_.begin(); }
+  ForwardIterator end() const {
+    const auto* constraints = all_constraint_sets_.GetConstraints();
+    return ForwardIterator(constraints, constraints->hasAdvanced() &&
+                                                !constraints->advanced().empty()
+                                            ? 2u
+                                            : 1u);
+  }
+
+ private:
+  AllConstraintSets all_constraint_sets_;
+};
 
 using CopyPanTiltZoom = base::StrongAlias<class CopyPanTiltZoomTag, bool>;
 
@@ -130,12 +233,31 @@ void CopyCapabilities(const MediaTrackCapabilities* source,
 }
 
 void CopyConstraintSet(const MediaTrackConstraintSet* source,
-                       MediaTrackConstraintSet* destination,
-                       CopyPanTiltZoom copy_pan_tilt_zoom) {
+                       MediaTrackConstraintSet* destination) {
   // Merge any present |source| members into |destination|.
-  CopyCommonMembers(source, destination, copy_pan_tilt_zoom);
+  // Constraints come always from JavaScript (unlike capabilities and settings)
+  // so pan, tilt and zoom constraints are never privileged information and can
+  // always be copied.
+  CopyCommonMembers(source, destination, CopyPanTiltZoom(true));
   if (source->hasPointsOfInterest()) {
     destination->setPointsOfInterest(source->pointsOfInterest());
+  }
+}
+
+void CopyConstraints(const MediaTrackConstraints* source,
+                     MediaTrackConstraints* destination) {
+  HeapVector<Member<MediaTrackConstraintSet>> destination_constraint_sets;
+  for (const auto* source_constraint_set : AllSupportedConstraintSets(source)) {
+    if (source_constraint_set == source) {
+      CopyConstraintSet(source_constraint_set, destination);
+    } else {
+      auto* destination_constraint_set = MediaTrackConstraintSet::Create();
+      CopyConstraintSet(source_constraint_set, destination_constraint_set);
+      destination_constraint_sets.push_back(destination_constraint_set);
+    }
+  }
+  if (!destination_constraint_sets.empty()) {
+    destination->setAdvanced(std::move(destination_constraint_sets));
   }
 }
 
@@ -149,10 +271,266 @@ void CopySettings(const MediaTrackSettings* source,
   }
 }
 
+MediaSettingsRange* DuplicateRange(const MediaSettingsRange* range) {
+  MediaSettingsRange* copy = MediaSettingsRange::Create();
+  copy->setMax(range->max());
+  copy->setMin(range->min());
+  if (range->hasStep()) {
+    copy->setStep(range->step());
+  }
+  return copy;
+}
+
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove this support enum.
+enum class ConstraintType {
+  // An empty sequence.
+  kEmptySequence,
+  // A boolean |false| constraint for a non-boolean constrainable property.
+  kBooleanFalse,
+  // A boolean |false| constraint for a non-boolean constrainable property.
+  kBooleanTrue,
+  // A bare value.
+  kBareValue,
+  kBareValueDOMStringSequence,
+  // An empty dictionary constraint.
+  kEmptyDictionary,
+  // An effectively empty dictionary constraint
+  // (members which are empty sequences are ignored).
+  kEffectivelyEmptyDictionary,
+  // A dictionary constraint with only one effective member: 'ideal'
+  // (members which are empty sequences are ignored).
+  kIdealDictionary,
+  // A dictionary constraint with one to four effective members: at least
+  // 'exact', 'max' and/or 'min' and additionally maybe also 'ideal'
+  // (members which are empty sequences are ignored).
+  kMandatoryDictionary
+};
+
+bool IsEmptySequence(bool /*constraint*/) {
+  // A boolean is not a sequence so it cannot be an empty sequence.
+  return false;
+}
+
+bool IsEmptySequence(const HeapVector<Member<Point2D>>& constraint) {
+  return constraint.empty();
+}
+
+bool IsEmptySequence(const V8UnionStringOrStringSequence* constraint) {
+  return constraint->IsStringSequence() &&
+         constraint->GetAsStringSequence().empty();
+}
+
+template <typename Constraint>
+ConstraintType GetConstraintType(const Constraint* constraint) {
+  DCHECK(constraint);
+  if (!constraint->hasExact() && !constraint->hasIdeal()) {
+    return ConstraintType::kEmptyDictionary;
+  }
+  // If an empty list has been given as the value for a constraint, it MUST be
+  // interpreted as if the constraint were not specified (in other words,
+  // an empty constraint == no constraint).
+  // https://w3c.github.io/mediacapture-main/#dfn-selectsettings
+  if (constraint->hasExact() && !IsEmptySequence(constraint->exact())) {
+    return ConstraintType::kMandatoryDictionary;
+  }
+  // Ditto.
+  if (constraint->hasIdeal() && !IsEmptySequence(constraint->ideal())) {
+    return ConstraintType::kIdealDictionary;
+  }
+  return ConstraintType::kEffectivelyEmptyDictionary;
+}
+
+ConstraintType GetConstraintType(const ConstrainDoubleRange* constraint) {
+  DCHECK(constraint);
+  if (constraint->hasExact() || constraint->hasMax() || constraint->hasMin()) {
+    return ConstraintType::kMandatoryDictionary;
+  }
+  if (constraint->hasIdeal()) {
+    return ConstraintType::kIdealDictionary;
+  }
+  return ConstraintType::kEmptyDictionary;
+}
+
+ConstraintType GetConstraintType(
+    const V8UnionBooleanOrConstrainBooleanParameters* constraint) {
+  DCHECK(constraint);
+  if (constraint->IsConstrainBooleanParameters()) {
+    return GetConstraintType(constraint->GetAsConstrainBooleanParameters());
+  }
+  return ConstraintType::kBareValue;
+}
+
+ConstraintType GetConstraintType(
+    const V8UnionBooleanOrConstrainDoubleRangeOrDouble* constraint) {
+  DCHECK(constraint);
+  if (constraint->IsBoolean()) {
+    return constraint->GetAsBoolean() ? ConstraintType::kBooleanTrue
+                                      : ConstraintType::kBooleanFalse;
+  }
+  if (constraint->IsConstrainDoubleRange()) {
+    return GetConstraintType(constraint->GetAsConstrainDoubleRange());
+  }
+  return ConstraintType::kBareValue;
+}
+
+ConstraintType GetConstraintType(
+    const V8UnionConstrainDOMStringParametersOrStringOrStringSequence*
+        constraint) {
+  DCHECK(constraint);
+  if (constraint->IsConstrainDOMStringParameters()) {
+    return GetConstraintType(constraint->GetAsConstrainDOMStringParameters());
+  }
+  if (constraint->IsStringSequence()) {
+    if (constraint->GetAsStringSequence().empty()) {
+      return ConstraintType::kEmptySequence;
+    }
+    return ConstraintType::kBareValueDOMStringSequence;
+  }
+  return ConstraintType::kBareValue;
+}
+
+ConstraintType GetConstraintType(
+    const V8UnionConstrainDoubleRangeOrDouble* constraint) {
+  DCHECK(constraint);
+  if (constraint->IsConstrainDoubleRange()) {
+    return GetConstraintType(constraint->GetAsConstrainDoubleRange());
+  }
+  return ConstraintType::kBareValue;
+}
+
+ConstraintType GetConstraintType(
+    const V8UnionConstrainPoint2DParametersOrPoint2DSequence* constraint) {
+  DCHECK(constraint);
+  if (constraint->IsConstrainPoint2DParameters()) {
+    return GetConstraintType(constraint->GetAsConstrainPoint2DParameters());
+  }
+  if (constraint->GetAsPoint2DSequence().empty()) {
+    return ConstraintType::kEmptySequence;
+  }
+  return ConstraintType::kBareValue;
+}
+
+MediaTrackConstraintSetType GetMediaTrackConstraintSetType(
+    const MediaTrackConstraintSet* constraint_set,
+    const MediaTrackConstraints* constraints) {
+  DCHECK(constraint_set);
+  DCHECK(constraints);
+
+  if (constraint_set == constraints) {
+    return MediaTrackConstraintSetType::kBasic;
+  }
+
+  DCHECK(constraints->hasAdvanced());
+  DCHECK(!constraints->advanced().empty());
+  if (constraint_set == constraints->advanced()[0]) {
+    return MediaTrackConstraintSetType::kFirstAdvanced;
+  }
+  return MediaTrackConstraintSetType::kAdvanced;
+}
+
+bool IsBareValueToBeTreatedAsExact(
+    MediaTrackConstraintSetType constraint_set_type) {
+  return constraint_set_type != MediaTrackConstraintSetType::kBasic;
+}
+
+bool IsBooleanFalseConstraint(
+    V8UnionBooleanOrConstrainDoubleRangeOrDouble* constraint) {
+  DCHECK(constraint);
+  return constraint->IsBoolean() && !constraint->GetAsBoolean();
+}
+
+// Check if a constraint is to be considered here as a value constraint.
+// Here we consider a constraint to be a value constraint only if it depends on
+// capability values (and not just the existence of the capability) whether
+// the capability satisfies the constraint.
+bool IsValueConstraintType(ConstraintType constraint_type,
+                           MediaTrackConstraintSetType constraint_set_type) {
+  // TODO(crbug.com/1408091): This is not spec compliant. Remove this.
+  if (constraint_set_type == MediaTrackConstraintSetType::kFirstAdvanced) {
+    // In the first advanced constraint set, everything but some bare value
+    // constraints are unsupported.
+    switch (constraint_type) {
+      case ConstraintType::kBareValue:
+        break;
+      // TODO(crbug.com/1408091): A DOMString sequence is not a special bare
+      // value in the spec. Merge with kBareValue.
+      case ConstraintType::kBareValueDOMStringSequence:
+      default:
+        return false;
+    }
+  }
+
+  switch (constraint_type) {
+    case ConstraintType::kEmptySequence:
+      // If an empty list has been given as the value for a constraint, it MUST
+      // be interpreted as if the constraint were not specified (in other
+      // words, an empty constraint == no constraint).
+      // https://w3c.github.io/mediacapture-main/#dfn-selectsettings
+      // Thus, an empty sequence does not constrain.
+      return false;
+    case ConstraintType::kBooleanFalse:
+    case ConstraintType::kBooleanTrue:
+      // Boolean constraints for non-boolean constrainable properties constrain
+      // the capability existence but not the value.
+      return false;
+    case ConstraintType::kBareValue:
+    case ConstraintType::kBareValueDOMStringSequence:
+      // A bare value constraint is to be treated as ideal in the basic
+      // constraint set and as exact in advanced constraint sets.
+      // In the both cases, it has an effect on the SelectSettings algorithm.
+      return true;
+    case ConstraintType::kEmptyDictionary:
+      // An empty dictionary does not constrain.
+      return false;
+    case ConstraintType::kEffectivelyEmptyDictionary:
+      // If an empty list has been given as the value for a constraint, it MUST
+      // be interpreted as if the constraint were not specified (in other
+      // words, an empty constraint == no constraint).
+      // https://w3c.github.io/mediacapture-main/#dfn-selectsettings
+      // Thus, a dictionary containing only empty sequences does not constrain.
+      return false;
+    case ConstraintType::kIdealDictionary:
+      // Ideal constraints have an effect on the SelectSettings algorithm in
+      // the basic constraint set but not in the advanced constraint sets.
+      return constraint_set_type == MediaTrackConstraintSetType::kBasic;
+    case ConstraintType::kMandatoryDictionary:
+      // Mandatory exact, max and min constraints have always an effect on
+      // the SelectSettings algorithm.
+      return true;
+  }
+}
+
+template <typename Constraint>
+bool IsValueConstraint(const Constraint* constraint,
+                       MediaTrackConstraintSetType constraint_set_type) {
+  return IsValueConstraintType(GetConstraintType(constraint),
+                               constraint_set_type);
+}
+
+bool MayRejectWithOverconstrainedError(
+    MediaTrackConstraintSetType constraint_set_type) {
+  // TODO(crbug.com/1408091): This is not spec compliant. Remove this.
+  if (constraint_set_type == MediaTrackConstraintSetType::kFirstAdvanced) {
+    return true;
+  }
+
+  // Only required constraints (in the basic constraint set) may cause
+  // the applyConstraints returned promise to reject with
+  // an OverconstrainedError.
+  // Advanced constraints (in the advanced constraint sets) may only cause
+  // those constraint sets to be discarded.
+  return constraint_set_type == MediaTrackConstraintSetType::kBasic;
+}
+
 bool TrackIsInactive(const MediaStreamTrack& track) {
   // Spec instructs to return an exception if the Track's readyState() is not
   // "live". Also reject if the track is disabled or muted.
   return track.readyState() != "live" || !track.enabled() || track.muted();
+}
+
+BackgroundBlurMode ParseBackgroundBlur(bool blink_mode) {
+  return blink_mode ? BackgroundBlurMode::BLUR : BackgroundBlurMode::OFF;
 }
 
 MeteringMode ParseMeteringMode(const String& blink_mode) {
@@ -164,7 +542,8 @@ MeteringMode ParseMeteringMode(const String& blink_mode) {
     return MeteringMode::CONTINUOUS;
   if (blink_mode == "none")
     return MeteringMode::NONE;
-  NOTREACHED_NORETURN();
+  NOTREACHED();
+  return MeteringMode::NONE;
 }
 
 FillLightMode ParseFillLightMode(const String& blink_mode) {
@@ -174,7 +553,8 @@ FillLightMode ParseFillLightMode(const String& blink_mode) {
     return FillLightMode::AUTO;
   if (blink_mode == "flash")
     return FillLightMode::FLASH;
-  NOTREACHED_NORETURN();
+  NOTREACHED();
+  return FillLightMode::OFF;
 }
 
 bool ToBooleanMode(BackgroundBlurMode mode) {
@@ -184,7 +564,6 @@ bool ToBooleanMode(BackgroundBlurMode mode) {
     case BackgroundBlurMode::BLUR:
       return true;
   }
-  NOTREACHED_NORETURN();
 }
 
 WebString ToString(MeteringMode value) {
@@ -198,7 +577,6 @@ WebString ToString(MeteringMode value) {
     case MeteringMode::CONTINUOUS:
       return WebString::FromUTF8("continuous");
   }
-  NOTREACHED_NORETURN();
 }
 
 V8FillLightMode ToV8FillLightMode(FillLightMode value) {
@@ -210,7 +588,6 @@ V8FillLightMode ToV8FillLightMode(FillLightMode value) {
     case FillLightMode::FLASH:
       return V8FillLightMode(V8FillLightMode::Enum::kFlash);
   }
-  NOTREACHED_NORETURN();
 }
 
 WebString ToString(RedEyeReduction value) {
@@ -222,7 +599,6 @@ WebString ToString(RedEyeReduction value) {
     case RedEyeReduction::CONTROLLABLE:
       return WebString::FromUTF8("controllable");
   }
-  NOTREACHED_NORETURN();
 }
 
 MediaSettingsRange* ToMediaSettingsRange(
@@ -232,6 +608,832 @@ MediaSettingsRange* ToMediaSettingsRange(
   result->setMin(range.min);
   result->setStep(range.step);
   return result;
+}
+
+// Check exact value constraints.
+//
+// The checks can fail only if the exact value constraint is not satisfied by
+// an effective capability (which takes taking into consideration restrictions
+// placed by other constraints).
+// https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
+// Step 2 & More definitions
+//
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove these support functions.
+
+// For exact `sequence<Point2D>` constraints such as `pointsOfInterest`.
+// There is no capability for `pointsOfInterest` in `MediaTrackCapabilities`
+// to be used as a storage for an effective capability.
+// As a substitute, we use `MediaTrackSettings` and its `pointsOfInterest`
+// field to convey restrictions placed by previous exact `pointsOfInterest`
+// constraints.
+bool CheckExactValueConstraint(
+    const HeapVector<Member<Point2D>>* effective_setting,
+    const HeapVector<Member<Point2D>>& exact_constraint) {
+  if (!effective_setting) {
+    // The |effective_setting| does not represent a previous exact constraint
+    // thus accept everything.
+    return true;
+  }
+  // There is a previous exact constraint represented by |effective_setting|.
+  // |exact_constraint| must be effectively equal to it (coordinates clamped to
+  // [0, 1] must be equal).
+  return effective_setting->size() == exact_constraint.size() &&
+         std::equal(effective_setting->begin(), effective_setting->end(),
+                    exact_constraint.begin(),
+                    [](const Point2D* a, const Point2D* b) {
+                      return (a->x() <= 0.0   ? b->x() <= 0.0
+                              : a->x() >= 1.0 ? b->x() >= 1.0
+                                              : b->x() == a->x()) &&
+                             (a->y() <= 0.0   ? b->y() <= 0.0
+                              : a->y() >= 1.0 ? b->y() >= 1.0
+                                              : b->y() == a->y());
+                    });
+}
+
+// For exact `double` constraints and `MediaSettingsRange` effective
+// capabilities such as exposureCompensation, ..., zoom.
+bool CheckExactValueConstraint(const MediaSettingsRange* effective_capability,
+                               double exact_constraint) {
+  if (effective_capability->hasMax() &&
+      exact_constraint > effective_capability->max()) {
+    return false;
+  }
+  if (effective_capability->hasMin() &&
+      exact_constraint < effective_capability->min()) {
+    return false;
+  }
+  return true;
+}
+
+// For exact `DOMString` constraints and `sequence<DOMString>` effective
+// capabilities such as whiteBalanceMode, exposureMode and focusMode.
+bool CheckExactValueConstraint(const Vector<String>& effective_capability,
+                               const String& exact_constraint) {
+  return base::Contains(effective_capability, exact_constraint);
+}
+
+// For exact `sequence<DOMString>` constraints and `sequence<DOMString>`
+// effective capabilities such as whiteBalanceMode, exposureMode and focusMode.
+bool CheckExactValueConstraint(const Vector<String>& effective_capability,
+                               const Vector<String>& exact_constraints) {
+  for (const auto& exact_constraint : exact_constraints) {
+    if (base::Contains(effective_capability, exact_constraint)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+using CapabilityExists = base::StrongAlias<class HasCapabilityTag, bool>;
+
+// Check if the existence of a capability satisfies a constraint.
+// The check can fail only if the constraint is mandatory ('exact', 'max' or
+// 'min' or a bare value to be treated as exact) and is not an empty sequence
+// (which MUST be interpreted as if the constraint were not specified).
+// Usually the check fails only if the capability does not exists but in
+// the case of pan/tilt/zoom: false constraints in advanced constraint sets (to
+// be treated as exact) the check fails only if the capability exists.
+//
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove these support functions.
+bool CheckIfCapabilityExistenceSatisfiesConstraintType(
+    ConstraintType constraint_type,
+    CapabilityExists capability_exists,
+    MediaTrackConstraintSetType constraint_set_type) {
+  switch (constraint_type) {
+    case ConstraintType::kEmptySequence:
+      // If an empty list has been given as the value for a constraint, it MUST
+      // be interpreted as if the constraint were not specified (in other
+      // words, an empty constraint == no constraint).
+      // https://w3c.github.io/mediacapture-main/#dfn-selectsettings
+      // Thus, it does not matter whether the capability exists.
+      return true;
+    case ConstraintType::kBooleanFalse:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        // The capability must not exist.
+        return !capability_exists;
+      }
+      // It does not matter whether the capability exists.
+      return true;
+    case ConstraintType::kBooleanTrue:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        // The capability must exist.
+        return !!capability_exists;
+      }
+      // It does not matter whether the capability exists.
+      return true;
+    case ConstraintType::kBareValue:
+    case ConstraintType::kBareValueDOMStringSequence:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        // The capability must exist.
+        return !!capability_exists;
+      }
+      // It does not matter whether the capability exists.
+      return true;
+    case ConstraintType::kEmptyDictionary:
+    case ConstraintType::kEffectivelyEmptyDictionary:
+    case ConstraintType::kIdealDictionary:
+      // It does not matter whether the capability exists.
+      return true;
+    case ConstraintType::kMandatoryDictionary:
+      // The capability must exist.
+      return !!capability_exists;
+  }
+}
+
+template <typename Constraint>
+bool CheckIfCapabilityExistenceSatisfiesConstraint(
+    const Constraint* constraint,
+    CapabilityExists capability_exists,
+    MediaTrackConstraintSetType constraint_set_type) {
+  return CheckIfCapabilityExistenceSatisfiesConstraintType(
+      GetConstraintType(constraint), capability_exists, constraint_set_type);
+}
+
+// Check value constraints.
+//
+// For value constraints, the checks can fail only if the value constraint is
+// mandatory ('exact', 'max' or 'min' or a bare value to be treated as exact),
+// not an empty sequence (which MUST be interpreted as if the constraint were
+// not specified) and not satisfied by an effective capability (which takes
+// taking into consideration restrictions placed by other constraints).
+// https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
+// Step 2 & More definitions
+// https://w3c.github.io/mediacapture-main/#dfn-selectsettings
+//
+// For non-value constraints, the checks always succeed.
+// This is to simplify `CheckMediaTrackConstraintSet()`.
+//
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove these support functions.
+
+// For `ConstrainPoint2D` constraints such as `pointsOfInterest`.
+// There is no capability for `pointsOfInterest` in `MediaTrackCapabilities`
+// to be used as a storage for an effective capability.
+// As a substitute, we use `MediaTrackSettings` and its `pointsOfInterest`
+// field to convey restrictions placed by previous exact `pointsOfInterest`
+// constraints.
+bool CheckValueConstraint(
+    const HeapVector<Member<Point2D>>* effective_setting,
+    const V8UnionConstrainPoint2DParametersOrPoint2DSequence* constraint,
+    MediaTrackConstraintSetType constraint_set_type) {
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    return true;
+  }
+  using ContentType =
+      V8UnionConstrainPoint2DParametersOrPoint2DSequence::ContentType;
+  switch (constraint->GetContentType()) {
+    case ContentType::kPoint2DSequence:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        return CheckExactValueConstraint(effective_setting,
+                                         constraint->GetAsPoint2DSequence());
+      }
+      return true;
+    case ContentType::kConstrainPoint2DParameters: {
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      const auto* dictionary_constraint =
+          constraint->GetAsConstrainPoint2DParameters();
+      if (dictionary_constraint->hasExact()) {
+        return CheckExactValueConstraint(effective_setting,
+                                         dictionary_constraint->exact());
+      }
+      return true;
+    }
+  }
+}
+
+// For `ConstrainDouble` constraints and `MediaSettingsRange` effective
+// capabilities such as exposureCompensation, ..., focusDistance.
+bool CheckValueConstraint(const MediaSettingsRange* effective_capability,
+                          const V8UnionConstrainDoubleRangeOrDouble* constraint,
+                          MediaTrackConstraintSetType constraint_set_type) {
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    return true;
+  }
+  using ContentType = V8UnionConstrainDoubleRangeOrDouble::ContentType;
+  switch (constraint->GetContentType()) {
+    case ContentType::kDouble:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        return CheckExactValueConstraint(effective_capability,
+                                         constraint->GetAsDouble());
+      }
+      return true;
+    case ContentType::kConstrainDoubleRange: {
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      const auto* dictionary_constraint =
+          constraint->GetAsConstrainDoubleRange();
+      if (dictionary_constraint->hasExact()) {
+        const double exact_constraint = dictionary_constraint->exact();
+        if (dictionary_constraint->hasMax() &&
+            exact_constraint > dictionary_constraint->max()) {
+          return false;  // Reject self-contradiction.
+        }
+        if (dictionary_constraint->hasMin() &&
+            exact_constraint < dictionary_constraint->min()) {
+          return false;  // Reject self-contradiction.
+        }
+        if (!CheckExactValueConstraint(effective_capability,
+                                       exact_constraint)) {
+          return false;
+        }
+      }
+      if (dictionary_constraint->hasMax()) {
+        const double max_constraint = dictionary_constraint->max();
+        if (dictionary_constraint->hasMin() &&
+            max_constraint < dictionary_constraint->min()) {
+          return false;  // Reject self-contradiction.
+        }
+        if (effective_capability->hasMin() &&
+            max_constraint < effective_capability->min()) {
+          return false;
+        }
+      }
+      if (dictionary_constraint->hasMin()) {
+        const double min_constraint = dictionary_constraint->min();
+        if (effective_capability->hasMax() &&
+            min_constraint > effective_capability->max()) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+}
+
+// For `(boolean or ConstrainDouble)` constraints and `MediaSettingsRange`
+// effective capabilities such as pan, tilt and zoom.
+bool CheckValueConstraint(
+    const MediaSettingsRange* effective_capability,
+    const V8UnionBooleanOrConstrainDoubleRangeOrDouble* constraint,
+    MediaTrackConstraintSetType constraint_set_type) {
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    return true;
+  }
+  // We classify boolean constraints for double constrainable properties as
+  // existence constraints instead of as value constraints.
+  DCHECK(!constraint->IsBoolean());
+  return CheckValueConstraint(
+      effective_capability,
+      constraint->GetAsV8UnionConstrainDoubleRangeOrDouble(),
+      constraint_set_type);
+}
+
+// For `ConstrainBoolean` constraints and `sequence<boolean>` effective
+// capabilities such as torch and backgroundBlur.
+bool CheckValueConstraint(
+    const Vector<bool>& effective_capability,
+    const V8UnionBooleanOrConstrainBooleanParameters* constraint,
+    MediaTrackConstraintSetType constraint_set_type) {
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    return true;
+  }
+  using ContentType = V8UnionBooleanOrConstrainBooleanParameters::ContentType;
+  switch (constraint->GetContentType()) {
+    case ContentType::kBoolean:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        const bool exact_constraint = constraint->GetAsBoolean();
+        return base::Contains(effective_capability, exact_constraint);
+      }
+      return true;
+    case ContentType::kConstrainBooleanParameters: {
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      const auto* dictionary_constraint =
+          constraint->GetAsConstrainBooleanParameters();
+      if (dictionary_constraint->hasExact()) {
+        const bool exact_constraint = dictionary_constraint->exact();
+        return base::Contains(effective_capability, exact_constraint);
+      }
+      return true;
+    }
+  }
+}
+
+// For `ConstrainDOMString` constraints and `sequence<DOMString>` effective
+// capabilities such as whiteBalanceMode, exposureMode and focusMode.
+bool CheckValueConstraint(
+    const Vector<String>& effective_capability,
+    const V8UnionConstrainDOMStringParametersOrStringOrStringSequence*
+        constraint,
+    MediaTrackConstraintSetType constraint_set_type) {
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    return true;
+  }
+  using ContentType =
+      V8UnionConstrainDOMStringParametersOrStringOrStringSequence::ContentType;
+  switch (constraint->GetContentType()) {
+    case ContentType::kString:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        return CheckExactValueConstraint(effective_capability,
+                                         constraint->GetAsString());
+      }
+      return true;
+    case ContentType::kStringSequence:
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        return CheckExactValueConstraint(effective_capability,
+                                         constraint->GetAsStringSequence());
+      }
+      return true;
+    case ContentType::kConstrainDOMStringParameters: {
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      const auto* dictionary_constraint =
+          constraint->GetAsConstrainDOMStringParameters();
+      if (dictionary_constraint->hasExact()) {
+        const auto* exact_constraint = dictionary_constraint->exact();
+        switch (exact_constraint->GetContentType()) {
+          case V8UnionStringOrStringSequence::ContentType::kString:
+            return CheckExactValueConstraint(effective_capability,
+                                             exact_constraint->GetAsString());
+          case V8UnionStringOrStringSequence::ContentType::kStringSequence:
+            return CheckExactValueConstraint(
+                effective_capability, exact_constraint->GetAsStringSequence());
+        }
+      }
+      return true;
+    }
+  }
+}
+
+// Apply exact value constraints to photo settings and return new effective
+// capabilities.
+//
+// Roughly the SelectSettings algorithm steps 3 and 5.
+// https://www.w3.org/TR/mediacapture-streams/#dfn-selectsettings
+//
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove these support functions.
+
+// For exact `boolean` constraints and `sequence<boolean>` effective
+// capabilities such as torch and backgroundBlur.
+Vector<bool> ApplyExactValueConstraint(bool* has_setting_ptr,
+                                       bool* setting_ptr,
+                                       const Vector<bool>& effective_capability,
+                                       bool exact_constraint) {
+  // Update the setting.
+  *has_setting_ptr = true;
+  *setting_ptr = exact_constraint;
+  // Update the effective capability.
+  return {exact_constraint};
+}
+
+// For exact `double` constraints and `MediaSettingsRange` effective
+// capabilities such as exposureCompensation, ..., zoom.
+MediaSettingsRange* ApplyExactValueConstraint(
+    bool* has_setting_ptr,
+    double* setting_ptr,
+    const MediaSettingsRange* effective_capability,
+    double exact_constraint) {
+  // Update the setting.
+  *has_setting_ptr = true;
+  *setting_ptr = exact_constraint;
+  // Update the effective capability.
+  auto* new_effective_capability = MediaSettingsRange::Create();
+  new_effective_capability->setMax(exact_constraint);
+  new_effective_capability->setMin(exact_constraint);
+  return new_effective_capability;
+}
+
+// For exact `DOMString` constraints and `sequence<DOMString>` effective
+// capabilities such as whiteBalanceMode, exposureMode and focusMode.
+Vector<String> ApplyExactValueConstraint(
+    bool* has_setting_ptr,
+    MeteringMode* setting_ptr,
+    const Vector<String>& effective_capability,
+    const String& exact_constraint) {
+  // Update the setting.
+  *has_setting_ptr = true;
+  *setting_ptr = ParseMeteringMode(exact_constraint);
+  // Update the effective capability.
+  return {exact_constraint};
+}
+
+// For exact `sequence<DOMString>` constraints and `sequence<DOMString>`
+// effective capabilities such as whiteBalanceMode, exposureMode and focusMode.
+Vector<String> ApplyExactValueConstraint(
+    bool* has_setting_ptr,
+    MeteringMode* setting_ptr,
+    const Vector<String>& effective_capability,
+    const Vector<String>& exact_constraints) {
+  // Update the effective capability.
+  Vector<String> new_effective_capability;
+  for (const auto& exact_constraint : exact_constraints) {
+    if (base::Contains(effective_capability, exact_constraint)) {
+      new_effective_capability.push_back(exact_constraint);
+    }
+  }
+  DCHECK(!new_effective_capability.empty());
+  // Clamp and update the setting.
+  if (!*has_setting_ptr ||
+      !base::Contains(exact_constraints,
+                      static_cast<const String&>(ToString(*setting_ptr)))) {
+    *has_setting_ptr = true;
+    *setting_ptr = ParseMeteringMode(new_effective_capability[0]);
+  }
+  return new_effective_capability;
+}
+
+// Apply ideal value constraints to photo settings and return effective
+// capabilities intact (ideal constraints have no effect on effective
+// capabilities).
+//
+// Roughly the SelectSettings algorithm step 3.
+// https://www.w3.org/TR/mediacapture-streams/#dfn-selectsettings
+//
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove these support functions.
+
+// For ideal `boolean` constraints and `sequence<boolean>` effective
+// capabilities such as torch and backgroundBlur.
+Vector<bool> ApplyIdealValueConstraint(bool* has_setting_ptr,
+                                       bool* setting_ptr,
+                                       const Vector<bool>& effective_capability,
+                                       bool ideal_constraint) {
+  // Clamp and update the setting.
+  *has_setting_ptr = true;
+  *setting_ptr = base::Contains(effective_capability, ideal_constraint)
+                     ? ideal_constraint
+                     : effective_capability[0];
+  // Keep the effective capability intact.
+  return effective_capability;
+}
+
+// For ideal `double` constraints and `MediaSettingsRange` effective
+// capabilities such as exposureCompensation, ..., zoom.
+MediaSettingsRange* ApplyIdealValueConstraint(
+    bool* has_setting_ptr,
+    double* setting_ptr,
+    MediaSettingsRange* effective_capability,
+    absl::optional<double> ideal_constraint,
+    double current_setting) {
+  // Clamp and update the setting.
+  *has_setting_ptr = true;
+  *setting_ptr =
+      std::clamp(ideal_constraint ? *ideal_constraint : current_setting,
+                 effective_capability->min(), effective_capability->max());
+  // Keep the effective capability intact.
+  return effective_capability;
+}
+
+// For ideal `DOMString` constraints and `sequence<DOMString>` effective
+// capabilities such as whiteBalanceMode, exposureMode and focusMode.
+Vector<String> ApplyIdealValueConstraint(
+    bool* has_setting_ptr,
+    MeteringMode* setting_ptr,
+    const Vector<String>& effective_capability,
+    const String& ideal_constraint,
+    const String& current_setting) {
+  // Validate and update the setting.
+  *has_setting_ptr = true;
+  *setting_ptr = ParseMeteringMode(
+      base::Contains(effective_capability, ideal_constraint) ? ideal_constraint
+                                                             : current_setting);
+  // Keep the effective capability intact.
+  return effective_capability;
+}
+
+// For ideal `sequence<DOMString>` constraints and `sequence<DOMString>`
+// effective capabilities such as whiteBalanceMode, exposureMode and focusMode.
+Vector<String> ApplyIdealValueConstraint(
+    bool* has_setting_ptr,
+    MeteringMode* setting_ptr,
+    const Vector<String>& effective_capability,
+    const Vector<String>& ideal_constraints,
+    const String& current_setting) {
+  // Clamp and update the setting.
+  if (!*has_setting_ptr ||
+      !base::Contains(ideal_constraints,
+                      static_cast<const String&>(ToString(*setting_ptr)))) {
+    String setting_name = current_setting;
+    for (const auto& ideal_constraint : ideal_constraints) {
+      if (base::Contains(effective_capability, ideal_constraint)) {
+        setting_name = ideal_constraint;
+        break;
+      }
+    }
+    *has_setting_ptr = true;
+    *setting_ptr = ParseMeteringMode(setting_name);
+  }
+  // Keep the effective capability intact.
+  return effective_capability;
+}
+
+// Apply value constraints to photo settings and return new effective
+// capabilities.
+//
+// Roughly the SelectSettings algorithm steps 3 and 5.
+// https://www.w3.org/TR/mediacapture-streams/#dfn-selectsettings
+//
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove these support functions.
+
+// For `ConstrainBoolean` constraints and `sequence<boolean>` effective
+// capabilities such as torch and backgroundBlur.
+Vector<bool> ApplyValueConstraint(
+    bool* has_setting_ptr,
+    bool* setting_ptr,
+    const Vector<bool>& effective_capability,
+    const V8UnionBooleanOrConstrainBooleanParameters* constraint,
+    MediaTrackConstraintSetType constraint_set_type) {
+  DCHECK(CheckValueConstraint(effective_capability, constraint,
+                              constraint_set_type));
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    // Keep the effective capability intact.
+    return effective_capability;
+  }
+  using ContentType = V8UnionBooleanOrConstrainBooleanParameters::ContentType;
+  switch (constraint->GetContentType()) {
+    case ContentType::kBoolean:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        return ApplyExactValueConstraint(has_setting_ptr, setting_ptr,
+                                         effective_capability,
+                                         constraint->GetAsBoolean());
+      }
+      // We classify ideal bare value constraints as value constraints only in
+      // the basic constraint set in which they have an effect on
+      // the SelectSettings algorithm.
+      DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
+      return ApplyIdealValueConstraint(has_setting_ptr, setting_ptr,
+                                       effective_capability,
+                                       constraint->GetAsBoolean());
+    case ContentType::kConstrainBooleanParameters: {
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      const auto* dictionary_constraint =
+          constraint->GetAsConstrainBooleanParameters();
+      if (dictionary_constraint->hasExact()) {
+        return ApplyExactValueConstraint(has_setting_ptr, setting_ptr,
+                                         effective_capability,
+                                         dictionary_constraint->exact());
+      }
+      // We classify `ConstrainBooleanParameters` constraints containing only
+      // the `ideal` member as value constraints only in the basic constraint
+      // set in which they have an effect on the SelectSettings algorithm.
+      DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
+      return ApplyIdealValueConstraint(has_setting_ptr, setting_ptr,
+                                       effective_capability,
+                                       dictionary_constraint->ideal());
+    }
+  }
+}
+
+// For `ConstrainDouble` constraints and `MediaSettingsRange` effective
+// capabilities such as exposureCompensation, ..., focusDistance.
+MediaSettingsRange* ApplyValueConstraint(
+    bool* has_setting_ptr,
+    double* setting_ptr,
+    const MediaSettingsRange* effective_capability,
+    const V8UnionConstrainDoubleRangeOrDouble* constraint,
+    MediaTrackConstraintSetType constraint_set_type,
+    double current_setting) {
+  DCHECK(CheckValueConstraint(effective_capability, constraint,
+                              constraint_set_type));
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    // Keep the effective capability intact.
+    return const_cast<MediaSettingsRange*>(effective_capability);
+  }
+  using ContentType = V8UnionConstrainDoubleRangeOrDouble::ContentType;
+  switch (constraint->GetContentType()) {
+    case ContentType::kDouble:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        return ApplyExactValueConstraint(has_setting_ptr, setting_ptr,
+                                         effective_capability,
+                                         constraint->GetAsDouble());
+      }
+      // We classify ideal bare value constraints as value constraints only in
+      // the basic constraint set in which they have an effect on
+      // the SelectSettings algorithm.
+      DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
+      return ApplyIdealValueConstraint(
+          has_setting_ptr, setting_ptr,
+          const_cast<MediaSettingsRange*>(effective_capability),
+          constraint->GetAsDouble(), current_setting);
+    case ContentType::kConstrainDoubleRange: {
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      const auto* dictionary_constraint =
+          constraint->GetAsConstrainDoubleRange();
+      if (dictionary_constraint->hasExact()) {
+        return ApplyExactValueConstraint(has_setting_ptr, setting_ptr,
+                                         effective_capability,
+                                         dictionary_constraint->exact());
+      }
+      // Update the effective capability.
+      auto* new_effective_capability = DuplicateRange(effective_capability);
+      if (dictionary_constraint->hasMax()) {
+        new_effective_capability->setMax(std::min(dictionary_constraint->max(),
+                                                  effective_capability->max()));
+      }
+      if (dictionary_constraint->hasMin()) {
+        new_effective_capability->setMin(std::max(dictionary_constraint->min(),
+                                                  effective_capability->min()));
+      }
+      // Ideal constraints have an effect on the SelectSettings algorithm only
+      // in the basic constraint set. Always call `ApplyIdealValueConstraint()`
+      // so that either the ideal value constraint or the current setting is
+      // clamped so that the setting is within the new effective capability.
+      DCHECK(
+          (dictionary_constraint->hasIdeal() &&
+           constraint_set_type == MediaTrackConstraintSetType::kBasic) ||
+          (dictionary_constraint->hasMax() || dictionary_constraint->hasMin()));
+      return ApplyIdealValueConstraint(
+          has_setting_ptr, setting_ptr, new_effective_capability,
+          (dictionary_constraint->hasIdeal() &&
+           constraint_set_type == MediaTrackConstraintSetType::kBasic)
+              ? absl::make_optional(dictionary_constraint->ideal())
+              : absl::nullopt,
+          current_setting);
+    }
+  }
+}
+
+// For `(boolean or ConstrainDouble)` constraints and `MediaSettingsRange`
+// effective capabilities such as pan, tilt and zoom.
+MediaSettingsRange* ApplyValueConstraint(
+    bool* has_setting_ptr,
+    double* setting_ptr,
+    const MediaSettingsRange* effective_capability,
+    const V8UnionBooleanOrConstrainDoubleRangeOrDouble* constraint,
+    MediaTrackConstraintSetType constraint_set_type,
+    double current_setting) {
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    // Keep the effective capability intact.
+    return const_cast<MediaSettingsRange*>(effective_capability);
+  }
+  // We classify boolean constraints for double constrainable properties as
+  // existence constraints instead of as value constraints.
+  DCHECK(!constraint->IsBoolean());
+  return ApplyValueConstraint(
+      has_setting_ptr, setting_ptr, effective_capability,
+      constraint->GetAsV8UnionConstrainDoubleRangeOrDouble(),
+      constraint_set_type, current_setting);
+}
+
+// For `ConstrainDOMString` constraints and `sequence<DOMString>` effective
+// capabilities such as whiteBalanceMode, exposureMode and focusMode.
+Vector<String> ApplyValueConstraint(
+    bool* has_setting_ptr,
+    MeteringMode* setting_ptr,
+    const Vector<String>& effective_capability,
+    const V8UnionConstrainDOMStringParametersOrStringOrStringSequence*
+        constraint,
+    MediaTrackConstraintSetType constraint_set_type,
+    const String& current_setting) {
+  DCHECK(CheckValueConstraint(effective_capability, constraint,
+                              constraint_set_type));
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    // Keep the effective capability intact.
+    return effective_capability;
+  }
+  using ContentType =
+      V8UnionConstrainDOMStringParametersOrStringOrStringSequence::ContentType;
+  switch (constraint->GetContentType()) {
+    case ContentType::kString:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        return ApplyExactValueConstraint(has_setting_ptr, setting_ptr,
+                                         effective_capability,
+                                         constraint->GetAsString());
+      }
+      // We classify ideal bare value constraints as value constraints only in
+      // the basic constraint set in which they have an effect on
+      // the SelectSettings algorithm.
+      DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
+      return ApplyIdealValueConstraint(
+          has_setting_ptr, setting_ptr, effective_capability,
+          constraint->GetAsString(), current_setting);
+    case ContentType::kStringSequence:
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        return ApplyExactValueConstraint(has_setting_ptr, setting_ptr,
+                                         effective_capability,
+                                         constraint->GetAsStringSequence());
+      }
+      // We classify ideal bare value constraints as value constraints only in
+      // the basic constraint set in which they have an effect on
+      // the SelectSettings algorithm.
+      DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
+      return ApplyIdealValueConstraint(
+          has_setting_ptr, setting_ptr, effective_capability,
+          constraint->GetAsStringSequence(), current_setting);
+    case ContentType::kConstrainDOMStringParameters: {
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      const auto* dictionary_constraint =
+          constraint->GetAsConstrainDOMStringParameters();
+      if (dictionary_constraint->hasExact()) {
+        const V8UnionStringOrStringSequence* exact_constraint =
+            dictionary_constraint->exact();
+        switch (exact_constraint->GetContentType()) {
+          case V8UnionStringOrStringSequence::ContentType::kString:
+            return ApplyExactValueConstraint(has_setting_ptr, setting_ptr,
+                                             effective_capability,
+                                             exact_constraint->GetAsString());
+          case V8UnionStringOrStringSequence::ContentType::kStringSequence:
+            return ApplyExactValueConstraint(
+                has_setting_ptr, setting_ptr, effective_capability,
+                exact_constraint->GetAsStringSequence());
+        }
+      }
+      // We classify `ConstrainDOMStringParameters` constraints containing only
+      // the `ideal` member as value constraints only in the basic constraint
+      // set in which they have an effect on the SelectSettings algorithm.
+      DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
+      const V8UnionStringOrStringSequence* ideal_constraint =
+          dictionary_constraint->ideal();
+      switch (ideal_constraint->GetContentType()) {
+        case V8UnionStringOrStringSequence::ContentType::kString:
+          return ApplyIdealValueConstraint(
+              has_setting_ptr, setting_ptr, effective_capability,
+              ideal_constraint->GetAsString(), current_setting);
+        case V8UnionStringOrStringSequence::ContentType::kStringSequence:
+          return ApplyIdealValueConstraint(
+              has_setting_ptr, setting_ptr, effective_capability,
+              ideal_constraint->GetAsStringSequence(), current_setting);
+      }
+    }
+  }
+}
+
+// For `ConstrainPoint2D` constraints such as `pointsOfInterest`.
+// There is no capability for `pointsOfInterest` in `MediaTrackCapabilities`
+// to be used as a storage for an effective capability.
+// As a substitute, we use `MediaTrackSettings` and its `pointsOfInterest`
+// field to convey restrictions placed by previous exact `pointsOfInterest`
+// constraints.
+void ApplyValueConstraint(bool* has_setting_ptr,
+                          Vector<media::mojom::blink::Point2DPtr>* setting_ptr,
+                          const HeapVector<Member<Point2D>>* effective_setting,
+                          const HeapVector<Member<Point2D>>& constraint) {
+  // Update the setting.
+  *has_setting_ptr = true;
+  setting_ptr->clear();
+  for (const auto& point : constraint) {
+    auto mojo_point = media::mojom::blink::Point2D::New();
+    mojo_point->x = std::clamp(point->x(), 0.0, 1.0);
+    mojo_point->y = std::clamp(point->y(), 0.0, 1.0);
+    setting_ptr->push_back(std::move(mojo_point));
+  }
+}
+
+// For `ConstrainPoint2D` constraints such as `pointsOfInterest`.
+// There is no capability for `pointsOfInterest` in `MediaTrackCapabilities`
+// to be used as a storage for an effective capability.
+// As a substitute, we use `MediaTrackSettings` and its `pointsOfInterest`
+// field to convey restrictions placed by previous exact `pointsOfInterest`
+// constraints.
+absl::optional<HeapVector<Member<Point2D>>> ApplyValueConstraint(
+    bool* has_setting_ptr,
+    Vector<media::mojom::blink::Point2DPtr>* setting_ptr,
+    const HeapVector<Member<Point2D>>* effective_setting,
+    const V8UnionConstrainPoint2DParametersOrPoint2DSequence* constraint,
+    MediaTrackConstraintSetType constraint_set_type) {
+  DCHECK(
+      CheckValueConstraint(effective_setting, constraint, constraint_set_type));
+  if (!IsValueConstraint(constraint, constraint_set_type)) {
+    // Keep the effective capability intact.
+    return absl::nullopt;
+  }
+  using ContentType =
+      V8UnionConstrainPoint2DParametersOrPoint2DSequence::ContentType;
+  switch (constraint->GetContentType()) {
+    case ContentType::kPoint2DSequence:
+      if (IsBareValueToBeTreatedAsExact(constraint_set_type)) {
+        ApplyValueConstraint(has_setting_ptr, setting_ptr, effective_setting,
+                             constraint->GetAsPoint2DSequence());
+        return constraint->GetAsPoint2DSequence();
+      }
+      // We classify ideal bare value constraints as value constraints only in
+      // the basic constraint set in which they have an effect on
+      // the SelectSettings algorithm.
+      DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
+      ApplyValueConstraint(has_setting_ptr, setting_ptr, effective_setting,
+                           constraint->GetAsPoint2DSequence());
+      return absl::nullopt;
+    case ContentType::kConstrainPoint2DParameters: {
+      DCHECK_NE(constraint_set_type,
+                MediaTrackConstraintSetType::kFirstAdvanced);
+      const auto* dictionary_constraint =
+          constraint->GetAsConstrainPoint2DParameters();
+      if (dictionary_constraint->hasExact()) {
+        ApplyValueConstraint(has_setting_ptr, setting_ptr, effective_setting,
+                             dictionary_constraint->exact());
+        return dictionary_constraint->exact();
+      }
+      // We classify `ConstrainPoint2DParameters` constraints containing only
+      // the `ideal` member as value constraints only in the basic constraint
+      // set in which they have an effect on the SelectSettings algorithm.
+      DCHECK_EQ(constraint_set_type, MediaTrackConstraintSetType::kBasic);
+      ApplyValueConstraint(has_setting_ptr, setting_ptr, effective_setting,
+                           dictionary_constraint->ideal());
+      return absl::nullopt;
+    }
+  }
 }
 
 }  // anonymous namespace
@@ -429,6 +1631,66 @@ void ImageCapture::GotPhotoState(
   std::move(callback).Run(false);
 }
 
+bool ImageCapture::CheckAndApplyMediaTrackConstraintsToSettings(
+    media::mojom::blink::PhotoSettings* settings,
+    const MediaTrackConstraints* constraints,
+    ScriptPromiseResolver* resolver) const {
+  if (!IsPageVisible()) {
+    for (const MediaTrackConstraintSet* constraint_set :
+         AllSupportedConstraintSets(constraints)) {
+      if ((constraint_set->hasPan() &&
+           !IsBooleanFalseConstraint(constraint_set->pan())) ||
+          (constraint_set->hasTilt() &&
+           !IsBooleanFalseConstraint(constraint_set->tilt())) ||
+          (constraint_set->hasZoom() &&
+           !IsBooleanFalseConstraint(constraint_set->zoom()))) {
+        resolver->Reject(MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kSecurityError, "the page is not visible"));
+        return false;
+      }
+    }
+  }
+
+  // The "effective capability" C of an object O as the possibly proper subset
+  // of the possible values of C (as returned by getCapabilities) taking into
+  // consideration environmental limitations and/or restrictions placed by
+  // other constraints.
+  // https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
+  // More definitions
+  auto* effective_capabilities = MediaTrackCapabilities::Create();
+  CopyCapabilities(capabilities_, effective_capabilities,
+                   CopyPanTiltZoom(HasPanTiltZoomPermissionGranted()));
+
+  // There is no capability for `pointsOfInterest` in `MediaTrackCapabilities`
+  // to be used as a storage for an effective capability for `pointsOfInterest`.
+  // There is a capability for `torch` in `MediaTrackCapabilities` but it is
+  // a boolean instead of a sequence of booleans so not suitable to be used as
+  // a storage for an effective capability for `torch`.
+  // As a substitute, we use `MediaTrackSettings` and its `pointsOfInterest`
+  // `torch` fields to convey restrictions placed by previous exact
+  // `pointsOfInterest` and `torch` constraints.
+  auto* effective_settings = MediaTrackSettings::Create();
+
+  for (const MediaTrackConstraintSet* constraint_set :
+       AllSupportedConstraintSets(constraints)) {
+    const MediaTrackConstraintSetType constraint_set_type =
+        GetMediaTrackConstraintSetType(constraint_set, constraints);
+    const bool may_reject =
+        MayRejectWithOverconstrainedError(constraint_set_type);
+    if (CheckMediaTrackConstraintSet(effective_capabilities, effective_settings,
+                                     constraint_set, constraint_set_type,
+                                     may_reject ? resolver : nullptr)) {
+      ApplyMediaTrackConstraintSetToSettings(&*settings, effective_capabilities,
+                                             effective_settings, constraint_set,
+                                             constraint_set_type);
+    } else if (may_reject) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void ImageCapture::GetMediaTrackCapabilities(
     MediaTrackCapabilities* capabilities) const {
   // Merge any present |capabilities_| members into |capabilities|.
@@ -440,59 +1702,66 @@ void ImageCapture::GetMediaTrackCapabilities(
 // inside the method, https://crbug.com/708723.
 void ImageCapture::SetMediaTrackConstraints(
     ScriptPromiseResolver* resolver,
-    const MediaTrackConstraints* all_constraints) {
-  DCHECK(all_constraints);
-  if (!all_constraints->hasAdvanced() || all_constraints->advanced().empty()) {
-    // TODO(crbug.com/1408091): This is not spec compliant.
-    // If there are no advanced constraints (but only required and optional
-    // constraints), the required and optional constraints should be applied.
-    ClearMediaTrackConstraints();
-    resolver->Resolve();
-    return;
-  }
-
-  const auto& constraints_vector = all_constraints->advanced();
-  DCHECK_GT(constraints_vector.size(), 0u);
-  // TODO(mcasas): add support more than one single advanced constraint.
-  const MediaTrackConstraintSet* constraints = constraints_vector[0];
+    const MediaTrackConstraints* constraints) {
+  DCHECK(constraints);
 
   ExecutionContext* context = GetExecutionContext();
-  if (constraints->hasWhiteBalanceMode())
-    UseCounter::Count(context, WebFeature::kImageCaptureWhiteBalanceMode);
-  if (constraints->hasExposureMode())
-    UseCounter::Count(context, WebFeature::kImageCaptureExposureMode);
-  if (constraints->hasFocusMode())
-    UseCounter::Count(context, WebFeature::kImageCaptureFocusMode);
-  if (constraints->hasPointsOfInterest())
-    UseCounter::Count(context, WebFeature::kImageCapturePointsOfInterest);
-  if (constraints->hasExposureCompensation())
-    UseCounter::Count(context, WebFeature::kImageCaptureExposureCompensation);
-  if (constraints->hasExposureTime())
-    UseCounter::Count(context, WebFeature::kImageCaptureExposureTime);
-  if (constraints->hasColorTemperature())
-    UseCounter::Count(context, WebFeature::kImageCaptureColorTemperature);
-  if (constraints->hasIso())
-    UseCounter::Count(context, WebFeature::kImageCaptureIso);
-  if (constraints->hasBrightness())
-    UseCounter::Count(context, WebFeature::kImageCaptureBrightness);
-  if (constraints->hasContrast())
-    UseCounter::Count(context, WebFeature::kImageCaptureContrast);
-  if (constraints->hasSaturation())
-    UseCounter::Count(context, WebFeature::kImageCaptureSaturation);
-  if (constraints->hasSharpness())
-    UseCounter::Count(context, WebFeature::kImageCaptureSharpness);
-  if (constraints->hasFocusDistance())
-    UseCounter::Count(context, WebFeature::kImageCaptureFocusDistance);
-  if (constraints->hasPan())
-    UseCounter::Count(context, WebFeature::kImageCapturePan);
-  if (constraints->hasTilt())
-    UseCounter::Count(context, WebFeature::kImageCaptureTilt);
-  if (constraints->hasZoom())
-    UseCounter::Count(context, WebFeature::kImageCaptureZoom);
-  if (constraints->hasTorch())
-    UseCounter::Count(context, WebFeature::kImageCaptureTorch);
-  // TODO(eero.hakkinen@intel.com): count how many times backgroundBlur is
-  // used.
+  for (const MediaTrackConstraintSet* constraint_set :
+       AllSupportedConstraintSets(constraints)) {
+    if (constraint_set->hasWhiteBalanceMode()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureWhiteBalanceMode);
+    }
+    if (constraint_set->hasExposureMode()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureExposureMode);
+    }
+    if (constraint_set->hasFocusMode()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureFocusMode);
+    }
+    if (constraint_set->hasPointsOfInterest()) {
+      UseCounter::Count(context, WebFeature::kImageCapturePointsOfInterest);
+    }
+    if (constraint_set->hasExposureCompensation()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureExposureCompensation);
+    }
+    if (constraint_set->hasExposureTime()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureExposureTime);
+    }
+    if (constraint_set->hasColorTemperature()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureColorTemperature);
+    }
+    if (constraint_set->hasIso()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureIso);
+    }
+    if (constraint_set->hasBrightness()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureBrightness);
+    }
+    if (constraint_set->hasContrast()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureContrast);
+    }
+    if (constraint_set->hasSaturation()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureSaturation);
+    }
+    if (constraint_set->hasSharpness()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureSharpness);
+    }
+    if (constraint_set->hasFocusDistance()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureFocusDistance);
+    }
+    if (constraint_set->hasPan()) {
+      UseCounter::Count(context, WebFeature::kImageCapturePan);
+    }
+    if (constraint_set->hasTilt()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureTilt);
+    }
+    if (constraint_set->hasZoom()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureZoom);
+    }
+    if (constraint_set->hasTorch()) {
+      UseCounter::Count(context, WebFeature::kImageCaptureTorch);
+    }
+    // TODO(eero.hakkinen@intel.com): count how many times backgroundBlur is
+    // used.
+  }
 
   if (!service_.is_bound()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -500,287 +1769,24 @@ void ImageCapture::SetMediaTrackConstraints(
     return;
   }
 
-  if (absl::optional<String> name =
-          GetConstraintWithNonExistingCapability(constraints)) {
-    resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-        name.value(), "Unsupported constraint"));
+  auto settings = media::mojom::blink::PhotoSettings::New();
+
+  if (!CheckAndApplyMediaTrackConstraintsToSettings(&*settings, constraints,
+                                                    resolver)) {
     return;
   }
 
-  auto settings = media::mojom::blink::PhotoSettings::New();
-  MediaTrackConstraintSet* temp_constraints =
-      current_constraints_ ? current_constraints_.Get()
-                           : MediaTrackConstraintSet::Create();
-
-  // TODO(mcasas): support other Mode types beyond simple string i.e. the
-  // equivalents of "sequence<DOMString>"" or "ConstrainDOMStringParameters".
-  settings->has_white_balance_mode =
-      constraints->hasWhiteBalanceMode() &&
-      constraints->whiteBalanceMode()->IsString();
-  if (settings->has_white_balance_mode) {
-    const auto white_balance_mode =
-        constraints->whiteBalanceMode()->GetAsString();
-    if (capabilities_->whiteBalanceMode().Find(white_balance_mode) ==
-        kNotFound) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "whiteBalanceMode", "Unsupported whiteBalanceMode."));
-      return;
-    }
-    temp_constraints->setWhiteBalanceMode(constraints->whiteBalanceMode());
-    settings->white_balance_mode = ParseMeteringMode(white_balance_mode);
-  }
-  settings->has_exposure_mode =
-      constraints->hasExposureMode() && constraints->exposureMode()->IsString();
-  if (settings->has_exposure_mode) {
-    const auto exposure_mode = constraints->exposureMode()->GetAsString();
-    if (capabilities_->exposureMode().Find(exposure_mode) == kNotFound) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "exposureMode", "Unsupported exposureMode."));
-      return;
-    }
-    temp_constraints->setExposureMode(constraints->exposureMode());
-    settings->exposure_mode = ParseMeteringMode(exposure_mode);
-  }
-
-  settings->has_focus_mode =
-      constraints->hasFocusMode() && constraints->focusMode()->IsString();
-  if (settings->has_focus_mode) {
-    const auto focus_mode = constraints->focusMode()->GetAsString();
-    if (capabilities_->focusMode().Find(focus_mode) == kNotFound) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "focusMode", "Unsupported focusMode."));
-      return;
-    }
-    temp_constraints->setFocusMode(constraints->focusMode());
-    settings->focus_mode = ParseMeteringMode(focus_mode);
-  }
-
-  // TODO(mcasas): support ConstrainPoint2DParameters.
-  if (constraints->hasPointsOfInterest() &&
-      constraints->pointsOfInterest()->IsPoint2DSequence()
-  ) {
-    for (const auto& point :
-         constraints->pointsOfInterest()->GetAsPoint2DSequence()
-    ) {
-      auto mojo_point = media::mojom::blink::Point2D::New();
-      mojo_point->x = point->x();
-      mojo_point->y = point->y();
-      settings->points_of_interest.push_back(std::move(mojo_point));
-    }
-    temp_constraints->setPointsOfInterest(constraints->pointsOfInterest());
-  }
-
-  // TODO(mcasas): support ConstrainDoubleRange where applicable.
-  settings->has_exposure_compensation =
-      constraints->hasExposureCompensation() &&
-      constraints->exposureCompensation()->IsDouble();
-  if (settings->has_exposure_compensation) {
-    const auto exposure_compensation =
-        constraints->exposureCompensation()->GetAsDouble();
-    if (exposure_compensation < capabilities_->exposureCompensation()->min() ||
-        exposure_compensation > capabilities_->exposureCompensation()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "exposureCompensation", "exposureCompensation setting out of range"));
-      return;
-    }
-    temp_constraints->setExposureCompensation(
-        constraints->exposureCompensation());
-    settings->exposure_compensation = exposure_compensation;
-  }
-
-  settings->has_exposure_time =
-      constraints->hasExposureTime() && constraints->exposureTime()->IsDouble();
-  if (settings->has_exposure_time) {
-    const auto exposure_time = constraints->exposureTime()->GetAsDouble();
-    if (exposure_time < capabilities_->exposureTime()->min() ||
-        exposure_time > capabilities_->exposureTime()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "exposureTime", "exposureTime setting out of range"));
-      return;
-    }
-    temp_constraints->setExposureTime(constraints->exposureTime());
-    settings->exposure_time = exposure_time;
-  }
-  settings->has_color_temperature = constraints->hasColorTemperature() &&
-                                    constraints->colorTemperature()->IsDouble();
-  if (settings->has_color_temperature) {
-    const auto color_temperature =
-        constraints->colorTemperature()->GetAsDouble();
-    if (color_temperature < capabilities_->colorTemperature()->min() ||
-        color_temperature > capabilities_->colorTemperature()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "colorTemperature", "colorTemperature setting out of range"));
-      return;
-    }
-    temp_constraints->setColorTemperature(constraints->colorTemperature());
-    settings->color_temperature = color_temperature;
-  }
-  settings->has_iso = constraints->hasIso() && constraints->iso()->IsDouble();
-  if (settings->has_iso) {
-    const auto iso = constraints->iso()->GetAsDouble();
-    if (iso < capabilities_->iso()->min() ||
-        iso > capabilities_->iso()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "iso", "iso setting out of range"));
-      return;
-    }
-    temp_constraints->setIso(constraints->iso());
-    settings->iso = iso;
-  }
-
-  settings->has_brightness =
-      constraints->hasBrightness() && constraints->brightness()->IsDouble();
-  if (settings->has_brightness) {
-    const auto brightness = constraints->brightness()->GetAsDouble();
-    if (brightness < capabilities_->brightness()->min() ||
-        brightness > capabilities_->brightness()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "brightness", "brightness setting out of range"));
-      return;
-    }
-    temp_constraints->setBrightness(constraints->brightness());
-    settings->brightness = brightness;
-  }
-  settings->has_contrast =
-      constraints->hasContrast() && constraints->contrast()->IsDouble();
-  if (settings->has_contrast) {
-    const auto contrast = constraints->contrast()->GetAsDouble();
-    if (contrast < capabilities_->contrast()->min() ||
-        contrast > capabilities_->contrast()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "contrast", "contrast setting out of range"));
-      return;
-    }
-    temp_constraints->setContrast(constraints->contrast());
-    settings->contrast = contrast;
-  }
-  settings->has_saturation =
-      constraints->hasSaturation() && constraints->saturation()->IsDouble();
-  if (settings->has_saturation) {
-    const auto saturation = constraints->saturation()->GetAsDouble();
-    if (saturation < capabilities_->saturation()->min() ||
-        saturation > capabilities_->saturation()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "saturation", "saturation setting out of range"));
-      return;
-    }
-    temp_constraints->setSaturation(constraints->saturation());
-    settings->saturation = saturation;
-  }
-  settings->has_sharpness =
-      constraints->hasSharpness() && constraints->sharpness()->IsDouble();
-  if (settings->has_sharpness) {
-    const auto sharpness = constraints->sharpness()->GetAsDouble();
-    if (sharpness < capabilities_->sharpness()->min() ||
-        sharpness > capabilities_->sharpness()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "sharpness", "sharpness setting out of range"));
-      return;
-    }
-    temp_constraints->setSharpness(constraints->sharpness());
-    settings->sharpness = sharpness;
-  }
-
-  settings->has_focus_distance = constraints->hasFocusDistance() &&
-                                 constraints->focusDistance()->IsDouble();
-  if (settings->has_focus_distance) {
-    const auto focus_distance = constraints->focusDistance()->GetAsDouble();
-    if (focus_distance < capabilities_->focusDistance()->min() ||
-        focus_distance > capabilities_->focusDistance()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "focusDistance", "focusDistance setting out of range"));
-      return;
-    }
-    temp_constraints->setFocusDistance(constraints->focusDistance());
-    settings->focus_distance = focus_distance;
-  }
-
-  settings->has_pan = constraints->hasPan() && constraints->pan()->IsDouble();
-  if (settings->has_pan) {
-    if (!IsPageVisible()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kSecurityError, "the page is not visible"));
-      return;
-    }
-    const auto pan = constraints->pan()->GetAsDouble();
-    if (pan < capabilities_->pan()->min() ||
-        pan > capabilities_->pan()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "pan", "pan setting out of range"));
-      return;
-    }
-    temp_constraints->setPan(constraints->pan());
-    settings->pan = pan;
-  }
-
-  settings->has_tilt =
-      constraints->hasTilt() && constraints->tilt()->IsDouble();
-  if (settings->has_tilt) {
-    if (!IsPageVisible()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kSecurityError, "the page is not visible"));
-      return;
-    }
-    const auto tilt = constraints->tilt()->GetAsDouble();
-    if (tilt < capabilities_->tilt()->min() ||
-        tilt > capabilities_->tilt()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "tilt", "tilt setting out of range"));
-      return;
-    }
-    temp_constraints->setTilt(constraints->tilt());
-    settings->tilt = tilt;
-  }
-
-  settings->has_zoom =
-      constraints->hasZoom() && constraints->zoom()->IsDouble();
-  if (settings->has_zoom) {
-    if (!IsPageVisible()) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kSecurityError, "the page is not visible"));
-      return;
-    }
-    const auto zoom = constraints->zoom()->GetAsDouble();
-    if (zoom < capabilities_->zoom()->min() ||
-        zoom > capabilities_->zoom()->max()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "zoom", "zoom setting out of range"));
-      return;
-    }
-    temp_constraints->setZoom(constraints->zoom());
-    settings->zoom = zoom;
-  }
-
-  // TODO(mcasas): support ConstrainBooleanParameters where applicable.
-  settings->has_torch =
-      constraints->hasTorch() && constraints->torch()->IsBoolean();
-  if (settings->has_torch) {
-    const auto torch = constraints->torch()->GetAsBoolean();
-    if (torch && !capabilities_->torch()) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "torch", "torch not supported"));
-      return;
-    }
-    temp_constraints->setTorch(constraints->torch());
-    settings->torch = torch;
-  }
-
-  settings->has_background_blur_mode =
-      constraints->hasBackgroundBlur() &&
-      constraints->backgroundBlur()->IsBoolean();
-  if (settings->has_background_blur_mode) {
-    const auto background_blur = constraints->backgroundBlur()->GetAsBoolean();
-    if (!base::Contains(capabilities_->backgroundBlur(), background_blur)) {
-      resolver->Reject(MakeGarbageCollected<OverconstrainedError>(
-          "backgroundBlur", "backgroundBlur setting value not supported"));
-      return;
-    }
-    temp_constraints->setBackgroundBlur(constraints->backgroundBlur());
-    settings->background_blur_mode =
-        background_blur ? BackgroundBlurMode::BLUR : BackgroundBlurMode::OFF;
-  }
-
-  current_constraints_ = temp_constraints;
+  // TODO(crbug.com/1423282): This is not spec compliant. The current
+  // constraints are used by `GetMediaTrackConstraints()` which is used by
+  // `MediaStreamTrackImpl::getConstraints()` which should return
+  // the constraints that were the argument to the most recent successful
+  // invocation of the ApplyConstraints algorithm.
+  // https://w3c.github.io/mediacapture-main/#dom-constrainablepattern-getconstraints
+  //
+  // At this point the ApplyConstraints algorithm is still ongoing and not
+  // succeeded yet. Move this to `OnMojoSetPhotoOptions()` or such.
+  current_constraints_ = MediaTrackConstraints::Create();
+  CopyConstraints(constraints, current_constraints_);
 
   service_requests_.insert(resolver);
 
@@ -858,7 +1864,7 @@ void ImageCapture::OnSetPanTiltZoomSettingsFromTrack(
                     WrapPersistent(this), std::move(done_callback)));
 }
 
-const MediaTrackConstraintSet* ImageCapture::GetMediaTrackConstraints() const {
+MediaTrackConstraints* ImageCapture::GetMediaTrackConstraints() const {
   return current_constraints_;
 }
 
@@ -925,6 +1931,332 @@ ImageCapture::ImageCapture(ExecutionContext* context,
   permission_service_->AddPermissionObserver(
       CreateVideoCapturePermissionDescriptor(/*pan_tilt_zoom=*/true),
       pan_tilt_zoom_permission_, std::move(observer));
+}
+
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove this support function.
+void ImageCapture::ApplyMediaTrackConstraintSetToSettings(
+    media::mojom::blink::PhotoSettings* settings,
+    MediaTrackCapabilities* effective_capabilities,
+    MediaTrackSettings* effective_settings,
+    const MediaTrackConstraintSet* constraint_set,
+    MediaTrackConstraintSetType constraint_set_type) const {
+  // Apply value constraints to photo settings and update effective
+  // capabilities.
+  //
+  // Roughly the SelectSettings algorithm steps 3 and 5.
+  // https://www.w3.org/TR/mediacapture-streams/#dfn-selectsettings
+  if (constraint_set->hasWhiteBalanceMode() &&
+      effective_capabilities->hasWhiteBalanceMode()) {
+    effective_capabilities->setWhiteBalanceMode(ApplyValueConstraint(
+        &settings->has_white_balance_mode, &settings->white_balance_mode,
+        effective_capabilities->whiteBalanceMode(),
+        constraint_set->whiteBalanceMode(), constraint_set_type,
+        settings_->whiteBalanceMode()));
+  }
+  if (constraint_set->hasExposureMode() &&
+      effective_capabilities->hasExposureMode()) {
+    effective_capabilities->setExposureMode(ApplyValueConstraint(
+        &settings->has_exposure_mode, &settings->exposure_mode,
+        effective_capabilities->exposureMode(), constraint_set->exposureMode(),
+        constraint_set_type, settings_->exposureMode()));
+  }
+  if (constraint_set->hasFocusMode() &&
+      effective_capabilities->hasFocusMode()) {
+    effective_capabilities->setFocusMode(ApplyValueConstraint(
+        &settings->has_focus_mode, &settings->focus_mode,
+        effective_capabilities->focusMode(), constraint_set->focusMode(),
+        constraint_set_type, settings_->focusMode()));
+  }
+  if (constraint_set->hasPointsOfInterest()) {
+    // There is no |settings->has_points_of_interest|.
+    bool has_points_of_interest = !settings->points_of_interest.empty();
+    absl::optional new_effective_setting = ApplyValueConstraint(
+        &has_points_of_interest, &settings->points_of_interest,
+        effective_settings->hasPointsOfInterest()
+            ? &effective_settings->pointsOfInterest()
+            : nullptr,
+        constraint_set->pointsOfInterest(), constraint_set_type);
+    if (new_effective_setting) {
+      effective_settings->setPointsOfInterest(*new_effective_setting);
+    }
+  }
+  if (constraint_set->hasExposureCompensation() &&
+      effective_capabilities->hasExposureCompensation()) {
+    effective_capabilities->setExposureCompensation(ApplyValueConstraint(
+        &settings->has_exposure_compensation, &settings->exposure_compensation,
+        effective_capabilities->exposureCompensation(),
+        constraint_set->exposureCompensation(), constraint_set_type,
+        settings_->exposureCompensation()));
+  }
+  if (constraint_set->hasExposureTime() &&
+      effective_capabilities->hasExposureTime()) {
+    effective_capabilities->setExposureTime(ApplyValueConstraint(
+        &settings->has_exposure_time, &settings->exposure_time,
+        effective_capabilities->exposureTime(), constraint_set->exposureTime(),
+        constraint_set_type, settings_->exposureTime()));
+  }
+  if (constraint_set->hasColorTemperature() &&
+      effective_capabilities->hasColorTemperature()) {
+    effective_capabilities->setColorTemperature(ApplyValueConstraint(
+        &settings->has_color_temperature, &settings->color_temperature,
+        effective_capabilities->colorTemperature(),
+        constraint_set->colorTemperature(), constraint_set_type,
+        settings_->colorTemperature()));
+  }
+  if (constraint_set->hasIso() && effective_capabilities->hasIso()) {
+    effective_capabilities->setIso(ApplyValueConstraint(
+        &settings->has_iso, &settings->iso, effective_capabilities->iso(),
+        constraint_set->iso(), constraint_set_type, settings_->iso()));
+  }
+  if (constraint_set->hasBrightness() &&
+      effective_capabilities->hasBrightness()) {
+    effective_capabilities->setBrightness(ApplyValueConstraint(
+        &settings->has_brightness, &settings->brightness,
+        effective_capabilities->brightness(), constraint_set->brightness(),
+        constraint_set_type, settings_->brightness()));
+  }
+  if (constraint_set->hasContrast() && effective_capabilities->hasContrast()) {
+    effective_capabilities->setContrast(ApplyValueConstraint(
+        &settings->has_contrast, &settings->contrast,
+        effective_capabilities->contrast(), constraint_set->contrast(),
+        constraint_set_type, settings_->contrast()));
+  }
+  if (constraint_set->hasSaturation() &&
+      effective_capabilities->hasSaturation()) {
+    effective_capabilities->setSaturation(ApplyValueConstraint(
+        &settings->has_saturation, &settings->saturation,
+        effective_capabilities->saturation(), constraint_set->saturation(),
+        constraint_set_type, settings_->saturation()));
+  }
+  if (constraint_set->hasSharpness() &&
+      effective_capabilities->hasSharpness()) {
+    effective_capabilities->setSharpness(ApplyValueConstraint(
+        &settings->has_sharpness, &settings->sharpness,
+        effective_capabilities->sharpness(), constraint_set->sharpness(),
+        constraint_set_type, settings_->sharpness()));
+  }
+  if (constraint_set->hasFocusDistance() &&
+      effective_capabilities->hasFocusDistance()) {
+    effective_capabilities->setFocusDistance(ApplyValueConstraint(
+        &settings->has_focus_distance, &settings->focus_distance,
+        effective_capabilities->focusDistance(),
+        constraint_set->focusDistance(), constraint_set_type,
+        settings_->focusDistance()));
+  }
+  if (constraint_set->hasPan() && effective_capabilities->hasPan()) {
+    effective_capabilities->setPan(ApplyValueConstraint(
+        &settings->has_pan, &settings->pan, effective_capabilities->pan(),
+        constraint_set->pan(), constraint_set_type, settings_->pan()));
+  }
+  if (constraint_set->hasTilt() && effective_capabilities->hasTilt()) {
+    effective_capabilities->setTilt(ApplyValueConstraint(
+        &settings->has_tilt, &settings->tilt, effective_capabilities->tilt(),
+        constraint_set->tilt(), constraint_set_type, settings_->tilt()));
+  }
+  if (constraint_set->hasZoom() && effective_capabilities->hasZoom()) {
+    effective_capabilities->setZoom(ApplyValueConstraint(
+        &settings->has_zoom, &settings->zoom, effective_capabilities->zoom(),
+        constraint_set->zoom(), constraint_set_type, settings_->zoom()));
+  }
+  if (constraint_set->hasTorch() && effective_capabilities->hasTorch() &&
+      effective_capabilities->torch()) {
+    const auto& new_effective_capability =
+        ApplyValueConstraint(&settings->has_torch, &settings->torch,
+                             effective_settings->hasTorch()
+                                 ? Vector<bool>({effective_settings->torch()})
+                                 : Vector<bool>({false, true}),
+                             constraint_set->torch(), constraint_set_type);
+    if (new_effective_capability.size() == 1u) {
+      effective_settings->setTorch(new_effective_capability[0]);
+    }
+  }
+  if (constraint_set->hasBackgroundBlur() &&
+      effective_capabilities->hasBackgroundBlur()) {
+    bool has_setting = false;
+    bool setting;
+    effective_capabilities->setBackgroundBlur(ApplyValueConstraint(
+        &has_setting, &setting, effective_capabilities->backgroundBlur(),
+        constraint_set->backgroundBlur(), constraint_set_type));
+    if (has_setting) {
+      settings->has_background_blur_mode = true;
+      settings->background_blur_mode = ParseBackgroundBlur(setting);
+    }
+  }
+}
+
+// TODO(crbug.com/708723): Integrate image capture constraints processing with
+// the main implementation and remove this support function.
+bool ImageCapture::CheckMediaTrackConstraintSet(
+    const MediaTrackCapabilities* effective_capabilities,
+    const MediaTrackSettings* effective_settings,
+    const MediaTrackConstraintSet* constraint_set,
+    MediaTrackConstraintSetType constraint_set_type,
+    ScriptPromiseResolver* resolver) const {
+  if (absl::optional<const char*> name =
+          GetConstraintWithCapabilityExistenceMismatch(constraint_set,
+                                                       constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, name.value(),
+                                        "Unsupported constraint");
+    return false;
+  }
+
+  if (constraint_set->hasWhiteBalanceMode() &&
+      effective_capabilities->hasWhiteBalanceMode() &&
+      !CheckValueConstraint(effective_capabilities->whiteBalanceMode(),
+                            constraint_set->whiteBalanceMode(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "whiteBalanceMode",
+                                        "Unsupported whiteBalanceMode.");
+    return false;
+  }
+  if (constraint_set->hasExposureMode() &&
+      effective_capabilities->hasExposureMode() &&
+      !CheckValueConstraint(effective_capabilities->exposureMode(),
+                            constraint_set->exposureMode(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "exposureMode",
+                                        "Unsupported exposureMode.");
+    return false;
+  }
+  if (constraint_set->hasFocusMode() &&
+      effective_capabilities->hasFocusMode() &&
+      !CheckValueConstraint(effective_capabilities->focusMode(),
+                            constraint_set->focusMode(), constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "focusMode",
+                                        "Unsupported focusMode.");
+    return false;
+  }
+  if (constraint_set->hasPointsOfInterest() &&
+      !CheckValueConstraint(effective_settings->hasPointsOfInterest()
+                                ? &effective_settings->pointsOfInterest()
+                                : nullptr,
+                            constraint_set->pointsOfInterest(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(
+        resolver, "pointsOfInterest", "pointsOfInterest setting out of range");
+    return false;
+  }
+  if (constraint_set->hasExposureCompensation() &&
+      effective_capabilities->hasExposureCompensation() &&
+      !CheckValueConstraint(effective_capabilities->exposureCompensation(),
+                            constraint_set->exposureCompensation(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(
+        resolver, "exposureCompensation",
+        "exposureCompensation setting out of range");
+    return false;
+  }
+  if (constraint_set->hasExposureTime() &&
+      effective_capabilities->hasExposureTime() &&
+      !CheckValueConstraint(effective_capabilities->exposureTime(),
+                            constraint_set->exposureTime(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "exposureTime",
+                                        "exposureTime setting out of range");
+    return false;
+  }
+  if (constraint_set->hasColorTemperature() &&
+      effective_capabilities->hasColorTemperature() &&
+      !CheckValueConstraint(effective_capabilities->colorTemperature(),
+                            constraint_set->colorTemperature(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(
+        resolver, "colorTemperature", "colorTemperature setting out of range");
+    return false;
+  }
+  if (constraint_set->hasIso() && effective_capabilities->hasIso() &&
+      !CheckValueConstraint(effective_capabilities->iso(),
+                            constraint_set->iso(), constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "iso",
+                                        "iso setting out of range");
+    return false;
+  }
+  if (constraint_set->hasBrightness() &&
+      effective_capabilities->hasBrightness() &&
+      !CheckValueConstraint(effective_capabilities->brightness(),
+                            constraint_set->brightness(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "brightness",
+                                        "brightness setting out of range");
+    return false;
+  }
+  if (constraint_set->hasContrast() && effective_capabilities->hasContrast() &&
+      !CheckValueConstraint(effective_capabilities->contrast(),
+                            constraint_set->contrast(), constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "contrast",
+                                        "contrast setting out of range");
+    return false;
+  }
+  if (constraint_set->hasSaturation() &&
+      effective_capabilities->hasSaturation() &&
+      !CheckValueConstraint(effective_capabilities->saturation(),
+                            constraint_set->saturation(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "saturation",
+                                        "saturation setting out of range");
+    return false;
+  }
+  if (constraint_set->hasSharpness() &&
+      effective_capabilities->hasSharpness() &&
+      !CheckValueConstraint(effective_capabilities->sharpness(),
+                            constraint_set->sharpness(), constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "sharpness",
+                                        "sharpness setting out of range");
+    return false;
+  }
+  if (constraint_set->hasFocusDistance() &&
+      effective_capabilities->hasFocusDistance() &&
+      !CheckValueConstraint(effective_capabilities->focusDistance(),
+                            constraint_set->focusDistance(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "focusDistance",
+                                        "focusDistance setting out of range");
+    return false;
+  }
+  if (constraint_set->hasPan() && effective_capabilities->hasPan() &&
+      !CheckValueConstraint(effective_capabilities->pan(),
+                            constraint_set->pan(), constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "pan",
+                                        "pan setting out of range");
+    return false;
+  }
+  if (constraint_set->hasTilt() && effective_capabilities->hasTilt() &&
+      !CheckValueConstraint(effective_capabilities->tilt(),
+                            constraint_set->tilt(), constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "tilt",
+                                        "tilt setting out of range");
+    return false;
+  }
+  if (constraint_set->hasZoom() && effective_capabilities->hasZoom() &&
+      !CheckValueConstraint(effective_capabilities->zoom(),
+                            constraint_set->zoom(), constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "zoom",
+                                        "zoom setting out of range");
+    return false;
+  }
+  if (constraint_set->hasTorch() && effective_capabilities->hasTorch() &&
+      effective_capabilities->torch() &&
+      !CheckValueConstraint(effective_settings->hasTorch()
+                                ? Vector<bool>({effective_settings->torch()})
+                                : Vector<bool>({false, true}),
+                            constraint_set->torch(), constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(resolver, "torch",
+                                        "torch not supported");
+    return false;
+  }
+  if (constraint_set->hasBackgroundBlur() &&
+      effective_capabilities->hasBackgroundBlur() &&
+      !CheckValueConstraint(effective_capabilities->backgroundBlur(),
+                            constraint_set->backgroundBlur(),
+                            constraint_set_type)) {
+    MaybeRejectWithOverconstrainedError(
+        resolver, "backgroundBlur",
+        "backgroundBlur setting value not supported");
+    return false;
+  }
+
+  return true;
 }
 
 void ImageCapture::OnPermissionStatusChange(
@@ -1211,6 +2543,17 @@ void ImageCapture::OnServiceConnectionError() {
   }
 }
 
+void ImageCapture::MaybeRejectWithOverconstrainedError(
+    ScriptPromiseResolver* resolver,
+    const char* constraint,
+    const char* message) const {
+  if (!resolver) {
+    return;
+  }
+  resolver->Reject(
+      MakeGarbageCollected<OverconstrainedError>(constraint, message));
+}
+
 void ImageCapture::ResolveWithNothing(ScriptPromiseResolver* resolver) {
   DCHECK(resolver);
   resolver->Resolve();
@@ -1227,72 +2570,136 @@ void ImageCapture::ResolveWithPhotoCapabilities(
   resolver->Resolve(photo_capabilities_);
 }
 
-bool ImageCapture::IsPageVisible() {
-  return DomWindow() ? DomWindow()->document()->IsPageVisible() : false;
+bool ImageCapture::IsPageVisible() const {
+  return DomWindow() && DomWindow()->document()->IsPageVisible();
 }
 
 const String& ImageCapture::SourceId() const {
   return stream_track_->Component()->Source()->Id();
 }
 
-const absl::optional<String>
-ImageCapture::GetConstraintWithNonExistingCapability(
-    const MediaTrackConstraintSet* constraints) {
-  if (constraints->hasWhiteBalanceMode() &&
-      !capabilities_->hasWhiteBalanceMode()) {
+const absl::optional<const char*>
+ImageCapture::GetConstraintWithCapabilityExistenceMismatch(
+    const MediaTrackConstraintSet* constraint_set,
+    MediaTrackConstraintSetType constraint_set_type) const {
+  if (constraint_set->hasWhiteBalanceMode() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->whiteBalanceMode(),
+          CapabilityExists(capabilities_->hasWhiteBalanceMode()),
+          constraint_set_type)) {
     return "whiteBalanceMode";
   }
-  if (constraints->hasExposureMode() && !capabilities_->hasExposureMode()) {
+  if (constraint_set->hasExposureMode() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->exposureMode(),
+          CapabilityExists(capabilities_->hasExposureMode()),
+          constraint_set_type)) {
     return "exposureMode";
   }
-  if (constraints->hasFocusMode() && !capabilities_->hasFocusMode()) {
+  if (constraint_set->hasFocusMode() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->focusMode(),
+          CapabilityExists(capabilities_->hasFocusMode()),
+          constraint_set_type)) {
     return "focusMode";
   }
-  if (constraints->hasExposureCompensation() &&
-      !capabilities_->hasExposureCompensation()) {
+  if (constraint_set->hasExposureCompensation() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->exposureCompensation(),
+          CapabilityExists(capabilities_->hasExposureCompensation()),
+          constraint_set_type)) {
     return "exposureCompensation";
   }
-  if (constraints->hasExposureTime() && !capabilities_->hasExposureTime()) {
+  if (constraint_set->hasExposureTime() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->exposureTime(),
+          CapabilityExists(capabilities_->hasExposureTime()),
+          constraint_set_type)) {
     return "exposureTime";
   }
-  if (constraints->hasColorTemperature() &&
-      !capabilities_->hasColorTemperature()) {
+  if (constraint_set->hasColorTemperature() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->colorTemperature(),
+          CapabilityExists(capabilities_->hasColorTemperature()),
+          constraint_set_type)) {
     return "colorTemperature";
   }
-  if (constraints->hasIso() && !capabilities_->hasIso()) {
+  if (constraint_set->hasIso() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->iso(), CapabilityExists(capabilities_->hasIso()),
+          constraint_set_type)) {
     return "iso";
   }
-  if (constraints->hasBrightness() && !capabilities_->hasBrightness()) {
+  if (constraint_set->hasBrightness() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->brightness(),
+          CapabilityExists(capabilities_->hasBrightness()),
+          constraint_set_type)) {
     return "brightness";
   }
-  if (constraints->hasContrast() && !capabilities_->hasContrast()) {
+  if (constraint_set->hasContrast() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->contrast(),
+          CapabilityExists(capabilities_->hasContrast()),
+          constraint_set_type)) {
     return "contrast";
   }
-  if (constraints->hasSaturation() && !capabilities_->hasSaturation()) {
+  if (constraint_set->hasSaturation() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->saturation(),
+          CapabilityExists(capabilities_->hasSaturation()),
+          constraint_set_type)) {
     return "saturation";
   }
-  if (constraints->hasSharpness() && !capabilities_->hasSharpness()) {
+  if (constraint_set->hasSharpness() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->sharpness(),
+          CapabilityExists(capabilities_->hasSharpness()),
+          constraint_set_type)) {
     return "sharpness";
   }
-  if (constraints->hasFocusDistance() && !capabilities_->hasFocusDistance()) {
+  if (constraint_set->hasFocusDistance() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->focusDistance(),
+          CapabilityExists(capabilities_->hasFocusDistance()),
+          constraint_set_type)) {
     return "focusDistance";
   }
-  if (constraints->hasPan() &&
-      !(capabilities_->hasPan() && HasPanTiltZoomPermissionGranted())) {
+  if (constraint_set->hasPan() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->pan(),
+          CapabilityExists(capabilities_->hasPan() &&
+                           HasPanTiltZoomPermissionGranted()),
+          constraint_set_type)) {
     return "pan";
   }
-  if (constraints->hasTilt() &&
-      !(capabilities_->hasTilt() && HasPanTiltZoomPermissionGranted())) {
+  if (constraint_set->hasTilt() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->tilt(),
+          CapabilityExists(capabilities_->hasTilt() &&
+                           HasPanTiltZoomPermissionGranted()),
+          constraint_set_type)) {
     return "tilt";
   }
-  if (constraints->hasZoom() &&
-      !(capabilities_->hasZoom() && HasPanTiltZoomPermissionGranted())) {
+  if (constraint_set->hasZoom() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->zoom(),
+          CapabilityExists(capabilities_->hasZoom() &&
+                           HasPanTiltZoomPermissionGranted()),
+          constraint_set_type)) {
     return "zoom";
   }
-  if (constraints->hasTorch() && !capabilities_->hasTorch()) {
+  if (constraint_set->hasTorch() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->torch(), CapabilityExists(capabilities_->hasTorch()),
+          constraint_set_type)) {
     return "torch";
   }
-  if (constraints->hasBackgroundBlur() && !capabilities_->hasBackgroundBlur()) {
+  if (constraint_set->hasBackgroundBlur() &&
+      !CheckIfCapabilityExistenceSatisfiesConstraint(
+          constraint_set->backgroundBlur(),
+          CapabilityExists(capabilities_->hasBackgroundBlur()),
+          constraint_set_type)) {
     return "backgroundBlur";
   }
   return absl::nullopt;
@@ -1311,9 +2718,8 @@ ImageCapture* ImageCapture::Clone() const {
 
   // Copy current constraints.
   if (current_constraints_) {
-    clone->current_constraints_ = MediaTrackConstraintSet::Create();
-    CopyConstraintSet(current_constraints_, clone->current_constraints_,
-                      CopyPanTiltZoom(true));
+    clone->current_constraints_ = MediaTrackConstraints::Create();
+    CopyConstraints(current_constraints_, clone->current_constraints_);
   }
 
   return clone;

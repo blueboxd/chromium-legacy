@@ -23,11 +23,12 @@ enum class ClusterFilterReason {
   kNotEnoughInterestingVisits = 5,
   kSingleVisit = 6,
   kNotContentVisible = 7,
+  kHasBlockedCategory = 8,
 
   // Add above here and make sure to keep `ClusterFilterReason` up to date in
   // enums.xml.
 
-  kMaxValue = kNotContentVisible
+  kMaxValue = kHasBlockedCategory
 };
 
 // A cluster processor that removes clusters that do not match the filter.
@@ -45,7 +46,7 @@ class FilterClusterProcessor : public ClusterProcessor {
  private:
   // Returns whether `cluster` matches the filter as specified by
   // `filter_params_`.
-  bool DoesClusterMatchFilter(const history::Cluster& cluster) const;
+  bool DoesClusterMatchFilter(history::Cluster& cluster) const;
 
   // The clustering request source that requires this filtering. Used for
   // metrics purposes.

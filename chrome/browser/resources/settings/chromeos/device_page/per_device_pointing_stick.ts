@@ -22,10 +22,12 @@ import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {PointingStickSettingsObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route} from '../router.js';
 
+import {FakeInputDeviceSettingsProvider} from './fake_input_device_settings_provider.js';
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
 import {InputDeviceSettingsProviderInterface, PointingStick} from './input_device_settings_types.js';
 import {getTemplate} from './per_device_pointing_stick.html.js';
@@ -33,7 +35,7 @@ import {getTemplate} from './per_device_pointing_stick.html.js';
 const SettingsPerDevicePointingStickElementBase =
     RouteObserverMixin(PolymerElement);
 
-class SettingsPerDevicePointingStickElement extends
+export class SettingsPerDevicePointingStickElement extends
     SettingsPerDevicePointingStickElementBase {
   static get is(): string {
     return 'settings-per-device-pointing-stick';
@@ -52,12 +54,14 @@ class SettingsPerDevicePointingStickElement extends
   }
 
   protected pointingSticks: PointingStick[];
+  private pointingStickSettingsObserverReceiver:
+      PointingStickSettingsObserverReceiver;
   private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface =
       getInputDeviceSettingsProvider();
 
   constructor() {
     super();
-    this.fetchConnectedPointingSticks();
+    this.observePointingStickSettings();
   }
 
   override currentRouteChanged(route: Route): void {
@@ -67,9 +71,23 @@ class SettingsPerDevicePointingStickElement extends
     }
   }
 
-  private async fetchConnectedPointingSticks(): Promise<void> {
-    this.pointingSticks = await this.inputDeviceSettingsProvider
-                              .getConnectedPointingStickSettings();
+  private observePointingStickSettings(): void {
+    if (this.inputDeviceSettingsProvider instanceof
+        FakeInputDeviceSettingsProvider) {
+      this.inputDeviceSettingsProvider.observePointingStickSettings(this);
+      return;
+    }
+
+    this.pointingStickSettingsObserverReceiver =
+        new PointingStickSettingsObserverReceiver(this);
+
+    this.inputDeviceSettingsProvider.observePointingStickSettings(
+        this.pointingStickSettingsObserverReceiver.$
+            .bindNewPipeAndPassRemote());
+  }
+
+  onPointingStickListUpdated(pointingSticks: PointingStick[]): void {
+    this.pointingSticks = pointingSticks;
   }
 }
 

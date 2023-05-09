@@ -61,6 +61,23 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingApiTestBase, UserLevelSendNativeMessage) {
   ASSERT_TRUE(RunExtensionTest("native_messaging_send_native_message"));
 }
 
+#if BUILDFLAG(IS_WIN)
+// On Windows, a new codepath is used to directly launch .EXE-based Native
+// Hosts.
+IN_PROC_BROWSER_TEST_F(NativeMessagingApiTestBase, SendNativeMessageWinExe) {
+  constexpr bool kUserLevel = false;
+  ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestExeHost(kUserLevel));
+  ASSERT_TRUE(RunExtensionTest("native_messaging_send_native_message_exe"));
+}
+
+IN_PROC_BROWSER_TEST_F(NativeMessagingApiTestBase,
+                       UserLevelSendNativeMessageWinExe) {
+  constexpr bool kUserLevel = true;
+  ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestExeHost(kUserLevel));
+  ASSERT_TRUE(RunExtensionTest("native_messaging_send_native_message_exe"));
+}
+#endif
+
 class NativeMessagingApiTest : public NativeMessagingApiTestBase,
                                public testing::WithParamInterface<ContextType> {
  public:
@@ -163,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, MAYBE_Success) {
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       CreateNativeMessagingConnectCommandLine("test-connect-id"), {},
-      {profile()->GetPath(), StartupProfileMode::kBrowserWindow});
+      {profile()->GetPath(), StartupProfileModeReason::kAppRequested});
 
   EXPECT_TRUE(
       g_browser_process->background_mode_manager()->IsBackgroundModeActive());
@@ -203,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, UnsupportedByNativeHost) {
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       command_line, {},
-      {profile()->GetPath(), StartupProfileMode::kBrowserWindow});
+      {profile()->GetPath(), StartupProfileModeReason::kAppRequested});
 
   if (!catcher.GetNextResult()) {
     FAIL() << catcher.message();
@@ -272,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, Error) {
       base::Seconds(2));
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       CreateNativeMessagingConnectCommandLine("test-connect-id"), {},
-      {profile()->GetPath(), StartupProfileMode::kBrowserWindow});
+      {profile()->GetPath(), StartupProfileModeReason::kAppRequested});
   ASSERT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NATIVE_MESSAGING_HOST_ERROR_REPORT));
 
@@ -294,7 +311,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, InvalidConnectId) {
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       CreateNativeMessagingConnectCommandLine("\"connect id!\""), {},
-      {profile()->GetPath(), StartupProfileMode::kBrowserWindow});
+      {profile()->GetPath(), StartupProfileModeReason::kAppRequested});
   ASSERT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NATIVE_MESSAGING_HOST_ERROR_REPORT));
 
@@ -316,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, TooLongConnectId) {
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       CreateNativeMessagingConnectCommandLine(std::string(21, 'a')), {},
-      {profile()->GetPath(), StartupProfileMode::kBrowserWindow});
+      {profile()->GetPath(), StartupProfileModeReason::kAppRequested});
   ASSERT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NATIVE_MESSAGING_HOST_ERROR_REPORT));
 
@@ -338,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, InvalidExtensionId) {
 
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       CreateNativeMessagingConnectCommandLine("test-connect-id", "abcd"), {},
-      {profile()->GetPath(), StartupProfileMode::kBrowserWindow});
+      {profile()->GetPath(), StartupProfileModeReason::kAppRequested});
   ASSERT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
       KeepAliveOrigin::NATIVE_MESSAGING_HOST_ERROR_REPORT));
 

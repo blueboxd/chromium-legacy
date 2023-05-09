@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/hash/hash.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -26,7 +27,8 @@ IOSPasswordManagerDriver::IOSPasswordManagerDriver(
     : bridge_(bridge),
       password_manager_(password_manager),
       web_frame_(web_frame),
-      id_(driver_id) {
+      id_(driver_id),
+      cached_frame_id_(base::FastHash(web_frame->GetFrameId())) {
   password_generation_helper_ =
       std::make_unique<password_manager::PasswordGenerationFrameHelper>(
           password_manager_->GetClient(), this);
@@ -72,12 +74,6 @@ void IOSPasswordManagerDriver::FormEligibleForGenerationFound(
 void IOSPasswordManagerDriver::GeneratedPasswordAccepted(
     const std::u16string& password) {
   NOTIMPLEMENTED();
-}
-
-void IOSPasswordManagerDriver::PasswordFieldHasNoAssociatedUsername(
-    autofill::FieldRendererId password_element_renderer_id) {
-  // Outside of iOS this is used as an instrumentation for DevTools.
-  // No need to do anything here as there's no DevTools on iOS.
 }
 
 void IOSPasswordManagerDriver::FillSuggestion(const std::u16string& username,
@@ -133,6 +129,10 @@ bool IOSPasswordManagerDriver::CanShowAutofillUi() const {
 
 ::ui::AXTreeID IOSPasswordManagerDriver::GetAxTreeId() const {
   return {};
+}
+
+int IOSPasswordManagerDriver::GetFrameId() const {
+  return cached_frame_id_;
 }
 
 const GURL& IOSPasswordManagerDriver::GetLastCommittedURL() const {

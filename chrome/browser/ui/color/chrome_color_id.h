@@ -163,6 +163,7 @@
   E_CPONLY(kColorNewTabPageFirstRunBackground) \
   E_CPONLY(kColorNewTabPageFocusRing) \
   E_CPONLY(kColorNewTabPageHeader) \
+  E_CPONLY(kColorNewTabPageHistoryClustersModuleItemBackground) \
   E_CPONLY(kColorNewTabPagePromoBackground) \
   E_CPONLY(kColorNewTabPagePromoImageBackground) \
   E_CPONLY(kColorNewTabPageIconButtonBackground) \
@@ -316,6 +317,7 @@
   E_CPONLY(kColorSidePanelBadgeBackgroundUpdated) \
   E_CPONLY(kColorSidePanelBadgeForeground) \
   E_CPONLY(kColorSidePanelBadgeForegroundUpdated) \
+  E_CPONLY(kColorSidePanelCardBackground) \
   E_CPONLY(kColorSidePanelContentAreaSeparator) \
   E_CPONLY(kColorSidePanelContentBackground) \
   E_CPONLY(kColorSidePanelFilterChipBorder) \
@@ -324,6 +326,7 @@
   E_CPONLY(kColorSidePanelFilterChipIcon) \
   E_CPONLY(kColorSidePanelFilterChipIconSelected) \
   E_CPONLY(kColorSidePanelFilterChipBackgroundSelected) \
+  E_CPONLY(kColorSidePanelScrollbarThumb) \
   E_CPONLY(kColorSidePanelTextfieldBorder) \
   /* Status bubble colors. */ \
   E_CPONLY(kColorStatusBubbleBackgroundFrameActive) \
@@ -505,6 +508,11 @@
   E_CPONLY(kColorReadAnythingSeparatorDark) \
   E_CPONLY(kColorReadAnythingSeparatorLight) \
   E_CPONLY(kColorReadAnythingSeparatorYellow) \
+  E_CPONLY(kColorReadAnythingDropdownBackground) \
+  E_CPONLY(kColorReadAnythingDropdownBackgroundBlue) \
+  E_CPONLY(kColorReadAnythingDropdownBackgroundDark) \
+  E_CPONLY(kColorReadAnythingDropdownBackgroundLight) \
+  E_CPONLY(kColorReadAnythingDropdownBackgroundYellow) \
 
 #if BUILDFLAG(IS_CHROMEOS)
 #define CHROME_PLATFORM_SPECIFIC_COLOR_IDS \

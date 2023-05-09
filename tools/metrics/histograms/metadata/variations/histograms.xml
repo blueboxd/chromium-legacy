@@ -22,6 +22,49 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<histogram name="ChildProcess.FieldTrials.CreateFromShmemSuccess"
+    enum="BooleanSuccess" expires_after="2023-07-15">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Whether creating field trials from shared memory succeeded. Recorded by each
+    child process on process startup.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.FieldTrials.CreateFromSwitchSuccess"
+    enum="BooleanSuccess" expires_after="2023-07-15">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Whether creating field trials from --force-fieldtrials switch succeeded.
+    Recorded by each child process on process startup.
+  </summary>
+</histogram>
+
+<histogram
+    name="ChildProcess.FieldTrials.GetInitiallyActiveFieldTrials.FromString"
+    enum="Boolean" expires_after="2023-07-15">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Logged if there is no field trial allocator available when getting the list
+    of initially active field trials, resulting to a fallback to the command \
+    line. Note: False is never logged.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.FieldTrials.PopulateLaunchOptions.CommandLine"
+    enum="Boolean" expires_after="2023-07-15">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Logged if the command line was populated with field trial information due to
+    the read-only shared memory handle not being available, when starting a
+    child process. Note: False is never logged.
+  </summary>
+</histogram>
+
 <histogram name="Variations.AppliedSeed.Size" units="bytes"
     expires_after="2023-07-30">
   <owner>caitlinfischer@google.com</owner>
@@ -316,19 +359,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Variations.RequestCount" units="units"
-    expires_after="2018-08-30">
-  <owner>asvitkine@chromium.org</owner>
-  <owner>rkaplow@chromium.org</owner>
-  <owner>src/base/metrics/OWNERS</owner>
-  <summary>
-    Number of previous requests to the variations server in the same session,
-    logged each time a new request is attempted to the variations server. For
-    example, the value of the 0th bucket indicates the number of initial
-    requests to the server that took place.
-  </summary>
-</histogram>
-
 <histogram name="Variations.ResourceRequestsAllowed"
     enum="VariationsResourceRequestsAllowedState" expires_after="2023-06-04">
   <owner>asvitkine@chromium.org</owner>
@@ -422,7 +452,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Variations.SafeModeCachedFlags.Streak.Crashes" units="crashes"
-    expires_after="2023-07-02">
+    expires_after="2023-09-03">
   <owner>hnakashima@chromium.org</owner>
   <owner>src/chrome/browser/flags/OWNERS</owner>
   <summary>
@@ -598,60 +628,6 @@ chromium-metrics-reviews@google.com.
     Captures details about Chrome's attempt to use a VariationsSeed, e.g.
     whether Chrome used a safe seed. Recorded once during Chrome startup after
     attempting to load a seed and before field trials are created.
-  </summary>
-</histogram>
-
-<histogram name="Variations.SimulateSeed.Duration" units="ms"
-    expires_after="2018-08-30">
-  <owner>asvitkine@chromium.org</owner>
-  <owner>rkaplow@chromium.org</owner>
-  <owner>src/base/metrics/OWNERS</owner>
-  <summary>
-    Records the time taken to perform variations seed simulation.
-
-    Recorded on every variation seed simulation, which follows a fetch.
-  </summary>
-</histogram>
-
-<histogram name="Variations.SimulateSeed.KillBestEffortChanges" units="units"
-    expires_after="2018-08-30">
-  <owner>asvitkine@chromium.org</owner>
-  <owner>rkaplow@chromium.org</owner>
-  <owner>src/base/metrics/OWNERS</owner>
-  <summary>
-    Records the result of variations seed simulation. Logs the number of
-    experiment groups in the &quot;kill best effort&quot; category that are
-    expected to change on a restart of the browser with the received seed.
-
-    Recorded on every variation seed simulation, which follows a fetch.
-  </summary>
-</histogram>
-
-<histogram name="Variations.SimulateSeed.KillCriticalChanges" units="units"
-    expires_after="2018-08-30">
-  <owner>asvitkine@chromium.org</owner>
-  <owner>rkaplow@chromium.org</owner>
-  <owner>src/base/metrics/OWNERS</owner>
-  <summary>
-    Records the result of variations seed simulation. Logs the number of
-    experiment groups in the &quot;kill critical&quot; category that are
-    expected to change on a restart of the browser with the received seed.
-
-    Recorded on every variation seed simulation, which follows a fetch.
-  </summary>
-</histogram>
-
-<histogram name="Variations.SimulateSeed.NormalChanges" units="units"
-    expires_after="2018-08-30">
-  <owner>asvitkine@chromium.org</owner>
-  <owner>rkaplow@chromium.org</owner>
-  <owner>src/base/metrics/OWNERS</owner>
-  <summary>
-    Records the result of variations seed simulation. Logs the number of
-    experiment groups in the &quot;normal&quot; category that are expected to
-    change on a restart of the browser with the received seed.
-
-    Recorded on every variation seed simulation, which follows a fetch.
   </summary>
 </histogram>
 

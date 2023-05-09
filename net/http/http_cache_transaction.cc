@@ -1242,7 +1242,7 @@ int HttpCache::Transaction::DoOpenOrCreateEntryComplete(int result) {
     } else {
       params.Set("net_error", result);
     }
-    return base::Value(std::move(params));
+    return params;
   });
 
   cache_pending_ = false;
@@ -3460,7 +3460,7 @@ int HttpCache::Transaction::DoConnectedCallback() {
 int HttpCache::Transaction::DoConnectedCallbackComplete(int result) {
   if (result != OK) {
     if (result ==
-        ERR_CACHED_IP_ADDRESS_SPACE_BLOCKED_BY_PRIVATE_NETWORK_ACCESS_POLICY) {
+        ERR_CACHED_IP_ADDRESS_SPACE_BLOCKED_BY_LOCAL_NETWORK_ACCESS_POLICY) {
       DoomInconsistentEntry();
       UpdateCacheEntryStatus(CacheEntryStatus::ENTRY_OTHER);
       TransitionToState(reading_ ? STATE_SEND_REQUEST
@@ -3886,10 +3886,6 @@ void HttpCache::Transaction::RecordHistograms() {
     return;
   }
 
-  bool validation_request =
-      cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED ||
-      cache_entry_status_ == CacheEntryStatus::ENTRY_UPDATED;
-
   bool is_third_party = false;
 
   // Given that cache_entry_status_ is not ENTRY_UNDEFINED, the request must
@@ -3952,16 +3948,6 @@ void HttpCache::Transaction::RecordHistograms() {
 
   CACHE_STATUS_HISTOGRAMS("");
   IS_NO_STORE_HISTOGRAMS("", is_no_store);
-
-  if (validation_request) {
-    UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause", validation_cause_,
-                              VALIDATION_CAUSE_MAX);
-  }
-
-  if (cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE) {
-    UMA_HISTOGRAM_ENUMERATION("HttpCache.CantConditionalizeCause",
-                              validation_cause_, VALIDATION_CAUSE_MAX);
-  }
 
   if (cache_entry_status_ == CacheEntryStatus::ENTRY_OTHER)
     return;

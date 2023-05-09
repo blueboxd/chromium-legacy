@@ -10,6 +10,8 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/check.h"
 #include "base/files/file_util.h"
@@ -23,14 +25,22 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
+#include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/source_registration.h"
+#include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
+#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/store_source_result.h"
+#include "content/browser/attribution_reporting/stored_source.h"
+#include "content/browser/attribution_reporting/test/configurable_storage_delegate.h"
+#include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/trigger_attestation.h"
 #include "sql/database.h"
@@ -1179,7 +1189,7 @@ TEST_F(AttributionStorageSqlTest,
 
   std::vector<StoredSource> sources = storage()->GetActiveSources();
   ASSERT_EQ(sources.size(), 1u);
-  ASSERT_THAT(sources.front().common_info().filter_data().filter_values(),
+  ASSERT_THAT(sources.front().filter_data().filter_values(),
               ElementsAre(Pair("x", ElementsAre("y"))));
 }
 
@@ -1234,8 +1244,8 @@ TEST_F(AttributionStorageSqlTest, ReportTablesStoreDestinationOrigin) {
   StorableSource source =
       TestAggregatableSourceProvider()
           .GetBuilder()
-          .SetDestinationOrigin(
-              *SuitableOrigin::Deserialize(kDestinationOriginA))
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize(kDestinationOriginA)})
           .SetExpiry(base::Days(30))
           .Build();
   storage()->StoreSource(source);
@@ -1283,8 +1293,8 @@ TEST_F(AttributionStorageSqlTest, FakeReportUsesSourceOriginAsContext) {
   storage()->StoreSource(
       SourceBuilder()
           .SetSourceOrigin(*SuitableOrigin::Deserialize("https://a.s.test"))
-          .SetDestinationOrigin(
-              *SuitableOrigin::Deserialize("https://b.d.test"))
+          .SetDestinationSites(
+              {net::SchemefulSite::Deserialize("https://b.d.test")})
           .SetReportingOrigin(*SuitableOrigin::Deserialize("https://r.test"))
           .Build());
 
@@ -1298,6 +1308,179 @@ TEST_F(AttributionStorageSqlTest, FakeReportUsesSourceOriginAsContext) {
         "SELECT context_origin FROM event_level_reports"));
     ASSERT_TRUE(s.Step());
     ASSERT_EQ(s.ColumnString(0), "https://a.s.test");
+  }
+}
+
+TEST_F(AttributionStorageSqlTest, ReportTimes) {
+  OpenDatabase();
+
+  const attribution_reporting::DestinationSet destinations =
+      *attribution_reporting::DestinationSet::Create(
+          {net::SchemefulSite::Deserialize("https://dest.test")});
+
+  const auto reporting_origin =
+      *SuitableOrigin::Deserialize("https://report.test");
+
+  const base::Time kSourceTime = base::Time::Now();
+
+  const struct {
+    const char* desc;
+    absl::optional<base::TimeDelta> expiry;
+    absl::optional<base::TimeDelta> event_report_window;
+    absl::optional<base::TimeDelta> aggregatable_report_window;
+    base::Time expected_expiry_time;
+    base::Time expected_event_report_window_time;
+    base::Time expected_aggregatable_report_window_time;
+  } kTestCases[] = {
+      {
+          .desc = "expiry",
+          .expiry = base::Days(4),
+          .expected_expiry_time = kSourceTime + base::Days(4),
+          .expected_event_report_window_time = kSourceTime + base::Days(4),
+          .expected_aggregatable_report_window_time =
+              kSourceTime + base::Days(4),
+      },
+      {
+          .desc = "event-report-window",
+          .event_report_window = base::Days(4),
+          .expected_expiry_time = kSourceTime + base::Days(30),
+          .expected_event_report_window_time = kSourceTime + base::Days(4),
+          .expected_aggregatable_report_window_time =
+              kSourceTime + base::Days(30),
+      },
+      {
+          .desc = "clamp-event-report-window",
+          .expiry = base::Days(4),
+          .event_report_window = base::Days(30),
+          .expected_expiry_time = kSourceTime + base::Days(4),
+          .expected_event_report_window_time = kSourceTime + base::Days(4),
+          .expected_aggregatable_report_window_time =
+              kSourceTime + base::Days(4),
+      },
+      {
+          .desc = "aggregatable-report-window",
+          .aggregatable_report_window = base::Days(4),
+          .expected_expiry_time = kSourceTime + base::Days(30),
+          .expected_event_report_window_time = kSourceTime + base::Days(30),
+          .expected_aggregatable_report_window_time =
+              kSourceTime + base::Days(4),
+      },
+      {
+          .desc = "clamp-aggregatable-report-window",
+          .expiry = base::Days(4),
+          .aggregatable_report_window = base::Days(30),
+          .expected_expiry_time = kSourceTime + base::Days(4),
+          .expected_event_report_window_time = kSourceTime + base::Days(4),
+          .expected_aggregatable_report_window_time =
+              kSourceTime + base::Days(4),
+      },
+      {
+          .desc = "all",
+          .expiry = base::Days(9),
+          .event_report_window = base::Days(7),
+          .aggregatable_report_window = base::Days(5),
+          .expected_expiry_time = kSourceTime + base::Days(9),
+          .expected_event_report_window_time = kSourceTime + base::Days(7),
+          .expected_aggregatable_report_window_time =
+              kSourceTime + base::Days(5),
+      },
+  };
+
+  for (const auto& test_case : kTestCases) {
+    attribution_reporting::SourceRegistration reg(destinations);
+    reg.expiry = test_case.expiry.value_or(base::Days(30));
+    reg.event_report_window = test_case.event_report_window;
+    reg.aggregatable_report_window = test_case.aggregatable_report_window;
+
+    storage()->StoreSource(
+        StorableSource(reporting_origin, std::move(reg), kSourceTime,
+                       *SuitableOrigin::Deserialize("https://source.test"),
+                       attribution_reporting::mojom::SourceType::kNavigation,
+                       /*is_within_fenced_frame=*/false));
+
+    std::vector<StoredSource> sources = storage()->GetActiveSources();
+    ASSERT_THAT(sources, SizeIs(1)) << test_case.desc;
+    const StoredSource& actual = sources.front();
+
+    EXPECT_EQ(actual.expiry_time(), test_case.expected_expiry_time)
+        << test_case.desc;
+
+    EXPECT_EQ(actual.event_report_window_time(),
+              test_case.expected_event_report_window_time)
+        << test_case.desc;
+
+    EXPECT_EQ(actual.aggregatable_report_window_time(),
+              test_case.expected_aggregatable_report_window_time)
+        << test_case.desc;
+
+    storage()->ClearData(/*delete_begin=*/base::Time::Min(),
+                         /*delete_end=*/base::Time::Max(),
+                         /*filter=*/base::NullCallback());
+  }
+
+  CloseDatabase();
+}
+
+TEST_F(AttributionStorageSqlTest,
+       InvalidExpiryOrReportTime_FailsDeserialization) {
+  static constexpr const char* kUpdateSqls[] = {
+      "UPDATE sources SET expiry_time=?",
+      "UPDATE sources SET event_report_window_time=?",
+      "UPDATE sources SET aggregatable_report_window_time=?",
+  };
+
+  const struct {
+    base::TimeDelta time_from_source;
+    bool valid;
+  } kTestCases[] = {
+      {
+          base::TimeDelta(),
+          false,
+      },
+      {
+          base::Milliseconds(1),
+          true,
+      },
+      {
+          kDefaultAttributionSourceExpiry,
+          true,
+      },
+      {
+          kDefaultAttributionSourceExpiry + base::Milliseconds(1),
+          false,
+      },
+  };
+
+  for (const char* update_sql : kUpdateSqls) {
+    for (const auto& test_case : kTestCases) {
+      OpenDatabase();
+
+      base::Time now = base::Time::Now();
+      storage()->StoreSource(SourceBuilder(now).Build());
+      ASSERT_THAT(storage()->GetActiveSources(), SizeIs(1))
+          << update_sql << "," << test_case.time_from_source;
+
+      CloseDatabase();
+
+      {
+        sql::Database raw_db;
+        ASSERT_TRUE(raw_db.Open(db_path()))
+            << update_sql << "," << test_case.time_from_source;
+
+        sql::Statement statement(raw_db.GetUniqueStatement(update_sql));
+        statement.BindTime(0, now + test_case.time_from_source);
+        ASSERT_TRUE(statement.Run())
+            << update_sql << "," << test_case.time_from_source;
+      }
+
+      OpenDatabase();
+      ASSERT_THAT(storage()->GetActiveSources(), SizeIs(test_case.valid))
+          << update_sql << "," << test_case.time_from_source;
+      storage()->ClearData(/*delete_begin=*/base::Time::Min(),
+                           /*delete_end=*/base::Time::Max(),
+                           /*filter=*/base::NullCallback());
+      CloseDatabase();
+    }
   }
 }
 

@@ -15,6 +15,7 @@
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
+#include "components/segmentation_platform/public/trigger.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace segmentation_platform {
@@ -39,6 +40,8 @@ class SegmentInfoDatabase {
   using SegmentInfoCallback =
       base::OnceCallback<void(absl::optional<proto::SegmentInfo>)>;
   using SegmentInfoProtoDb = leveldb_proto::ProtoDatabase<proto::SegmentInfo>;
+  using TrainingDataCallback =
+      base::OnceCallback<void(absl::optional<proto::TrainingData>)>;
 
   explicit SegmentInfoDatabase(std::unique_ptr<SegmentInfoProtoDb> database,
                                std::unique_ptr<SegmentInfoCache> cache);
@@ -58,6 +61,14 @@ class SegmentInfoDatabase {
   // Called to get the metadata for a given segment.
   virtual void GetSegmentInfo(SegmentId segment_id,
                               SegmentInfoCallback callback);
+
+  // Called to get the training data for a given segment and request ID. If
+  // delete_from_db is set to true, it will delete the corresponding entry in
+  // the cache and in the database.
+  virtual void GetTrainingData(SegmentId segment_id,
+                               TrainingRequestId request_id,
+                               bool delete_from_db,
+                               TrainingDataCallback callback);
 
   // Called to save or update metadata for a segment. The previous data is
   // overwritten. If |segment_info| is empty, the segment will be deleted.
@@ -84,22 +95,15 @@ class SegmentInfoDatabase {
                                  absl::optional<proto::PredictionResult> result,
                                  SuccessCallback callback);
 
+  // Called to write partial training data for a given segment. New training
+  // data are appended to the existing ones.
+  virtual void SaveTrainingData(SegmentId segment_id,
+                                const proto::TrainingData& data,
+                                SuccessCallback callback);
+
  private:
   void OnDatabaseInitialized(SuccessCallback callback,
                              leveldb_proto::Enums::InitStatus status);
-  void OnMultipleSegmentInfoLoaded(
-      std::unique_ptr<SegmentInfoList> all_segments_in_cache,
-      MultipleSegmentInfoCallback callback,
-      bool success,
-      std::unique_ptr<std::vector<proto::SegmentInfo>> all_infos);
-  void OnGetSegmentInfo(SegmentId segment_id,
-                        SegmentInfoCallback callback,
-                        bool success,
-                        std::unique_ptr<proto::SegmentInfo> info);
-  void OnGetSegmentInfoForUpdatingResults(
-      absl::optional<proto::PredictionResult> result,
-      SuccessCallback callback,
-      absl::optional<proto::SegmentInfo> segment_info);
 
   void OnLoadAllEntries(
       SuccessCallback callback,

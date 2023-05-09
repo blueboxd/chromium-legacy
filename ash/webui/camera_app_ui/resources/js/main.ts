@@ -6,13 +6,13 @@ import {
   getDefaultWindowSize,
 } from './app_window.js';
 import {assert, assertInstanceof} from './assert.js';
-import * as customEffect from './custom_effect.js';
 import {DEPLOYED_VERSION} from './deployed_version.js';
 import {CameraManager} from './device/index.js';
 import {ModeConstraints} from './device/type.js';
 import * as dom from './dom.js';
 import {reportError} from './error.js';
 import * as expert from './expert.js';
+import {Flag} from './flag.js';
 import {GalleryButton} from './gallerybutton.js';
 import {I18nString} from './i18n_string.js';
 import {Intent} from './intent.js';
@@ -115,11 +115,11 @@ export class App {
     window.addEventListener('resize', () => nav.layoutShownViews());
     windowController.addListener(() => nav.layoutShownViews());
 
-    customEffect.setup();
     util.setupI18nElements(document.body);
     this.setupToggles();
     localStorage.cleanup();
     this.setupEffect();
+    this.setupExperimentalFeatures();
 
     // Set up views navigation by their DOM z-order.
     nav.setup([
@@ -189,92 +189,6 @@ export class App {
   }
 
   /**
-   * Sets up visual effects, toasts, and dialogs for the new features.
-   */
-  async setupFeatureEffectsAndDialogs(): Promise<void> {
-    const registerDocScanIntroductionDialog = () => {
-      this.cameraManager.registerCameraUI({
-        onUpdateConfig: async () => {
-          if (localStorage.getBool(LocalStorageKey.DOC_MODE_DIALOG_SHOWN) ||
-              !state.get(Mode.SCAN)) {
-            return;
-          }
-
-          const {ready} =
-              await ChromeHelper.getInstance().getDocumentScannerReadyState();
-          if (!ready) {
-            return;
-          }
-          // No need to show doc scan feature toast if the user has already seen
-          // the doc scan mode.
-          localStorage.set(LocalStorageKey.DOC_MODE_TOAST_SHOWN, true);
-
-          localStorage.set(LocalStorageKey.DOC_MODE_DIALOG_SHOWN, true);
-          const message = loadTimeData.getI18nMessage(
-              I18nString.DOCUMENT_MODE_DIALOG_INTRO_TITLE);
-          nav.open(ViewName.DOCUMENT_MODE_DIALOG, {message});
-        },
-      });
-    };
-    const registerDownloadingDocScanIndicator = () => {
-      let hasShownDocIndicator = false;
-      this.cameraManager.registerCameraUI({
-        onUpdateConfig: async () => {
-          const {ready} =
-              await ChromeHelper.getInstance().getDocumentScannerReadyState();
-          if (ready || !state.get(Mode.SCAN) || hasShownDocIndicator) {
-            return;
-          }
-          customEffect.showDownloadingDocScanIndicator(this.cameraView.root);
-          hasShownDocIndicator = true;
-        },
-      });
-    };
-    const registerPtzToast = () => {
-      this.cameraManager.registerCameraUI({
-        onUpdateConfig: () => {
-          if (state.get(state.State.ENABLE_PTZ) &&
-              !localStorage.getBool(LocalStorageKey.PTZ_TOAST_SHOWN)) {
-            localStorage.set(LocalStorageKey.PTZ_TOAST_SHOWN, true);
-            customEffect.showPtzToast(this.cameraView.root);
-          }
-        },
-      });
-    };
-
-    const {supported, ready} =
-        await ChromeHelper.getInstance().getDocumentScannerReadyState();
-
-    // Handling logic for new feature toast.
-    if (supported && ready &&
-        !localStorage.getBool(LocalStorageKey.DOC_MODE_TOAST_SHOWN)) {
-      // Only show new feature indicator for doc scan if it is ready when
-      // starting the app.
-      localStorage.set(LocalStorageKey.DOC_MODE_TOAST_SHOWN, true);
-      customEffect.showDocScanAvailableIndicator(this.cameraView.root);
-    } else if (!localStorage.getBool(LocalStorageKey.PTZ_TOAST_SHOWN)) {
-      if (state.get(state.State.ENABLE_PTZ)) {
-        localStorage.set(LocalStorageKey.PTZ_TOAST_SHOWN, true);
-        customEffect.showPtzToast(this.cameraView.root);
-      } else {
-        registerPtzToast();
-      }
-    }
-
-
-    // TODO(chuhsuan): Separate loading indicators and feature toasts in
-    // order to provide more control like showing them at the same time.
-    if (supported) {
-      if (!localStorage.getBool(LocalStorageKey.DOC_MODE_DIALOG_SHOWN)) {
-        registerDocScanIntroductionDialog();
-      }
-      if (!ready) {
-        registerDownloadingDocScanIndicator();
-      }
-    }
-  }
-
-  /**
    * Sets up visual effect for all applicable elements.
    */
   private setupEffect() {
@@ -301,6 +215,13 @@ export class App {
       subtree: true,
       childList: true,
     });
+  }
+
+  private setupExperimentalFeatures() {
+    if (loadTimeData.getChromeFlag(Flag.TIME_LAPSE)) {
+      const modeButton = dom.get('#time-lapse-mode', HTMLDivElement);
+      modeButton.classList.remove('hidden');
+    }
   }
 
   /**
@@ -383,7 +304,6 @@ export class App {
     preloadImages();
     metrics.sendLaunchEvent({launchType});
     await Promise.all([showWindow, startCamera]);
-    await this.setupFeatureEffectsAndDialogs();
   }
 
   /**

@@ -24,13 +24,14 @@
 #include "chrome/browser/web_applications/commands/install_from_info_command.h"
 #include "chrome/browser/web_applications/commands/install_from_sync_command.h"
 #include "chrome/browser/web_applications/commands/install_placeholder_command.h"
-#include "chrome/browser/web_applications/commands/manifest_update_data_fetch_command.h"
+#include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
 #include "chrome/browser/web_applications/commands/os_integration_synchronize_command.h"
 #include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/commands/update_file_handler_command.h"
 #include "chrome/browser/web_applications/commands/update_protocol_handler_approval_command.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/get_isolated_web_app_browsing_data_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
@@ -40,10 +41,10 @@
 #include "chrome/browser/web_applications/locks/shared_web_contents_with_app_lock.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -243,23 +244,22 @@ void WebAppCommandScheduler::PersistFileHandlersUserChoice(
       location);
 }
 
-void WebAppCommandScheduler::ScheduleManifestUpdateDataFetch(
+void WebAppCommandScheduler::ScheduleManifestUpdateCheck(
     const GURL& url,
     const AppId& app_id,
     base::WeakPtr<content::WebContents> contents,
-    ManifestFetchCallback callback,
+    ManifestUpdateCheckCommand::CompletedCallback callback,
     const base::Location& location) {
   if (IsShuttingDown()) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
-                                  ManifestUpdateResult::kWebContentsDestroyed,
-                                  /*install_info_=*/absl::nullopt,
-                                  /*app_identity_update_allowed=*/false));
+                                  ManifestUpdateCheckResult::kSystemShutdown,
+                                  /*install_info_=*/absl::nullopt));
     return;
   }
 
   provider_->command_manager().ScheduleCommand(
-      std::make_unique<ManifestUpdateDataFetchCommand>(
+      std::make_unique<ManifestUpdateCheckCommand>(
           url, app_id, contents, std::move(callback),
           std::make_unique<WebAppDataRetriever>()),
       location);
@@ -269,7 +269,6 @@ void WebAppCommandScheduler::ScheduleManifestUpdateFinalize(
     const GURL& url,
     const AppId& app_id,
     WebAppInstallInfo install_info,
-    bool app_identity_update_allowed,
     std::unique_ptr<ScopedKeepAlive> keep_alive,
     std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
     ManifestWriteCallback callback,
@@ -285,9 +284,8 @@ void WebAppCommandScheduler::ScheduleManifestUpdateFinalize(
 
   provider_->command_manager().ScheduleCommand(
       std::make_unique<ManifestUpdateFinalizeCommand>(
-          url, app_id, std::move(install_info), app_identity_update_allowed,
-          std::move(callback), std::move(keep_alive),
-          std::move(profile_keep_alive)),
+          url, app_id, std::move(install_info), std::move(callback),
+          std::move(keep_alive), std::move(profile_keep_alive)),
       location);
 }
 
@@ -330,6 +328,22 @@ void WebAppCommandScheduler::InstallIsolatedWebApp(
       std::make_unique<InstallIsolatedWebAppCommand>(
           url_info, location, CreateIsolatedWebAppWebContents(*profile_),
           std::make_unique<WebAppUrlLoader>(), *profile_, std::move(callback)),
+      call_location);
+}
+
+void WebAppCommandScheduler::GetIsolatedWebAppBrowsingData(
+    base::OnceCallback<void(base::flat_map<url::Origin, int64_t>)> callback,
+    const base::Location& call_location) {
+  if (IsShuttingDown()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::flat_map<url::Origin, int64_t>()));
+    return;
+  }
+
+  provider_->command_manager().ScheduleCommand(
+      std::make_unique<GetIsolatedWebAppBrowsingDataCommand>(
+          &profile_.get(), std::move(callback)),
       call_location);
 }
 

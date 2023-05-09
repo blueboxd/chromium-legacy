@@ -34,8 +34,8 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
+#include "third_party/blink/public/common/interest_group/ad_display_size_utils.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
-#include "third_party/blink/public/common/interest_group/interest_group_utils.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -135,7 +135,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // Copies the prioritySignalsOverrides JSON field into
 // `priority_signals_overrides`, returns true if the JSON is valid and the copy
 // completed. Maps nulls to nullopt, which means a value should be deleted from
-// the stored interset group.
+// the stored interest group.
 [[nodiscard]] bool TryToCopyPrioritySignalsOverrides(
     const base::Value::Dict& dict,
     absl::optional<base::flat_map<std::string, absl::optional<double>>>&
@@ -187,6 +187,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
       if (!maybe_capability.is_string())
         return false;
       const std::string& capability = maybe_capability.GetString();
+      base::UmaHistogramBoolean(
+          "Ads.InterestGroup.EnumNaming.Update.SellerCapabilities",
+          capability == "interestGroupCounts" || capability == "latencyStats");
       if (capability == "interest-group-counts" ||
           capability == "interestGroupCounts") {
         capabilities.Put(blink::SellerCapabilities::kInterestGroupCounts);
@@ -217,14 +220,16 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   const std::string* maybe_execution_mode = dict.FindString("executionMode");
   if (!maybe_execution_mode)
     return true;
+  base::UmaHistogramBoolean(
+      "Ads.InterestGroup.EnumNaming.Update.WorkletExecutionMode",
+      *maybe_execution_mode == "groupByOrigin");
   if (*maybe_execution_mode == "compatibility") {
     interest_group_update.execution_mode =
         blink::InterestGroup::ExecutionMode::kCompatibilityMode;
-  } else if (*maybe_execution_mode == "groupByOrigin") {
+  } else if (*maybe_execution_mode == "group-by-origin" ||
+             *maybe_execution_mode == "groupByOrigin") {
     interest_group_update.execution_mode =
         blink::InterestGroup::ExecutionMode::kGroupedByOriginMode;
-  } else {
-    return false;
   }
   return true;
 }
@@ -265,6 +270,10 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
       return absl::nullopt;
     blink::InterestGroup::Ad ad;
     ad.render_url = GURL(*maybe_render_url);
+    const std::string* maybe_size_group = ads_dict->FindString("sizeGroup");
+    if (maybe_size_group) {
+      ad.size_group = *maybe_size_group;
+    }
     const base::Value* maybe_metadata = ads_dict->Find("metadata");
     if (maybe_metadata) {
       std::string metadata;
@@ -319,7 +328,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   if (!maybe_sizes) {
     return true;
   }
-  base::flat_map<std::string, blink::InterestGroup::Size> size_map;
+  base::flat_map<std::string, blink::AdSize> size_map;
   for (std::pair<const std::string&, const base::Value&> pair : *maybe_sizes) {
     const base::Value::Dict* maybe_size = pair.second.GetIfDict();
     if (!maybe_size) {
@@ -331,14 +340,11 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
       return false;
     }
 
-    auto [width_val, width_units] =
-        blink::ParseInterestGroupSizeString(*width_str);
-    auto [height_val, height_units] =
-        blink::ParseInterestGroupSizeString(*height_str);
+    auto [width_val, width_units] = blink::ParseAdSizeString(*width_str);
+    auto [height_val, height_units] = blink::ParseAdSizeString(*height_str);
 
-    size_map.emplace(pair.first,
-                     blink::InterestGroup::Size(width_val, width_units,
-                                                height_val, height_units));
+    size_map.emplace(pair.first, blink::AdSize(width_val, width_units,
+                                               height_val, height_units));
   }
   interest_group_update.ad_sizes.emplace(size_map);
   return true;
@@ -582,16 +588,17 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
 
   for (auto& storage_group : storage_groups) {
     manager_->QueueKAnonymityUpdateForInterestGroup(storage_group);
-    if (!storage_group.interest_group.daily_update_url)
+    if (!storage_group.interest_group.update_url) {
       continue;
+    }
     // TODO(behamilton): Don't update unless daily update url is k-anonymous
     ++num_in_flight_updates_;
     base::UmaHistogramCounts100000(
         "Ads.InterestGroup.Net.RequestUrlSizeBytes.Update",
-        storage_group.interest_group.daily_update_url->spec().size());
+        storage_group.interest_group.update_url->spec().size());
     auto resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url =
-        std::move(storage_group.interest_group.daily_update_url).value();
+        std::move(storage_group.interest_group.update_url).value();
     resource_request->redirect_mode = network::mojom::RedirectMode::kError;
     resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
     resource_request->request_initiator = owner;

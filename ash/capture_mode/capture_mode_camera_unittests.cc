@@ -79,11 +79,16 @@ constexpr char kDefaultCameraDeviceId[] = "/dev/videoX";
 constexpr char kDefaultCameraDisplayName[] = "Default Cam";
 constexpr char kDefaultCameraModelId[] = "0def:c000";
 
-// The app IDs used for the capture mode camera and microphone recording privacy
+// The app ID used for the capture mode camera and microphone recording privacy
 // indicators.
-constexpr char kCameraPrivacyIndicatorId[] = "system-capture-mode-camera";
-constexpr char kMicrophonePrivacyIndicatorId[] =
-    "system-capture-mode-microphone";
+constexpr char kCaptureModePrivacyIndicatorId[] = "system-capture-mode";
+
+// The minimum length (i.e. either width or height) of the user-selected region
+// such that the camera preview can be visible, and intersecting with the
+// capture button when it's positioned in the center of the region, regardless
+// of whether the recording type drop down button is visible or not.
+constexpr int kMinRegionLengthForCameraToIntersectLabelButton =
+    capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera + 20;
 
 TestCaptureModeDelegate* GetTestDelegate() {
   return static_cast<TestCaptureModeDelegate*>(
@@ -1450,11 +1455,9 @@ TEST_F(CaptureModeCameraTest,
   // Make sure to resize the region to a value that won't cause the camera to be
   // hidden according to the camera size specs.
   const int delta_x =
-      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera -
-      capture_region.width();
+      kMinRegionLengthForCameraToIntersectLabelButton - capture_region.width();
   const int delta_y =
-      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera -
-      capture_region.height();
+      kMinRegionLengthForCameraToIntersectLabelButton - capture_region.height();
   const gfx::Vector2d delta(delta_x, delta_y);
   auto* event_generator = GetEventGenerator();
   event_generator->set_current_screen_location(capture_region.bottom_right());
@@ -1597,8 +1600,7 @@ TEST_F(CaptureModeCameraTest, CaptureLabelOpacityChangeOnCaptureSourceChange) {
 
   // Select capture region to make sure capture label is overlapped with
   // camera preview. Verify capture label is `kOverlapOpacity`.
-  const int min_region_length =
-      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera;
+  const int min_region_length = kMinRegionLengthForCameraToIntersectLabelButton;
   SelectCaptureRegion({100, 100, min_region_length, min_region_length});
   EXPECT_TRUE(capture_label_widget->GetWindowBoundsInScreen().Intersects(
       camera_preview_widget->GetWindowBoundsInScreen()));
@@ -1619,8 +1621,7 @@ TEST_F(CaptureModeCameraTest,
   AddDefaultCamera();
   camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
   auto* camera_preview_widget = camera_controller->camera_preview_widget();
-  const int min_region_length =
-      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera;
+  const int min_region_length = kMinRegionLengthForCameraToIntersectLabelButton;
   controller->SetUserCaptureRegion(
       {100, 100, min_region_length, min_region_length}, /*by_user=*/true);
 
@@ -1805,21 +1806,26 @@ TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInRegion) {
   EXPECT_EQ(FocusGroup::kCaptureButton, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
 
-  // Press tab again to advance focus on the settings button.
-  SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  // Press tab until focus is on the settings button.
+  while (FocusGroup::kSettingsClose != test_api.GetCurrentFocusGroup()) {
+    SendKey(ui::VKEY_TAB, event_generator);
+  }
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
 
-  // Shift tab should advance the focus from the settings button back to the
+  // Shift tab should move the focus from the settings button back to the
   // capture button.
   SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(FocusGroup::kCaptureButton, test_api.GetCurrentFocusGroup());
-  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  // The index of the focused item depends on whether the recording type drop
+  // down button exists or not.
+  const size_t expected_index = features::IsGifRecordingEnabled() ? 1u : 0u;
+  EXPECT_EQ(expected_index, test_api.GetCurrentFocusIndex());
 
-  // Shift tab again should advance the focus from the capture button back to
+  // Shift tab again until the focus is moved from the capture button back to
   // the resize button inside the camera preview.
-  SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
-  EXPECT_EQ(FocusGroup::kCameraPreview, test_api.GetCurrentFocusGroup());
+  while (FocusGroup::kCameraPreview != test_api.GetCurrentFocusGroup()) {
+    SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
+  }
   EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
   EXPECT_TRUE(resize_button->has_focus());
   // Continue shift tab should move the focus from the resize button to the
@@ -2259,8 +2265,7 @@ TEST_F(CaptureModeCameraTest, CaptureLabelOpacityChangeOnKeyboardNavigation) {
 
   // Select capture region to make sure capture label is overlapped with
   // camera preview. Verify capture label is `kOverlapOpacity`.
-  const int min_region_length =
-      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera;
+  const int min_region_length = kMinRegionLengthForCameraToIntersectLabelButton;
   SelectCaptureRegion({100, 100, min_region_length, min_region_length});
   EXPECT_TRUE(capture_label_widget->GetWindowBoundsInScreen().Intersects(
       camera_preview_widget->GetWindowBoundsInScreen()));
@@ -2290,10 +2295,11 @@ TEST_F(CaptureModeCameraTest, CaptureLabelOpacityChangeOnKeyboardNavigation) {
   EXPECT_EQ(FocusGroup::kCaptureButton, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(capture_label_layer->GetTargetOpacity(), 1.0f);
 
-  // Tab once to focus on the setting button on capture bar, verify capture
-  // lable's opacity is updated to `kOverlapOpacity`.
-  SendKey(ui::VKEY_TAB, event_generator);
-  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  // Tab until the settings button on the capture bar is focused, then verify
+  // that the capture lable's opacity is updated to `kOverlapOpacity`.
+  while (FocusGroup::kSettingsClose != test_api.GetCurrentFocusGroup()) {
+    SendKey(ui::VKEY_TAB, event_generator);
+  }
   EXPECT_EQ(capture_label_layer->GetTargetOpacity(),
             capture_mode::kCaptureUiOverlapOpacity);
 }
@@ -4529,10 +4535,8 @@ TEST_F(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
   auto* message_center = message_center::MessageCenter::Get();
-  auto camera_notification_id =
-      GetPrivacyIndicatorsNotificationId(kCameraPrivacyIndicatorId);
-  auto microphone_notification_id =
-      GetPrivacyIndicatorsNotificationId(kMicrophonePrivacyIndicatorId);
+  auto capture_mode_privacy_notification_id =
+      GetPrivacyIndicatorsNotificationId(kCaptureModePrivacyIndicatorId);
 
   // Initially the session doesn't show any camera preview since the camera
   // hasn't connected yet. There should be no privacy indicators.
@@ -4542,9 +4546,8 @@ TEST_F(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
   EXPECT_FALSE(camera_controller->camera_preview_widget());
   EXPECT_FALSE(IsCameraIndicatorIconVisible());
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_FALSE(message_center->FindNotificationById(camera_notification_id));
-  EXPECT_FALSE(
-      message_center->FindNotificationById(microphone_notification_id));
+  EXPECT_FALSE(message_center->FindNotificationById(
+      capture_mode_privacy_notification_id));
 
   // Once the camera gets connected, the camera privacy indicator
   // icon/notification should show. No microphone yet (not until recording
@@ -4553,9 +4556,8 @@ TEST_F(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
   EXPECT_TRUE(camera_controller->camera_preview_widget());
   EXPECT_TRUE(IsCameraIndicatorIconVisible());
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_TRUE(message_center->FindNotificationById(camera_notification_id));
-  EXPECT_FALSE(
-      message_center->FindNotificationById(microphone_notification_id));
+  EXPECT_TRUE(message_center->FindNotificationById(
+      capture_mode_privacy_notification_id));
 
   // If the camera gets disconnected for some reason, the indicator should go
   // away, and come back once it reconnects again.
@@ -4565,17 +4567,15 @@ TEST_F(CaptureModePrivacyIndicatorsTest, CameraPrivacyIndicators) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsCameraIndicatorIconVisible());
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_FALSE(message_center->FindNotificationById(camera_notification_id));
-  EXPECT_FALSE(
-      message_center->FindNotificationById(microphone_notification_id));
+  EXPECT_FALSE(message_center->FindNotificationById(
+      capture_mode_privacy_notification_id));
 
   AddDefaultCamera();
   EXPECT_TRUE(camera_controller->camera_preview_widget());
   EXPECT_TRUE(IsCameraIndicatorIconVisible());
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_TRUE(message_center->FindNotificationById(camera_notification_id));
-  EXPECT_FALSE(
-      message_center->FindNotificationById(microphone_notification_id));
+  EXPECT_TRUE(message_center->FindNotificationById(
+      capture_mode_privacy_notification_id));
 }
 
 TEST_F(CaptureModePrivacyIndicatorsTest, DuringRecordingPrivacyIndicators) {
@@ -4583,10 +4583,8 @@ TEST_F(CaptureModePrivacyIndicatorsTest, DuringRecordingPrivacyIndicators) {
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
 
   auto* message_center = message_center::MessageCenter::Get();
-  auto camera_notification_id =
-      GetPrivacyIndicatorsNotificationId(kCameraPrivacyIndicatorId);
-  auto microphone_notification_id =
-      GetPrivacyIndicatorsNotificationId(kMicrophonePrivacyIndicatorId);
+  auto capture_mode_privacy_notification_id =
+      GetPrivacyIndicatorsNotificationId(kCaptureModePrivacyIndicatorId);
 
   // Even with the selected camera present, no indicators will show until the
   // capture session starts.
@@ -4596,31 +4594,26 @@ TEST_F(CaptureModePrivacyIndicatorsTest, DuringRecordingPrivacyIndicators) {
   EXPECT_FALSE(camera_controller->camera_preview_widget());
   EXPECT_FALSE(IsCameraIndicatorIconVisible());
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_FALSE(message_center->FindNotificationById(camera_notification_id));
-  EXPECT_FALSE(
-      message_center->FindNotificationById(microphone_notification_id));
+  EXPECT_FALSE(message_center->FindNotificationById(
+      capture_mode_privacy_notification_id));
 
   auto* capture_controller = StartCaptureSession(CaptureModeSource::kFullscreen,
                                                  CaptureModeType::kVideo);
   EXPECT_TRUE(camera_controller->camera_preview_widget());
   EXPECT_TRUE(IsCameraIndicatorIconVisible());
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_TRUE(message_center->FindNotificationById(camera_notification_id));
-  EXPECT_FALSE(
-      message_center->FindNotificationById(microphone_notification_id));
+  EXPECT_TRUE(message_center->FindNotificationById(
+      capture_mode_privacy_notification_id));
 
   // When the user selects audio recording, the idicators won't change.
   // Recording has to start first.
   capture_controller->EnableAudioRecording(true);
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_FALSE(
-      message_center->FindNotificationById(microphone_notification_id));
 
   StartRecordingFromSource(CaptureModeSource::kFullscreen);
-  EXPECT_TRUE(IsCameraIndicatorIconVisible());
   EXPECT_TRUE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_TRUE(message_center->FindNotificationById(camera_notification_id));
-  EXPECT_TRUE(message_center->FindNotificationById(microphone_notification_id));
+  EXPECT_TRUE(message_center->FindNotificationById(
+      capture_mode_privacy_notification_id));
 
   // Once recording ends, both indicators should disappear.
   capture_controller->EndVideoRecording(
@@ -4628,9 +4621,8 @@ TEST_F(CaptureModePrivacyIndicatorsTest, DuringRecordingPrivacyIndicators) {
   WaitForCaptureFileToBeSaved();
   EXPECT_FALSE(IsCameraIndicatorIconVisible());
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
-  EXPECT_FALSE(message_center->FindNotificationById(camera_notification_id));
-  EXPECT_FALSE(
-      message_center->FindNotificationById(microphone_notification_id));
+  EXPECT_FALSE(message_center->FindNotificationById(
+      capture_mode_privacy_notification_id));
 }
 
 }  // namespace ash

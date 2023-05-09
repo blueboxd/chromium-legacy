@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/constants/ash_features.h"
 #include "ash/webui/shortcut_customization_ui/url_constants.h"
+#include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_integration_test.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/test/browser_test.h"
@@ -21,8 +25,10 @@ class ShortcutCustomizationAppIntegrationTest
     : public ash::SystemWebAppIntegrationTest {
  public:
   ShortcutCustomizationAppIntegrationTest() {
-    scoped_feature_list_.InitWithFeatures({features::kShortcutCustomizationApp},
-                                          {});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kShortcutCustomizationApp,
+         ash::features::kSearchInShortcutsApp},
+        {});
   }
 
  protected:

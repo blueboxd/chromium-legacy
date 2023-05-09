@@ -51,7 +51,8 @@ class MirroringActivity : public CastActivity,
                     CastSessionTracker* session_tracker,
                     int frame_tree_node_id,
                     const CastSinkExtraData& cast_data,
-                    OnStopCallback callback);
+                    OnStopCallback callback,
+                    OnSourceChangedCallback source_changed_callback);
   ~MirroringActivity() override;
 
   virtual void CreateMojoBindings(mojom::MediaRouter* media_router);
@@ -75,6 +76,12 @@ class MirroringActivity : public CastActivity,
   // CastActivity implementation
   void OnAppMessage(const cast::channel::CastMessage& message) override;
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
+
+  mirroring::MirroringServiceHost* GetHost() { return host_.get(); }
+  void SetMirroringServiceHostForTest(
+      std::unique_ptr<mirroring::MirroringServiceHost> host) {
+    host_ = std::move(host);
+  }
 
  protected:
   void OnSessionSet(const CastSession& session) override;
@@ -144,6 +151,7 @@ class MirroringActivity : public CastActivity,
   int frame_tree_node_id_;
   const CastSinkExtraData cast_data_;
   OnStopCallback on_stop_;
+  OnSourceChangedCallback source_changed_callback_;
   base::WeakPtrFactory<MirroringActivity> weak_ptr_factory_{this};
 };
 

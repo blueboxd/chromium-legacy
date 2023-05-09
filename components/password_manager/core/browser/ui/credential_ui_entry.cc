@@ -64,12 +64,9 @@ CredentialUIEntry::CredentialUIEntry(const PasswordForm& form)
       password(form.password_value),
       federation_origin(form.federation_origin),
       password_issues(form.password_issues),
+      note(form.GetNoteWithEmptyUniqueDisplayName()),
       blocked_by_user(form.blocked_by_user),
       last_used_time(form.date_last_used) {
-  // Only one-note with an empty `unique_display_name` is supported in the
-  // settings UI.
-  note = form.GetNoteWithEmptyUniqueDisplayName().value_or(std::u16string());
-
   CredentialFacet facet;
   facet.display_name = form.app_display_name;
   facet.url = form.url;
@@ -99,10 +96,8 @@ CredentialUIEntry::CredentialUIEntry(const std::vector<PasswordForm>& forms) {
   // should be concatenated and linebreak used as a delimiter.
   auto unique_notes =
       base::MakeFlatSet<std::u16string>(forms, {}, [](const auto& form) {
-        return form.GetNoteWithEmptyUniqueDisplayName().value_or(u"");
+        return form.GetNoteWithEmptyUniqueDisplayName();
       });
-  // Only notes with an empty `unique_display_name` are supported in the
-  // settings UI.
   unique_notes.erase(u"");
   note = base::JoinString(std::move(unique_notes).extract(), u"\n");
 
@@ -210,6 +205,7 @@ CredentialUIEntry::GetAffiliatedDomains() const {
   std::vector<CredentialUIEntry::DomainInfo> domains;
   for (const auto& facet : facets) {
     CredentialUIEntry::DomainInfo domain;
+    domain.signon_realm = facet.signon_realm;
     password_manager::FacetURI facet_uri =
         password_manager::FacetURI::FromPotentiallyInvalidSpec(
             facet.signon_realm);
@@ -241,6 +237,10 @@ bool operator!=(const CredentialUIEntry& lhs, const CredentialUIEntry& rhs) {
 
 bool operator<(const CredentialUIEntry& lhs, const CredentialUIEntry& rhs) {
   return CreateSortKey(lhs) < CreateSortKey(rhs);
+}
+
+bool IsCompromised(const CredentialUIEntry& credential) {
+  return credential.IsLeaked() || credential.IsPhished();
 }
 
 }  // namespace password_manager

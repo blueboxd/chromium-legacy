@@ -31,7 +31,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/shared_image/gl_image_native_pixmap.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_types.h"
@@ -51,7 +50,6 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_display.h"
 #include "ui/gl/gl_surface_egl.h"
-#include "ui/gl/scoped_binders.h"
 
 #define NOTIFY_ERROR(x)                       \
   do {                                        \
@@ -1453,8 +1451,6 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
-  gl::ScopedTextureBinder bind_restore(gl_device->GetTextureTarget(),
-                                       texture_id);
   bool ret = bind_image_cb_.Run(client_texture_id,
                                 gl_device->GetTextureTarget(), gl_image);
   if (!ret) {

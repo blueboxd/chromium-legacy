@@ -47,9 +47,9 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 #include <stdio.h>
-#endif
+#endif  // DCHECK_IS_ON()
 
 namespace blink {
 
@@ -62,6 +62,8 @@ unsigned MaximumSpecificity(const CSSSelectorList* list) {
   return list->MaximumSpecificity();
 }
 
+}  // namespace
+
 unsigned MaximumSpecificity(const CSSSelector* first_selector) {
   unsigned specificity = 0;
   for (const CSSSelector* s = first_selector; s;
@@ -70,8 +72,6 @@ unsigned MaximumSpecificity(const CSSSelector* first_selector) {
   }
   return specificity;
 }
-
-}  // namespace
 
 struct SameSizeAsCSSSelector {
   unsigned bitfields;
@@ -354,7 +354,6 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoOptional:
     case kPseudoOutOfRange:
     case kPseudoParent:
-    case kPseudoParentUnparsed:
     case kPseudoPart:
     case kPseudoPastCue:
     case kPseudoPaused:
@@ -378,7 +377,9 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoState:
     case kPseudoTarget:
     case kPseudoToggle:
+    case kPseudoTrue:
     case kPseudoUnknown:
+    case kPseudoUnparsed:
     case kPseudoValid:
     case kPseudoVertical:
     case kPseudoVideoPersistent:
@@ -643,7 +644,7 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(
   return static_cast<CSSSelector::PseudoType>(match->type);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void CSSSelector::Show(int indent) const {
   printf("%*sSelectorText(): %s\n", indent, "", SelectorText().Ascii().c_str());
   printf("%*smatch_: %d\n", indent, "", match_);
@@ -676,7 +677,7 @@ void CSSSelector::Show() const {
   Show(2);
   printf("******* end *******\n");
 }
-#endif
+#endif  // DCHECK_IS_ON()
 
 void CSSSelector::UpdatePseudoPage(const AtomicString& value,
                                    const Document* document) {
@@ -820,7 +821,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoOptional:
     case kPseudoOutOfRange:
     case kPseudoParent:
-    case kPseudoParentUnparsed:
     case kPseudoPastCue:
     case kPseudoPaused:
     case kPseudoPictureInPicture:
@@ -838,7 +838,9 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoState:
     case kPseudoTarget:
     case kPseudoToggle:
+    case kPseudoTrue:
     case kPseudoUnknown:
+    case kPseudoUnparsed:
     case kPseudoValid:
     case kPseudoVertical:
     case kPseudoVisited:
@@ -859,10 +861,33 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
   }
 }
 
-void CSSSelector::SetUnparsedPlaceholder(const AtomicString& value) {
+void CSSSelector::SetUnparsedPlaceholder(CSSNestingType unparsed_nesting_type,
+                                         const AtomicString& value) {
   DCHECK(match_ == kPseudoClass);
-  SetPseudoType(kPseudoParentUnparsed);
+  SetPseudoType(kPseudoUnparsed);
+  CreateRareData();
   SetValue(value);
+  data_.rare_data_->bits_.unparsed_nesting_type_ = unparsed_nesting_type;
+}
+
+CSSNestingType CSSSelector::GetNestingType() const {
+  switch (GetPseudoType()) {
+    case CSSSelector::kPseudoParent:
+      return CSSNestingType::kNesting;
+    case CSSSelector::kPseudoUnparsed:
+      return data_.rare_data_->bits_.unparsed_nesting_type_;
+    case CSSSelector::kPseudoScope:
+      // TODO(crbug.com/1280240): Handle unparsed :scope.
+      return CSSNestingType::kScope;
+    default:
+      return CSSNestingType::kNone;
+  }
+}
+
+void CSSSelector::SetTrue() {
+  SetMatch(kPseudoClass);
+  SetPseudoType(kPseudoTrue);
+  is_implicitly_added_ = true;
 }
 
 static void SerializeIdentifierOrAny(const AtomicString& identifier,
@@ -907,10 +932,11 @@ bool CSSSelector::SerializeSimpleSelector(StringBuilder& builder) const {
     builder.Append('.');
     SerializeIdentifier(SerializingValue(), builder);
   } else if (match_ == kPseudoClass || match_ == kPagePseudoClass) {
-    if (GetPseudoType() == kPseudoParentUnparsed) {
+    if (GetPseudoType() == kPseudoUnparsed) {
       builder.Append(Value());
     } else if (GetPseudoType() != kPseudoState &&
-               GetPseudoType() != kPseudoParent) {
+               GetPseudoType() != kPseudoParent &&
+               GetPseudoType() != kPseudoTrue) {
       builder.Append(':');
       builder.Append(SerializingValue());
     }
@@ -1103,12 +1129,14 @@ String CSSSelector::SelectorText() const {
       return builder.ReleaseString() + result;
     }
 
-    // If we are combining with an implicit &, it is as if we used
-    // a relative combinator.
+    // If we are combining with an implicit &, :scope or :true, it is as if we
+    // used a relative combinator.
     RelationType relation = compound->Relation();
     DCHECK_NE(relation, kSubSelector);
     if (compound->TagHistory()->Match() == kPseudoClass &&
-        compound->TagHistory()->GetPseudoType() == kPseudoParent &&
+        (compound->TagHistory()->GetPseudoType() == kPseudoParent ||
+         compound->TagHistory()->GetPseudoType() == kPseudoScope ||
+         compound->TagHistory()->GetPseudoType() == kPseudoTrue) &&
         compound->TagHistory()->is_implicitly_added_) {
       relation = ConvertRelationToRelative(relation);
     }

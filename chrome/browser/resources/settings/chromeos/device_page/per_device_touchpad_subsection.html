@@ -15,7 +15,7 @@
   }
 </style>
 <div id="touchpad">
-  <h2>[[touchpad.name]]</h2>
+  <h2>[[getTouchpadName(touchpad.name)]]</h2>
   <div class="subsection">
     <settings-toggle-button id="enableTapToClick"
         pref="{{enableTapToClickPref}}"
@@ -43,7 +43,7 @@
             label-max="$i18n{pointerFast}">
         </settings-slider>
     </div>
-    <template is="dom-if" if="[[allowScrollSettings_]]">
+    <template is="dom-if" if="[[allowScrollSettings_]]" restamp>
       <settings-toggle-button id="touchpadScrollAcceleration"
           class="hr"
           pref="{{scrollAccelerationPref}}"
@@ -62,7 +62,7 @@
         </settings-slider>
       </div>
     </template>
-    <template is="dom-if" if="[[touchpad.isHaptic]]">
+    <template is="dom-if" if="[[touchpad.isHaptic]]" restamp>
       <div class="settings-box">
         <div class="start" id="touchpadHapticClickSensitivityLabel"
             aria-hidden="true">
@@ -90,7 +90,7 @@
           </div>
         </div>
         <cr-toggle id="touchpadHapticFeedbackToggle"
-            checked="[[hapticFeedbackValue]]"
+            checked="{{hapticFeedbackValue}}"
             aria-labelledby="touchpadHapticFeedbackRow">
         </cr-toggle>
       </div>
@@ -106,7 +106,7 @@
         </localized-link>
       </div>
       <cr-toggle id="enableReverseScrollingToggle"
-          checked="[[reverseScrollValue]]"
+          checked="{{reverseScrollValue}}"
           aria-labelledby="enableReverseScrollingLabel">
       </cr-toggle>
     </div>

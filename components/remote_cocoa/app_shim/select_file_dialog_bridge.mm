@@ -354,6 +354,56 @@ void SelectFileDialogBridge::SetAccessoryView(
       NSString* ext_ns = base::mac::CFToNSCast(ext_cf.get());
       if (![file_type_array containsObject:ext_ns])
         [file_type_array addObject:ext_ns];
+
+      if (@available(macOS 11, *)) {
+        UTType* type =
+            [UTType typeWithFilenameExtension:base::SysUTF8ToNSString(ext)];
+        // If the extension string is invalid (e.g. contains dots), it's not a
+        // valid extension and `type` will be nil. In that case, invent a type
+        // that doesn't match any real files. When passed to the file picker, no
+        // files will be allowed to be selected. This matches the pre-UTTypes
+        // behavior in which an invalid specified type did not allow any files
+        // to be selected, and this matches Firefox and Safari behavior (see
+        // https://crbug.com/1423362#c17 for a test case).
+        if (!type) {
+          NSString* identifier =
+              [NSString stringWithFormat:@"org.chromium.not-a-real-type.%@",
+                                         [NSUUID UUID].UUIDString];
+          type = [UTType importedTypeWithIdentifier:identifier];
+        }
+
+        if (![file_uttype_array containsObject:type]) {
+          [file_uttype_array addObject:type];
+        }
+      } else {
+        // Crash reports suggest that CreateUTIFromExtension may return nil.
+        // Hence we nil check before adding to |file_type_set|. See
+        // crbug.com/630101 and rdar://27490414.
+        base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
+        if (uti) {
+          NSString* uti_ns = base::mac::CFToNSCast(uti.get());
+          if (![file_type_array containsObject:uti_ns]) {
+            [file_type_array addObject:uti_ns];
+          }
+        }
+
+        // Always allow the extension itself, in case the UTI doesn't map
+        // back to the original extension correctly. This occurs with dynamic
+        // UTIs on 10.7 and 10.8.
+        // See https://crbug.com/148840, https://openradar.appspot.com/12316273
+        base::ScopedCFTypeRef<CFStringRef> ext_cf(
+            base::SysUTF8ToCFStringRef(ext));
+        NSString* ext_ns = base::mac::CFToNSCast(ext_cf.get());
+        if (![file_type_array containsObject:ext_ns]) {
+          [file_type_array addObject:ext_ns];
+        }
+      }
+    }
+
+    if (@available(macOS 11, *)) {
+      [file_uttype_lists addObject:file_uttype_array];
+    } else {
+      [file_type_lists addObject:file_type_array];
     }
     [file_type_lists addObject:file_type_array];
   }

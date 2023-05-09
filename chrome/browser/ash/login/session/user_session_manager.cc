@@ -58,7 +58,6 @@
 #include "chrome/browser/ash/login/auth/chrome_safe_mode_delegate.h"
 #include "chrome/browser/ash/login/chrome_restart_request.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/ash/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/helper.h"
@@ -123,6 +122,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
 #include "chromeos/ash/components/assistant/buildflags.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_flusher.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
@@ -1085,8 +1085,9 @@ void UserSessionManager::OnSessionRestoreStateChanged(
 
   // Schedule another flush after session restore for non-ephemeral profile
   // if not restarting.
-  if (!ProfileHelper::IsEphemeralUserProfile(user_profile))
-    ProfileHelper::Get()->FlushProfile(user_profile);
+  if (!ProfileHelper::IsEphemeralUserProfile(user_profile)) {
+    BrowserContextFlusher::Get()->ScheduleFlush(user_profile);
+  }
 }
 
 void UserSessionManager::OnConnectionChanged(
@@ -1728,8 +1729,9 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
   quirks::QuirksManager::Get()->OnLoginCompleted();
 
   // Schedule a flush if profile is not ephemeral.
-  if (!ProfileHelper::IsEphemeralUserProfile(profile))
-    ProfileHelper::Get()->FlushProfile(profile);
+  if (!ProfileHelper::IsEphemeralUserProfile(profile)) {
+    BrowserContextFlusher::Get()->ScheduleFlush(profile);
+  }
 
   // TODO(nkostylev): This pointer should probably never be NULL, but it looks
   // like CreateProfileAsync callback may be getting called before
@@ -1806,7 +1808,7 @@ bool MaybeResumeUserOnboardingFlow(Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
     LoginDisplayHost::default_host()->GetSigninUI()->ResumeUserOnboarding(
-        OobeScreenId(pending_screen));
+        *profile->GetPrefs(), OobeScreenId(pending_screen));
     return true;
   }
   return false;
@@ -2003,13 +2005,6 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
       ->browser_policy_connector_ash()
       ->GetAdbSideloadingAllowanceModePolicyHandler()
       ->ShowAdbSideloadingPolicyChangeNotificationIfNeeded();
-
-  if (EasyUnlockNotificationController::ShouldShowSignInRemovedNotification(
-          profile)) {
-    easy_unlock_notification_controller_ =
-        std::make_unique<EasyUnlockNotificationController>(profile);
-    easy_unlock_notification_controller_->ShowSignInRemovedNotification();
-  }
 }
 
 void UserSessionManager::MaybeLaunchSettings(Profile* profile) {
@@ -2372,7 +2367,6 @@ void UserSessionManager::Shutdown() {
   token_observers_.clear();
   always_on_vpn_manager_.reset();
   u2f_notification_.reset();
-  easy_unlock_notification_controller_.reset();
   help_app_notification_controller_.reset();
   password_service_voted_.reset();
   password_was_saved_ = false;

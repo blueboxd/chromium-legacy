@@ -76,6 +76,7 @@
 <translation id="3157931365184549694">Wieder­her­stellen</translation>
 <translation id="3183922693828471536">Hierher blättern</translation>
 <translation id="3234408098842461169">Abwärtspfeil</translation>
+<translation id="3240426699337459095">Link wurde kopiert.</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 Tag}other{# Tage}}</translation>
 <translation id="3295886253693811851">Anruf starten mit</translation>
 <translation id="3306688585798492231">Integriertes Display</translation>
@@ -211,7 +212,7 @@
 <translation id="8867568208303837180">Wird gesendet...</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
-<translation id="8996630695507351249">"<ph name="TARGET_DEVICE_NAME" />" muss mit dem Internet verbunden sein.</translation>
+<translation id="8996630695507351249">Prüfe, ob "<ph name="TARGET_DEVICE_NAME" />" mit dem Internet verbunden ist.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9059834730836941392">Benachrichtigung minimieren</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>

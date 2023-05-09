@@ -45,7 +45,7 @@
 #include "components/cbor/values.h"
 #include "components/webauthn/content/browser/internal_authenticator_impl.h"
 #include "content/browser/webauth/authenticator_common_impl.h"
-#include "content/browser/webauth/authenticator_environment_impl.h"
+#include "content/browser/webauth/authenticator_environment.h"
 #include "content/browser/webauth/client_data_json.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/render_frame_host.h"
@@ -456,6 +456,18 @@ device::AuthenticatorData AuthDataFromMakeCredentialResponse(
   return std::move(parsed_auth_data.value());
 }
 
+bool HasUV(const MakeCredentialAuthenticatorResponsePtr& response) {
+  return AuthDataFromMakeCredentialResponse(response)
+      .obtained_user_verification();
+}
+
+bool HasUV(const GetAssertionAuthenticatorResponsePtr& response) {
+  absl::optional<device::AuthenticatorData> auth_data =
+      device::AuthenticatorData::DecodeAuthenticatorData(
+          response->info->authenticator_data);
+  return auth_data->obtained_user_verification();
+}
+
 url::Origin GetTestOrigin() {
   const GURL test_relying_party_url(kTestOrigin1);
   CHECK(test_relying_party_url.is_valid());
@@ -571,7 +583,7 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
     // Disable the Windows WebAuthn API integration by default. Individual tests
     // can modify this.
     fake_win_webauthn_api_.set_available(false);
-    AuthenticatorEnvironmentImpl::GetInstance()->SetWinWebAuthnApiForTesting(
+    AuthenticatorEnvironment::GetInstance()->SetWinWebAuthnApiForTesting(
         &fake_win_webauthn_api_);
 #endif
 
@@ -583,13 +595,10 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
 
     mojo::SetDefaultProcessErrorHandler(base::NullCallback());
 
+    AuthenticatorEnvironment::GetInstance()->Reset();
 #if BUILDFLAG(IS_CHROMEOS)
     chromeos::U2FClient::Shutdown();
     chromeos::TpmManagerClient::Shutdown();
-#endif
-#if BUILDFLAG(IS_WIN)
-    AuthenticatorEnvironmentImpl::GetInstance()
-        ->ClearWinWebAuthnApiForTesting();
 #endif
   }
 
@@ -597,7 +606,7 @@ class AuthenticatorTestBase : public RenderViewHostTestHarness {
     auto virtual_device_factory =
         std::make_unique<device::test::VirtualFidoDeviceFactory>();
     virtual_device_factory_ = virtual_device_factory.get();
-    AuthenticatorEnvironmentImpl::GetInstance()
+    AuthenticatorEnvironment::GetInstance()
         ->ReplaceDefaultDiscoveryFactoryForTesting(
             std::move(virtual_device_factory));
 #if BUILDFLAG(IS_WIN)
@@ -1203,7 +1212,7 @@ TEST_F(AuthenticatorImplTest, AppIdExcludeExtension) {
 TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
   // The VirtualFidoAuthenticator simulates a tap immediately after it gets the
   // request. Replace by the real discovery that will wait until timeout.
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(
           std::make_unique<device::FidoDiscoveryFactory>());
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -2239,7 +2248,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, GetAssertionTLSError) {
 TEST_F(AuthenticatorContentBrowserClientTest,
        MakeCredentialSkipTLSCheckWithVirtualEnvironment) {
   NavigateAndCommit(GURL(kTestOrigin1));
-  content::AuthenticatorEnvironmentImpl::GetInstance()
+  content::AuthenticatorEnvironment::GetInstance()
       ->EnableVirtualAuthenticatorFor(
           static_cast<content::RenderFrameHostImpl*>(main_rfh())
               ->frame_tree_node(),
@@ -2255,7 +2264,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 TEST_F(AuthenticatorContentBrowserClientTest,
        GetAssertionSkipTLSCheckWithVirtualEnvironment) {
   NavigateAndCommit(GURL(kTestOrigin1));
-  content::AuthenticatorEnvironmentImpl::GetInstance()
+  content::AuthenticatorEnvironment::GetInstance()
       ->EnableVirtualAuthenticatorFor(
           static_cast<content::RenderFrameHostImpl*>(main_rfh())
               ->frame_tree_node(),
@@ -3569,7 +3578,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
   auto discovery_factory =
       std::make_unique<device::test::FakeFidoDiscoveryFactory>();
   auto* fake_hid_discovery = discovery_factory->ForgeNextHidDiscovery();
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery_factory));
 
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -3615,7 +3624,7 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
 TEST_F(AuthenticatorImplRequestDelegateTest, FailureReasonForTimeout) {
   // The VirtualFidoAuthenticator simulates a tap immediately after it gets the
   // request. Replace by the real discovery that will wait until timeout.
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(
           std::make_unique<device::FidoDiscoveryFactory>());
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -4674,7 +4683,7 @@ TEST_F(AuthenticatorImplTest, CancellingAuthenticatorDoesNotTerminateRequest) {
     device_2.state->simulate_press_callback =
         base::BindRepeating([](VirtualFidoDevice* ignore) { return false; });
     discovery->AddDevice(std::move(device_2));
-    AuthenticatorEnvironmentImpl::GetInstance()
+    AuthenticatorEnvironment::GetInstance()
         ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
 
     if (request_type == device::FidoRequestType::kMakeCredential) {
@@ -5300,18 +5309,6 @@ class UVAuthenticatorImplTest : public AuthenticatorImplTest {
     }
   }
 
-  static bool HasUV(const MakeCredentialAuthenticatorResponsePtr& response) {
-    return AuthDataFromMakeCredentialResponse(response)
-        .obtained_user_verification();
-  }
-
-  static bool HasUV(const GetAssertionAuthenticatorResponsePtr& response) {
-    absl::optional<device::AuthenticatorData> auth_data =
-        device::AuthenticatorData::DecodeAuthenticatorData(
-            response->info->authenticator_data);
-    return auth_data->obtained_user_verification();
-  }
-
   UVTestAuthenticatorContentBrowserClient test_client_;
 
  private:
@@ -5711,7 +5708,7 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialDontSkipPINTouch) {
       });
   discovery->AddDevice(std::move(device_2));
 
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
 
   test_client_.expected = {
@@ -5899,7 +5896,7 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialHMACSecret) {
       {device::UserVerificationRequirement::kDiscouraged, false, false},
       {device::UserVerificationRequirement::kPreferred, false, false},
       {device::UserVerificationRequirement::kRequired, false, true},
-      {device::UserVerificationRequirement::kDiscouraged, true, false},
+      {device::UserVerificationRequirement::kDiscouraged, true, true},
       {device::UserVerificationRequirement::kPreferred, true, true},
       {device::UserVerificationRequirement::kRequired, true, true},
   };
@@ -6113,7 +6110,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionDontSkipPINTouch) {
       options->allow_credentials[0].id, kTestRelyingPartyId));
   discovery->AddDevice(std::move(device_2));
 
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
 
   test_client_.expected = {
@@ -6338,7 +6335,7 @@ TEST_F(PINAuthenticatorImplTest, RemoveSecondAuthenticator) {
       std::make_unique<device::test::MultipleVirtualFidoDeviceFactory>();
   discovery->AddDevice(std::move(device_1));
   discovery->AddDevice(std::move(device_2));
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
 
   test_client_.expected = {
@@ -6977,7 +6974,7 @@ TEST_F(BlockingDelegateAuthenticatorImplTest, PostCancelMessage) {
       std::make_unique<device::test::MultipleVirtualFidoDeviceFactory>();
   discovery->AddDevice(std::move(device_1));
   discovery->AddDevice(std::move(device_2));
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(std::move(discovery));
 
   EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
@@ -7065,8 +7062,8 @@ class ResidentKeyTestAuthenticatorRequestDelegate
               });
 
     std::vector<std::string> string_reps;
-    std::transform(
-        responses.begin(), responses.end(), std::back_inserter(string_reps),
+    base::ranges::transform(
+        responses, std::back_inserter(string_reps),
         [](const device::AuthenticatorGetAssertionResponse& response) {
           const device::PublicKeyCredentialUserEntity& user =
               response.user_entity.value();
@@ -8394,8 +8391,9 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
       ASSERT_EQ(result->first, salt1_eval);
     }
 
-    // When uv=discouraged security keys will use a different PRF. But hybrid
-    // devices always do a UV and only have a single PRF.
+    // Security keys will use a different PRF if UV isn't done. But the PRF
+    // extension should always get the UV PRF so uv=discouraged shouldn't
+    // change the output.
     {
       auto prf_value = blink::mojom::PRFValues::New();
       prf_value->first = salt1;
@@ -8404,11 +8402,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
       auto result =
           assertion(std::move(inputs), 1,
                     device::UserVerificationRequirement::kDiscouraged);
-      if (use_prf_extension_instead) {
-        ASSERT_EQ(result->first, salt1_eval);
-      } else {
-        ASSERT_NE(result->first, salt1_eval);
-      }
+      ASSERT_EQ(result->first, salt1_eval);
     }
 
     // Should be able to evaluate two points at once.
@@ -8517,6 +8511,48 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
       ASSERT_FALSE(result->second);
     }
   }
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest,
+       PRFExtensionOnUnconfiguredAuthenticator) {
+  // If a credential is on a UV-capable, but not UV-configured authenticator and
+  // then an assertion with `prf` is requested there shouldn't be a result
+  // because it would be from the wrong PRF. (This state should only happen when
+  // the credential was created without the `prf` extension, which is an RP
+  // issue.)
+  device::VirtualCtap2Device::Config config;
+  config.hmac_secret_support = true;
+  config.internal_uv_support = true;
+  config.pin_uv_auth_token_support = true;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
+  config.resident_key_support = true;
+  virtual_device_factory_->SetCtap2Config(config);
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      options->allow_credentials[0].id, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, absl::nullopt, absl::nullopt));
+  device::VirtualFidoDevice::RegistrationData& registration =
+      virtual_device_factory_->mutable_state()->registrations.begin()->second;
+  const std::array<uint8_t, 32> key1 = {1};
+  const std::array<uint8_t, 32> key2 = {2};
+  registration.hmac_key.emplace(key1, key2);
+
+  auto prf_value = blink::mojom::PRFValues::New();
+  const std::vector<uint8_t> salt1(32, 1);
+  prf_value->first = salt1;
+  std::vector<blink::mojom::PRFValuesPtr> inputs;
+  inputs.emplace_back(std::move(prf_value));
+
+  options->prf = true;
+  options->prf_inputs = std::move(inputs);
+  options->user_verification =
+      device::UserVerificationRequirement::kDiscouraged;
+  GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+
+  EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+  EXPECT_FALSE(result.response->prf_results);
 }
 
 TEST_F(ResidentKeyAuthenticatorImplTest, ConditionalUI) {
@@ -8779,6 +8815,46 @@ TEST_F(TouchIdAuthenticatorImplTest, MakeCredential) {
   EXPECT_TRUE(metadata.is_resident);
   auto expected_user = GetTestPublicKeyCredentialUserEntity();
   EXPECT_EQ(metadata.ToPublicKeyCredentialUserEntity(), expected_user);
+}
+
+TEST_F(TouchIdAuthenticatorImplTest, OptionalUv) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  for (const auto uv : {device::UserVerificationRequirement::kDiscouraged,
+                        device::UserVerificationRequirement::kPreferred,
+                        device::UserVerificationRequirement::kRequired}) {
+    auto options = GetTestPublicKeyCredentialCreationOptions();
+    options->authenticator_selection->authenticator_attachment =
+        device::AuthenticatorAttachment::kPlatform;
+    options->authenticator_selection->user_verification_requirement = uv;
+    bool requires_uv = uv == device::UserVerificationRequirement::kRequired;
+    if (requires_uv) {
+      touch_id_test_environment_.SimulateTouchIdPromptSuccess();
+    } else {
+      touch_id_test_environment_.DoNotResolveNextPrompt();
+    }
+    auto result = AuthenticatorMakeCredential(std::move(options));
+    EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+    EXPECT_EQ(HasUV(result.response), requires_uv);
+    auto credentials = GetCredentials(kTestRelyingPartyId);
+    EXPECT_EQ(credentials.size(), 1u);
+
+    auto assertion_options = GetTestPublicKeyCredentialRequestOptions();
+    assertion_options->user_verification = uv;
+    assertion_options->allow_credentials =
+        std::vector<device::PublicKeyCredentialDescriptor>(
+            {{device::CredentialType::kPublicKey,
+              credentials[0].credential_id}});
+    if (requires_uv) {
+      touch_id_test_environment_.SimulateTouchIdPromptSuccess();
+    } else {
+      touch_id_test_environment_.DoNotResolveNextPrompt();
+    }
+    auto assertion = AuthenticatorGetAssertion(std::move(assertion_options));
+    EXPECT_EQ(assertion.status, AuthenticatorStatus::SUCCESS);
+    EXPECT_EQ(HasUV(assertion.response), requires_uv);
+  }
 }
 
 TEST_F(TouchIdAuthenticatorImplTest, MakeCredential_Resident) {
@@ -9052,7 +9128,7 @@ TEST_P(AuthenticatorCableV2Test, QRBasedWithNoPairing) {
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
       GetPairingCallback(), GetInvalidatedPairingCallback());
 
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(
           std::make_unique<DiscoveryFactory>(std::move(discovery)));
 
@@ -9080,7 +9156,7 @@ TEST_P(AuthenticatorCableV2Test, PairingBased) {
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
       GetPairingCallback(), GetInvalidatedPairingCallback());
 
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(
           std::make_unique<DiscoveryFactory>(std::move(discovery)));
 
@@ -9150,7 +9226,7 @@ TEST_P(AuthenticatorCableV2Test, PairingBased) {
             pairing_id, client_nonce, contact_id);
       });
 
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(
           std::make_unique<DiscoveryFactory>(std::move(discovery)));
 
@@ -9186,7 +9262,7 @@ TEST_P(AuthenticatorCableV2Test, ContactIDDisabled) {
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
       GetPairingCallback(), GetInvalidatedPairingCallback());
 
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(
           std::make_unique<DiscoveryFactory>(std::move(discovery)));
 
@@ -9260,7 +9336,7 @@ TEST_P(AuthenticatorCableV2Test, ServerLink) {
       /*contact_device_stream=*/nullptr, extension_values, GetPairingCallback(),
       GetInvalidatedPairingCallback());
 
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(
           std::make_unique<DiscoveryFactory>(std::move(discovery)));
 
@@ -9298,7 +9374,7 @@ TEST_P(AuthenticatorCableV2Test, LateLinking) {
       /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
       GetPairingCallback(), GetInvalidatedPairingCallback());
 
-  AuthenticatorEnvironmentImpl::GetInstance()
+  AuthenticatorEnvironment::GetInstance()
       ->ReplaceDefaultDiscoveryFactoryForTesting(
           std::make_unique<DiscoveryFactory>(std::move(discovery)));
 
@@ -9345,7 +9421,7 @@ class AuthenticatorCableV2AuthenticatorTest
         /*extension_contents=*/std::vector<device::CableDiscoveryData>(),
         GetPairingCallback(), GetInvalidatedPairingCallback());
 
-    AuthenticatorEnvironmentImpl::GetInstance()
+    AuthenticatorEnvironment::GetInstance()
         ->ReplaceDefaultDiscoveryFactoryForTesting(
             std::make_unique<DiscoveryFactory>(std::move(discovery)));
 

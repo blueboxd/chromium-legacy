@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Po ngjesh <ph name="NUMBER_OF_ITEMS" /> artikuj...</translation>
 <translation id="1722687688096767818">Po shton profilin...</translation>
 <translation id="1726100011689679555">Serverët e emrave</translation>
+<translation id="1727562178154619254">Gati për të sinkronizuar</translation>
 <translation id="1729953886957086472">Gjermanisht (Gjermani)</translation>
 <translation id="1730235522912993863">Kinezisht Cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> artikuj të kopjuar.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Rezolucioni i imazhit</translation>
 <translation id="1972984168337863910">Zgjero panelet e komenteve të skedarëve</translation>
 <translation id="1995337122023280937">Shko te vendndodhja e skedarit</translation>
-<translation id="1999709132469742660">Qasja te skedari nga të gjitha URL-të</translation>
 <translation id="2001796770603320721">Menaxhoje te "Disku"</translation>
 <translation id="2009067268969781306">Formatimi i një disku do të fshijë të gjitha të dhënat e ruajtura në të. Ky veprim nuk mund të zhbëhet.</translation>
 <translation id="2025955442973426285">Tigrinja</translation>
@@ -541,7 +541,6 @@
 <translation id="5323213332664049067">Tastiera amerikano-latine</translation>
 <translation id="5330145655348521461">Këta skedarë u hapën në një desktop tjetër. Lëviz te <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) për ta parë.</translation>
 <translation id="5330512191124428349">Merr informacione</translation>
-<translation id="5337538975554986899">Qasja te skedari nga të gjitha URL-të përveç <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Menaxho ndarjen për Bruschetta</translation>
 <translation id="535792325654997756">Person me mace</translation>
 <translation id="5358764674931277">Shpejtësia e kuadrove</translation>
@@ -614,6 +613,7 @@
 <translation id="5911887972742538906">Ndodhi një gabim gjatë instalimit të aplikacionit tënd për Linux.</translation>
 <translation id="5912396950572065471">Formati</translation>
 <translation id="5913638992615760742">Operacioni i kopjimit dështoi, gabim i papritur: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Ofrohet një veçori e re për kërkimin</translation>
 <translation id="5926082595146149752">Holandisht (Holandë) me tastierë amerikane ndërkombëtare për PC</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, aktivizoje pas konfigurimit të pajisjes</translation>
@@ -703,6 +703,7 @@
 <translation id="6732801395666424405">Certifikatat nuk janë ngarkuar</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Ndaje dosjen me Bruschetta</translation>
+<translation id="6750737795876287924">Direktoria aktuale</translation>
 <translation id="6751256176799620176">U zgjodh 1 dosje</translation>
 <translation id="6755827872271341378">Pajisja Chrome OS Flex</translation>
 <translation id="6790428901817661496">Luaj</translation>
@@ -740,7 +741,6 @@
 <translation id="6973630695168034713">Dosjet</translation>
 <translation id="6976795442547527108">Luan</translation>
 <translation id="6979158407327259162">Disku i Google</translation>
-<translation id="6979737339423435258">Gjatë të gjithë kohës</translation>
 <translation id="6989942356279143254">Suedisht</translation>
 <translation id="6990081529015358884">Nuk ke më hapësirë të lirë</translation>
 <translation id="6993826899923627728">Këta artikuj janë te koshi</translation>
@@ -796,7 +796,6 @@
 <translation id="7458955835361612701">Nuk ka imazhe të fundit</translation>
 <translation id="7460898608667578234">Ukrainisht</translation>
 <translation id="7469894403370665791">Lidhu automatikisht me këtë rrjet</translation>
-<translation id="7481358317100446445">Gati</translation>
 <translation id="7486315294984620427">Për t'i lëshuar skedarët në Parallels Desktop, skedari duhet të kopjohet te dosja e skedarëve të Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malajalamisht fonetike</translation>

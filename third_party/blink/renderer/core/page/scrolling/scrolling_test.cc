@@ -84,7 +84,8 @@ constexpr char kHttpsBaseUrl[] = "https://www.test.com/";
 class ScrollingTest : public testing::Test, public PaintTestConfigurations {
  public:
   ScrollingTest() {
-    helper_.Initialize(nullptr, nullptr, &ConfigureSettings);
+    helper_.Initialize();
+    SetPreferCompositingToLCDText(true);
     GetWebView()->MainFrameViewWidget()->Resize(gfx::Size(320, 240));
     GetWebView()->MainFrameViewWidget()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
@@ -220,11 +221,11 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
         RootCcLayer(), scrollable_area->GetScrollElementId());
   }
 
- private:
-  static void ConfigureSettings(WebSettings* settings) {
-    settings->SetPreferCompositingToLCDTextEnabled(true);
+  void SetPreferCompositingToLCDText(bool enabled) {
+    GetFrame()->GetSettings()->SetPreferCompositingToLCDTextForTesting(enabled);
   }
 
+ private:
   void NavigateTo(const std::string& url) {
     frame_test_helpers::LoadFrame(GetWebView()->MainFrameImpl(), url);
   }
@@ -1099,7 +1100,7 @@ TEST_P(ScrollingTest, WheelEventRegions) {
 }
 
 TEST_P(ScrollingTest, WheelEventRegionUpdatedOnSubscrollerScrollChange) {
-  GetWebView()->GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetPreferCompositingToLCDText(false);
   LoadHTML(R"HTML(
     <style>
       #noncomposited {
@@ -1356,8 +1357,7 @@ TEST_P(ScrollingTest, WheelEventRegionsForPlugins) {
 }
 
 TEST_P(ScrollingTest, NonFastScrollableRegionWithBorder) {
-  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      false);
+  SetPreferCompositingToLCDText(false);
   LoadHTML(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1578,8 +1578,7 @@ TEST_P(ScrollingTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
 TEST_P(ScrollingTest, NestedIFramesMainThreadScrollingRegion) {
   // This page has an absolute IFRAME. It contains a scrollable child DIV
   // that's nested within an intermediate IFRAME.
-  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      false);
+  SetPreferCompositingToLCDText(false);
   LoadHTML(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1641,8 +1640,7 @@ TEST_P(ScrollingTest, NestedIFramesMainThreadScrollingRegion) {
 TEST_P(ScrollingTest, NestedFixedIFramesMainThreadScrollingRegion) {
   // This page has a fixed IFRAME. It contains a scrollable child DIV that's
   // nested within an intermediate IFRAME.
-  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      false);
+  SetPreferCompositingToLCDText(false);
   LoadHTML(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1699,8 +1697,7 @@ TEST_P(ScrollingTest, NestedFixedIFramesMainThreadScrollingRegion) {
 }
 
 TEST_P(ScrollingTest, IframeCompositedScrollingHideAndShow) {
-  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      false);
+  SetPreferCompositingToLCDText(false);
   LoadHTML(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1721,30 +1718,32 @@ TEST_P(ScrollingTest, IframeCompositedScrollingHideAndShow) {
 
   ForceFullCompositingUpdate();
 
-  const auto* non_fast_layer = MainFrameScrollingContentsLayer();
-
   // Should have a NFSR initially.
-  EXPECT_EQ(non_fast_layer->non_fast_scrollable_region().bounds(),
-            gfx::Rect(2, 2, 100, 100));
+  EXPECT_EQ(
+      MainFrameScrollingContentsLayer()->non_fast_scrollable_region().bounds(),
+      gfx::Rect(2, 2, 100, 100));
 
   // Hiding the iframe should clear the NFSR.
   Element* iframe = GetFrame()->GetDocument()->getElementById("iframe");
   iframe->setAttribute(html_names::kStyleAttr, "display: none");
   ForceFullCompositingUpdate();
-  EXPECT_TRUE(non_fast_layer->non_fast_scrollable_region().bounds().IsEmpty());
+  EXPECT_TRUE(MainFrameScrollingContentsLayer()
+                  ->non_fast_scrollable_region()
+                  .bounds()
+                  .IsEmpty());
 
   // Showing it again should compute the NFSR.
   iframe->setAttribute(html_names::kStyleAttr, "");
   ForceFullCompositingUpdate();
-  EXPECT_EQ(non_fast_layer->non_fast_scrollable_region().bounds(),
-            gfx::Rect(2, 2, 100, 100));
+  EXPECT_EQ(
+      MainFrameScrollingContentsLayer()->non_fast_scrollable_region().bounds(),
+      gfx::Rect(2, 2, 100, 100));
 }
 
 // Same as above but the main frame is scrollable. This should cause the non
 // fast scrollable regions to go on the outer viewport's scroll layer.
 TEST_P(ScrollingTest, IframeCompositedScrollingHideAndShowScrollable) {
-  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      false);
+  SetPreferCompositingToLCDText(false);
   LoadHTML(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1771,11 +1770,10 @@ TEST_P(ScrollingTest, IframeCompositedScrollingHideAndShowScrollable) {
       page->GetVisualViewport().LayerForScrolling();
   Element* iframe = GetFrame()->GetDocument()->getElementById("iframe");
 
-  const auto* outer_viewport_scroll_layer = MainFrameScrollingContentsLayer();
-
   // Should have a NFSR initially.
   ForceFullCompositingUpdate();
-  EXPECT_FALSE(outer_viewport_scroll_layer->non_fast_scrollable_region()
+  EXPECT_FALSE(MainFrameScrollingContentsLayer()
+                   ->non_fast_scrollable_region()
                    .bounds()
                    .IsEmpty());
 
@@ -1787,14 +1785,16 @@ TEST_P(ScrollingTest, IframeCompositedScrollingHideAndShowScrollable) {
   // Hiding the iframe should clear the NFSR.
   iframe->setAttribute(html_names::kStyleAttr, "display: none");
   ForceFullCompositingUpdate();
-  EXPECT_TRUE(outer_viewport_scroll_layer->non_fast_scrollable_region()
+  EXPECT_TRUE(MainFrameScrollingContentsLayer()
+                  ->non_fast_scrollable_region()
                   .bounds()
                   .IsEmpty());
 
   // Showing it again should compute the NFSR.
   iframe->setAttribute(html_names::kStyleAttr, "");
   ForceFullCompositingUpdate();
-  EXPECT_FALSE(outer_viewport_scroll_layer->non_fast_scrollable_region()
+  EXPECT_FALSE(MainFrameScrollingContentsLayer()
+                   ->non_fast_scrollable_region()
                    .bounds()
                    .IsEmpty());
 }
@@ -1877,8 +1877,7 @@ TEST_P(ScrollingTest, UpdateVisualViewportScrollLayer) {
 }
 
 TEST_P(ScrollingTest, NonCompositedNonFastScrollableRegion) {
-  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      false);
+  SetPreferCompositingToLCDText(false);
   LoadHTML(R"HTML(
           <!DOCTYPE html>
           <style>
@@ -1909,8 +1908,7 @@ TEST_P(ScrollingTest, NonCompositedNonFastScrollableRegion) {
 }
 
 TEST_P(ScrollingTest, NonCompositedResizerNonFastScrollableRegion) {
-  GetWebView()->GetPage()->GetSettings().SetPreferCompositingToLCDTextEnabled(
-      false);
+  SetPreferCompositingToLCDText(false);
   LoadHTML(R"HTML(
     <style>
       #container {
@@ -2069,7 +2067,7 @@ class UnifiedScrollingSimTest : public SimTest, public PaintTestConfigurations {
 
   void SetUp() override {
     SimTest::SetUp();
-    WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+    SetPreferCompositingToLCDText(false);
     WebView().MainFrameViewWidget()->Resize(gfx::Size(1000, 1000));
     WebView().MainFrameViewWidget()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);
@@ -2492,9 +2490,8 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForInvisibleNonCompositedScroller) {
   EXPECT_EQ(nullptr, ScrollableAreaByDOMElementId("displaynone"));
 }
 
-// Tests that the compositor gets a scroll node for scrollable input boxes,
-// which are unique as they are not a composited scroller but also do not have
-// NonCompositedMainThreadScrollingReasons.
+// Tests that the compositor gets a scroll node for a non-composited (due to
+// non-opaque background) scrollable input box.
 TEST_P(UnifiedScrollingSimTest, ScrollNodeForInputBox) {
   // This test requires scroll unification.
   if (!base::FeatureList::IsEnabled(::features::kScrollUnification))
@@ -2514,7 +2511,8 @@ TEST_P(UnifiedScrollingSimTest, ScrollNodeForInputBox) {
   Compositor().BeginFrame();
 
   auto* scrollable_area = ScrollableAreaByDOMElementId("textinput");
-  ASSERT_EQ(0u, scrollable_area->GetNonCompositedMainThreadScrollingReasons());
+  ASSERT_EQ(cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText,
+            scrollable_area->GetNonCompositedMainThreadScrollingReasons());
 
   const auto* scroll_node = ScrollNodeForScrollableArea(scrollable_area);
   ASSERT_TRUE(scroll_node);
@@ -2539,7 +2537,7 @@ class ScrollingSimTest : public SimTest,
       feature_list_.InitAndDisableFeature(::features::kScrollUnification);
 
     SimTest::SetUp();
-    WebView().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
+    SetPreferCompositingToLCDText(true);
     ResizeView(gfx::Size(1000, 1000));
     WebView().MainFrameViewWidget()->UpdateAllLifecyclePhases(
         DocumentUpdateReason::kTest);

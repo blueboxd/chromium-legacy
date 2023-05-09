@@ -16,12 +16,12 @@
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_edit_item.h"
+#import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
-#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
@@ -98,8 +98,8 @@ class AddPasswordViewControllerTest : public ChromeTableViewControllerTest {
   }
 
   ChromeTableViewController* InstantiateController() override {
-    AddPasswordViewController* controller = [[AddPasswordViewController alloc]
-        initWithSyncingUserEmail:syncing_user_email_];
+    AddPasswordViewController* controller =
+        [[AddPasswordViewController alloc] init];
     controller.delegate = delegate_;
     return controller;
   }
@@ -135,13 +135,8 @@ class AddPasswordViewControllerTest : public ChromeTableViewControllerTest {
 
   FakeAddPasswordDelegate* delegate() { return delegate_; }
 
-  void SetUserSyncingEmail(NSString* syncing_user_email) {
-    syncing_user_email_ = syncing_user_email;
-  }
-
  private:
   FakeAddPasswordDelegate* delegate_ = nil;
-  NSString* syncing_user_email_ = nil;
 };
 
 // Tests that password is shown/hidden.
@@ -221,7 +216,7 @@ TEST_F(AddPasswordViewControllerTest, TestSectionsInAddWithNotesEnabled) {
       static_cast<AddPasswordViewController*>(controller());
   [passwords_controller loadModel];
 
-  EXPECT_EQ(4, NumberOfSections());
+  EXPECT_EQ(5, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(0));
   EXPECT_EQ(0, NumberOfItemsInSection(1));
   EXPECT_EQ(3, NumberOfItemsInSection(2));
@@ -232,7 +227,7 @@ TEST_F(AddPasswordViewControllerTest, TestSectionsInAddWithNotesEnabled) {
                                      IDS_IOS_SETTINGS_ADD_PASSWORD_DESCRIPTION),
                                  l10n_util::GetNSString(
                                      IDS_IOS_SAVE_PASSWORD_FOOTER_NOT_SYNCING)],
-      3);
+      4);
 }
 
 // Tests the layout of the view controller when adding a new credential with
@@ -257,12 +252,11 @@ TEST_F(AddPasswordViewControllerTest, TestSectionsInAddDuplicated) {
 }
 
 // Tests the footer text of the view controller when adding a new credential and
-// the user syncing email address is provided.
-TEST_F(AddPasswordViewControllerTest, TestFooterTextWithSyncingEmail) {
-  SetUserSyncingEmail(@"example@gmail.com");
-
+// the user email address is provided.
+TEST_F(AddPasswordViewControllerTest, TestFooterTextWithEmail) {
   AddPasswordViewController* passwords_controller =
       static_cast<AddPasswordViewController*>(controller());
+  [passwords_controller setAccountSavingPasswords:@"example@gmail.com"];
   [passwords_controller loadModel];
 
   CheckSectionFooter(

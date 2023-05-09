@@ -157,7 +157,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::FILE_SYSTEM_READ_GUARD, nullptr},
     {ContentSettingsType::STORAGE_ACCESS, nullptr},
     {ContentSettingsType::CAMERA_PAN_TILT_ZOOM, nullptr},
-    {ContentSettingsType::INSECURE_PRIVATE_NETWORK, nullptr},
+    {ContentSettingsType::INSECURE_LOCAL_NETWORK, nullptr},
     {ContentSettingsType::PERMISSION_AUTOREVOCATION_DATA, nullptr},
     {ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, nullptr},
     {ContentSettingsType::DISPLAY_CAPTURE, nullptr},
@@ -184,6 +184,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::FEDERATED_IDENTITY_AUTO_REAUTHN_PERMISSION, nullptr},
     {ContentSettingsType::FEDERATED_IDENTITY_IDENTITY_PROVIDER_REGISTRATION,
      nullptr},
+    {ContentSettingsType::THIRD_PARTY_STORAGE_PARTITIONING, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -372,12 +373,16 @@ bool HasRegisteredGroupName(ContentSettingsType type) {
 }
 
 ContentSettingsType ContentSettingsTypeFromGroupName(base::StringPiece name) {
-  for (size_t i = 0; i < std::size(kContentSettingsTypeGroupNames); ++i) {
-    if (name == kContentSettingsTypeGroupNames[i].name)
-      return kContentSettingsTypeGroupNames[i].type;
+  for (const auto& entry : kContentSettingsTypeGroupNames) {
+    // Content setting types that aren't represented in the settings UI
+    // will have `nullptr` as their `name`. However, converting `nullptr`
+    // to a StringPiece will crash, so we have to handle it explicitly
+    // before comparing.
+    if (entry.name != nullptr && entry.name == name) {
+      return entry.type;
+    }
   }
 
-  NOTREACHED() << name << " is not a recognized content settings type.";
   return ContentSettingsType::DEFAULT;
 }
 
@@ -974,6 +979,7 @@ base::Value::List GetChooserExceptionListFromProfile(
   base::Value::List exceptions;
   ContentSettingsType content_type =
       ContentSettingsTypeFromGroupName(std::string(chooser_type.name));
+  DCHECK(content_type != ContentSettingsType::DEFAULT);
 
   // The BluetoothChooserContext is only available when the
   // WebBluetoothNewPermissionsBackend flag is enabled.

@@ -10,6 +10,7 @@ import "services/network/public/mojom/ssl_config.mojom";
 import "services/network/public/mojom/tls_socket.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
+import "services/network/public/mojom/socket_connection_tracker.mojom";
 
 struct TCPKeepAliveOptions {
   // Enable/disable TCP Keep-Alive.
@@ -42,6 +43,17 @@ struct TCPConnectedSocketOptions {
   // socket to the specified delay in seconds. If not supplied, then default
   // socket settings will be applied, which may vary by platform.
   TCPKeepAliveOptions? keep_alive_options;
+};
+
+struct TCPServerSocketOptions {
+  // Sets the size of the OS accept queue. Should be greater than 0.
+  uint32 backlog;
+
+  [EnableIf=is_chromeos]
+  // The caller may choose to supply a |connection_tracker| if they lack access
+  // to the endpoints of the actual connection but would like to get informed
+  // when it shuts down.
+  pending_remote<SocketConnectionTracker>? connection_tracker;
 };
 
 // Represents a bound TCP socket. Once a call succeeds, cannot be reused.

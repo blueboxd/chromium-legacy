@@ -35,13 +35,6 @@ namespace blink {
 
 namespace {
 
-bool CanCacheBaseStyle(const StyleRequest& style_request) {
-  return style_request.IsPseudoStyleRequest() ||
-         (!style_request.parent_override &&
-          !style_request.layout_parent_override &&
-          style_request.matching_behavior == kMatchAllRules);
-}
-
 Element* ComputeStyledElement(const StyleRequest& style_request,
                               Element& element) {
   Element* styled_element = style_request.styled_element;
@@ -84,7 +77,7 @@ StyleResolverState::StyleResolverState(
       is_for_highlight_(IsHighlightPseudoElement(style_request.pseudo_id)),
       uses_highlight_pseudo_inheritance_(
           ::blink::UsesHighlightPseudoInheritance(style_request.pseudo_id)),
-      can_cache_base_style_(blink::CanCacheBaseStyle(style_request)) {
+      can_trigger_animations_(style_request.can_trigger_animations) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (UsesHighlightPseudoInheritance()) {
@@ -238,7 +231,10 @@ CSSParserMode StyleResolverState::GetParserMode() const {
 }
 
 Element* StyleResolverState::GetAnimatingElement() const {
-  return styled_element_;
+  // When querying pseudo element styles for an element that does not generate
+  // such a pseudo element, the styled_element_ is the originating element. Make
+  // sure we only do animations for true pseudo elements.
+  return IsForPseudoElement() ? GetPseudoElement() : styled_element_;
 }
 
 PseudoElement* StyleResolverState::GetPseudoElement() const {
@@ -268,6 +264,11 @@ void StyleResolverState::UpdateLineHeight() {
       CSSToLengthConversionData::LineHeightSize(
           style_builder_->GetFontSizeStyle(),
           GetDocument().documentElement()->GetComputedStyle()));
+}
+
+bool StyleResolverState::CanAffectAnimations() const {
+  return conditionally_affects_animations_ ||
+         StyleBuilder().CanAffectAnimations();
 }
 
 }  // namespace blink

@@ -317,6 +317,21 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     new_request->trust_token_params =
         *request_info.begin_params->trust_token_params;
   }
+
+  // TODO(https://crbug.com/1423092): This is more restrictive than necessary,
+  // since `request_info.common_params->has_storage_access` really represents
+  // "does this navigation have an initiator, and if so, did the initiator
+  // obtain storage access, and if so, is the initiator the same as the frame
+  // being navigated, and is the navigation same-origin?". While here, we only
+  // really need "does this navigation have an initiator, and if so, did it
+  // obtain storage access?". So in particular, cross-origin same-site
+  // navigations and non-self-initiated navigations won't include cookies from
+  // Storage Access API, but they should. This is ok for now, since the most
+  // common case for this is expected to be a refresh, which does fit the
+  // stricter criteria.
+  new_request->has_storage_access =
+      request_info.common_params->has_storage_access;
+
   return new_request;
 }
 
@@ -399,7 +414,8 @@ void CheckParsedHeadersEquals(const network::mojom::ParsedHeadersPtr& lhs,
   DCHECK(mojo::Equals(lhs->reporting_endpoints, rhs->reporting_endpoints));
   DCHECK(mojo::Equals(lhs->variants_headers, rhs->variants_headers));
   DCHECK(mojo::Equals(lhs->content_language, rhs->content_language));
-  DCHECK(mojo::Equals(lhs->no_vary_search, rhs->no_vary_search));
+  DCHECK(mojo::Equals(lhs->no_vary_search_with_parse_error,
+                      rhs->no_vary_search_with_parse_error));
   NOTREACHED() << "The parsed headers don't match, but we don't know which "
                   "field does not match. Please add a DCHECK before this one "
                   "checking for the missing field.";
@@ -753,23 +769,6 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest() {
     }
   } else {
     default_loader_used_ = true;
-
-    // NOTE: We only support embedders proxying network-service-bound requests
-    // not handled by NavigationLoaderInterceptors above (e.g. Service Worker)
-    // Hence this code is only reachable when one of the above
-    // interceptors isn't used and the URL is either a data URL or has a
-    // scheme which is handled by the network service.
-    if (proxied_factory_receiver_.is_valid()) {
-      DCHECK(proxied_factory_remote_.is_valid());
-      // We don't worry about reconnection since it's a single navigation.
-      network_loader_factory_->Clone(std::move(proxied_factory_receiver_));
-      // Replace the network factory with the proxied version since this may
-      // need to be used in redirects, and we've already consumed
-      // `proxied_factory_receiver_`.
-      network_loader_factory_ =
-          base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-              std::move(proxied_factory_remote_));
-    }
     factory = network_loader_factory_;
   }
   url_chain_.push_back(resource_request_->url);
@@ -1352,38 +1351,12 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     direct_factory_for_webui->Clone(std::move(factory_receiver));
   }
 
-  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
-      header_client;
+  network_loader_factory_ = CreateNetworkLoaderFactory(
+      browser_context_, storage_partition_, frame_tree_node, ukm_id,
+      &bypass_redirect_checks_);
 
-  // Initialize proxied factory remote/receiver if necessary.
-  // This also populates `bypass_redirect_checks_`.
   GetContentClient()->browser()->RegisterNonNetworkNavigationURLLoaderFactories(
       frame_tree_node_id_, ukm_id, &non_network_url_loader_factories_);
-
-  // The embedder may want to proxy all network-bound URLLoaderFactory
-  // receivers that it can. If it elects to do so, those proxies will be
-  // connected when loader is created if the request type supports proxying.
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
-  auto factory_receiver = pending_factory.InitWithNewPipeAndPassReceiver();
-  // Here we give nullptr for `factory_override`, because CORS is no-op for
-  // navigations.
-  bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      browser_context_, frame_tree_node->current_frame_host(),
-      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-      ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
-      frame_tree_node->navigation_request()->GetNavigationId(), ukm_id,
-      &factory_receiver, &header_client, &bypass_redirect_checks_,
-      /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr);
-  if (devtools_instrumentation::WillCreateURLLoaderFactory(
-          frame_tree_node->current_frame_host(), /*is_navigation=*/true,
-          /*is_download=*/false, &factory_receiver,
-          /*factory_override=*/nullptr)) {
-    use_proxy = true;
-  }
-  if (use_proxy) {
-    proxied_factory_receiver_ = std::move(factory_receiver);
-    proxied_factory_remote_ = std::move(pending_factory);
-  }
 
   bool is_nav_allowed =
       base::FeatureList::IsEnabled(
@@ -1438,23 +1411,64 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   for (auto& iter : non_network_url_loader_factories_)
     known_schemes_.insert(iter.first);
 
-  if (header_client) {
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
-    CreateURLLoaderFactoryWithHeaderClient(
-        std::move(header_client),
-        factory_remote.InitWithNewPipeAndPassReceiver(), storage_partition_);
-    network_loader_factory_ =
-        base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-            std::move(factory_remote));
-  } else {
-    network_loader_factory_ =
-        storage_partition_->GetURLLoaderFactoryForBrowserProcess();
-  }
-
   start_closure_ = base::BindOnce(
       &NavigationURLLoaderImpl::StartImpl, base::Unretained(this),
       std::move(prefetched_signed_exchange_cache), std::move(factory_for_webui),
       std::move(accept_langs));
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+NavigationURLLoaderImpl::CreateNetworkLoaderFactory(
+    BrowserContext* browser_context,
+    StoragePartitionImpl* storage_partition,
+    FrameTreeNode* frame_tree_node,
+    const ukm::SourceIdObj& ukm_id,
+    bool* bypass_redirect_checks) {
+  mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+      header_client;
+
+  // The embedder may want to proxy all network-bound URLLoaderFactory
+  // receivers that it can. If it elects to do so, those proxies will be
+  // connected when loader is created if the request type supports proxying.
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
+  auto factory_receiver = pending_factory.InitWithNewPipeAndPassReceiver();
+  // Here we give nullptr for `factory_override`, because CORS is no-op for
+  // navigations.
+  bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      browser_context, frame_tree_node->current_frame_host(),
+      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+      ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+      frame_tree_node->navigation_request()->GetNavigationId(), ukm_id,
+      &factory_receiver, &header_client, bypass_redirect_checks,
+      /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr);
+  if (devtools_instrumentation::WillCreateURLLoaderFactory(
+          frame_tree_node->current_frame_host(), /*is_navigation=*/true,
+          /*is_download=*/false, &factory_receiver,
+          /*factory_override=*/nullptr)) {
+    use_proxy = true;
+  }
+
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory;
+  if (header_client) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
+    CreateURLLoaderFactoryWithHeaderClient(
+        std::move(header_client),
+        factory_remote.InitWithNewPipeAndPassReceiver(), storage_partition);
+    network_loader_factory =
+        base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+            std::move(factory_remote));
+  } else {
+    network_loader_factory =
+        storage_partition->GetURLLoaderFactoryForBrowserProcess();
+  }
+  DCHECK(network_loader_factory);
+  if (!use_proxy) {
+    return network_loader_factory;
+  }
+
+  network_loader_factory->Clone(std::move(factory_receiver));
+  return base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+      std::move(pending_factory));
 }
 
 void NavigationURLLoaderImpl::Start() {

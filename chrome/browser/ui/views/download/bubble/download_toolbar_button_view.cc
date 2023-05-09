@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/download/bubble/download_bubble_controller.h"
+#include "chrome/browser/download/bubble/download_bubble_ui_controller.h"
 #include "chrome/browser/download/bubble/download_display_controller.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/platform_util.h"
@@ -104,7 +104,7 @@ class CircleBadgeImageSource : public gfx::CanvasImageSource {
 
  private:
   // Pointee may be modified to change the text color upon painting.
-  const raw_ptr<gfx::RenderText> render_text_ = nullptr;
+  const raw_ptr<gfx::RenderText, DanglingUntriaged> render_text_ = nullptr;
   const SkColor text_color_;
   const SkColor background_color_;
 };
@@ -440,6 +440,7 @@ void DownloadToolbarButtonView::CreateBubbleDialogDelegate(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
   bubble_delegate->set_margins(GetPrimaryViewMargin());
+  bubble_delegate->SetEnableArrowKeyTraversal(true);
   bubble_delegate_ = bubble_delegate.get();
   views::BubbleDialogDelegate::CreateBubble(std::move(bubble_delegate));
   bubble_delegate_->GetWidget()->Show();

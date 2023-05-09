@@ -84,6 +84,7 @@
 <translation id="1722487484194605434"><ph name="NUMBER_OF_ITEMS" /> üksuse pakkimine …</translation>
 <translation id="1722687688096767818">Profiili lisamine …</translation>
 <translation id="1726100011689679555">Nimeserverid</translation>
+<translation id="1727562178154619254">Sünkroonimiseks valmis</translation>
 <translation id="1729953886957086472">saksa (Saksamaa)</translation>
 <translation id="1730235522912993863">hiina, cangjie</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> üksust on kopeeritud.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Kujutise eraldusvõime</translation>
 <translation id="1972984168337863910">Laienda failide tagasisidepaneele</translation>
 <translation id="1995337122023280937">Ava faili asukoht</translation>
-<translation id="1999709132469742660">Failidele pääsevad juurde kõik URL-id</translation>
 <translation id="2001796770603320721">Halda Drive'is</translation>
 <translation id="2009067268969781306">Ketta vormindamisel kustutatakse kõik sellel olevad andmed. Seda toimingut ei saa tagasi võtta.</translation>
 <translation id="2025955442973426285">tigrinja</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Ladina-Ameerika</translation>
 <translation id="5330145655348521461">Failid on avatud erinevatel töölaudadel. Faili vaatamiseks avage <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="5330512191124428349">Hangi teavet</translation>
-<translation id="5337538975554986899">Failidele pääsevad juurde kõik URL-id, välja arvatud <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Bruschettaga jagamise haldamine</translation>
 <translation id="535792325654997756">Kassidega inimene</translation>
 <translation id="5358764674931277">Kaadrisagedus</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Linuxi rakenduse installimisel ilmnes viga.</translation>
 <translation id="5912396950572065471">Vorming</translation>
 <translation id="5913638992615760742">Kopeerimine ebaõnnestus, ootamatu viga: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Saadaval on uued otsingufunktsioonid</translation>
 <translation id="5926082595146149752">hollandi (Holland), USA rahvusvahelise arvutiklaviatuuriga</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Võrk <ph name="NETWORK_INDEX" />, võrke kokku <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, aktiveerige pärast seadme seadistust</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Sertifikaate ei laaditud</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Kausta jagamine Bruschettaga</translation>
+<translation id="6750737795876287924">Praegune kataloog</translation>
 <translation id="6751256176799620176">Valitud on üks kaust</translation>
 <translation id="6755827872271341378">Chrome OS Flexi seade</translation>
 <translation id="6790428901817661496">Esita</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Kaustad</translation>
 <translation id="6976795442547527108">Lõvi</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Algusest</translation>
 <translation id="6989942356279143254">rootsi</translation>
 <translation id="6990081529015358884">Ruum sai otsa</translation>
 <translation id="6993826899923627728">Need üksused on prügikastis</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Hiljutisi pilte pole</translation>
 <translation id="7460898608667578234">ukraina keel</translation>
 <translation id="7469894403370665791">Võta automaatselt selle võrguga ühendust</translation>
-<translation id="7481358317100446445">Valmis</translation>
 <translation id="7486315294984620427">Failide pukseerimiseks Parallels Desktopile peab fail olema kopeeritud Windowsi failide hulka.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">malajalami, foneetiline</translation>

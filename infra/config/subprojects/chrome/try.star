@@ -55,6 +55,7 @@ def chrome_internal_verifier(
 chrome_internal_verifier(
     builder = "internal-cq-builder-verifier",
     tryjob = try_.job(
+        add_default_filters = False,
         location_filters = ["infra/config/generated/cq-usage/full.cfg"],
     ),
 )
@@ -62,6 +63,14 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     builder = "linux-chromeos-compile-chrome",
     tryjob = try_.job(),
+)
+
+chrome_internal_verifier(
+    builder = "win-branded-compile-rel",
+    tryjob = try_.job(
+        # TODO(crbug.com/1259887): Promote out of experimental.
+        experiment_percentage = 100,
+    ),
 )
 
 ### Optional builders ###

@@ -8,10 +8,12 @@
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_view_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
+#import "ios/chrome/common/button_configuration_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -75,16 +77,22 @@ const CGFloat kNewTabButtonBottomImageInset = -2.0;
   [self.buttonNewTab setImage:buttonNewTabImage forState:UIControlStateNormal];
   [self.buttonNewTab.imageView setTintColor:[UIColor colorNamed:kGrey500Color]];
 
-  // TODO(crbug.com/1418068): Remove after minimum version required is >=
+  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
   // iOS 15.
-#if __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
-  self.buttonNewTab.configuration.contentInsets = NSDirectionalEdgeInsetsMake(
-      0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
-#else
-  UIEdgeInsets imageInsets = UIEdgeInsetsMake(0, kNewTabButtonLeadingImageInset,
-                                              kNewTabButtonBottomImageInset, 0);
-  self.buttonNewTab.imageEdgeInsets = imageInsets;
-#endif  // __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_15_0
+  if (base::ios::IsRunningOnIOS15OrLater() &&
+      IsUIButtonConfigurationEnabled()) {
+    if (@available(iOS 15, *)) {
+      UIButtonConfiguration* buttonConfiguration =
+          [UIButtonConfiguration plainButtonConfiguration];
+      buttonConfiguration.contentInsets = NSDirectionalEdgeInsetsMake(
+          0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
+      self.buttonNewTab.configuration = buttonConfiguration;
+    }
+  } else {
+    UIEdgeInsets imageInsets = UIEdgeInsetsMake(
+        0, kNewTabButtonLeadingImageInset, kNewTabButtonBottomImageInset, 0);
+    SetImageEdgeInsets(self.buttonNewTab, imageInsets);
+  }
 
   [self.view addSubview:self.buttonNewTab];
   [NSLayoutConstraint activateConstraints:@[

@@ -9,11 +9,13 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
-#include "ash/system/video_conference/video_conference_media_state.h"
+#include "ash/system/video_conference/video_conference_common.h"
 #include "ash/test/test_window_builder.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -133,13 +135,15 @@ class FakeAppInstance {
 
 class VideoConferenceAppServiceClientTest : public InProcessBrowserTest {
  public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        ::ash::switches::kCameraEffectsSupportedByHardware);
+  }
+
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
     client_ = VideoConferenceAppServiceClient::GetForTesting();
-    // This is not triggered automatically.
-    client_->OnSessionStateChanged(
-        Shell::Get()->session_controller()->GetSessionState());
 
     Profile* profile = ProfileManager::GetActiveUserProfile();
     instance_registry_ = &apps::AppServiceProxyFactory::GetForProfile(profile)

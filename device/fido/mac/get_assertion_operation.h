@@ -48,8 +48,10 @@ class API_AVAILABLE(macosx(10.12.2))
 
  private:
   void PromptTouchIdDone(bool success);
+  void GenerateResponses(std::list<Credential> credentials, bool has_uv);
   absl::optional<AuthenticatorGetAssertionResponse> ResponseForCredential(
-      const Credential& credential);
+      const Credential& credential,
+      bool has_uv);
 
   const std::unique_ptr<TouchIdContext> touch_id_context_ =
       TouchIdContext::Create();

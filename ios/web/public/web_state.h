@@ -21,6 +21,7 @@
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
+#include "ios/web/public/js_messaging/content_world.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -34,6 +35,7 @@ class GURL;
 @protocol CRWScrollableContent;
 @protocol CRWWebViewDownload;
 @protocol CRWFindInteraction;
+@protocol CRWSwipeRecognizerProvider;
 @protocol CRWWebViewDownloadDelegate;
 @protocol CRWWebViewProxy;
 typedef id<CRWWebViewProxy> CRWWebViewProxyType;
@@ -286,8 +288,11 @@ class WebState : public base::SupportsUserData {
 
   // Gets the WebFramesManager associated with this WebState. Can never return
   // null.
-  virtual const WebFramesManager* GetPageWorldWebFramesManager() const = 0;
   virtual WebFramesManager* GetPageWorldWebFramesManager() = 0;
+
+  // Returns the WebFrameManagerImpl associated with this WebState for the given
+  // `world`.
+  virtual WebFramesManager* GetWebFramesManager(ContentWorld world) = 0;
 
   // Gets the SessionCertificatePolicyCache for this WebState.  Can never return
   // null.
@@ -437,6 +442,11 @@ class WebState : public base::SupportsUserData {
   // Returns true if this operation succeeds, and false otherwise.
   virtual bool SetSessionStateData(NSData* data) = 0;
   virtual NSData* SessionStateData() = 0;
+
+  // Sets the CRWSwipeRecognizerProvider delegate, used to create a dependency
+  // between the underlying WKWebView's gestures and the delegate gestures.
+  virtual void SetSwipeRecognizerProvider(
+      id<CRWSwipeRecognizerProvider> delegate) = 0;
 
   // Gets or sets the web state's permission for a specific type, for example
   // camera or microphone, on the device.

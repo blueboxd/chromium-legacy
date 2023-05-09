@@ -33,7 +33,38 @@ constexpr net::NetworkTrafficAnnotationTag kNetworkTrafficAnnotationTag =
               "network call between the chromeOS Projector(Screencast) app and "
               "the server. If the screencast app is enabled, the XHR requests "
               "are made by the app to the allowlisted URLs after authorizing "
-              "the request with end user credentials or API key or auth token."
+              "the request with API key."
+            trigger: "When the user launches the Screencast app to create and "
+              "view screencasts."
+            data: "The recordings and transcripts done via the Screencast app."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy: {
+            cookies_allowed: NO
+            setting: "The admin can enable or disable this feature via Google "
+              "Admin console. On homepage, go to Devices > Chrome. On the left,"
+              "click Settings > Users & browsers. Scroll down to Content and "
+              "locate Screencast to enable/diable it. The feature is enabled "
+              "by default."
+            chrome_policy {
+              ProjectorEnabled {
+                ProjectorEnabled: true
+              }
+            }
+          })");
+
+// Projector network traffic annotation tags.
+constexpr net::NetworkTrafficAnnotationTag
+    kNetworkTrafficAnnotationTagAllowCookie =
+        net::DefineNetworkTrafficAnnotation("projector_xhr_loader_allow_cookie",
+                                            R"(
+          semantics: {
+            sender: "ChromeOS Projector"
+            description: "ChromeOS send Projector XHR requests. This is the "
+              "network call between the chromeOS Projector(Screencast) app and "
+              "the server. If the screencast app is enabled, the XHR requests "
+              "are made by the app to the allowlisted URLs after authorizing "
+              "the request with end user credentials or auth token."
             trigger: "When the user launches the Screencast app to create and "
               "view screencasts."
             data: "The recordings and transcripts done via the Screencast app."
@@ -101,18 +132,17 @@ void ProjectorXhrSender::Send(const GURL& url,
         /*success=*/false,
         /*response_body=*/std::string(),
         /*error=*/"UNSUPPORTED_URL");
+    LOG(ERROR) << "URL is not supported.";
     return;
   }
   GURL request_url = url;
   if (use_api_key) {
     request_url =
         net::AppendQueryParameter(url, kApiKeyParam, google_apis::GetAPIKey());
-  }
-  if (use_credentials || use_api_key) {
     // Use end user credentials or API key to authorize the request. Doesn't
     // need to fetch OAuth token.
     SendRequest(request_url, method, request_body, /*token=*/std::string(),
-                headers, std::move(callback));
+                headers, /*allow_cookie=*/false, std::move(callback));
     return;
   }
 
@@ -122,6 +152,7 @@ void ProjectorXhrSender::Send(const GURL& url,
         /*success=*/false,
         /*response_body=*/std::string(),
         /*error=*/"INVALID_ACCOUNT_EMAIL");
+    LOG(ERROR) << "User email is invalid";
     return;
   }
 
@@ -135,10 +166,10 @@ void ProjectorXhrSender::Send(const GURL& url,
                 .email;
   // Fetch OAuth token for authorizing the request.
   oauth_token_fetcher_.GetAccessTokenFor(
-      email,
-      base::BindOnce(&ProjectorXhrSender::OnAccessTokenRequestCompleted,
-                     weak_factory_.GetWeakPtr(), request_url, method,
-                     request_body, headers.Clone(), std::move(callback)));
+      email, base::BindOnce(&ProjectorXhrSender::OnAccessTokenRequestCompleted,
+                            weak_factory_.GetWeakPtr(), request_url, method,
+                            request_body, headers.Clone(), use_credentials,
+                            std::move(callback)));
 }
 
 void ProjectorXhrSender::OnAccessTokenRequestCompleted(
@@ -146,6 +177,7 @@ void ProjectorXhrSender::OnAccessTokenRequestCompleted(
     const std::string& method,
     const std::string& request_body,
     const base::Value::Dict& headers,
+    bool use_credentials,
     SendRequestCallback callback,
     const std::string& email,
     GoogleServiceAuthError error,
@@ -155,11 +187,12 @@ void ProjectorXhrSender::OnAccessTokenRequestCompleted(
         /*success=*/false,
         /*response_body=*/std::string(),
         /*error=*/"TOKEN_FETCH_FAILURE");
+    LOG(ERROR) << "Failed to reqeust access token, error:" << error.ToString();
     return;
   }
 
   SendRequest(url, method, request_body, info.token, headers,
-              std::move(callback));
+              /*allow_cookie=*/use_credentials, std::move(callback));
 }
 
 void ProjectorXhrSender::SendRequest(const GURL& url,
@@ -167,6 +200,7 @@ void ProjectorXhrSender::SendRequest(const GURL& url,
                                      const std::string& request_body,
                                      const std::string& token,
                                      const base::Value::Dict& headers,
+                                     bool allow_cookie,
                                      SendRequestCallback callback) {
   // Build resource request.
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -186,8 +220,10 @@ void ProjectorXhrSender::SendRequest(const GURL& url,
   }
 
   // Send resource request.
-  auto loader = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 kNetworkTrafficAnnotationTag);
+  auto loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), allow_cookie
+                                       ? kNetworkTrafficAnnotationTagAllowCookie
+                                       : kNetworkTrafficAnnotationTag);
   // Return response body of non-2xx response. This allows passing response body
   // for non-2xx response.
   loader->SetAllowHttpErrorResults(true);
@@ -224,11 +260,16 @@ void ProjectorXhrSender::OnSimpleURLLoaderComplete(
   bool is_success =
       response_body && response_code >= 200 && response_code < 300;
   auto response_body_or_empty = response_body ? *response_body : std::string();
-  // TODO(b/243180842): Include response code in XhrResponse when needed.
   std::move(callback).Run(
       /*success=*/is_success,
       /*response_body=*/response_body_or_empty,
       /*error=*/is_success ? std::string() : "XHR_FETCH_FAILURE");
+  if (!is_success) {
+    LOG(ERROR) << "Failed to send XHR request, Http error code: "
+               << response_code
+               << ", response body: " << response_body_or_empty;
+  }
+
   loader_map_.erase(request_id);
 }
 

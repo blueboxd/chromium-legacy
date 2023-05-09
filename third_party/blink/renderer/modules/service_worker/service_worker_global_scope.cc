@@ -692,11 +692,10 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
     // Count the update of fetch handlers after the initial evaluation.
     if (event_type == event_type_names::kFetch) {
       UseCounter::Count(
-          this,
-          WebFeature::kServiceWorkerFetchHandlerUpdateAfterInitialization);
+          this, WebFeature::kServiceWorkerFetchHandlerAddedAfterInitialization);
     }
-    UseCounter::Count(this,
-                      WebFeature::kServiceWorkerAddHandlerAfterInitialization);
+    UseCounter::Count(
+        this, WebFeature::kServiceWorkerEventHandlerAddedAfterInitialization);
   }
   return WorkerGlobalScope::AddEventListenerInternal(event_type, listener,
                                                      options);
@@ -2627,18 +2626,15 @@ ServiceWorkerGlobalScope::FetchHandlerType() {
   if (!elv) {
     return mojom::blink::ServiceWorkerFetchHandlerType::kNoHandler;
   }
-
-  ScriptState* script_state = ScriptController()->GetScriptState();
-  // Do not remove this, |scope| is needed by `GetListenerObject`.
-  ScriptState::Scope scope(script_state);
-
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
   // TODO(crbug.com/1349613): revisit the way to implement this.
   // The following code returns kEmptyFetchHandler if all handlers are nop.
   for (RegisteredEventListener& e : *elv) {
-    EventTarget* et = EventTarget::Create(script_state);
+    EventTarget* et = EventTarget::Create(ScriptController()->GetScriptState());
     v8::Local<v8::Value> v =
-        To<JSBasedEventListener>(e.Callback())->GetListenerObject(*et);
-    if (v.IsEmpty() || !v->IsFunction() ||
+        To<JSBasedEventListener>(e.Callback())->GetEffectiveFunction(*et);
+    if (!v->IsFunction() ||
         !v.As<v8::Function>()->Experimental_IsNopFunction()) {
       return mojom::blink::ServiceWorkerFetchHandlerType::kNotSkippable;
     }
@@ -2663,7 +2659,8 @@ bool ServiceWorkerGlobalScope::SetAttributeEventListener(
           WebFeature::kServiceWorkerFetchHandlerModifiedAfterInitialization);
     }
     UseCounter::Count(
-        this, WebFeature::kServiceWorkerSetAttributeHandlerAfterInitialization);
+        this,
+        WebFeature::kServiceWorkerEventHandlerModifiedAfterInitialization);
   }
   return WorkerGlobalScope::SetAttributeEventListener(event_type, listener);
 }

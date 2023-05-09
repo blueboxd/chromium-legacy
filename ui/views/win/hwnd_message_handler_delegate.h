@@ -26,6 +26,7 @@ class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
 class TouchEvent;
+class GestureEvent;
 }  // namespace ui
 
 namespace views {
@@ -250,6 +251,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   // Called when the window scale factor has changed.
   virtual void HandleWindowScaleFactorChanged(float window_scale_factor) = 0;
+
+  // Called when the headless window bounds has changed.
+  virtual void HandleHeadlessWindowBoundsChanged(const gfx::Rect& bounds) = 0;
 
  protected:
   virtual ~HWNDMessageHandlerDelegate() = default;

@@ -303,12 +303,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfExtensionLoadedWhileOldPdfCloses) {
   // Close the first tab, destroying the first PDF while the second PDF is in
   // the middle of initialization. In https://crbug.com/1295431, the extension
   // process exited here and caused a crash when the second PDF resumed.
-  EXPECT_EQ(2U, GetGuestViewManager()->GetNumGuestsActive());
+  EXPECT_EQ(2U, GetGuestViewManager()->GetCurrentGuestCount());
   ASSERT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
       0, TabCloseTypes::CLOSE_USER_GESTURE));
   // `TestGuestViewManager` manages the guests by the order of creation.
   GetGuestViewManager()->WaitForFirstGuestDeleted();
-  EXPECT_EQ(1U, GetGuestViewManager()->GetNumGuestsActive());
+  EXPECT_EQ(1U, GetGuestViewManager()->GetCurrentGuestCount());
   primary_main_frame = new_web_contents->GetPrimaryMainFrame();
 
   // Now resume the guest attachment and ensure the second PDF loads without
@@ -2323,12 +2323,9 @@ void EnsureCustomPinchZoomInvoked(content::RenderFrameHost* guest_mainframe,
   zoom_watcher.Wait();
 
   // Check that the browser's native pinch zoom was prevented.
-  double scale_factor;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractDouble(
-      contents,
-      "window.domAutomationController.send(window.visualViewport.scale);",
-      &scale_factor));
-  EXPECT_DOUBLE_EQ(1.0, scale_factor);
+  EXPECT_DOUBLE_EQ(
+      1.0,
+      content::EvalJs(contents, "window.visualViewport.scale").ExtractDouble());
 }
 
 // Ensure that touchpad pinch events are handled by the PDF viewer.
@@ -3014,7 +3011,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionPrerenderAndFencedFrameTest,
   TestMimeHandlerViewGuest::WaitForGuestLoadStartThenStop(guest_view);
 
   // Ensure that the fenced frame's navigation should not abort the PDF stream.
-  EXPECT_EQ(1U, GetGuestViewManager()->GetNumGuestsActive());
+  EXPECT_EQ(1U, GetGuestViewManager()->GetCurrentGuestCount());
 }
 
 // Test that ensures we cannot navigate a fenced frame to a PDF because PDF

@@ -165,8 +165,9 @@
     },
 
     {
-      name: "preferCompositingToLCDTextEnabled",
-      initial: false,
+      name: "LCDTextPreference",
+      type: "LCDTextPreference",
+      initial: "LCDTextPreference::kStronglyPreferred",
       invalidate: ["AcceleratedCompositing"],
     },
 
@@ -658,6 +659,17 @@
       initial: "mojom::blink::HoverType::kHoverNone",
       invalidate: ["MediaQuery"],
       type: "mojom::blink::HoverType",
+    },
+
+    // The ability of the output device to modify the appearance of content once
+    // it has been rendered:
+    // kSlowType: E-ink screens or severely under-powered devices.
+    // kFastType: Computer screens.
+    {
+      name: "outputDeviceUpdateAbilityType",
+      initial: "mojom::blink::OutputDeviceUpdateAbilityType::kFastType",
+      invalidate: ["MediaQuery"],
+      type: "mojom::blink::OutputDeviceUpdateAbilityType",
     },
 
     // If true, the value in password fields is exposed to assistive technologies.

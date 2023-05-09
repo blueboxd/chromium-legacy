@@ -44,7 +44,7 @@
         --cr-checkbox-checked-box-color: var(--color-checkbox-foreground-checked,
             var(--cr-fallback-color-primary));
         --cr-checkbox-unchecked-box-color: var(--color-checkbox-foreground-unchecked,
-            var(--cr-fallback-color-on-surface-variant));
+            var(--cr-fallback-color-outline));
         --cr-checkbox-ripple-checked-color: var(--cr-active-background-color);
         --cr-checkbox-ripple-unchecked-color: var(--cr-active-background-color);
         --cr-checkbox-ripple-opacity: 1;
@@ -114,12 +114,15 @@
       }
 
       :host-context([chrome-refresh-2023]) #checkbox:focus-visible {
-        border: 2px solid var(--cr-focus-outline-color);
+        border: none;
+        outline: 2px solid var(--cr-focus-outline-color);
       }
 
       #checkmark {
         display: block;
+        position: relative;
         transform: scale(0);
+        z-index: 1;
       }
 
       #checkmark path {
@@ -140,8 +143,7 @@
 
       :host-context([chrome-refresh-2023]):host([checked]) #checkbox:focus-visible {
         background-clip: padding-box;
-        border-color: transparent;
-        outline: 2px solid var(--cr-focus-outline-color);
+        border: 2px solid transparent;
       }
 
       paper-ripple {

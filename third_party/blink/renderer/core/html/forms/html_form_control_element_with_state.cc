@@ -26,7 +26,9 @@
 
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -211,12 +213,6 @@ String HTMLFormControlElementWithState::IDLExposedAutofillValue() const {
   // 15. Let IDL value have the same value as field.
   String idl_value = field;
 
-  // Only allow Credential if the feature is enabled.
-  if (category == AutoCompleteCategory::kCredential &&
-      !RuntimeEnabledFeatures::WebAuthenticationConditionalUIEnabled()) {
-    return g_empty_string;
-  }
-
   // 16. If category is Credential and the indexth token in tokens is an ASCII
   // case-insensitive match for "webauthn", then run the substeps that follow:
   if (category == AutoCompleteCategory::kCredential) {
@@ -319,8 +315,22 @@ bool HTMLFormControlElementWithState::ClassSupportsStateRestore() const {
 
 bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()
     const {
-  // We don't save/restore control state in a form with autocomplete=off.
-  return isConnected() && ShouldAutocomplete();
+  if (!isConnected()) {
+    return false;
+  }
+  // TODO(crbug.com/1419161): remove this after M113 has been stable for a bit.
+  if (RuntimeEnabledFeatures::
+          FormControlRestoreStateIfAutocompleteOffEnabled()) {
+    return ShouldAutocomplete();
+  }
+  if (Form() && !Form()->ShouldAutocomplete()) {
+    return false;
+  }
+  if (EqualIgnoringASCIICase(FastGetAttribute(html_names::kAutocompleteAttr),
+                             "off")) {
+    return false;
+  }
+  return true;
 }
 
 void HTMLFormControlElementWithState::DispatchInputEvent() {
@@ -332,6 +342,10 @@ void HTMLFormControlElementWithState::DispatchInputEvent() {
 
 void HTMLFormControlElementWithState::DispatchChangeEvent() {
   DispatchScopedEvent(*Event::CreateBubble(event_type_names::kChange));
+}
+
+void HTMLFormControlElementWithState::DispatchCancelEvent() {
+  DispatchScopedEvent(*Event::CreateBubble(event_type_names::kCancel));
 }
 
 void HTMLFormControlElementWithState::FinishParsingChildren() {

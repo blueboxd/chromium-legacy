@@ -9,6 +9,7 @@
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/floss/bluetooth_adapter_floss.h"
+#include "device/bluetooth/floss/bluetooth_device_floss.h"
 #include "device/bluetooth/floss/bluetooth_gatt_service_floss.h"
 #include "device/bluetooth/floss/bluetooth_remote_gatt_descriptor_floss.h"
 #include "device/bluetooth/floss/bluetooth_remote_gatt_service_floss.h"
@@ -48,7 +49,7 @@ BluetoothRemoteGattCharacteristicFloss::
 }
 
 std::string BluetoothRemoteGattCharacteristicFloss::GetIdentifier() const {
-  return base::StringPrintf("%s/%d", service_->GetIdentifier().c_str(),
+  return base::StringPrintf("%s/%04x", service_->GetIdentifier().c_str(),
                             characteristic_->instance_id);
 }
 
@@ -58,12 +59,16 @@ device::BluetoothUUID BluetoothRemoteGattCharacteristicFloss::GetUUID() const {
 
 BluetoothRemoteGattCharacteristicFloss::Properties
 BluetoothRemoteGattCharacteristicFloss::GetProperties() const {
-  return characteristic_->properties;
+  const auto& [props, perms] = ConvertPropsAndPermsFromFloss(
+      characteristic_->properties, characteristic_->permissions);
+  return props;
 }
 
 BluetoothRemoteGattCharacteristicFloss::Permissions
 BluetoothRemoteGattCharacteristicFloss::GetPermissions() const {
-  return characteristic_->permissions;
+  const auto& [props, perms] = ConvertPropsAndPermsFromFloss(
+      characteristic_->properties, characteristic_->permissions);
+  return perms;
 }
 
 const std::vector<uint8_t>& BluetoothRemoteGattCharacteristicFloss::GetValue()
@@ -109,8 +114,14 @@ void BluetoothRemoteGattCharacteristicFloss::
     DeprecatedWriteRemoteCharacteristic(const std::vector<uint8_t>& value,
                                         base::OnceClosure callback,
                                         ErrorCallback error_callback) {
-  WriteRemoteCharacteristicImpl(value, floss::WriteType::kWriteNoResponse,
-                                std::move(callback), std::move(error_callback));
+  Properties props = GetProperties();
+  floss::WriteType write_type = floss::WriteType::kWrite;
+  if (props & PROPERTY_WRITE_WITHOUT_RESPONSE) {
+    write_type = floss::WriteType::kWriteNoResponse;
+  }
+
+  WriteRemoteCharacteristicImpl(value, write_type, std::move(callback),
+                                std::move(error_callback));
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -118,6 +129,13 @@ void BluetoothRemoteGattCharacteristicFloss::PrepareWriteRemoteCharacteristic(
     const std::vector<uint8_t>& value,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
+  // Make sure we're using reliable writes before starting a prepared write.
+  BluetoothDeviceFloss* device =
+      static_cast<BluetoothDeviceFloss*>(service_->GetDevice());
+  if (device && !device->UsingReliableWrite()) {
+    device->BeginReliableWrite();
+  }
+
   WriteRemoteCharacteristicImpl(value, floss::WriteType::kWritePrepare,
                                 std::move(callback), std::move(error_callback));
 }
@@ -218,10 +236,19 @@ void BluetoothRemoteGattCharacteristicFloss::OnWriteCharacteristic(
     base::OnceClosure callback,
     ErrorCallback error_callback,
     std::vector<uint8_t> data,
-    DBusResult<Void> result) {
+    DBusResult<GattWriteRequestStatus> result) {
   if (!result.has_value()) {
     std::move(error_callback)
         .Run(/*error_code=*/BluetoothGattServiceFloss::GattErrorCode::kFailed);
+    return;
+  }
+
+  if (result.value() != GattWriteRequestStatus::kSuccess) {
+    BluetoothGattServiceFloss::GattErrorCode error_code =
+        (result.value() == GattWriteRequestStatus::kBusy
+             ? BluetoothGattServiceFloss::GattErrorCode::kInProgress
+             : BluetoothGattServiceFloss::GattErrorCode::kFailed);
+    std::move(error_callback).Run(error_code);
     return;
   }
 

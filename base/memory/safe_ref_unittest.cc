@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/gtest_util.h"
+#include "base/test/memory/dangling_ptr_instrumentation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -65,49 +66,20 @@ TEST(SafeRefTest, CanCopyAndMove) {
 
 TEST(SafeRefTest, AssignCopyAndMove) {
   WithWeak with;
-  SafeRef<WithWeak> safe(with.factory.GetSafeRef());
-
   WithWeak with2;
+  WithWeak with3;
+
+  // Ensure `with`s outlive `safe`s
+  SafeRef<WithWeak> safe(with.factory.GetSafeRef());
   SafeRef<WithWeak> safe2(with2.factory.GetSafeRef());
   EXPECT_NE(safe->self, &with2);
   safe = safe2;
   EXPECT_EQ(safe->self, &with2);
 
-  WithWeak with3;
   SafeRef<WithWeak> safe3(with3.factory.GetSafeRef());
   EXPECT_NE(safe->self, &with3);
   safe = std::move(safe3);
   EXPECT_EQ(safe->self, &with3);
-}
-
-TEST(SafeRefTest, AssignCopyAfterInvalidate) {
-  WithWeak with;
-  SafeRef<WithWeak> safe(with.factory.GetSafeRef());
-  SafeRef<WithWeak> safe2(with.factory.GetSafeRef());
-
-  {
-    WithWeak with2;
-    safe = SafeRef<WithWeak>(with2.factory.GetSafeRef());
-  }
-  // `safe` is now invalidated (oops), but we won't use it in that state!
-  safe = safe2;
-  // `safe` is valid again, we can use it.
-  EXPECT_EQ(safe->self, &with);
-}
-
-TEST(SafeRefTest, AssignMoveAfterInvalidate) {
-  WithWeak with;
-  SafeRef<WithWeak> safe(with.factory.GetSafeRef());
-  SafeRef<WithWeak> safe2(with.factory.GetSafeRef());
-
-  {
-    WithWeak with2;
-    safe = SafeRef<WithWeak>(with2.factory.GetSafeRef());
-  }
-  // `safe` is now invalidated (oops), but we won't use it in that state!
-  safe = std::move(safe2);
-  // `safe` is valid again, we can use it.
-  EXPECT_EQ(safe->self, &with);
 }
 
 TEST(SafeRefDeathTest, ArrowOperatorCrashIfBadPointer) {
@@ -288,15 +260,24 @@ TEST(SafeRefTest, Bind) {
   BindOnce(&WithWeak::Method, with.factory.GetSafeRef()).Run();
 }
 
-#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS)
-// TODO(crbug.com/1416264): Test this when we are able to.
-TEST(SafeRefDeathTest, DISABLED_DanglingPointerDetector) {
-  auto with = std::make_unique<WithWeak>();
-  SafeRef<WithWeak> safe(with->factory.GetSafeRef());
-  BASE_EXPECT_DEATH({ with.reset(); },
-                    testing::HasSubstr("Detected dangling raw_ptr"));
+TEST(SafeRefTest, DanglingPointerDetector) {
+  auto instrumentation = test::DanglingPtrInstrumentation::Create();
+  if (!instrumentation.has_value()) {
+    GTEST_SKIP() << instrumentation.error();
+  }
+  {
+    auto with = std::make_unique<WithWeak>();
+    SafeRef<WithWeak> safe(with->factory.GetSafeRef());
+    EXPECT_EQ(instrumentation->dangling_ptr_detected(), 0u);
+    EXPECT_EQ(instrumentation->dangling_ptr_released(), 0u);
+
+    with.reset();
+    EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+    EXPECT_EQ(instrumentation->dangling_ptr_released(), 0u);
+  }
+  EXPECT_EQ(instrumentation->dangling_ptr_detected(), 1u);
+  EXPECT_EQ(instrumentation->dangling_ptr_released(), 1u);
 }
-#endif
 
 }  // namespace
 }  // namespace base

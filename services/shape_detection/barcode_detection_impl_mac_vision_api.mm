@@ -5,6 +5,8 @@
 #include "services/shape_detection/barcode_detection_impl_mac_vision_api.h"
 
 #include "base/logging.h"
+#include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 
 namespace shape_detection {
 
@@ -17,11 +19,21 @@ class VisionAPI : public VisionAPIInterface {
   ~VisionAPI() override = default;
 
   NSArray<VNBarcodeSymbology>* GetSupportedSymbologies() const override {
-    if (@available(macOS 10.13, *)) {
+    if (@available(macOS 12.0, *)) {
+      base::scoped_nsobject<VNDetectBarcodesRequest> barcodes_request(
+          [[VNDetectBarcodesRequest alloc] init]);
+      NSError* error = nil;
+      NSArray<VNBarcodeSymbology>* symbologies =
+          [barcodes_request supportedSymbologiesAndReturnError:&error];
+      if (error) {
+        DLOG(ERROR) << base::SysNSStringToUTF8([error localizedDescription]);
+      }
+      return symbologies;
+    } else if (@available(macOS 10.13, *)) {
       return [VNDetectBarcodesRequest supportedSymbologies];
+    } else {
+      return @[];
     }
-
-    return @[];
   }
 };
 

@@ -54,12 +54,18 @@ struct BlinkGCPluginOptions {
   // due to pointer compression).
   bool enable_extra_padding_check = false;
 
-  // Checks that GCed classes or their embedded objects do not contain
-  // forbidden classes (e.g. TaskRunnerTimer).
-  bool enable_forbidden_fields_check = true;
+  // Enables checking for `mojo::Associated{Remote,Receiver}` in the forbidden
+  // fields checker.
+  bool forbid_associated_remote_receiver = false;
+
+  // Enables checks of this plugin for code under the pdfium directory.
+  // TODO(chromium:1421576): Enable by default once all errors in pdfium have
+  // been resolved.
+  bool enable_checks_for_pdfium_directory = false;
 
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;
+  std::vector<std::string> checked_directories;
   std::vector<std::string> ignored_directories;
   // |allowed_directories| overrides |ignored_directories|.
   std::vector<std::string> allowed_directories;

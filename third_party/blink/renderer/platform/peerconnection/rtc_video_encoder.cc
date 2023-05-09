@@ -19,6 +19,8 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
@@ -26,7 +28,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/bitrate.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/media_switches.h"
@@ -59,6 +60,43 @@
 #include "third_party/webrtc/rtc_base/time_utils.h"
 
 namespace {
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_ARM_FAMILY)
+bool IsRK3399Board() {
+  const std::string board = base::SysInfo::GetLsbReleaseBoard();
+  const char* kRK3399Boards[] = {
+      "bob",
+      "kevin",
+      "rainier",
+      "scarlet",
+  };
+  for (const char* b : kRK3399Boards) {
+    if (board.find(b) == 0u) {  // if |board| starts with |b|.
+      return true;
+    }
+  }
+  return false;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_ARM_FAMILY)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool IsZeroCopyTabCaptureEnabled() {
+  // If you change this function, please change the code of the same function
+  // in
+  // https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_content.cc.
+#if defined(ARCH_CPU_ARM_FAMILY)
+  // The GL driver used on RK3399 has a problem to enable zero copy tab capture.
+  // See b/267966835.
+  // TODO(b/239503724): Remove this code when RK3399 reaches EOL.
+  static bool kIsRK3399Board = IsRK3399Board();
+  if (kIsRK3399Board) {
+    return false;
+  }
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
+  return base::FeatureList::IsEnabled(blink::features::kZeroCopyTabCapture);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 class SignaledValue {
  public:
   SignaledValue() : event(nullptr), val(nullptr) {}
@@ -460,7 +498,7 @@ bool IsZeroCopyEnabled(webrtc::VideoContentType content_type) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // The zero-copy capture is available for all sources in ChromeOS
     // Ash-chrome.
-    return base::FeatureList::IsEnabled(features::kZeroCopyTabCapture);
+    return IsZeroCopyTabCaptureEnabled();
 #else
     // Currently, zero copy capture screenshare is available only for tabs.
     // Since it is impossible to determine the content source, tab, window or
@@ -1102,7 +1140,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
     // Pop timestamps until we have a match.
     while (!submitted_frames_.empty()) {
       auto& front_frame = submitted_frames_.front();
-      const bool end_of_picture = !metadata.vp9 || metadata.vp9->end_of_picture;
+      const bool end_of_picture = metadata.end_of_picture();
       if (front_frame.media_timestamp_ == metadata.timestamp) {
         rtp_timestamp = front_frame.rtp_timestamp_;
         capture_timestamp_ms = front_frame.capture_time_ms_;
@@ -1153,7 +1191,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
   webrtc::EncodedImage image;
   image.SetEncodedData(rtc::make_ref_counted<EncodedDataWrapper>(
       static_cast<uint8_t*>(output_mapping_memory), metadata.payload_size_bytes,
-      media::BindToCurrentLoop(
+      base::BindPostTaskToCurrentDefault(
           base::BindOnce(&RTCVideoEncoder::Impl::BitstreamBufferAvailable,
                          weak_this_, bitstream_buffer_id))));
   auto encoded_size = metadata.encoded_size.value_or(input_visible_size_);
@@ -1490,8 +1528,9 @@ void RTCVideoEncoder::Impl::EncodeOneFrame(FrameChunk frame_chunk) {
       frame->BackWithSharedMemory(&region);
 
       input_buffers_free_.pop_back();
-      frame->AddDestructionObserver(media::BindToCurrentLoop(WTF::BindOnce(
-          &RTCVideoEncoder::Impl::InputBufferReleased, weak_this_, index)));
+      frame->AddDestructionObserver(
+          base::BindPostTaskToCurrentDefault(WTF::BindOnce(
+              &RTCVideoEncoder::Impl::InputBufferReleased, weak_this_, index)));
     }
   }
 
@@ -1708,8 +1747,9 @@ int32_t RTCVideoEncoder::InitEncode(
   Impl::UpdateEncoderInfoCallback update_encoder_info_callback =
       base::BindRepeating(&RTCVideoEncoder::UpdateEncoderInfo,
                           base::Unretained(this));
-  base::RepeatingClosure execute_software_fallback = media::BindToCurrentLoop(
-      base::BindRepeating(&RTCVideoEncoder::SetError, weak_this_));
+  base::RepeatingClosure execute_software_fallback =
+      base::BindPostTaskToCurrentDefault(
+          base::BindRepeating(&RTCVideoEncoder::SetError, weak_this_));
 
   impl_ = std::make_unique<Impl>(
       gpu_factories_, ProfileToWebRtcVideoCodecType(profile_),

@@ -23,12 +23,12 @@
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "components/services/app_service/public/cpp/icon_info.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_logging.h"
@@ -302,7 +302,7 @@ TEST_F(InstallFromSyncTest, SuccessWithoutManifest) {
           nullptr, kWebAppManifestUrl, true,
           webapps::InstallableStatusCode::NO_ERROR_DETECTED));
 
-  ExpectGetIcons(data_retriever.get(), /*skip_page_favicons=*/true,
+  ExpectGetIcons(data_retriever.get(), /*skip_page_favicons=*/false,
                  IconFetchSource::kDocument);
 
   InstallResult result = InstallFromSyncAndWait(std::move(data_retriever));
@@ -344,7 +344,7 @@ TEST_F(InstallFromSyncTest, SuccessManifestNoIcons) {
           CreateManifest(/*icons=*/false), kWebAppManifestUrl, true,
           webapps::InstallableStatusCode::NO_ERROR_DETECTED));
 
-  ExpectGetIcons(data_retriever.get(), /*skip_page_favicons=*/true,
+  ExpectGetIcons(data_retriever.get(), /*skip_page_favicons=*/false,
                  IconFetchSource::kDocument);
 
   InstallResult result = InstallFromSyncAndWait(std::move(data_retriever));

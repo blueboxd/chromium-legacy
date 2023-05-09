@@ -290,6 +290,15 @@ void DesksClient::OnActiveUserSessionChanged(const AccountId& account_id) {
 void DesksClient::CaptureActiveDeskAndSaveTemplate(
     CaptureActiveDeskAndSaveTemplateCallback callback,
     ash::DeskTemplateType template_type) {
+  CaptureActiveDesk(
+      base::BindOnce(&DesksClient::OnCapturedDeskTemplate,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      template_type);
+}
+
+void DesksClient::CaptureActiveDesk(
+    CaptureActiveDeskAndSaveTemplateCallback callback,
+    ash::DeskTemplateType template_type) {
   if (!active_profile_) {
     std::move(callback).Run(DeskActionError::kNoCurrentUserError,
                             /*desk_template=*/nullptr);
@@ -297,8 +306,17 @@ void DesksClient::CaptureActiveDeskAndSaveTemplate(
   }
 
   desks_controller_->CaptureActiveDeskAsSavedDesk(
-      base::BindOnce(&DesksClient::OnCapturedDeskTemplate,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      base::BindOnce(
+          [](CaptureActiveDeskAndSaveTemplateCallback callback,
+             std::unique_ptr<ash::DeskTemplate> desk_template) {
+            if (!desk_template) {
+              std::move(callback).Run(DeskActionError::kUnknownError, {});
+              return;
+            }
+
+            std::move(callback).Run(absl::nullopt, std::move(desk_template));
+          },
+          std::move(callback)),
       template_type,
       /*root_window_to_show=*/nullptr);
 }
@@ -575,6 +593,15 @@ base::GUID DesksClient::GetActiveDesk() {
   return desks_controller_->GetTargetActiveDesk()->uuid();
 }
 
+base::expected<const ash::Desk*, DesksClient::DeskActionError>
+DesksClient::GetDeskByID(const base::GUID& desk_uuid) const {
+  ash::Desk* desk = desks_controller_->GetDeskByUuid(desk_uuid);
+  if (!desk) {
+    return base::unexpected(DeskActionError::kResourceNotFoundError);
+  }
+  return desk;
+}
+
 absl::optional<DesksClient::DeskActionError> DesksClient::SwitchDesk(
     const base::GUID& desk_uuid) {
   ash::Desk* desk = desks_controller_->GetDeskByUuid(desk_uuid);
@@ -722,16 +749,15 @@ void DesksClient::OnRecallSavedDesk(
 
 void DesksClient::OnCapturedDeskTemplate(
     CaptureActiveDeskAndSaveTemplateCallback callback,
+    absl::optional<DesksClient::DeskActionError> error,
     std::unique_ptr<ash::DeskTemplate> desk_template) {
-  if (!desk_template) {
-    std::move(callback).Run(DeskActionError::kUnknownError, {});
+  if (error) {
+    std::move(callback).Run(error, {});
     return;
   }
 
-  // Let FloatingWorkspaceService handle the save when the template type is
-  // FloatingWorkspace.
-  if (desk_template->type() == ash::DeskTemplateType::kFloatingWorkspace) {
-    std::move(callback).Run(absl::nullopt, std::move(desk_template));
+  if (!desk_template) {
+    std::move(callback).Run(DeskActionError::kUnknownError, {});
     return;
   }
 

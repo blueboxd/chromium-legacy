@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/functional/callback_forward.h"
-#include "components/attribution_reporting/os_support.mojom-forward.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 
 class GURL;
@@ -24,6 +23,8 @@ class Origin;
 
 namespace content {
 
+struct AttributionInputEvent;
+
 // Interface between the browser's Attribution Reporting implementation and the
 // operating system's.
 class AttributionOsLevelManager {
@@ -32,7 +33,12 @@ class AttributionOsLevelManager {
 
   virtual void RegisterAttributionSource(const GURL& registration_url,
                                          const url::Origin& top_level_origin,
-                                         bool is_debug_key_allowed) = 0;
+                                         bool is_debug_key_allowed,
+                                         const AttributionInputEvent&) = 0;
+
+  virtual void RegisterAttributionTrigger(const GURL& registration_url,
+                                          const url::Origin& top_level_origin,
+                                          bool is_debug_key_allowed) = 0;
 
   // Clears storage data with the OS.
   // Note that `done` is not run if `AttributionOsLevelManager` is destroyed
@@ -44,8 +50,6 @@ class AttributionOsLevelManager {
                          BrowsingDataFilterBuilder::Mode mode,
                          bool delete_rate_limit_data,
                          base::OnceClosure done) = 0;
-
-  virtual attribution_reporting::mojom::OsSupport GetOsSupport() = 0;
 };
 
 }  // namespace content

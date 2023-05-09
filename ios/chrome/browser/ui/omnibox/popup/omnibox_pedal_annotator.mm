@@ -10,9 +10,9 @@
 #import "components/omnibox/browser/actions/omnibox_pedal_concepts.h"
 #import "components/omnibox/browser/autocomplete_match.h"
 #import "ios/chrome/browser/default_browser/promo_source.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
+#import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/icons/colorful_background_symbol_view.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
@@ -92,7 +92,7 @@ const CGFloat kSymbolSize = 18;
                       image:image
              imageTintColor:UIColor.blackColor
             backgroundColor:UIColor.whiteColor
-           imageBorderColor:[UIColor colorNamed:kGrey200Color]
+           imageBorderColor:[UIColor colorNamed:kLightOnlyGrey200Color]
                        type:pedalType
                      action:^{
                        OpenNewTabCommand* command =
@@ -156,7 +156,7 @@ const CGFloat kSymbolSize = 18;
 #if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
              imageTintColor:nil
             backgroundColor:UIColor.whiteColor
-           imageBorderColor:[UIColor colorNamed:kGrey200Color]
+           imageBorderColor:[UIColor colorNamed:kLightOnlyGrey200Color]
 #else
              imageTintColor:nil
             backgroundColor:[UIColor colorNamed:kPurple500Color]

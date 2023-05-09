@@ -9,6 +9,7 @@
 
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/strings/string_piece.h"
+#include "build/blink_buildflags.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
 #include "mojo/core/embedder/embedder.h"
@@ -62,7 +63,7 @@ TEST_F(SharedBufferTest, PassSharedBufferLocal) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(p1));
 }
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
 
 // Reads a single message with a shared buffer handle, maps the buffer, copies
 // the message contents into it, then exits.
@@ -76,7 +77,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CopyToBufferClient, SharedBufferTest, h) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
 }
 
-TEST_F(SharedBufferTest, PassSharedBufferCrossProcess) {
+#if BUILDFLAG(IS_IOS)
+// TODO(crbug.com/1418597): Test currently fails on iOS.
+#define MAYBE_PassSharedBufferCrossProcess DISABLED_PassSharedBufferCrossProcess
+#else
+#define MAYBE_PassSharedBufferCrossProcess PassSharedBufferCrossProcess
+#endif  // BUILDFLAG(IS_IOS)
+TEST_F(SharedBufferTest, MAYBE_PassSharedBufferCrossProcess) {
   const std::string message = "hello";
   MojoHandle b = CreateBuffer(message.size());
 
@@ -102,7 +109,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateBufferClient, SharedBufferTest, h) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h));
 }
 
-TEST_F(SharedBufferTest, PassSharedBufferFromChild) {
+#if BUILDFLAG(IS_IOS)
+// TODO(crbug.com/1418597): Test currently fails on iOS.
+#define MAYBE_PassSharedBufferFromChild DISABLED_PassSharedBufferFromChild
+#else
+#define MAYBE_PassSharedBufferFromChild PassSharedBufferFromChild
+#endif  // BUILDFLAG(IS_IOS)
+TEST_F(SharedBufferTest, MAYBE_PassSharedBufferFromChild) {
   const std::string message = "hello";
   MojoHandle b;
   RunTestClient("CreateBufferClient", [&](MojoHandle h) {
@@ -152,7 +165,14 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBuffer, SharedBufferTest, h) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(other_child));
 }
 
-TEST_F(SharedBufferTest, PassSharedBufferFromChildToChild) {
+#if BUILDFLAG(IS_IOS)
+// TODO(crbug.com/1418597): Test currently fails on iOS.
+#define MAYBE_PassSharedBufferFromChildToChild \
+  DISABLED_PassSharedBufferFromChildToChild
+#else
+#define MAYBE_PassSharedBufferFromChildToChild PassSharedBufferFromChildToChild
+#endif  // BUILDFLAG(IS_IOS)
+TEST_F(SharedBufferTest, MAYBE_PassSharedBufferFromChildToChild) {
   const std::string message = "hello";
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
@@ -285,7 +305,13 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndMapWriteSharedBuffer,
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h));
 }
 
-TEST_F(SharedBufferTest, CreateAndPassReadOnlyBuffer) {
+#if BUILDFLAG(IS_IOS)
+// TODO(crbug.com/1418597): Test currently fails on iOS.
+#define MAYBE_CreateAndPassReadOnlyBuffer DISABLED_CreateAndPassReadOnlyBuffer
+#else
+#define MAYBE_CreateAndPassReadOnlyBuffer CreateAndPassReadOnlyBuffer
+#endif  // BUILDFLAG(IS_IOS)
+TEST_F(SharedBufferTest, MAYBE_CreateAndPassReadOnlyBuffer) {
   RunTestClient("ReadAndMapWriteSharedBuffer", [&](MojoHandle h) {
     // Create a new shared buffer.
     MojoHandle b = CreateBuffer(1234);
@@ -344,7 +370,7 @@ TEST_F(SharedBufferTest, CreateAndPassFromChildReadOnlyBuffer) {
   });
 }
 
-#endif  // !BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(USE_BLINK)
 
 }  // namespace
 }  // namespace core

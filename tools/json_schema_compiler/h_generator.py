@@ -25,6 +25,8 @@ class _Generator(object):
     self._type_helper = cpp_type_generator
     self._generate_error_messages = namespace.compiler_options.get(
         'generate_error_messages', False)
+    self._modernised_enums = namespace.compiler_options.get(
+        'modernised_enums', False)
 
   def Generate(self):
     """Generates a Code object with the .h for a single namespace.
@@ -148,13 +150,20 @@ class _Generator(object):
     """Generate a code object with the  declaration of a C++ enum.
     """
     c = Code()
-    c.Sblock('enum %s {' % enum_name)
-    c.Append(self._type_helper.GetEnumNoneValue(type_) + ',')
+    c.Sblock('enum {enum_type} {name} {{'.format(
+      enum_type=('class' if self._modernised_enums else ''),
+      name=enum_name))
+    c.Append(self._type_helper.GetEnumNoneValue(type_, full_name=False) + ',')
+
     for value in type_.enum_values:
-      current_enum_string = self._type_helper.GetEnumValue(type_, value)
+      current_enum_string = (
+        self._type_helper.GetEnumValue(type_, value, full_name=False))
       c.Append(current_enum_string + ',')
-    c.Append('%s = %s,' % (
-        self._type_helper.GetEnumLastValue(type_), current_enum_string))
+
+    c.Append('{last_key} = {last_key_value},'.format(
+        last_key=self._type_helper.GetEnumLastValue(type_),
+        last_key_value=current_enum_string))
+
     c.Eblock('};')
     return c
 
@@ -337,11 +346,13 @@ class _Generator(object):
 
     c = Code()
     (c.Sblock('struct Params {')
-      .Append('static std::unique_ptr<Params> Create(%s);' %
+      .Append('static absl::optional<Params> Create(%s);' %
                   self._GenerateParams(
                       ('const base::Value::List& args',)))
       .Append('Params(const Params&) = delete;')
       .Append('Params& operator=(const Params&) = delete;')
+      .Append('Params(Params&& rhs);')
+      .Append('Params& operator=(Params&& rhs);')
       .Append('~Params();')
       .Append()
       .Cblock(self._GenerateTypes(p.type_ for p in function.params))

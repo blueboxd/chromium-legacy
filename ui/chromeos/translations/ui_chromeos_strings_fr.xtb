@@ -84,6 +84,7 @@
 <translation id="1722487484194605434">Compression de <ph name="NUMBER_OF_ITEMS" /> éléments…</translation>
 <translation id="1722687688096767818">Ajout du profil…</translation>
 <translation id="1726100011689679555">Serveurs de noms</translation>
+<translation id="1727562178154619254">Prêt pour la synchronisation</translation>
 <translation id="1729953886957086472">Allemand (Allemagne)</translation>
 <translation id="1730235522912993863">Chinois (Cangjie)</translation>
 <translation id="1731889557567069540"><ph name="NUMBER_OF_ITEMS" /> éléments copiés.</translation>
@@ -118,7 +119,6 @@
 <translation id="1942765061641586207">Résolution de l'image</translation>
 <translation id="1972984168337863910">Développer les panneaux de commentaires sur les fichiers</translation>
 <translation id="1995337122023280937">Accéder à l'emplacement du fichier</translation>
-<translation id="1999709132469742660">Accès au fichier pour toutes les URL</translation>
 <translation id="2001796770603320721">Gérer dans Drive</translation>
 <translation id="2009067268969781306">Le formatage d'une clé entraîne la suppression de toutes les données qui y sont stockées. Cette action est irréversible.</translation>
 <translation id="2025955442973426285">Tigrinya</translation>
@@ -432,7 +432,7 @@
 <translation id="4631887759990505102">Artiste</translation>
 <translation id="4642769377300286600">Installation du profil mobile, réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />…</translation>
 <translation id="4646813851450205600">Tchèque avec clavier Qwerty</translation>
-<translation id="4656777537938206294">Accédez à des fichiers hors connexion</translation>
+<translation id="4656777537938206294">Rendre des fichiers accessibles hors connexion</translation>
 <translation id="4658782175094886150">Personne dans la neige</translation>
 <translation id="466782788172479199">Autoriser Bruschetta à accéder aux fichiers de votre Google Drive. Les modifications apportées seront synchronisées avec vos autres appareils.</translation>
 <translation id="4669606053856530811">Les membres de "<ph name="SOURCE_NAME" />" n'auront plus accès à ces éléments, à moins qu'ils ne soient partagés avec eux.</translation>
@@ -542,7 +542,6 @@
 <translation id="5323213332664049067">Espagnol d'Amérique latine</translation>
 <translation id="5330145655348521461">Ces fichiers sont ouverts sur un autre bureau. Utilisez le compte de <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) pour les afficher.</translation>
 <translation id="5330512191124428349">Lire les informations</translation>
-<translation id="5337538975554986899">Accès au fichier pour toutes les URL, sauf <ph name="NON_RESTRICTED_DESTINATIONS" /></translation>
 <translation id="5344246330454251646">Gérer le partage avec Bruschetta</translation>
 <translation id="535792325654997756">Personne avec des chats</translation>
 <translation id="5358764674931277">Fréquence d'images</translation>
@@ -615,6 +614,7 @@
 <translation id="5911887972742538906">Une erreur s'est produite lors de l'installation de votre application Linux.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Échec de l'opération de copie en raison d'une erreur inattendue : <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5918480239180455431">Nouvelles options d'affichage disponibles dans les résultats de recherche</translation>
 <translation id="5926082595146149752">Néerlandais (Pays-Bas) avec clavier international américain (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5948255720516436063">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, activer après la configuration de l'appareil</translation>
@@ -704,6 +704,7 @@
 <translation id="6732801395666424405">Certificats non importés.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6740270213273127264">Partager le dossier avec Bruschetta</translation>
+<translation id="6750737795876287924">Répertoire actuel</translation>
 <translation id="6751256176799620176">1 dossier sélectionné</translation>
 <translation id="6755827872271341378">Appareil ChromeOS Flex</translation>
 <translation id="6790428901817661496">Lire</translation>
@@ -741,7 +742,6 @@
 <translation id="6973630695168034713">Dossiers</translation>
 <translation id="6976795442547527108">Lion</translation>
 <translation id="6979158407327259162">Google Drive</translation>
-<translation id="6979737339423435258">Toutes les données</translation>
 <translation id="6989942356279143254">Suédois</translation>
 <translation id="6990081529015358884">Vous avez utilisé tout l'espace de stockage.</translation>
 <translation id="6993826899923627728">Ces éléments se trouvent dans la corbeille</translation>
@@ -797,7 +797,6 @@
 <translation id="7458955835361612701">Aucune image récente</translation>
 <translation id="7460898608667578234">Ukrainien</translation>
 <translation id="7469894403370665791">Se connecter automatiquement à ce réseau</translation>
-<translation id="7481358317100446445">Prêt</translation>
 <translation id="7486315294984620427">Pour déposer des fichiers dans Parallels Desktop, vous devez copier le fichier dans le dossier "Fichiers Windows".</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam (phonétique)</translation>

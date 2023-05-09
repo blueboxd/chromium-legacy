@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import './webui_command_extender.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
 import {assert} from 'chrome://resources/ash/common/assert.js';
@@ -13,7 +12,7 @@ import {DialogType, isModal} from '../../common/js/dialog_type.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
-import {isAllEntriesOnTrashEnabledVolumes, RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, shouldMoveToTrash, TrashEntry} from '../../common/js/trash.js';
+import {deleteIsForever, RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, shouldMoveToTrash, TrashEntry} from '../../common/js/trash.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {NudgeType} from '../../containers/nudge_container.js';
@@ -1233,12 +1232,12 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
       dialogDoneCallback();
     };
 
-    // Files that are deleted from locations that are trash enabled should
-    // instead show copy indicating the files will be permanently deleted. For
-    // all other filesystem the permanent deletion can't necessarily be verified
-    // (e.g. a copy may be moved to the underlying filesystems version of
-    // trash).
-    if (isAllEntriesOnTrashEnabledVolumes(entries, fileManager.volumeManager)) {
+    // Files that are deleted from locations that are trash enabled (except
+    // Drive) should instead show copy indicating the files will be permanently
+    // deleted. For all other filesystem the permanent deletion can't
+    // necessarily be verified (e.g. a copy may be moved to the underlying
+    // filesystems version of trash).
+    if (deleteIsForever(entries, fileManager.volumeManager)) {
       const title = entries.length === 1 ?
           strf('CONFIRM_PERMANENTLY_DELETE_ONE_TITLE') :
           strf('CONFIRM_PERMANENTLY_DELETE_SOME_TITLE');
@@ -1900,7 +1899,8 @@ CommandHandler.COMMANDS_['invoke-sharesheet'] =
             fileManager.metadataModel.getCache(entries, ['sourceUrl'])
                 .map(m => m.sourceUrl || '');
         chrome.fileManagerPrivate.invokeSharesheet(
-            entries, launchSource, dlpSourceUrls, () => {
+            entries.map(e => util.unwrapEntry(e)), launchSource, dlpSourceUrls,
+            () => {
               if (chrome.runtime.lastError) {
                 console.warn(chrome.runtime.lastError.message);
                 return;
@@ -2587,15 +2587,14 @@ class GuestOsShareCommand extends FilesCommand {
     if (!entry || !entry.isDirectory) {
       return;
     }
-    const dir = /** @type {!DirectoryEntry} */ (entry);
-    const info = fileManager.volumeManager.getLocationInfo(dir);
+    const info = fileManager.volumeManager.getLocationInfo(entry);
     if (!info) {
       return;
     }
     const share = () => {
       // Always persist shares via right-click > Share with Linux.
       chrome.fileManagerPrivate.sharePathsWithCrostini(
-          this.vmName_, [dir], true /* persist */, () => {
+          this.vmName_, [util.unwrapEntry(entry)], true /* persist */, () => {
             if (chrome.runtime.lastError) {
               console.warn(
                   'Error sharing with guest: ' +
@@ -2615,7 +2614,7 @@ class GuestOsShareCommand extends FilesCommand {
     };
     // Show a confirmation dialog if we are sharing the root of a volume.
     // Non-Drive volume roots are always '/'.
-    if (dir.fullPath == '/') {
+    if (entry.fullPath == '/') {
       fileManager.ui.confirmDialog.showHtml(
           strf(`SHARE_ROOT_FOLDER_WITH_${this.typeForStrings_}_TITLE`),
           strf(

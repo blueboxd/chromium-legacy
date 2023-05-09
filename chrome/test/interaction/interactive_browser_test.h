@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_INTERACTION_INTERACTIVE_BROWSER_TEST_H_
 #define CHROME_TEST_INTERACTION_INTERACTIVE_BROWSER_TEST_H_
 
+#include <functional>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "base/test/rectify_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/interaction/interaction_test_util_browser.h"
 #include "chrome/test/interaction/interactive_browser_test_internal.h"
@@ -41,10 +43,6 @@ namespace ui {
 class TrackedElement;
 }
 
-namespace views {
-class ViewsDelegate;
-}
-
 class Browser;
 
 // Provides interactive test functionality for Views.
@@ -53,13 +51,9 @@ class Browser;
 // InteractionTestUtil to provide a common library of concise test methods. This
 // convenience API is nicknamed "Kombucha" (see README.md for more information).
 //
-// This class is not a test fixture; your test fixture can inherit from it to
-// import all of the test API it provides. You will need to call
-// private_test_impl().DoTestSetUp() in your SetUp() method and
-// private_test_impl().DoTestTearDown() in your TearDown() method and you must
-// call SetContextWidget() before running your test sequence. For this reason,
-// we provide a convenience class, InteractiveBrowserTest, below, which is
-// pre-configured to handle all of this for you.
+// This class is not a test fixture; it is a mixin that can be added to an
+// existing browser test class using `InteractiveBrowserTestT<T>` - or just use
+// `InteractiveBrowserTest`, which *is* a test fixture (preferred; see below).
 class InteractiveBrowserTestApi : public views::test::InteractiveViewsTestApi {
  public:
   InteractiveBrowserTestApi();
@@ -72,6 +66,17 @@ class InteractiveBrowserTestApi : public views::test::InteractiveViewsTestApi {
   // The element should be a TrackedElementWebContents.
   static WebContentsInteractionTestUtil* AsInstrumentedWebContents(
       ui::TrackedElement* el);
+
+  // Manually enable WebUI code coverage (slightly experimental). Call during
+  // `SetUpOnMainThread()` or in your test body before `RunTestSequence()`.
+  //
+  // Has no effect if the `--devtools-code-coverage` command line flag isn't
+  // set. This will cause tests to run longer (possibly timing out) and is not
+  // compatible with all WebUI pages. Use liberally, but at your own risk.
+  //
+  // TODO(b/273545898, b/273290598): when coverage is more robust, make this
+  // automatic for all tests that touch WebUI.
+  void EnableWebUICodeCoverage();
 
   // Takes a screenshot of the specified element, with name `screenshot_name`
   // (may be empty for tests that take only one screenshot) and `baseline`,
@@ -96,11 +101,10 @@ class InteractiveBrowserTestApi : public views::test::InteractiveViewsTestApi {
       // Specify a browser that is known at the time the sequence is created.
       // The browser must persist until the step executes.
       Browser*,
-      // Specify a browser that will be valid by the time the step executes
-      // (i.e is set in a previous step callback) but not at the time the test
-      // sequence is built. The browser will be read from the target variable,
-      // which must point to a valid browser.
-      Browser**>;
+      // Specify a browser pointer that will be valid by the time the step
+      // executes. Use std::ref() to wrap the pointer that will receive the
+      // value.
+      std::reference_wrapper<Browser*>>;
 
   // Instruments tab `tab_index` in `in_browser` as `id`. If `tab_index` is
   // unspecified, the active tab is used.
@@ -291,29 +295,43 @@ class InteractiveBrowserTestApi : public views::test::InteractiveViewsTestApi {
   }
 };
 
-// Test fixture for browser tests that supports the InteractiveBrowserTestApi
-// convenience methods.
+// Template for adding InteractiveBrowserTestApi to any test fixture which is
+// derived from InProcessBrowserTest.
 //
-// All things being equal, if you want to write an interactive browser test,
-// you should probably alias or derive from this class.
+// If you don't need to derive from some existing test class, prefer to use
+// InteractiveBrowserTest.
 //
 // See README.md for usage.
-class InteractiveBrowserTest : public InProcessBrowserTest,
-                               public InteractiveBrowserTestApi {
+template <typename T,
+          typename =
+              std::enable_if_t<std::is_base_of_v<InProcessBrowserTest, T>>>
+class InteractiveBrowserTestT : public T, public InteractiveBrowserTestApi {
  public:
-  InteractiveBrowserTest();
-  ~InteractiveBrowserTest() override;
+  template <typename... Args>
+  explicit InteractiveBrowserTestT(Args&&... args)
+      : T(std::forward<Args>(args)...) {}
 
-  // |views_delegate| is used for tests that want to use a derived class of
-  // ViewsDelegate to observe or modify things like window placement and Widget
-  // params.
-  explicit InteractiveBrowserTest(
-      std::unique_ptr<views::ViewsDelegate> views_delegate);
+  ~InteractiveBrowserTestT() override = default;
 
-  // InProcessBrowserTest:
-  void SetUpOnMainThread() override;
-  void TearDownOnMainThread() override;
+ protected:
+  void SetUpOnMainThread() override {
+    T::SetUpOnMainThread();
+    private_test_impl().DoTestSetUp();
+    SetContextWidget(
+        BrowserView::GetBrowserViewForBrowser(T::browser())->GetWidget());
+  }
+
+  void TearDownOnMainThread() override {
+    private_test_impl().DoTestTearDown();
+    T::TearDownOnMainThread();
+  }
 };
+
+// Convenience test fixture for interactive browser tests. This is the preferred
+// base class for Kombucha tests unless you specifically need something else.
+//
+// See README.md for usage.
+using InteractiveBrowserTest = InteractiveBrowserTestT<InProcessBrowserTest>;
 
 // Template definitions:
 

@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/apps/app_events_observer.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/audio/audio_events_observer.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_metric_sampler.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/reporting/metric_default_utils.h"
 #include "chrome/browser/chromeos/reporting/network/network_bandwidth_sampler.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/reporting/client/report_queue_configuration.h"
 #include "components/reporting/metrics/collector_base.h"
@@ -96,6 +98,12 @@ MetricReportingManager::Delegate::GetNetworkTelemetrySampler() const {
   return std::make_unique<NetworkTelemetrySampler>();
 }
 
+bool MetricReportingManager::Delegate::IsAppServiceAvailableForProfile(
+    Profile* profile) const {
+  return ::apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+      profile);
+}
+
 // static
 std::unique_ptr<MetricReportingManager> MetricReportingManager::Create(
     policy::ManagedSessionService* managed_session_service) {
@@ -149,8 +157,8 @@ std::vector<CollectorBase*> MetricReportingManager::GetTelemetryCollectors(
     MetricEventType event_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (event_type) {
-    case NETWORK_SIGNAL_STRENGTH_LOW:
-    case NETWORK_SIGNAL_STRENGTH_RECOVERED:
+    case WIFI_SIGNAL_STRENGTH_LOW:
+    case WIFI_SIGNAL_STRENGTH_RECOVERED:
       return GetTelemetryCollectorsFromSetting(
           ::ash::kReportDeviceSignalStrengthEventDrivenTelemetry);
     case USB_ADDED:
@@ -285,8 +293,10 @@ void MetricReportingManager::InitOnAffiliatedLogin(Profile* profile) {
       /*init_delay=*/base::TimeDelta());
   InitPeripheralsCollectors();
 
-  // Start observing app events only if the feature flag is set.
-  if (base::FeatureList::IsEnabled(kEnableAppMetricsReporting)) {
+  // Start observing app events only if the feature flag is set and app service
+  // is available for the given profile.
+  if (base::FeatureList::IsEnabled(kEnableAppMetricsReporting) &&
+      delegate_->IsAppServiceAvailableForProfile(profile)) {
     auto app_events_observer = AppEventsObserver::CreateForProfile(profile);
     InitEventObserverManager(
         std::move(app_events_observer), user_event_report_queue_.get(),

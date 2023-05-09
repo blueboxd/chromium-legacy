@@ -1139,6 +1139,9 @@ Node* Internals::effectiveRootScroller(Document* document) {
 
 ShadowRoot* Internals::shadowRoot(Element* host) {
   DCHECK(host);
+  if (auto* input = DynamicTo<HTMLInputElement>(*host)) {
+    input->EnsureShadowSubtree();
+  }
   return host->GetShadowRoot();
 }
 
@@ -2128,6 +2131,18 @@ void Internals::runIdleTimeSpellChecker(Document* document,
       ->GetSpellChecker()
       .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
+}
+
+bool Internals::hasLastEditCommand(Document* document,
+                                   ExceptionState& exception_state) {
+  if (!document || !document->GetFrame()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "No frame can be obtained from the provided document.");
+    return false;
+  }
+
+  return document->GetFrame()->GetEditor().LastEditCommand();
 }
 
 Vector<AtomicString> Internals::userPreferredLanguages() const {

@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/updater/update_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
@@ -28,6 +29,11 @@ enum class UpdaterScope;
 }  // namespace updater
 
 namespace updater::test {
+
+enum class AppBundleWebCreateMode {
+  kCreateApp = 0,
+  kCreateInstalledApp = 1,
+};
 
 class ScopedServer;
 
@@ -78,6 +84,9 @@ void ExpectInstalled(UpdaterScope scope);
 // Installs the updater.
 void Install(UpdaterScope scope);
 
+// Installs the updater and an app.
+void InstallUpdaterAndApp(UpdaterScope scope, const std::string& app_id);
+
 // Expects that the updater is installed on the system and the specified
 // version is active.
 void ExpectVersionActive(UpdaterScope scope, const std::string& version);
@@ -103,8 +112,11 @@ void RunWakeActive(UpdaterScope scope, int exit_code);
 // Invokes the active instance's UpdateService::Update (via RPC) for an app.
 void Update(UpdaterScope scope,
             const std::string& app_id,
-            const std::string& install_data_index,
-            bool do_update_check_only);
+            const std::string& install_data_index);
+
+// Invokes the active instance's UpdateService::CheckForUpdate (via RPC) for an
+// app.
+void CheckForUpdate(UpdaterScope scope, const std::string& app_id);
 
 // Invokes the active instance's UpdateService::UpdateAll (via RPC).
 void UpdateAll(UpdaterScope scope);
@@ -176,10 +188,12 @@ void RegisterApp(UpdaterScope scope, const std::string& app_id);
 #if BUILDFLAG(IS_WIN)
 void ExpectInterfacesRegistered(UpdaterScope scope);
 void ExpectMarshalInterfaceSucceeds(UpdaterScope scope);
-void ExpectLegacyUpdate3WebSucceeds(UpdaterScope scope,
-                                    const std::string& app_id,
-                                    int expected_final_state,
-                                    int expected_error_code);
+void ExpectLegacyUpdate3WebSucceeds(
+    UpdaterScope scope,
+    const std::string& app_id,
+    AppBundleWebCreateMode app_bundle_web_create_mode,
+    int expected_final_state,
+    int expected_error_code);
 void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope);
 void ExpectLegacyAppCommandWebSucceeds(UpdaterScope scope,
                                        const std::string& app_id,
@@ -212,7 +226,7 @@ void ExpectSelfUpdateSequence(UpdaterScope scope, ScopedServer* test_server);
 void ExpectUpdateCheckSequence(UpdaterScope scope,
                                ScopedServer* test_server,
                                const std::string& app_id,
-                               const std::string& install_data_index,
+                               UpdateService::Priority priority,
                                const base::Version& from_version,
                                const base::Version& to_version);
 
@@ -220,6 +234,7 @@ void ExpectUpdateSequence(UpdaterScope scope,
                           ScopedServer* test_server,
                           const std::string& app_id,
                           const std::string& install_data_index,
+                          UpdateService::Priority priority,
                           const base::Version& from_version,
                           const base::Version& to_version);
 
@@ -227,6 +242,7 @@ void ExpectInstallSequence(UpdaterScope scope,
                            ScopedServer* test_server,
                            const std::string& app_id,
                            const std::string& install_data_index,
+                           UpdateService::Priority priority,
                            const base::Version& from_version,
                            const base::Version& to_version);
 
@@ -237,8 +253,8 @@ void CallServiceUpdate(UpdaterScope updater_scope,
                        const std::string& install_data_index,
                        bool same_version_update_allowed);
 
-void SetupFakeLegacyUpdaterData(UpdaterScope scope);
-void ExpectLegacyUpdaterDataMigrated(UpdaterScope scope);
+void SetupFakeLegacyUpdater(UpdaterScope scope);
+void ExpectLegacyUpdaterMigrated(UpdaterScope scope);
 
 void RunRecoveryComponent(UpdaterScope scope,
                           const std::string& app_id,

@@ -12,7 +12,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/functional/callback_forward.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/fenced_frame/fenced_frame_config.h"
@@ -20,7 +19,12 @@
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
-#include "url/origin.h"
+
+namespace blink {
+
+struct AdDescriptor;
+
+}  // namespace blink
 
 namespace content {
 
@@ -90,10 +94,10 @@ class CONTENT_EXPORT FencedFrameURLMapping {
   blink::FencedFrame::RedactedFencedFrameConfig
   AssignFencedFrameURLAndInterestGroupInfo(
       const GURL& urn_uuid,
-      const GURL& url,
+      const blink::AdDescriptor& ad_descriptor,
       AdAuctionData auction_data,
       base::RepeatingClosure on_navigate_callback,
-      std::vector<GURL> ad_component_urls,
+      std::vector<blink::AdDescriptor> ad_component_descriptors,
       scoped_refptr<FencedFrameReporter> fenced_frame_reporter = nullptr);
 
   // Generate a URN that is not yet mapped to a URL.

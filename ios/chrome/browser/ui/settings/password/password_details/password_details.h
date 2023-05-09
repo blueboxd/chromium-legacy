@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/shared/ui/list_model/list_model.h"
 #include "url/gurl.h"
 
 namespace password_manager {
@@ -56,6 +56,9 @@ typedef NS_ENUM(NSInteger, CredentialType) {
 
 // URL which allows to change the password of compromised credential.
 @property(nonatomic, readonly) GURL changePasswordURL;
+
+// `shouldOfferToMoveToAccount` tells whether or not to show a move option.
+@property(nonatomic, assign) BOOL shouldOfferToMoveToAccount;
 
 - (instancetype)initWithCredential:
     (const password_manager::CredentialUIEntry&)credential

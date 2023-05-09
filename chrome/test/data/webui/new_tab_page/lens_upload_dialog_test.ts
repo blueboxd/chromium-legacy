@@ -24,7 +24,7 @@ suite('LensUploadDialogTest', () => {
   let submitUrlCalled = false;
   let submittedUrl: string|null = null;
 
-  setup(async () => {
+  setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     metrics = fakeMetricsPrivate();
     windowProxy = installMock(WindowProxy);
@@ -48,7 +48,6 @@ suite('LensUploadDialogTest', () => {
 
     uploadDialog = document.createElement('ntp-lens-upload-dialog');
     wrapperElement.appendChild(uploadDialog);
-    await waitAfterNextRender(uploadDialog);
 
     uploadDialog.$.lensForm.submitUrl = (url: string) => {
       submitUrlCalled = true;
@@ -61,7 +60,16 @@ suite('LensUploadDialogTest', () => {
     submittedUrl = null;
   });
 
-  test('creating ntp lens dialog opens containing dialog element', () => {
+  test('hidden be default', () => {
+    // Assert.
+    assertTrue(uploadDialog.$.dialog.hidden);
+  });
+
+  test('shows when openDialog is called', async () => {
+    // Act.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
+
     // Assert.
     assertFalse(uploadDialog.$.dialog.hidden);
     assertEquals(
@@ -72,6 +80,10 @@ suite('LensUploadDialogTest', () => {
   });
 
   test('hides when close button is clicked', async () => {
+    // Arrange.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
+
     // Act.
     const closeButton =
       uploadDialog.shadowRoot!.querySelector('#closeButton') as HTMLElement;
@@ -88,6 +100,8 @@ suite('LensUploadDialogTest', () => {
 
   test('focusing outside the upload dialog closes the dialog', async () => {
     // Arrange.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
     const event =
         new FocusEvent('focusout', {relatedTarget: outsideClickTarget});
 
@@ -107,6 +121,8 @@ suite('LensUploadDialogTest', () => {
       'focusing inside the upload dialog does not close the dialog',
       async () => {
         // Arrange.
+        uploadDialog.openDialog();
+        await waitAfterNextRender(uploadDialog);
         const event = new FocusEvent(
             'focusout', {relatedTarget: uploadDialog.$.closeButton});
 
@@ -122,50 +138,11 @@ suite('LensUploadDialogTest', () => {
                 LensUploadDialogAction.DIALOG_CLOSED));
       });
 
-  test(
-      'focusout with null related target closes the dialog when doc has focus',
-      async () => {
-        // Arrange.
-        const event = new FocusEvent('focusout', {relatedTarget: null});
-
-        // Act.
-        (document.activeElement as HTMLElement).focus();
-        uploadDialog.$.dialog.dispatchEvent(event);
-
-        // Assert.
-        assertTrue(uploadDialog.$.dialog.hidden);
-        assertEquals(
-            1,
-            metrics.count(
-                'NewTabPage.Lens.UploadDialog.DialogAction',
-                LensUploadDialogAction.DIALOG_CLOSED));
-      });
-
-  test(
-      'focusout with null related target closes the dialog when doc does not have focus',
-      async () => {
-        // Arrange.
-        const event = new FocusEvent('focusout', {relatedTarget: null});
-
-        // Act.
-        const nativeHasFocus = document.hasFocus;
-        document.hasFocus = () => {
-          return false;
-        };
-        uploadDialog.$.dialog.dispatchEvent(event);
-
-        // Assert.
-        assertFalse(uploadDialog.$.dialog.hidden);
-        assertEquals(
-            0,
-            metrics.count(
-                'NewTabPage.Lens.UploadDialog.DialogAction',
-                LensUploadDialogAction.DIALOG_CLOSED));
-
-        document.hasFocus = nativeHasFocus;
-      });
-
   test('clicking esc key closes the dialog', async () => {
+    // Arrange.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
+
     // Act.
     document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
 
@@ -180,12 +157,10 @@ suite('LensUploadDialogTest', () => {
 
   test('opening dialog while offline shows offline UI', async () => {
     // Arrange.
-    uploadDialog.remove();
     windowProxy.setResultFor('onLine', false);
 
     // Act.
-    uploadDialog = document.createElement('ntp-lens-upload-dialog');
-    wrapperElement.appendChild(uploadDialog);
+    uploadDialog.openDialog();
     await waitAfterNextRender(uploadDialog);
 
     // Assert.
@@ -199,12 +174,10 @@ suite('LensUploadDialogTest', () => {
       'clicking try again in offline state when online updates UI',
       async () => {
         // Arrange.
-        uploadDialog.remove();
         windowProxy.setResultFor('onLine', false);
 
         // Act.
-        uploadDialog = document.createElement('ntp-lens-upload-dialog');
-        wrapperElement.appendChild(uploadDialog);
+        uploadDialog.openDialog();
         await waitAfterNextRender(uploadDialog);
 
         // Assert. (consistency check)
@@ -223,6 +196,10 @@ suite('LensUploadDialogTest', () => {
       });
 
   test('submit url does not submit with empty url', async () => {
+    // Arrange.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
+
     // Act.
     clickInputSubmit();
 
@@ -234,6 +211,8 @@ suite('LensUploadDialogTest', () => {
       'submit valid url by clicking submit button should submit ', async () => {
         // Arrange.
         const url = 'http://google.com/image.png';
+        uploadDialog.openDialog();
+        await waitAfterNextRender(uploadDialog);
 
         // Act.
         setInputBoxValue(url);
@@ -247,6 +226,8 @@ suite('LensUploadDialogTest', () => {
   test('pressing enter in input box should submit valid url', async () => {
     // Arrange.
     const url = 'http://google.com/image.png';
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
 
     // Act.
     setInputBoxValue(url);
@@ -260,6 +241,8 @@ suite('LensUploadDialogTest', () => {
   test('pressing enter in search button should submit valid url', async () => {
     // Arrange.
     const url = 'http://google.com/image.png';
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
 
     // Act.
     setInputBoxValue(url);
@@ -274,6 +257,8 @@ suite('LensUploadDialogTest', () => {
   test('pressing space in search button should submit valid url', async () => {
     // Arrange.
     const url = 'http://google.com/image.png';
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
 
     // Act.
     setInputBoxValue(url);
@@ -300,6 +285,8 @@ suite('LensUploadDialogTest', () => {
       'dragenter then dragleave event should transition to normal state',
       async () => {
         // Arrange.
+        uploadDialog.openDialog();
+        await waitAfterNextRender(uploadDialog);
         uploadDialog.$.dragDropArea.dispatchEvent(new DragEvent('dragenter'));
         await waitAfterNextRender(uploadDialog);
         // Act.
@@ -315,6 +302,8 @@ suite('LensUploadDialogTest', () => {
     uploadDialog.$.lensForm.submitFileList = (_fileList: FileList) => {
       submitFileListCalled = true;
     };
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
     // Act.
     const dataTransfer = new DataTransfer();
     const file = new File([], 'image-file.png', {type: 'image/png'});
@@ -327,6 +316,10 @@ suite('LensUploadDialogTest', () => {
   });
 
   test('shows error state when FILE_TYPE error is dispatched', async () => {
+    // Arrange.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
+
     // Act.
     uploadDialog.$.lensForm.dispatchEvent(new CustomEvent('error', {
       detail: LensErrorType.FILE_TYPE,
@@ -347,6 +340,10 @@ suite('LensUploadDialogTest', () => {
   });
 
   test('clears error state when NO_FILE error is dispatched', async () => {
+    // Arrange.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
+
     // Act.
     uploadDialog.$.lensForm.dispatchEvent(new CustomEvent('error', {
       detail: LensErrorType.FILE_TYPE,
@@ -360,6 +357,10 @@ suite('LensUploadDialogTest', () => {
   });
 
   test('shows loading state when file is submitted', async () => {
+    // Arrange.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
+
     // Act.
     uploadDialog.$.lensForm.dispatchEvent(new CustomEvent('loading', {
       detail: LensSubmitType.FILE,
@@ -375,6 +376,10 @@ suite('LensUploadDialogTest', () => {
   });
 
   test('shows loading state when URL is submitted', async () => {
+    // Arrange.
+    uploadDialog.openDialog();
+    await waitAfterNextRender(uploadDialog);
+
     // Act.
     uploadDialog.$.lensForm.dispatchEvent(new CustomEvent('loading', {
       detail: LensSubmitType.URL,

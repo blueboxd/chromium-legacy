@@ -277,7 +277,7 @@ void OnReadDlcFile(GetDlcContentsCallback callback,
   std::move(callback).Run(response.contents, response.error);
 }
 
-std::unique_ptr<PumpkinData> CreatePumpkinData(
+absl::optional<PumpkinData> CreatePumpkinData(
     base::FilePath base_pumpkin_path) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -307,12 +307,12 @@ std::unique_ptr<PumpkinData> CreatePumpkinData(
     ReadDlcFileResponse response =
         ReadDlcFile(base_pumpkin_path.Append(file_name));
     if (response.error.has_value())
-      return nullptr;
+      return absl::nullopt;
 
     *file_data = response.contents;
   }
 
-  return std::make_unique<PumpkinData>(std::move(data));
+  return data;
 }
 
 }  // namespace
@@ -1989,8 +1989,18 @@ void AccessibilityManager::SetKeyboardListenerExtensionId(
 }
 
 bool AccessibilityManager::ToggleDictation() {
-  if (!profile_)
+  if (!profile_) {
     return false;
+  }
+
+  const speech::LanguageCode language_code = GetDictationLanguageCode();
+  if (!dictation_active_ && ::features::IsDictationOfflineAvailable() &&
+      speech::SodaInstaller::GetInstance()->IsSodaDownloading(language_code)) {
+    // Only return early if the user tried to toggle Dictation on during a SODA
+    // download; if the user tried to toggle Dictation off, we can let this pass
+    // through, even if SODA is in-progress.
+    return false;
+  }
 
   // Send an event to accessibility common, where Dictation logic lives.
   dictation_active_ = !dictation_active_;
@@ -2461,9 +2471,8 @@ speech::LanguageCode AccessibilityManager::GetDictationLanguageCode() {
 void AccessibilityManager::InstallPumpkinForDictation(
     InstallPumpkinCallback callback) {
   DCHECK(!callback.is_null());
-  if (!::features::IsExperimentalAccessibilityDictationWithPumpkinEnabled() ||
-      !IsDictationEnabled()) {
-    std::move(callback).Run(nullptr);
+  if (!IsDictationEnabled()) {
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -2482,9 +2491,8 @@ void AccessibilityManager::OnPumpkinInstalled(bool success) {
     return;
   }
 
-  if (!::features::IsExperimentalAccessibilityDictationWithPumpkinEnabled() ||
-      !success) {
-    std::move(install_pumpkin_callback_).Run(nullptr);
+  if (!success) {
+    std::move(install_pumpkin_callback_).Run(absl::nullopt);
     return;
   }
 
@@ -2502,7 +2510,7 @@ void AccessibilityManager::OnPumpkinInstalled(bool success) {
 }
 
 void AccessibilityManager::OnPumpkinDataCreated(
-    std::unique_ptr<PumpkinData> data) {
+    absl::optional<PumpkinData> data) {
   if (install_pumpkin_callback_.is_null()) {
     return;
   }
@@ -2515,7 +2523,7 @@ void AccessibilityManager::OnPumpkinError(const std::string& error) {
     return;
   }
 
-  std::move(install_pumpkin_callback_).Run(nullptr);
+  std::move(install_pumpkin_callback_).Run(absl::nullopt);
   is_pumpkin_installed_for_testing_ = false;
 
   UpdateDictationNotification();

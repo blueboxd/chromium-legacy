@@ -37,7 +37,9 @@ WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
     WGPUDevice device,
     WGPUTextureUsage usage,
     WGPUTextureFormat format,
-    PredefinedColorSpace color_space)
+    PredefinedColorSpace color_space,
+    gfx::HDRMode hdr_mode,
+    absl::optional<gfx::HDRMetadata> hdr_metadata)
     : dawn_control_client_(dawn_control_client),
       client_(client),
       device_(device),
@@ -57,6 +59,7 @@ WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
   // paths to keep the rendering correct in that cases.
   layer_->SetContentsOpaque(true);
   layer_->SetPremultipliedAlpha(true);
+  layer_->SetHDRConfiguration(hdr_mode, hdr_metadata);
 
   dawn_control_client_->GetProcs().deviceReference(device_);
 }
@@ -168,13 +171,15 @@ WebGPUSwapBufferProvider::NewOrRecycledSwapBuffer(
   }
 
   if (unused_swap_buffers_.empty()) {
+    uint32_t usage = gpu::SHARED_IMAGE_USAGE_WEBGPU |
+                     gpu::SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
+                     gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
+    if (usage_ & WGPUTextureUsage_StorageBinding) {
+      usage |= gpu::SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE;
+    }
     gpu::Mailbox mailbox = sii->CreateSharedImage(
         Format(), size, PredefinedColorSpaceToGfxColorSpace(color_space_),
-        kTopLeft_GrSurfaceOrigin, alpha_mode,
-        gpu::SHARED_IMAGE_USAGE_WEBGPU |
-            gpu::SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
-            gpu::SHARED_IMAGE_USAGE_DISPLAY_READ,
-        gpu::kNullSurfaceHandle);
+        kTopLeft_GrSurfaceOrigin, alpha_mode, usage, gpu::kNullSurfaceHandle);
     gpu::SyncToken creation_token = sii->GenUnverifiedSyncToken();
 
     unused_swap_buffers_.push_back(base::MakeRefCounted<SwapBuffer>(

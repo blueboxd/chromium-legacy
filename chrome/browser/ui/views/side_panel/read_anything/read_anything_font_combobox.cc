@@ -27,18 +27,6 @@ class ReadAnythingFontCombobox::MenuModel : public ComboboxMenuModel {
  private:
   // The Read Anything font combobox will not have icons on any platform.
   bool HasIcons() const override { return false; }
-
-  // The Read Anything font combobox will use a different FontList for each
-  // item in the menu. This will give a preview of the font to the user.
-  const gfx::FontList* GetLabelFontListAt(size_t index) const override {
-    std::vector<std::string> font_list = GetModel()->GetLabelFontNameAt(index);
-    if (!font_list.empty()) {
-      return new gfx::FontList(font_list, gfx::Font::FontStyle::NORMAL,
-                               kMenuLabelFontSizePx, gfx::Font::Weight::NORMAL);
-    }
-
-    return ComboboxMenuModel::GetLabelFontListAt(index);
-  }
 };
 
 ReadAnythingFontCombobox::ReadAnythingFontCombobox(
@@ -74,6 +62,12 @@ void ReadAnythingFontCombobox::FontNameChangedCallback() {
 
 gfx::Size ReadAnythingFontCombobox::GetMinimumSize() const {
   return gfx::Size(kMinimumComboboxWidth, CalculatePreferredSize().height());
+}
+
+void ReadAnythingFontCombobox::SetFocusRingColorId(
+    ui::ColorId focus_ring_color) {
+  DCHECK(views::FocusRing::Get(this));
+  views::FocusRing::Get(this)->SetColorId(focus_ring_color);
 }
 
 void ReadAnythingFontCombobox::SetDropdownColorIds(ui::ColorId background_color,

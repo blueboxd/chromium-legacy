@@ -12,6 +12,7 @@
 #include "build/config/chromebox_for_meetings/buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/cart/commerce_hint_service.h"
@@ -243,6 +244,7 @@
 #include "ash/webui/help_app_ui/help_app_ui.h"
 #include "ash/webui/help_app_ui/help_app_ui.mojom.h"
 #include "ash/webui/help_app_ui/search/search.mojom.h"
+#include "ash/webui/media_app_ui/media_app_guest_ui.h"
 #include "ash/webui/media_app_ui/media_app_ui.h"
 #include "ash/webui/media_app_ui/media_app_ui.mojom.h"
 #include "ash/webui/multidevice_debug/proximity_auth_ui.h"
@@ -302,6 +304,7 @@
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/ash/vm/vm.mojom.h"
 #include "chrome/browser/ui/webui/ash/vm/vm_ui.h"
+#include "chrome/browser/ui/webui/feedback/feedback_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/settings/ash/files_page/mojom/google_drive_handler.mojom.h"
@@ -991,9 +994,10 @@ void PopulateChromeWebUIFrameBinders(
       ash::printing::printing_manager::PrintManagementUI,
       ash::InternetConfigDialogUI, ash::InternetDetailDialogUI, ash::SetTimeUI,
       ash::BluetoothPairingDialogUI, nearby_share::NearbyShareDialogUI,
+      ash::cloud_upload::CloudUploadUI, ash::office_fallback::OfficeFallbackUI,
 #endif
-      NewTabPageUI, OmniboxPopupUI, BookmarksSidePanelUI, CustomizeChromeUI>(
-      map);
+      NewTabPageUI, OmniboxPopupUI, BookmarksSidePanelUI, CustomizeChromeUI,
+      InternalsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
@@ -1116,7 +1120,7 @@ void PopulateChromeWebUIFrameBinders(
 
   if (features::IsReadAnythingEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
-        read_anything::mojom::PageHandlerFactory, ReadAnythingUI>(map);
+        read_anything::mojom::UntrustedPageHandlerFactory, ReadAnythingUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<tab_search::mojom::PageHandlerFactory,
@@ -1400,19 +1404,21 @@ void PopulateChromeWebUIFrameBinders(
         ash::ManageMirrorSyncUI>(map);
   }
 
-  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud()) {
+  Profile* profile =
+      Profile::FromBrowserContext(render_frame_host->GetBrowserContext());
+  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     RegisterWebUIControllerInterfaceBinder<
         ash::cloud_upload::mojom::PageHandlerFactory,
         ash::cloud_upload::CloudUploadUI>(map);
   }
 
-  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud()) {
+  if (ash::cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     RegisterWebUIControllerInterfaceBinder<
         ash::office_fallback::mojom::PageHandlerFactory,
         ash::office_fallback::OfficeFallbackUI>(map);
   }
 
-  if (ash::features::IsDriveFsBulkPinningEnabled()) {
+  if (drive::util::IsDriveFsBulkPinningEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
         ash::settings::google_drive::mojom::PageHandlerFactory,
         ash::settings::OSSettingsUI>(map);
@@ -1513,6 +1519,8 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
       .Add<color_change_listener::mojom::PageHandler>();
   registry.ForWebUI<ash::smb_dialog::SmbCredentialsDialogUI>()
       .Add<color_change_listener::mojom::PageHandler>();
+  registry.ForWebUI<FeedbackUI>()
+      .Add<color_change_listener::mojom::PageHandler>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // --- Section 2: chrome-untrusted:// WebUIs:
@@ -1528,6 +1536,9 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
       .Add<ash::projector::mojom::UntrustedProjectorPageHandlerFactory>();
 
   registry.ForWebUI<ash::feedback::OsFeedbackUntrustedUI>()
+      .Add<color_change_listener::mojom::PageHandler>();
+
+  registry.ForWebUI<ash::MediaAppGuestUI>()
       .Add<color_change_listener::mojom::PageHandler>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

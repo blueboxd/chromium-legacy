@@ -84,7 +84,7 @@ bool IsDeprecateAltClickEnabled() {
 
 BASE_FEATURE(kShortcutCustomizationApp,
              "ShortcutCustomizationApp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsShortcutCustomizationAppEnabled() {
   return base::FeatureList::IsEnabled(kShortcutCustomizationApp);
@@ -103,6 +103,13 @@ bool IsShortcutCustomizationEnabled() {
 // https://crbug.com/1253280.
 BASE_FEATURE(kLacrosResourcesFileSharing,
              "LacrosResourcesFileSharing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When the input method wants to commit the composition, always call
+// ConfirmCompositionText even if Ash thinks there's no composition.
+// Enabling this fixes b/265853952.
+BASE_FEATURE(kAlwaysConfirmComposition,
+             "AlwaysConfirmComposition",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -430,6 +437,16 @@ bool IsVariableRefreshRateEnabled() {
   return base::FeatureList::IsEnabled(kEnableVariableRefreshRate);
 }
 
+// Fixes b/267944900.
+BASE_FEATURE(kWaylandKeepSelectionFix,
+             "WaylandKeepSelectionFix",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Fixes b/267944900.
+BASE_FEATURE(kWaylandCancelComposition,
+             "WaylandCancelComposition",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kWaylandScreenCoordinatesEnabled,
              "WaylandScreenCoordinatesEnabled",
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -480,8 +497,10 @@ const base::FeatureParam<ChromeRefresh2023Level> kChromeRefresh2023Level(
     &kChromeRefresh2023LevelOption);
 
 ChromeRefresh2023Level GetChromeRefresh2023Level() {
-  return IsChromeRefresh2023() ? kChromeRefresh2023Level.Get()
-                               : ChromeRefresh2023Level::kDisabled;
+  static const ChromeRefresh2023Level level =
+      IsChromeRefresh2023() ? kChromeRefresh2023Level.Get()
+                            : ChromeRefresh2023Level::kDisabled;
+  return level;
 }
 
 #if !BUILDFLAG(IS_LINUX)

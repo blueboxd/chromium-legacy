@@ -1021,9 +1021,6 @@ class CONTENT_EXPORT NavigationRequest
 
   const absl::optional<base::UnguessableToken> ComputeFencedFrameNonce() const;
 
-  const absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
-  ComputeDeprecatedFencedFrameMode() const;
-
   void RenderFallbackContentForObjectTag();
 
   // Returns the vector of web features used during the navigation, whose
@@ -1337,8 +1334,11 @@ class CONTENT_EXPORT NavigationRequest
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       bool is_download,
       absl::optional<SubresourceLoaderParams> subresource_loader_params);
-  // TODO(https://crbug.com/1220337): Implement this logic for
-  // OnRequestFailedInternal() and BeginNavigationImpl() as well.
+  void SelectFrameHostForOnRequestFailedInternal(
+      const network::URLLoaderCompletionStatus& status,
+      bool skip_throttles,
+      const absl::optional<std::string>& error_page_content);
+  void SelectFrameHostForCrossDocumentNavigationWithNoUrlLoader();
 
   // To be called whenever a navigation request fails. If |skip_throttles| is
   // true, the registered NavigationThrottle(s) won't get a chance to intercept

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/public/cpp/desk_template.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -28,7 +27,6 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
-#include "ash/wm/overview/overview_highlightable_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "base/i18n/time_formatting.h"
@@ -127,13 +125,13 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
       saved_desk_->source() == DeskTemplateSource::kPolicy;
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
+  View* background_view = nullptr;
+  View* box_layout_view = nullptr;
   views::Builder<SavedDeskItemView>(this)
       .SetPreferredSize(kPreferredSize)
       .SetUseDefaultFillLayout(true)
       .SetAccessibleName(saved_desk_name)
       .SetCallback(std::move(launch_template_callback))
-      .SetBackground(views::CreateThemedRoundedRectBackground(
-          cros_tokens::kCrosSysSystemBaseElevated, kSaveDeskCornerRadius))
       .SetBorder(std::make_unique<views::HighlightBorder>(
           kSaveDeskCornerRadius,
           chromeos::features::IsJellyrollEnabled()
@@ -141,8 +139,16 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
               : views::HighlightBorder::Type::kHighlightBorder1))
       // TODO(b/274025495): Update Shadow for SavedDeskItemView.
       .AddChildren(
+          views::Builder<View>()
+              .CopyAddressTo(&background_view)
+              .SetPreferredSize(kPreferredSize)
+              .SetUseDefaultFillLayout(true)
+              .SetBackground(views::CreateThemedRoundedRectBackground(
+                  cros_tokens::kCrosSysSystemBaseElevated,
+                  kSaveDeskCornerRadius)),
           views::Builder<views::FlexLayoutView>()
               .SetOrientation(views::LayoutOrientation::kVertical)
+              .CopyAddressTo(&box_layout_view)
               .SetInteriorMargin(
                   gfx::Insets::VH(kVerticalPaddingDp, kSaveDeskPaddingDp))
               // TODO(richui): Consider splitting some of the children into
@@ -225,9 +231,21 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
               .SetVisible(false))
       .BuildChildren();
 
-  // We need to ensure that the layer is non-opaque when animating.
   SetPaintToLayer();
+  // We need to ensure that the layer is non-opaque when animating.
   layer()->SetFillsBoundsOpaquely(false);
+
+  // Note this view needs to be set to paint to layer so other view won't
+  // paint over it.
+  box_layout_view->SetPaintToLayer();
+  box_layout_view->layer()->SetFillsBoundsOpaquely(false);
+
+  background_view->SetPaintToLayer();
+  background_view->layer()->SetBackgroundBlur(
+      ColorProvider::kBackgroundBlurSigma);
+  background_view->layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(kSaveDeskCornerRadius));
+  background_view->layer()->SetFillsBoundsOpaquely(false);
 
   const int button_text_id = saved_desk_->type() == DeskTemplateType::kTemplate
                                  ? IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON

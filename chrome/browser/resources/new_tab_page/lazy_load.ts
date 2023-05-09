@@ -28,7 +28,6 @@ export {ChromeCartProxy} from './modules/cart/chrome_cart_proxy.js';
 export {DiscountConsentCard, DiscountConsentVariation} from './modules/cart/discount_consent_card.js';
 export {DiscountConsentDialog} from './modules/cart/discount_consent_dialog.js';
 export {chromeCartDescriptor, ChromeCartModuleElement} from './modules/cart/module.js';
-export {chromeCartDescriptor as chromeCartV2Descriptor, ChromeCartModuleElement as ChromeCartV2ModuleElement} from './modules/cart_v2/module.js';
 export {DriveProxy} from './modules/drive/drive_module_proxy.js';
 export {driveDescriptor, DriveModuleElement} from './modules/drive/module.js';
 export {driveDescriptor as driveV2Descriptor, DriveModuleElement as DriveV2ModuleElement} from './modules/drive_v2/module.js';
@@ -43,8 +42,9 @@ export {HistoryClustersProxy, HistoryClustersProxyImpl} from './modules/history_
 export {HistoryClusterElementType, HistoryClusterImageDisplayState, HistoryClusterLayoutType, historyClustersDescriptor, HistoryClustersModuleElement, LAYOUT_1_MIN_IMAGE_VISITS, LAYOUT_1_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS, LAYOUT_2_MIN_VISITS, LAYOUT_3_MIN_IMAGE_VISITS, LAYOUT_3_MIN_VISITS} from './modules/history_clusters/module.js';
 export {SuggestTileModuleElement} from './modules/history_clusters/suggest_tile.js';
 export {TileModuleElement} from './modules/history_clusters/tile.js';
+export {HistoryClustersModuleElement as HistoryClustersV2ModuleElement, historyClustersV2Descriptor} from './modules/history_clusters_v2/module.js';
 export {InfoDialogElement} from './modules/info_dialog.js';
-export {InitializeModuleCallback, Module, ModuleDescriptor, ModuleDescriptorV2, ModuleHeight} from './modules/module_descriptor.js';
+export {InitializeModuleCallback, Module, ModuleDescriptor, ModuleDescriptorV2} from './modules/module_descriptor.js';
 export {counterfactualLoad} from './modules/module_descriptors.js';
 export {ModuleHeaderElement} from './modules/module_header.js';
 export {ModuleRegistry} from './modules/module_registry.js';

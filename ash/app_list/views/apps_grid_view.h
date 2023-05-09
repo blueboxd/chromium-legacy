@@ -66,6 +66,7 @@ class PagedAppsGridViewTest;
 class ASH_EXPORT AppsGridView : public views::View,
                                 public AppListItemView::GridDelegate,
                                 public AppListItemListObserver,
+                                public AppListItemObserver,
                                 public AppListModelObserver {
  public:
   METADATA_HEADER(AppsGridView);
@@ -180,6 +181,13 @@ class ASH_EXPORT AppsGridView : public views::View,
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
   DropCallback GetDropCallback(const ui::DropTargetEvent& event) override;
+
+  // Whether or not the apps grid should handle drag and drop events or delegate
+  // them to the container.
+  virtual bool ShouldContainerHandleDragEvents() = 0;
+
+  // Whether the apps grid will accept the drop event by the data it carries.
+  bool WillAcceptDropEvent(const OSExchangeData& data);
 
   // Updates the visibility of app list items according to |app_list_state|.
   void UpdateControlVisibility(AppListViewState app_list_state);
@@ -758,6 +766,9 @@ class ASH_EXPORT AppsGridView : public views::View,
                        size_t to_index,
                        AppListItem* item) override;
 
+  // AppListItemObserver:
+  void ItemBeingDestroyed() override;
+
   // Overridden from AppListModelObserver:
   void OnAppListModelStatusChanged() override;
 
@@ -974,7 +985,8 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // The `AppListConfig` currently used for sizing app list item views within
   // the grid.
-  raw_ptr<const AppListConfig, ExperimentalAsh> app_list_config_ = nullptr;
+  raw_ptr<const AppListConfig, DanglingUntriaged | ExperimentalAsh>
+      app_list_config_ = nullptr;
 
   // The max number of columns the grid can have.
   int max_cols_ = 0;

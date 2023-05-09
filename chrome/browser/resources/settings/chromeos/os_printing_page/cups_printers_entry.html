@@ -25,9 +25,9 @@
             icon="cr20:domain">
           </iron-icon>
           <iron-icon id="printerStatusIcon"
-            hidden="[[!showPrinterStatusIcon_(printerEntry.printerType)]]"
-            icon="[[getPrinterStatusIcon_(
-                printerEntry.printerInfo.printerOnlineState)]]">
+            hidden="[[!showPrinterIcon_(printerEntry.printerType)]]"
+            icon="[[getPrinterIcon_(printerEntry.printerType,
+                printerEntry.printerInfo.printerStatusReason)]]">
           </iron-icon>
           [[printerEntry.printerInfo.printerName]]
       </span>

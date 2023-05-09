@@ -391,8 +391,7 @@ class DownloadProtectionServiceTestBase
                             base::BindRepeating(&BuildRealtimeReportingClient));
     client_ = std::make_unique<policy::MockCloudPolicyClient>();
 
-    SetDMTokenForTesting(
-        policy::DMToken::CreateValidTokenForTesting("dm_token"));
+    SetDMTokenForTesting(policy::DMToken::CreateValidToken("dm_token"));
 
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 
@@ -1699,7 +1698,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportValidDmg) {
   run_loop.Run();
 
   ASSERT_TRUE(HasClientDownloadRequest());
-  EXPECT_TRUE(GetClientDownloadRequest()->archive_valid());
+  EXPECT_EQ(GetClientDownloadRequest()->archive_summary().parser_status(),
+            ClientDownloadRequest::ArchiveSummary::VALID);
 
   ClearClientDownloadRequest();
 
@@ -1783,7 +1783,8 @@ TEST_F(DownloadProtectionServiceTest,
   run_loop.Run();
 
   ASSERT_TRUE(HasClientDownloadRequest());
-  EXPECT_TRUE(GetClientDownloadRequest()->archive_valid());
+  EXPECT_EQ(GetClientDownloadRequest()->archive_summary().parser_status(),
+            ClientDownloadRequest::ArchiveSummary::VALID);
   EXPECT_FALSE(GetClientDownloadRequest()->has_udif_code_signature());
 
   ClearClientDownloadRequest();
@@ -1821,7 +1822,8 @@ TEST_F(DownloadProtectionServiceTest,
   run_loop.Run();
 
   ASSERT_TRUE(HasClientDownloadRequest());
-  EXPECT_TRUE(GetClientDownloadRequest()->archive_valid());
+  EXPECT_EQ(GetClientDownloadRequest()->archive_summary().parser_status(),
+            ClientDownloadRequest::ArchiveSummary::VALID);
   ClearClientDownloadRequest();
 
   Mock::VerifyAndClearExpectations(sb_service_.get());
@@ -1856,7 +1858,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportDmgWithoutKoly) {
   run_loop.Run();
 
   ASSERT_TRUE(HasClientDownloadRequest());
-  EXPECT_FALSE(GetClientDownloadRequest()->archive_valid());
+  EXPECT_NE(GetClientDownloadRequest()->archive_summary().parser_status(),
+            ClientDownloadRequest::ArchiveSummary::VALID);
   ClearClientDownloadRequest();
 
   Mock::VerifyAndClearExpectations(sb_service_.get());
@@ -1906,7 +1909,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadReportLargeDmg) {
   ASSERT_TRUE(HasClientDownloadRequest());
   // Even though the test DMG is valid, it is not unpacked due to its large
   // size.
-  EXPECT_FALSE(GetClientDownloadRequest()->archive_valid());
+  EXPECT_NE(GetClientDownloadRequest()->archive_summary().parser_status(),
+            ClientDownloadRequest::ArchiveSummary::VALID);
   ClearClientDownloadRequest();
 
   Mock::VerifyAndClearExpectations(sb_service_.get());
@@ -1943,7 +1947,8 @@ TEST_F(DownloadProtectionServiceTest, DMGAnalysisEndToEnd) {
 
   auto* request = GetClientDownloadRequest();
 
-  EXPECT_TRUE(request->archive_valid());
+  EXPECT_EQ(GetClientDownloadRequest()->archive_summary().parser_status(),
+            ClientDownloadRequest::ArchiveSummary::VALID);
   EXPECT_FALSE(request->has_udif_code_signature());
   EXPECT_EQ(ClientDownloadRequest_DownloadType_MAC_EXECUTABLE,
             request->download_type());

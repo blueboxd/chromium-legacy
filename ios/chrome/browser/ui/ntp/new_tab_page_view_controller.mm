@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view_controller.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_omnibox_positioning.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -45,8 +44,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 }  // namespace
 
-@interface NewTabPageViewController () <NewTabPageOmniboxPositioning,
-                                        UICollectionViewDelegate,
+@interface NewTabPageViewController () <UICollectionViewDelegate,
                                         UIGestureRecognizerDelegate>
 
 // The overscroll actions controller managing accelerators over the toolbar.
@@ -138,9 +136,15 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 // constraints are not set before the views have been added to view hierarchy.
 @property(nonatomic, assign) BOOL viewDidFinishLoading;
 
+// YES if the NTP is in the middle of animating an omnibox focus.
+@property(nonatomic, assign) BOOL isAnimatingOmniboxFocus;
+
 @end
 
-@implementation NewTabPageViewController
+@implementation NewTabPageViewController {
+  // Background gradient when Modular Home is enabled.
+  GradientView* _backgroundGradientView;
+}
 
 - (instancetype)init {
   self = [super initWithNibName:nil bundle:nil];
@@ -186,7 +190,19 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
               action:@selector(handleSingleTapInView:)];
   singleTapRecognizer.delegate = self;
   [self.view addGestureRecognizer:singleTapRecognizer];
-  self.view.backgroundColor = ntp_home::NTPBackgroundColor();
+  if (IsMagicStackEnabled()) {
+    _backgroundGradientView = [[GradientView alloc]
+        initWithTopColor:[UIColor colorNamed:kSecondaryBackgroundColor]
+             bottomColor:[UIColor colorNamed:kPrimaryBackgroundColor]];
+    _backgroundGradientView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:_backgroundGradientView];
+    AddSameConstraints(_backgroundGradientView, self.view);
+    [self updateModularHomeBackgroundColorForUserInterfaceStyle:
+              self.traitCollection.userInterfaceStyle];
+    self.view.backgroundColor = [UIColor colorNamed:@"ntp_background_color"];
+  } else {
+    self.view.backgroundColor = ntp_home::NTPBackgroundColor();
+  }
 
   [self registerNotifications];
 
@@ -347,6 +363,15 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
                       }];
 }
 
+- (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
+              withTransitionCoordinator:
+                  (id<UIViewControllerTransitionCoordinator>)coordinator {
+  if (IsMagicStackEnabled()) {
+    [self updateModularHomeBackgroundColorForUserInterfaceStyle:
+              newCollection.userInterfaceStyle];
+  }
+}
+
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
@@ -376,6 +401,18 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 #pragma mark - Public
 
 - (void)focusOmnibox {
+  // Do nothing if the omnibox is already focused or is in the middle of a
+  // focus. This prevents `collectionShiftingOffset` from being reset to close
+  // to 0, which would result in the defocus animation not returning to the top
+  // of the NTP if that was the original position.
+  // This is relevant beacuse the omnibox logic signals the NTP to focus the
+  // omnibox when it becomes the keyboard first responder, but that happens
+  // during the NTP focus animation, which results in -focusOmnibox being called
+  // twice.
+  if (self.omniboxFocused || self.isAnimatingOmniboxFocus) {
+    return;
+  }
+
   // If the feed is meant to be visible and its contents have not loaded yet,
   // then any omnibox focus animations (i.e. opening app from search widget
   // action) needs to wait until it is ready. viewDidAppear: currently serves as
@@ -419,8 +456,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   [self addViewControllerAboveFeed:self.contentSuggestionsViewController];
 
   // Adds the feed top section to the view hierarchy if it exists.
-  if (IsDiscoverFeedTopSyncPromoEnabled() &&
-      self.feedTopSectionViewController) {
+  if (self.feedTopSectionViewController) {
     [self addViewControllerAboveFeed:self.feedTopSectionViewController];
   }
 
@@ -719,19 +755,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   return YES;
 }
 
-#pragma mark - NewTabPageOmniboxPositioning
-
-- (CGFloat)stickyOmniboxHeight {
-  // Takes the height of the entire header and subtracts the margin to stick the
-  // fake omnibox. Adjusts this for the device by further subtracting the
-  // toolbar height and safe area insets.
-  return [self.headerViewController headerHeight] -
-         ntp_header::kFakeOmniboxScrolledToTopMargin -
-         ToolbarExpandedHeight(
-             [UIApplication sharedApplication].preferredContentSizeCategory) -
-         self.view.safeAreaInsets.top - [self feedHeaderHeight];
-}
-
 #pragma mark - ThumbStripSupporting
 
 - (BOOL)isThumbStripEnabled {
@@ -888,16 +911,31 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
     strongSelf.disableScrollAnimation = NO;
     [strongSelf.headerViewController
         completeHeaderFakeOmniboxFocusAnimationWithFinalPosition:finalPosition];
+    strongSelf.isAnimatingOmniboxFocus = NO;
   }];
 
   self.animator.interruptible = YES;
+  self.isAnimatingOmniboxFocus = YES;
   [self.animator startAnimation];
 }
 
 #pragma mark - Private
 
+// Returns the collection view containing all NTP content.
 - (UICollectionView*)collectionView {
   return self.feedWrapperViewController.contentCollectionView;
+}
+
+// Returns the height of the fake omnibox to stick to the top of the NTP.
+- (CGFloat)stickyOmniboxHeight {
+  // Takes the height of the entire header and subtracts the margin to stick the
+  // fake omnibox. Adjusts this for the device by further subtracting the
+  // toolbar height and safe area insets.
+  return [self.headerViewController headerHeight] -
+         ntp_header::kFakeOmniboxScrolledToTopMargin -
+         ToolbarExpandedHeight(
+             [UIApplication sharedApplication].preferredContentSizeCategory) -
+         self.view.safeAreaInsets.top - [self feedHeaderHeight];
 }
 
 // Configures overscroll actions controller.
@@ -1120,8 +1158,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   // If Feed top section is enabled, the header bottom anchor should be set to
   // its top anchor instead of the feed collection's top anchor.
   UIView* bottomView = self.collectionView;
-  if (IsDiscoverFeedTopSyncPromoEnabled() &&
-      self.feedTopSectionViewController) {
+  if (self.feedTopSectionViewController) {
     bottomView = self.feedTopSectionViewController.view;
   }
   self.feedHeaderConstraints = @[
@@ -1289,8 +1326,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
           constraintLessThanOrEqualToConstant:kDiscoverFeedContentWidth],
     ]];
     [self setInitialFeedHeaderConstraints];
-    if (IsDiscoverFeedTopSyncPromoEnabled() &&
-        self.feedTopSectionViewController) {
+    if (self.feedTopSectionViewController) {
       [NSLayoutConstraint activateConstraints:@[
         [self.feedTopSectionViewController.view.leftAnchor
             constraintEqualToAnchor:self.collectionView.leftAnchor],
@@ -1356,6 +1392,13 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
   return adjustedOffset;
 }
 
+// Background gradient view will be used when in dark mode, the assigned
+// background color to this view's otherwise.
+- (void)updateModularHomeBackgroundColorForUserInterfaceStyle:
+    (UIUserInterfaceStyle)style {
+  _backgroundGradientView.hidden = style == UIUserInterfaceStyleLight;
+}
+
 #pragma mark - Helpers
 
 - (UIViewController*)contentSuggestionsViewController {
@@ -1408,8 +1451,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 
 // Height of the feed top section, returns 0 if not visible.
 - (CGFloat)feedTopSectionHeight {
-  return IsDiscoverFeedTopSyncPromoEnabled() &&
-                 self.feedTopSectionViewController
+  return self.feedTopSectionViewController
              ? self.feedTopSectionViewController.view.frame.size.height
              : 0;
 }

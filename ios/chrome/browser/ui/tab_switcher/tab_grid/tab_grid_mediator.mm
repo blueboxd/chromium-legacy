@@ -21,18 +21,21 @@
 #import "components/prefs/pref_service.h"
 #import "components/sessions/core/tab_restore_service.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/flags/system_flags.h"
-#import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/main/browser_list.h"
-#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/shared/public/commands/bookmark_add_command.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -54,10 +57,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url/url_util.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -183,9 +183,6 @@ void RecordTabGridCloseTabsCount(int count) {
 // The number of tabs in `closedSessionWindow` that are synced by
 // TabRestoreService.
 @property(nonatomic, assign) int syncedClosedTabsCount;
-// Short-term cache for grid thumbnails.
-@property(nonatomic, strong)
-    NSMutableDictionary<NSString*, UIImage*>* appearanceCache;
 @end
 
 @implementation TabGridMediator {
@@ -219,7 +216,6 @@ void RecordTabGridCloseTabsCount(int count) {
         std::make_unique<base::ScopedMultiSourceObservation<
             web::WebState, web::WebStateObserver>>(
             _webStateObserverBridge.get());
-    _appearanceCache = [[NSMutableDictionary alloc] init];
   }
   return self;
 }
@@ -447,7 +443,6 @@ void RecordTabGridCloseTabsCount(int count) {
 
 - (void)snapshotCache:(SnapshotCache*)snapshotCache
     didUpdateSnapshotForIdentifier:(NSString*)identifier {
-  [self.appearanceCache removeObjectForKey:identifier];
   web::WebState* webState = GetWebState(
       self.webStateList, WebStateSearchCriteria{
                              .identifier = identifier,
@@ -508,6 +503,8 @@ void RecordTabGridCloseTabsCount(int count) {
     }
 
     if (browser->IsInactive()) {
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabGridOpenInactiveTabSearchResult"));
       index = itemWebStateList->count();
       MoveTabToBrowser(itemID, self.browser, index);
     } else {
@@ -998,53 +995,6 @@ void RecordTabGridCloseTabsCount(int count) {
     });
   };
   [itemProvider loadObjectOfClass:[NSURL class] completionHandler:loadHandler];
-}
-
-#pragma mark - GridImageDataSource
-
-- (void)snapshotForIdentifier:(NSString*)identifier
-                   completion:(void (^)(UIImage*))completion {
-  if (self.appearanceCache[identifier]) {
-    completion(self.appearanceCache[identifier]);
-    return;
-  }
-  web::WebState* webState =
-      GetWebState(self.webStateList, WebStateSearchCriteria{
-                                         .identifier = identifier,
-                                     });
-  if (webState) {
-    SnapshotTabHelper::FromWebState(webState)->RetrieveColorSnapshot(
-        ^(UIImage* image) {
-          completion(image);
-        });
-  }
-}
-
-- (void)preloadSnapshotsForVisibleGridItems:
-    (NSSet<NSString*>*)visibleGridItems {
-  int startIndex = self.webStateList->GetIndexOfFirstNonPinnedWebState();
-  int endIndex = self.webStateList->count() - 1;
-
-  for (int i = startIndex; i <= endIndex; i++) {
-    web::WebState* web_state = self.webStateList->GetWebStateAt(i);
-    NSString* identifier = web_state->GetStableIdentifier();
-
-    BOOL isWebStateHidden = ![visibleGridItems containsObject:identifier];
-    if (isWebStateHidden) {
-      continue;
-    }
-
-    __weak __typeof(self) weakSelf = self;
-    auto cacheImage = ^(UIImage* image) {
-      weakSelf.appearanceCache[identifier] = image;
-    };
-
-    [self snapshotForIdentifier:identifier completion:cacheImage];
-  }
-}
-
-- (void)clearPreloadedSnapshots {
-  [self.appearanceCache removeAllObjects];
 }
 
 #pragma mark - GridShareableItemsProvider

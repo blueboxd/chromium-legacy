@@ -175,7 +175,9 @@ CGFloat ToolbarHeight() {
       [[ToolbarButtonFactory alloc] initWithStyle:ToolbarStyle::kNormal];
   self.fakeToolbar = [[UIView alloc] init];
   self.fakeToolbar.backgroundColor =
-      buttonFactory.toolbarConfiguration.backgroundColor;
+      IsMagicStackEnabled()
+          ? [UIColor clearColor]
+          : buttonFactory.toolbarConfiguration.backgroundColor;
   [searchField insertSubview:self.fakeToolbar atIndex:0];
   self.fakeToolbar.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -407,6 +409,14 @@ CGFloat ToolbarHeight() {
 
   CGFloat percent = [self searchFieldProgressForOffset:offset
                                         safeAreaInsets:safeAreaInsets];
+  if (IsMagicStackEnabled()) {
+    // Update background color of fake toolbar if stuck to top of NTP so that it
+    // has a non-clear background that matches the NTP background. Otherwise,
+    // return to clear background.
+    self.fakeToolbar.backgroundColor =
+        percent == 1.0f ? [UIColor colorNamed:@"ntp_background_color"]
+                        : [UIColor clearColor];
+  }
 
   // Offset the hint label constraints with half of the change in width
   // from the original scale, since constraints are calculated before
@@ -558,7 +568,9 @@ CGFloat ToolbarHeight() {
     _fakeLocationBar.userInteractionEnabled = NO;
     _fakeLocationBar.clipsToBounds = YES;
     _fakeLocationBar.backgroundColor =
-        [UIColor colorNamed:kTextfieldBackgroundColor];
+        IsMagicStackEnabled()
+            ? [UIColor colorNamed:@"fake_omnibox_background_color"]
+            : [UIColor colorNamed:kTextfieldBackgroundColor];
     _fakeLocationBar.translatesAutoresizingMaskIntoConstraints = NO;
     _fakeLocationBarHighlightView = [[UIView alloc] init];
     _fakeLocationBarHighlightView.userInteractionEnabled = NO;

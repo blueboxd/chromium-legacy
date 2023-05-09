@@ -6,12 +6,14 @@
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -29,7 +31,6 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -147,7 +148,10 @@
       isIncognito ? ToolbarStyle::kIncognito : ToolbarStyle::kNormal;
 
   ToolbarButtonActionsHandler* actionHandler =
-      [[ToolbarButtonActionsHandler alloc] init];
+      [[ToolbarButtonActionsHandler alloc]
+          initWithEngagementTracker:feature_engagement::TrackerFactory::
+                                        GetForBrowserState(
+                                            self.browser->GetBrowserState())];
 
   CommandDispatcher* dispatcher = self.browser->GetCommandDispatcher();
 

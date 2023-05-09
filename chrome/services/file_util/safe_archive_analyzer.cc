@@ -7,8 +7,6 @@
 #include "base/functional/callback.h"
 #include "build/build_config.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
-#include "chrome/common/safe_browsing/seven_zip_analyzer.h"
-#include "chrome/common/safe_browsing/zip_analyzer.h"
 
 namespace {
 // The maximum duration of analysis, in milliseconds.
@@ -36,9 +34,9 @@ void SafeArchiveAnalyzer::AnalyzeZipFile(
                               weak_factory_.GetWeakPtr());
   timeout_timer_.Start(FROM_HERE, kArchiveAnalysisTimeout, this,
                        &SafeArchiveAnalyzer::Timeout);
-  zip_analyzer_.Init(std::move(zip_file), base::FilePath(),
-                     std::move(analysis_finished_callback),
-                     std::move(temp_file_getter_callback), &results_);
+  zip_analyzer_.Analyze(std::move(zip_file), base::FilePath(),
+                        std::move(analysis_finished_callback),
+                        std::move(temp_file_getter_callback), &results_);
 }
 
 void SafeArchiveAnalyzer::AnalyzeDmgFile(
@@ -59,9 +57,9 @@ void SafeArchiveAnalyzer::AnalyzeDmgFile(
                               weak_factory_.GetWeakPtr());
   timeout_timer_.Start(FROM_HERE, kArchiveAnalysisTimeout, this,
                        &SafeArchiveAnalyzer::Timeout);
-  dmg_analyzer_.Init(std::move(dmg_file), base::FilePath(),
-                     std::move(analysis_finished_callback),
-                     std::move(temp_file_getter_callback), &results_);
+  dmg_analyzer_.Analyze(std::move(dmg_file), base::FilePath(),
+                        std::move(analysis_finished_callback),
+                        std::move(temp_file_getter_callback), &results_);
 #else
   NOTREACHED();
 #endif
@@ -83,9 +81,9 @@ void SafeArchiveAnalyzer::AnalyzeRarFile(
                               weak_factory_.GetWeakPtr());
   timeout_timer_.Start(FROM_HERE, kArchiveAnalysisTimeout, this,
                        &SafeArchiveAnalyzer::Timeout);
-  rar_analyzer_.Init(std::move(rar_file), base::FilePath(),
-                     std::move(analysis_finished_callback),
-                     std::move(temp_file_getter_callback), &results_);
+  rar_analyzer_.Analyze(std::move(rar_file), base::FilePath(),
+                        std::move(analysis_finished_callback),
+                        std::move(temp_file_getter_callback), &results_);
 }
 
 void SafeArchiveAnalyzer::AnalyzeSevenZipFile(
@@ -104,9 +102,9 @@ void SafeArchiveAnalyzer::AnalyzeSevenZipFile(
                               weak_factory_.GetWeakPtr());
   timeout_timer_.Start(FROM_HERE, kArchiveAnalysisTimeout, this,
                        &SafeArchiveAnalyzer::Timeout);
-  seven_zip_analyzer_.Init(std::move(seven_zip_file), base::FilePath(),
-                           std::move(analysis_finished_callback),
-                           std::move(temp_file_getter_callback), &results_);
+  seven_zip_analyzer_.Analyze(std::move(seven_zip_file), base::FilePath(),
+                              std::move(analysis_finished_callback),
+                              std::move(temp_file_getter_callback), &results_);
 }
 
 void SafeArchiveAnalyzer::RequestTemporaryFile(GetTempFileCallback callback) {

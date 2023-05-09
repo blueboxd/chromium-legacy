@@ -118,6 +118,7 @@ baru <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></transl
 <translation id="2929907241665500097">Ni ddiweddarwyd Chrome, aeth rhywbeth o'i le. <ph name="BEGIN_LINK" />Datrys problemau diweddaru Chrome a diweddariadau a fethwyd.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Mewngofnodi Rhwydwaith - Chrome</translation>
 <translation id="3019382870990049182">Ail-lansiwch i ddiweddaru &amp;ChromeOS Flex</translation>
+<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Roedd estyniadau Google Chrome yn cyrchu dyfeisiau HID}=1{Mae estyniadau Google Chrome yn cyrchu dyfeisiau HID}two{Mae estyniadau Google Chrome yn cyrchu # dyfeisiau HID}few{Mae estyniadau Google Chrome yn cyrchu # dyfeisiau HID}many{Mae estyniadau Google Chrome yn cyrchu # dyfeisiau HID}other{Mae estyniadau Google Chrome yn cyrchu # dyfeisiau HID}}</translation>
 <translation id="303514781271618814">Mae Chrome yn archwilio nodweddion newydd sy'n caniatáu i wefannau ddarparu'r un profiad pori drwy ddefnyddio llai o'ch data</translation>
 <translation id="3037838751736561277">Mae Google Chrome yn y modd cefndir.</translation>
 <translation id="3038232873781883849">Wrthi'n aros i osod...</translation>
@@ -211,6 +212,7 @@ baru <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></transl
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Mae'n bosib bod y ffeil hon yn beryglus, felly mae Chrome wedi ei rhwystro.</translation>
 <translation id="479167709087336770">Mae hwn yn defnyddio'r un gwiriwr sillafu â'r un sy'n cael ei ddefnyddio yn Google Search. Anfonir testun rydych yn ei deipio yn y porwr at Google. Gallwch newid yr ymddygiad hwn yn y gosodiadau ar unrhyw adeg.</translation>
+<translation id="4828579605166583682">Mae Google Chrome yn ceisio disodli cyfrineiriau presennol. Teipiwch eich cyfrinair Windows i ganiatáu hyn.</translation>
 <translation id="4842397268809523050">Nid oedd ChromeOS Flex yn gallu cysoni eich data gan nad yw Cysoni ar gael ar gyfer eich parth.</translation>
 <translation id="4873783916118289636">Adolygu rheolyddion diogelwch a phreifatrwydd allweddol yn Chrome</translation>
 <translation id="4891791193823137474">Caniatáu i Google Chrome redeg yn y cefndir</translation>
@@ -222,6 +224,7 @@ baru <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></transl
 <translation id="4970880042055371251">Fersiwn ChromeOS</translation>
 <translation id="4970947549776831107">Gwnaeth Chrome rwystro'r ffeil hon oherwydd bod y math hwn o ffeil yn beryglus</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
+<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Roedd estyniad Google Chrome yn cyrchu dyfeisiau HID}=1{Mae estyniad Google Chrome yn cyrchu 1 ddyfais HID}two{Mae estyniad Google Chrome yn cyrchu # ddyfais HID}few{Mae estyniad Google Chrome yn cyrchu # dyfais HID}many{Mae estyniad Google Chrome yn cyrchu # dyfais HID}other{Mae estyniad Google Chrome yn cyrchu # dyfais HID}}</translation>
 <translation id="5064155331105009416">{COUNT,plural, =1{Mae eich gweinyddwr yn cau Chrome yn awtomatig pan na chaiff ei ddefnyddio am 1 funud. Mae data pori yn cael eu dileu. Gallai hyn gynnwys hanes, awtolenwi, a lawrlwythiadau.}zero{Mae eich gweinyddwr yn cau Chrome yn awtomatig pan na chaiff ei ddefnyddio am # munud. Mae data pori yn cael eu dileu. Gallai hyn gynnwys hanes, awtolenwi, a lawrlwythiadau.}two{Mae eich gweinyddwr yn cau Chrome yn awtomatig pan na chaiff ei ddefnyddio am # funud. Mae data pori yn cael eu dileu. Gallai hyn gynnwys hanes, awtolenwi, a lawrlwythiadau.}few{Mae eich gweinyddwr yn cau Chrome yn awtomatig pan na chaiff ei ddefnyddio am # munud. Mae data pori yn cael eu dileu. Gallai hyn gynnwys hanes, awtolenwi, a lawrlwythiadau.}many{Mae eich gweinyddwr yn cau Chrome yn awtomatig pan na chaiff ei ddefnyddio am # munud. Mae data pori yn cael eu dileu. Gallai hyn gynnwys hanes, awtolenwi, a lawrlwythiadau.}other{Mae eich gweinyddwr yn cau Chrome yn awtomatig pan na chaiff ei ddefnyddio am # munud. Mae data pori yn cael eu dileu. Gallai hyn gynnwys hanes, awtolenwi, a lawrlwythiadau.}}</translation>
 <translation id="5098668839038261629">Pan fydd ymlaen, byddwch hefyd yn cael eich allgofnodi o Chrome</translation>
 <translation id="5132929315877954718">Darganfyddwch apiau, gemau, estyniadau a themâu gwych ar gyfer Google Chrome.</translation>

@@ -373,14 +373,6 @@ TEST_F('NewTabPageModulesChromeCartModuleTest', 'All', function() {
   mocha.run();
 });
 
-var NewTabPageModulesChromeCartV2ModuleTest =
-    class extends NewTabPageBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/cart_v2/module_test.js';
-  }
-};
-
 var NewTabPageModulesFeedModuleTest = class extends NewTabPageBrowserTest {
   /** @override */
   get browsePreload() {
@@ -493,17 +485,27 @@ TEST_F('NewTabPageModulesHistoryClustersModuleCartTileTest', 'All', function() {
   mocha.run();
 });
 
-// https://crbug.com/1227564: Flaky on Chrome OS.
-GEN('#if BUILDFLAG(IS_CHROMEOS)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
+var NewTabPageModulesHistoryClustersV2ModuleTest =
+    class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/history_clusters_v2/module_test.js';
+  }
 
-TEST_F('NewTabPageModulesChromeCartV2ModuleTest', 'MAYBE_All', function() {
-  mocha.run();
+  /** @override */
+  get featureList() {
+    return {
+      enabled: [
+        'ntp_features::kNtpHistoryClustersModule',
+        'ntp_features::kNtpModulesRedesigned',
+      ],
+    };
+  }
+};
+
+TEST_F('NewTabPageModulesHistoryClustersV2ModuleTest', 'Core', function() {
+  runMochaSuite('NewTabPageModulesHistoryClustersV2ModuleTest core');
 });
-GEN('#undef MAYBE_All');
 
 GEN('#if !defined(OFFICIAL_BUILD)');
 

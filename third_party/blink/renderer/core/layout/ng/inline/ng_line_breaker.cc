@@ -293,14 +293,6 @@ inline LayoutNGTextCombine* MayBeTextCombine(const NGInlineItem* item) {
 
 }  // namespace
 
-inline void NGLineBreaker::ClearNeedsLayout(const NGInlineItem& item) {
-  if (mode_ != NGLineBreakerMode::kContent)
-    return;
-  LayoutObject* layout_object = item.GetLayoutObject();
-  if (layout_object->NeedsLayout())
-    layout_object->ClearNeedsLayout();
-}
-
 inline bool NGLineBreaker::ShouldAutoWrap(const ComputedStyle& style) const {
   //  TODO(crbug.com/366553): SVG <text> should not be auto_wrap_ for now.
   if (UNLIKELY(is_svg_text_))
@@ -348,9 +340,9 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       is_initial_letter_box_(node.IsInitialLetterBox()),
       is_svg_text_(node.IsSvgText()),
       is_text_combine_(node.IsTextCombine()),
-      is_first_formatted_line_((!break_token || (!break_token->ItemIndex() &&
-                                                 !break_token->TextOffset())) &&
-                               node.CanContainFirstFormattedLine()),
+      is_first_formatted_line_(
+          (!break_token || break_token->Start().IsZero()) &&
+          node.CanContainFirstFormattedLine()),
       use_first_line_style_(is_first_formatted_line_ &&
                             node.UseFirstLineStyle()),
       sticky_images_quirk_(mode != NGLineBreakerMode::kContent &&
@@ -397,15 +389,15 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
     // beginning of the block. In that case, the line is still the first
     // formatted line, and the line initial style should be computed from the
     // containing block.
-    DCHECK_EQ(break_token->ItemIndex(), 0u);
-    DCHECK_EQ(break_token->TextOffset(), 0u);
+    DCHECK_EQ(break_token->StartItemIndex(), 0u);
+    DCHECK_EQ(break_token->StartTextOffset(), 0u);
     DCHECK(!break_token->IsForcedBreak());
-    DCHECK_EQ(current_, break_token->ItemTextIndex());
+    DCHECK_EQ(current_, break_token->Start());
     DCHECK_EQ(is_after_forced_break_, break_token->IsForcedBreak());
     return;
   }
 
-  current_ = break_token->ItemTextIndex();
+  current_ = break_token->Start();
   break_iterator_.SetStartOffset(current_.text_offset);
   is_after_forced_break_ = break_token->IsForcedBreak();
   items_data_.AssertOffset(current_);
@@ -417,6 +409,7 @@ NGLineBreaker::~NGLineBreaker() = default;
 inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
                                                   unsigned end_offset,
                                                   NGLineInfo* line_info) {
+  DCHECK_EQ(&item, &items_data_.items[current_.item_index]);
   DCHECK_GE(current_.text_offset, item.StartOffset());
   DCHECK_GE(end_offset, current_.text_offset);
   DCHECK_LE(end_offset, item.EndOffset());
@@ -433,6 +426,24 @@ inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
 inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
                                                   NGLineInfo* line_info) {
   return AddItem(item, item.EndOffset(), line_info);
+}
+
+NGInlineItemResult* NGLineBreaker::AddEmptyItem(const NGInlineItem& item,
+                                                NGLineInfo* line_info) {
+  NGInlineItemResult* item_result =
+      AddItem(item, current_.text_offset, line_info);
+
+  // Prevent breaking before an empty item, but allow to break after if the
+  // previous item had `can_break_after`.
+  DCHECK(!item_result->can_break_after);
+  if (line_info->Results().size() >= 2) {
+    NGInlineItemResult* last_item_result = std::prev(item_result);
+    if (last_item_result->can_break_after) {
+      last_item_result->can_break_after = false;
+      item_result->can_break_after = true;
+    }
+  }
+  return item_result;
 }
 
 // Call |HandleOverflow()| if the position is beyond the available space.
@@ -614,7 +625,7 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   const NGInlineItemResults& item_results = line_info->Results();
   DCHECK(item_results.empty());
 
-  if (current_.item_index) {
+  if (!current_.IsZero()) {
     // We're past the first line
     previous_line_had_forced_break_ = is_after_forced_break_;
     is_after_forced_break_ = false;
@@ -622,7 +633,7 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
     use_first_line_style_ = false;
   }
 
-  line_info->SetStartOffset(current_.text_offset);
+  line_info->SetStart(current_);
   line_info->SetLineStyle(node_, items_data_, use_first_line_style_);
 
   DCHECK(!line_info->TextIndent());
@@ -981,8 +992,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
       // NGInlineItemBuilder.
       ++current_.text_offset;
       if (current_.text_offset == item.EndOffset()) {
-        ClearNeedsLayout(item);
-        MoveToNextOf(item);
+        HandleEmptyText(item, line_info);
         return;
       }
     }
@@ -1425,6 +1435,12 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
   if (start_offset != line_info->StartOffset() &&
       start_offset == item.StartOffset())
     return false;
+  if (UNLIKELY(line_info->TextIndent())) {
+    // If this line has the `text-indent`, following lines will have different
+    // indentation. Compute this line as a separate line by falling back to
+    // |HandleText()|.
+    return false;
+  }
   // If this is the last part of the text, it may form a word with the next
   // item. Fallback to |HandleText()|.
   if (fast_min_content_item_ == &item)
@@ -1550,9 +1566,12 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
 
 void NGLineBreaker::HandleEmptyText(const NGInlineItem& item,
                                     NGLineInfo* line_info) {
-  // Fully collapsed text is not needed for line breaking/layout, but it may
-  // have |SelfNeedsLayout()| set. Mark it was laid out.
-  ClearNeedsLayout(item);
+  // Add an empty `NGInlineItemResult` for empty or fully collapsed text. They
+  // aren't necessary for line breaking/layout purposes, but callsites may need
+  // to see all `NGInlineItem` by iterating `NGInlineItemResult`. For example,
+  // `CreateLine` needs to `ClearNeedsLayout` for all `LayoutObject` including
+  // empty or fully collapsed text.
+  AddEmptyItem(item, line_info);
   MoveToNextOf(item);
 }
 
@@ -1725,7 +1744,13 @@ void NGLineBreaker::HandleTrailingSpaces(const NGInlineItem& item,
     state_ = LineBreakState::kDone;
     return;
   }
-  ClearNeedsLayout(item);
+  DCHECK_EQ(current_.text_offset, item.EndOffset());
+  const NGInlineItemResults& item_results = line_info->Results();
+  if (item_results.empty() || item_results.back().item != &item) {
+    // If at the end of `item` but the item hasn't been added to `line_info`,
+    // add an empty text item. See `HandleEmptyText`.
+    AddEmptyItem(item, line_info);
+  }
   current_.item_index++;
   state_ = LineBreakState::kTrailing;
 }
@@ -1780,8 +1805,10 @@ void NGLineBreaker::RemoveTrailingCollapsibleSpace(NGLineInfo* line_info) {
     item_result->inline_size = item_result->shape_result->SnappedWidth();
     position_ += item_result->inline_size;
   } else {
-    ClearNeedsLayout(*item_result->item);
-    line_info->MutableResults()->erase(item_result);
+    // Make it empty, but don't remove. See `HandleEmptyText`.
+    item_result->text_offset.end = item_result->text_offset.start;
+    item_result->shape_result = nullptr;
+    item_result->inline_size = LayoutUnit();
   }
   trailing_collapsible_space_.reset();
   trailing_whitespace_ = WhitespaceState::kCollapsed;
@@ -2614,6 +2641,10 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
     DCHECK(item_result->item);
     const NGInlineItem& item = *item_result->item;
     if (item.Type() == NGInlineItem::kText) {
+      if (!item_result->Length()) {
+        // Empty text items are trailable, see `HandleEmptyText`.
+        continue;
+      }
       DCHECK(item_result->shape_result ||
              (item_result->break_anywhere_if_overflow &&
               !override_break_anywhere_) ||
@@ -2738,7 +2769,10 @@ void NGLineBreaker::RewindOverflow(unsigned new_end, NGLineInfo* line_info) {
     const NGInlineItem& item = *item_result.item;
     if (item.Type() == NGInlineItem::kText) {
       // Text items are trailable if they start with trailable spaces.
-      DCHECK_GT(item_result.Length(), 0u);
+      if (!item_result.Length()) {
+        // Empty text items are trailable, see `HandleEmptyText`.
+        continue;
+      }
       if (item_result.shape_result ||  // kNoResultIfOverflow if 'break-word'
           (break_anywhere_if_overflow_ && !override_break_anywhere_)) {
         DCHECK(item.Style());

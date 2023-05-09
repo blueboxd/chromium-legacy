@@ -19,6 +19,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
@@ -79,7 +80,7 @@ class NetworkIconImpl {
   void GenerateImage(const NetworkStateProperties* network);
 
   // Gets the color for the icon
-  const ui::ColorProvider* color_provider_;
+  raw_ptr<const ui::ColorProvider, ExperimentalAsh> color_provider_;
 
   // Defines color theme and VPN badging
   const IconType icon_type_;
@@ -486,7 +487,9 @@ SkColor GetDefaultColorForIconType(const ui::ColorProvider* color_provider,
   switch (icon_type) {
     case ICON_TYPE_TRAY_OOBE:
       return kIconColorInOobe;
+    case ICON_TYPE_TRAY_REGULAR:
     case ICON_TYPE_FEATURE_POD:
+    case ICON_TYPE_LIST:
       return use_color_provider
                  ? color_provider->GetColor(cros_tokens::kCrosSysOnSurface)
                  : ash_color_provider->GetContentLayerColor(

@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/metrics/ambient_metrics.h"
 #include "ash/constants/ambient_theme.h"
 #include "ash/constants/ambient_video.h"
 #include "ash/constants/ash_features.h"
 #include "ash/controls/contextual_tooltip.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
-#include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
@@ -348,16 +348,16 @@ void PersonalizationAppAmbientProviderImpl::OnAmbientUiSettingsChanged() {
 }
 
 void PersonalizationAppAmbientProviderImpl::OnScreenSaverDurationChanged() {
-  absl::optional<int> duration_pref_value =
-      Shell::Get()->ambient_controller()->GetScreenSaverDuration();
-
-  if (!ambient_observer_remote_.is_bound() ||
-      !duration_pref_value.has_value() || duration_pref_value.value() < 0) {
+  if (!ambient_observer_remote_.is_bound()) {
     return;
   }
 
-  ambient_observer_remote_->OnScreenSaverDurationChanged(
-      duration_pref_value.value());
+  PrefService* pref_service = profile_->GetPrefs();
+  DCHECK(pref_service);
+  int duration_minutes = pref_service->GetInteger(
+      ambient::prefs::kAmbientModeRunningDurationMinutes);
+  CHECK(duration_minutes >= 0);
+  ambient_observer_remote_->OnScreenSaverDurationChanged(duration_minutes);
 }
 
 void PersonalizationAppAmbientProviderImpl::OnTemperatureUnitChanged() {
@@ -698,7 +698,7 @@ void PersonalizationAppAmbientProviderImpl::ResetLocalSettings() {
 }
 
 void PersonalizationAppAmbientProviderImpl::StartScreenSaverPreview() {
-  Shell::Get()->ambient_controller()->StartScreenSaverPreview();
+  Shell::Get()->ambient_controller()->SetUiVisibilityPreview();
 }
 
 void PersonalizationAppAmbientProviderImpl::ShouldShowTimeOfDayBanner(

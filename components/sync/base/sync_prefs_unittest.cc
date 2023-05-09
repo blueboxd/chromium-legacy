@@ -9,9 +9,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "build/chromeos_buildflags.h"
-#include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_value_store.h"
+#include "components/prefs/pref_value_map.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -179,6 +178,38 @@ TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSyncedAndPolicyRestricted) {
   }
 }
 
+TEST_F(SyncPrefsTest, SetTypeDisabledByPolicy) {
+  // By default, data types are enabled, and not policy-controlled.
+  ASSERT_TRUE(
+      sync_prefs_->GetSelectedTypes().Has(UserSelectableType::kBookmarks));
+  ASSERT_FALSE(
+      sync_prefs_->IsTypeManagedByPolicy(UserSelectableType::kBookmarks));
+  ASSERT_TRUE(
+      sync_prefs_->GetSelectedTypes().Has(UserSelectableType::kAutofill));
+  ASSERT_FALSE(
+      sync_prefs_->IsTypeManagedByPolicy(UserSelectableType::kAutofill));
+
+  // Set up a policy to disable bookmarks.
+  PrefValueMap policy_prefs;
+  SyncPrefs::SetTypeDisabledByPolicy(&policy_prefs,
+                                     UserSelectableType::kBookmarks);
+  // Copy the policy prefs map over into the PrefService.
+  for (const auto& policy_pref : policy_prefs) {
+    pref_service_.SetManagedPref(policy_pref.first, policy_pref.second.Clone());
+  }
+
+  // The policy should take effect and disable bookmarks.
+  EXPECT_FALSE(
+      sync_prefs_->GetSelectedTypes().Has(UserSelectableType::kBookmarks));
+  EXPECT_TRUE(
+      sync_prefs_->IsTypeManagedByPolicy(UserSelectableType::kBookmarks));
+  // Other types should be unaffected.
+  EXPECT_TRUE(
+      sync_prefs_->GetSelectedTypes().Has(UserSelectableType::kAutofill));
+  EXPECT_FALSE(
+      sync_prefs_->IsTypeManagedByPolicy(UserSelectableType::kAutofill));
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(SyncPrefsTest, IsSyncAllOsTypesEnabled) {
   EXPECT_TRUE(sync_prefs_->IsSyncAllOsTypesEnabled());
@@ -262,6 +293,38 @@ TEST_F(SyncPrefsTest,
     EXPECT_EQ(expected_type_set, sync_prefs_->GetSelectedOsTypes());
   }
 }
+
+TEST_F(SyncPrefsTest, SetOsTypeDisabledByPolicy) {
+  // By default, data types are enabled, and not policy-controlled.
+  ASSERT_TRUE(
+      sync_prefs_->GetSelectedOsTypes().Has(UserSelectableOsType::kOsApps));
+  ASSERT_FALSE(
+      sync_prefs_->IsOsTypeManagedByPolicy(UserSelectableOsType::kOsApps));
+  ASSERT_TRUE(sync_prefs_->GetSelectedOsTypes().Has(
+      UserSelectableOsType::kOsPreferences));
+  ASSERT_FALSE(sync_prefs_->IsOsTypeManagedByPolicy(
+      UserSelectableOsType::kOsPreferences));
+
+  // Set up a policy to disable apps.
+  PrefValueMap policy_prefs;
+  SyncPrefs::SetOsTypeDisabledByPolicy(&policy_prefs,
+                                       UserSelectableOsType::kOsApps);
+  // Copy the policy prefs map over into the PrefService.
+  for (const auto& policy_pref : policy_prefs) {
+    pref_service_.SetManagedPref(policy_pref.first, policy_pref.second.Clone());
+  }
+
+  // The policy should take effect and disable apps.
+  EXPECT_FALSE(
+      sync_prefs_->GetSelectedOsTypes().Has(UserSelectableOsType::kOsApps));
+  EXPECT_TRUE(
+      sync_prefs_->IsOsTypeManagedByPolicy(UserSelectableOsType::kOsApps));
+  // Other types should be unaffected.
+  EXPECT_TRUE(sync_prefs_->GetSelectedOsTypes().Has(
+      UserSelectableOsType::kOsPreferences));
+  EXPECT_FALSE(sync_prefs_->IsOsTypeManagedByPolicy(
+      UserSelectableOsType::kOsPreferences));
+}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -293,6 +356,27 @@ TEST_F(SyncPrefsTest, PassphrasePromptMutedProductVersion) {
   sync_prefs_->ClearPassphrasePromptMutedProductVersion();
   EXPECT_EQ(0, sync_prefs_->GetPassphrasePromptMutedProductVersion());
 }
+
+#if BUILDFLAG(IS_IOS)
+TEST_F(SyncPrefsTest, SetBookmarksAndReadingListAccountStorageOptInPrefChange) {
+  // Default value disabled.
+  EXPECT_FALSE(
+      sync_prefs_->IsOptedInForBookmarksAndReadingListAccountStorage());
+
+  // Enable bookmarks and reading list account storage pref.
+  sync_prefs_->SetBookmarksAndReadingListAccountStorageOptIn(true);
+
+  // Check pref change to enabled.
+  EXPECT_TRUE(sync_prefs_->IsOptedInForBookmarksAndReadingListAccountStorage());
+
+  // Clear pref.
+  sync_prefs_->ClearBookmarksAndReadingListAccountStorageOptIn();
+
+  // Default value applied after clearing the pref.
+  EXPECT_FALSE(
+      sync_prefs_->IsOptedInForBookmarksAndReadingListAccountStorage());
+}
+#endif  // BUILDFLAG(IS_IOS)
 
 enum BooleanPrefState { PREF_FALSE, PREF_TRUE, PREF_UNSET };
 
@@ -354,7 +438,7 @@ TEST_F(SyncPrefsMigrationTest, SyncRequested_NothingSet) {
       pref_service_.GetUserPrefValue(prefs::kSyncKeepEverythingSynced));
 
   // Run the migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // The migration should have left all the prefs unset.
   EXPECT_FALSE(pref_service_.GetUserPrefValue(prefs::kSyncRequested));
@@ -369,7 +453,7 @@ TEST_F(SyncPrefsMigrationTest, SyncRequested_SyncRequestedWithAllTypes) {
   pref_service_.SetBoolean(prefs::kSyncKeepEverythingSynced, true);
 
   // Run the migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // The migration should have changed nothing.
   SyncPrefs prefs(&pref_service_);
@@ -385,12 +469,12 @@ TEST_F(SyncPrefsMigrationTest, SyncRequested_SyncRequestedWithSomeTypes) {
   pref_service_.SetBoolean(prefs::kSyncFirstSetupComplete, true);
   pref_service_.SetBoolean(prefs::kSyncKeepEverythingSynced, false);
   for (UserSelectableType type : enabled_types) {
-    const char* pref_name = SyncPrefs::GetPrefNameForType(type);
+    const char* pref_name = SyncPrefs::GetPrefNameForTypeForTesting(type);
     pref_service_.SetBoolean(pref_name, true);
   }
 
   // Run the migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // The migration should have changed nothing.
   SyncPrefs prefs(&pref_service_);
@@ -407,7 +491,7 @@ TEST_F(SyncPrefsMigrationTest, SyncRequested_SyncRequestedWithNoTypes) {
   // All selectable types are false by default.
 
   // Run the migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // The migration should have changed nothing.
   SyncPrefs prefs(&pref_service_);
@@ -424,7 +508,7 @@ TEST_F(SyncPrefsMigrationTest, SyncRequested_SyncNotRequestedWithNoTypes) {
   // All selectable types are false by default.
 
   // Run the migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // The migration should have set SyncRequested to true, but kept all data
   // types disabled.
@@ -442,12 +526,12 @@ TEST_F(SyncPrefsMigrationTest, SyncRequested_SyncNotRequestedWithSomeTypes) {
   pref_service_.SetBoolean(prefs::kSyncFirstSetupComplete, true);
   pref_service_.SetBoolean(prefs::kSyncKeepEverythingSynced, false);
   for (UserSelectableType type : enabled_types) {
-    const char* pref_name = SyncPrefs::GetPrefNameForType(type);
+    const char* pref_name = SyncPrefs::GetPrefNameForTypeForTesting(type);
     pref_service_.SetBoolean(pref_name, true);
   }
 
   // Run the migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // The migration should have set SyncRequested to true, but turned off all
   // data types.
@@ -467,12 +551,12 @@ TEST_F(SyncPrefsMigrationTest, SyncRequested_SyncNotRequestedWithAllTypes) {
   // Even though "Sync everything" is enabled, also explicitly set some of the
   // individual data type prefs, to make sure the migration handles this case.
   for (UserSelectableType type : enabled_types) {
-    const char* pref_name = SyncPrefs::GetPrefNameForType(type);
+    const char* pref_name = SyncPrefs::GetPrefNameForTypeForTesting(type);
     pref_service_.SetBoolean(pref_name, true);
   }
 
   // Run the migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // The migration should have set SyncRequested to true, but turned off all
   // data types and the "sync everything" flag.
@@ -505,7 +589,7 @@ TEST_P(SyncPrefsSyncRequestedMigrationCombinationsTest, Idempotent) {
                           testing::get<2>(GetParam()));
 
   // Do the first migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // Record the resulting pref values.
   BooleanPrefState expect_sync_requested =
@@ -516,7 +600,7 @@ TEST_P(SyncPrefsSyncRequestedMigrationCombinationsTest, Idempotent) {
       GetBooleanUserPrefValue(prefs::kSyncKeepEverythingSynced);
 
   // Do the second migration.
-  syncer::MigrateSyncRequestedPrefPostMice(&pref_service_);
+  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(&pref_service_);
 
   // Verify that the pref values did not change.
   EXPECT_TRUE(

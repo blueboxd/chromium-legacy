@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
+#include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -78,7 +79,8 @@ DriveUploadHandler::DriveUploadHandler(Profile* profile,
               "Google Drive",
               GetTargetAppName(source_url.path()),
               // TODO(b/242685536) Update when support for multi-files is added.
-              /*num_files=*/1)),
+              /*num_files=*/1,
+              GetOperationTypeForUpload(profile, source_url))),
       source_url_(source_url) {
   observed_task_id_ = -1;
 }
@@ -139,10 +141,12 @@ void DriveUploadHandler::Run(UploadCallback callback) {
     return;
   }
 
+  const file_manager::io_task::OperationType operation_type =
+      GetOperationTypeForUpload(profile_, source_url_);
   std::vector<FileSystemURL> source_urls{source_url_};
   std::unique_ptr<file_manager::io_task::IOTask> task =
       std::make_unique<file_manager::io_task::CopyOrMoveIOTask>(
-          file_manager::io_task::OperationType::kMove, std::move(source_urls),
+          operation_type, std::move(source_urls),
           std::move(destination_folder_url), profile_, file_system_context_,
           /*show_notification=*/false);
 
@@ -214,6 +218,8 @@ void DriveUploadHandler::OnIOTaskStatus(
       return;
     case file_manager::io_task::State::kPaused:
       return;
+    case file_manager::io_task::State::kWarning:
+      return;
     case file_manager::io_task::State::kSuccess:
       move_progress_ = 100;
       notification_manager_->SetDestinationPath(status.outputs[0].url.path());
@@ -234,6 +240,11 @@ void DriveUploadHandler::OnIOTaskStatus(
 
 void DriveUploadHandler::OnUnmounted() {}
 
+void DriveUploadHandler::ImmediatelyUploadDone(drive::FileError error) {
+  LOG_IF(ERROR, error != drive::FileError::FILE_ERROR_OK)
+      << "ImmediatelyUpload failed with status: " << error;
+}
+
 void DriveUploadHandler::OnSyncingStatusUpdate(
     const drivefs::mojom::SyncingStatus& syncing_status) {
   for (const auto& item : syncing_status.item_events) {
@@ -241,8 +252,16 @@ void DriveUploadHandler::OnSyncingStatusUpdate(
       continue;
     }
     switch (item->state) {
-      case drivefs::mojom::ItemEvent::State::kQueued:
+      case drivefs::mojom::ItemEvent::State::kQueued: {
+        // Tell Drive to upload the file now. If successful, we will receive a
+        // kInProgress or kCompleted event sooner. If this fails, we ignore it.
+        // The file will get uploaded eventually.
+        drive_integration_service_->ImmediatelyUpload(
+            observed_relative_drive_path_,
+            base::BindOnce(&DriveUploadHandler::ImmediatelyUploadDone,
+                           weak_ptr_factory_.GetWeakPtr()));
         return;
+      }
       case drivefs::mojom::ItemEvent::State::kInProgress:
         if (item->bytes_transferred > 0) {
           sync_progress_ =

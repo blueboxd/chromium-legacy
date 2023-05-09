@@ -221,6 +221,7 @@
 <translation id="1961239773406905488">התצוגה המקדימה של המצלמה מוסתרת</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">נעילת מסך</translation>
+<translation id="1962972976741217487">מכשיר אחד מחובר לנקודה לשיתוף אינטרנט של <ph name="DEVICE_NAME" /></translation>
 <translation id="1967970931040389207">הפעלת הנקודה לשיתוף אינטרנט</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" />‏ (USB)</translation>
 <translation id="1972950159383891558">שלום, <ph name="USERNAME" /></translation>
@@ -301,7 +302,6 @@
 <translation id="2367972762794486313">הצגת אפליקציות</translation>
 <translation id="2369165858548251131">"שלום" בסינית</translation>
 <translation id="2386292613071805067">בחירת כל תוכן הדף</translation>
-<translation id="2390318262976603432">הגדרות שילוב של שפה ואזור</translation>
 <translation id="2397416548179033562">‏הצגת תפריט Chrome</translation>
 <translation id="240006516586367791">פקדי מדיה</translation>
 <translation id="2402411679569069051">‏כדי לבטל את נעילת ה-Chromebook, עליך להשתמש בטביעת האצבע או לבטל את נעילת הטלפון שלך</translation>
@@ -600,6 +600,7 @@
 <translation id="3735740477244556633">מיון לפי</translation>
 <translation id="3738664582935948253">עכשיו אפשר להציג את הקליקים ומקשי הקיצור בהקלטות המסך</translation>
 <translation id="3742055079367172538">צילום המסך בוצע</translation>
+<translation id="3756485814916578707">העברת המסך מתבצעת</translation>
 <translation id="3765841986579723851">נערך היום</translation>
 <translation id="3773700760453577392">מנהל מערכת ביטל הרשאה של כניסה עם מספר חשבונות עבור <ph name="USER_EMAIL" />. כדי להמשיך, כל המשתמשים חייבים לבצע יציאה.</translation>
 <translation id="3779139509281456663">מתבצע חיבור של <ph name="NAME" /></translation>
@@ -821,6 +822,7 @@
 <translation id="4777825441726637019">‏חנות Play</translation>
 <translation id="4778095205580009397">‏Google Assistant לא זמינה בסשן הדגמה.</translation>
 <translation id="4789348252524569426">לא ניתן להתקין את קובצי זיהוי הדיבור. צריך לעדכן את המכשיר. כדאי להפעיל מחדש את המכשיר ולנסות שוב.</translation>
+<translation id="478959186716341421">מעביר</translation>
 <translation id="479989351350248267">Search</translation>
 <translation id="4804818685124855865">ניתוק</translation>
 <translation id="4814539958450445987">מסך הכניסה</translation>
@@ -928,6 +930,7 @@
 <translation id="5297704307811127955">כבויה</translation>
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5302048478445481009">שפה</translation>
+<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> מכשירים מחוברים לנקודה לשיתוף אינטרנט של <ph name="DEVICE_NAME" /></translation>
 <translation id="5308380583665731573">התחברות</translation>
 <translation id="5313326810920013265">‏הגדרות Bluetooth</translation>
 <translation id="5314219114274263156">התבצעה הקלטת מסך</translation>
@@ -996,7 +999,6 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">‏יש להקיש על Ctrl ‏+ Alt ‏+ Z כדי להשבית את המשוב הקולי.</translation>
 <translation id="5601503069213153581">קוד אימות</translation>
-<translation id="5601571553788043181">‏פתיחת הקובץ בדפדפן Chrome</translation>
 <translation id="5618148318840095371">העברנו אותך לרשת טובה יותר</translation>
 <translation id="5619862035903135339">לפי המדיניות של מנהל המערכת, צילום המסך מושבת</translation>
 <translation id="5625955975703555628">+LTE</translation>
@@ -1117,6 +1119,7 @@
 <translation id="6137566720514957455">פתיחת תיבת דו-דיח להסרה של <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">אישור הורדה</translation>
 <translation id="6154006699632741460">אין תמיכה בציוד ההיקפי</translation>
+<translation id="6156960295318603523">הגדרות שפה</translation>
 <translation id="615957422585914272">הצגת מקלדת במסך</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6166852626429024716">חיפוש במכשיר, באפליקציות, בהגדרות, באינטרנט...</translation>
@@ -1335,6 +1338,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">תבוצע חזרה לרזולוציה הקודמת בעוד <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">רענון</translation>
+<translation id="7187711731540696127">הנקודה לשיתוף אינטרנט של <ph name="DEVICE_NAME" /> פועלת, אין מכשירים מחוברים</translation>
 <translation id="7188494361780961876">התפריט הועבר לפינה הימנית העליונה של המסך.</translation>
 <translation id="7189412385142492784">מה המרחק בין כדור הארץ לנוגה</translation>
 <translation id="7198435252016571249">המצלמה מוצמדת לפינה השמאלית התחתונה. התנגשות עם תצוגת המערכת.</translation>
@@ -1415,7 +1419,6 @@
 <translation id="7569509451529460200">‏כתב ברייל ו-ChromeVox מופעלים</translation>
 <translation id="7573585051776738856">החלון הפעיל מוצמד לצד שמאל.</translation>
 <translation id="7579778809502851308">צילום מסך</translation>
-<translation id="7590883480672980941">הגדרות קלט</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
 <translation id="7600875258240007829">הצגת כל ההתראות</translation>
 <translation id="7607002721634913082">ההורדה בהשהיה</translation>
@@ -1557,6 +1560,7 @@
 <translation id="8185090165691050712">הפעלה/השבתה של התפריט לשינוי הגודל במצב הנעילה</translation>
 <translation id="8192202700944119416">ההתראות מוסתרות.</translation>
 <translation id="8196787716797768628">‏במצב טאבלט אפשר לעבור במהירות בין אפליקציות ולבצע פעולות שונות ב-Chromebook באמצעות תנועות.</translation>
+<translation id="8198456017687137612">העברת הכרטיסייה</translation>
 <translation id="8200772114523450471">חידוש</translation>
 <translation id="8203795194971602413">לחיצה ימנית</translation>
 <translation id="8209010265547628927">איפוס</translation>

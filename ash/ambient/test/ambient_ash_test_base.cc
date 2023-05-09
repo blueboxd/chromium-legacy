@@ -51,7 +51,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
+#include "chromeos/ash/components/login/auth/auth_events_recorder.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
@@ -62,9 +62,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace {
-constexpr float kFastForwardFactor = 1.001;
-}  // namespace
 
 class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
  public:
@@ -196,7 +193,7 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
 
 AmbientAshTestBase::AmbientAshTestBase()
     : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
-  recorder_ = AuthMetricsRecorder::CreateForTesting();
+  recorder_ = AuthEventsRecorder::CreateForTesting();
 }
 
 AmbientAshTestBase::~AmbientAshTestBase() = default;
@@ -269,9 +266,9 @@ void AmbientAshTestBase::DisableJitter() {
   }
 }
 
-void AmbientAshTestBase::ShowAmbientScreen() {
+void AmbientAshTestBase::SetAmbientShownAndWaitForWidgets() {
   // The widget will be destroyed in |AshTestBase::TearDown()|.
-  ambient_controller()->ShowUi();
+  ambient_controller()->SetUiVisibilityShown();
 
   static constexpr base::TimeDelta kTimeout = base::Seconds(10);
   base::test::ScopedRunLoopTimeout loop_timeout(FROM_HERE, kTimeout);
@@ -298,11 +295,11 @@ void AmbientAshTestBase::SpinWaitForAmbientViewAvailable(
 }
 
 void AmbientAshTestBase::HideAmbientScreen() {
-  ambient_controller()->ShowHiddenUi();
+  ambient_controller()->SetUiVisibilityHidden();
 }
 
 void AmbientAshTestBase::CloseAmbientScreen() {
-  ambient_controller()->CloseUi();
+  ambient_controller()->SetUiVisibilityClosed();
 }
 
 void AmbientAshTestBase::LockScreen() {
@@ -463,16 +460,17 @@ AmbientAnimationView* AmbientAshTestBase::GetAmbientAnimationView() {
       GetContainerView()->GetViewByID(kAmbientAnimationView));
 }
 
-void AmbientAshTestBase::FastForwardToLockScreenTimeout() {
-  task_environment()->FastForwardBy(kFastForwardFactor *
+void AmbientAshTestBase::FastForwardByLockScreenInactivityTimeout(
+    float factor) {
+  task_environment()->FastForwardBy(factor *
                                     ambient_controller()
                                         ->ambient_ui_model()
                                         ->lock_screen_inactivity_timeout());
 }
 
-void AmbientAshTestBase::FastForwardToNextImage() {
+void AmbientAshTestBase::FastForwardByPhotoRefreshInterval(float factor) {
   task_environment()->FastForwardBy(
-      kFastForwardFactor *
+      factor *
       ambient_controller()->ambient_ui_model()->photo_refresh_interval());
 }
 
@@ -482,15 +480,9 @@ void AmbientAshTestBase::FastForwardTiny() {
   task_environment()->FastForwardBy(base::Milliseconds(10));
 }
 
-void AmbientAshTestBase::FastForwardToBackgroundLockScreenTimeout() {
-  task_environment()->FastForwardBy(kFastForwardFactor *
-                                    ambient_controller()
-                                        ->ambient_ui_model()
-                                        ->background_lock_screen_timeout());
-}
-
-void AmbientAshTestBase::FastForwardHalfLockScreenDelay() {
-  task_environment()->FastForwardBy(0.5 * kFastForwardFactor *
+void AmbientAshTestBase::FastForwardByBackgroundLockScreenTimeout(
+    float factor) {
+  task_environment()->FastForwardBy(factor *
                                     ambient_controller()
                                         ->ambient_ui_model()
                                         ->background_lock_screen_timeout());
@@ -537,7 +529,7 @@ void AmbientAshTestBase::SetBatteryPercent(double percent) {
   ambient_controller()->OnPowerStatusChanged();
 }
 
-void AmbientAshTestBase::FastForwardToRefreshWeather() {
+void AmbientAshTestBase::FastForwardByWeatherRefreshInterval() {
   task_environment()->FastForwardBy(1.2 * kWeatherRefreshInterval);
 }
 
@@ -600,6 +592,16 @@ AmbientManagedPhotoController* AmbientAshTestBase::managed_photo_controller() {
       static_cast<AmbientManagedSlideshowUiLauncher*>(
           ambient_controller()->ambient_ui_launcher());
   return &ui_launcher->photo_controller_;
+}
+
+ScreensaverImagesPolicyHandler* AmbientAshTestBase::managed_policy_handler() {
+  if (!ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    return nullptr;
+  }
+  AmbientManagedSlideshowUiLauncher* ui_launcher =
+      static_cast<AmbientManagedSlideshowUiLauncher*>(
+          ambient_controller()->ambient_ui_launcher());
+  return &ui_launcher->screensaver_images_policy_handler_;
 }
 
 AmbientPhotoCache* AmbientAshTestBase::photo_cache() {
@@ -717,8 +719,11 @@ void AmbientAshTestBase::SetScreenSaverDuration(int minutes) {
   ambient_controller()->SetScreenSaverDuration(minutes);
 }
 
-absl::optional<int> AmbientAshTestBase::GetScreenSaverDuration() {
-  return ambient_controller()->GetScreenSaverDuration();
+int AmbientAshTestBase::GetScreenSaverDuration() {
+  return Shell::Get()
+      ->session_controller()
+      ->GetPrimaryUserPrefService()
+      ->GetInteger(ambient::prefs::kAmbientModeRunningDurationMinutes);
 }
 
 }  // namespace ash

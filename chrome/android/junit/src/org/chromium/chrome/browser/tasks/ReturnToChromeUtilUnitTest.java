@@ -12,6 +12,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import static org.chromium.chrome.browser.ui.fold_transitions.FoldTransitionController.RESUME_HOME_SURFACE_ON_MODE_CHANGE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS;
 import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS;
@@ -20,6 +21,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceConfigurati
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.text.format.DateUtils;
 
 import androidx.test.filters.SmallTest;
@@ -31,6 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
@@ -54,10 +58,12 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtilUnitTest.ShadowHomepageManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtilUnitTest.ShadowHomepagePolicyManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtilUnitTest.ShadowSysUtils;
+import org.chromium.chrome.browser.ui.fold_transitions.FoldTransitionController;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.test.util.browser.Features;
@@ -138,6 +144,12 @@ public class ReturnToChromeUtilUnitTest {
     private Tab mNtpTab;
     @Mock
     private NewTabPage mNewTabPage;
+    @Mock
+    private HomeSurfaceTracker mHomeSurfaceTracker;
+    @Mock
+    private Bundle mSaveInstanceState;
+    @Captor
+    private ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
 
     @Before
     public void setUp() {
@@ -578,17 +590,35 @@ public class ReturnToChromeUtilUnitTest {
         Assert.assertTrue(HomepageManager.isHomepageEnabled());
         Assert.assertTrue(IntentUtils.isMainIntentFromLauncher(intent));
         Assert.assertFalse(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
-                false, intent, mTabModelSelector, mInactivityTracker));
+                false, intent, null, mTabModelSelector, mInactivityTracker));
         Assert.assertTrue(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
-                true, intent, mTabModelSelector, mInactivityTracker));
+                true, intent, null, mTabModelSelector, mInactivityTracker));
 
         // Tests the case when the total tab count > 0. Verifies that Start is only shown on
         // tablets.
         doReturn(1).when(mTabModelSelector).getTotalTabCount();
         Assert.assertFalse(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
-                false, intent, mTabModelSelector, mInactivityTracker));
+                false, intent, null, mTabModelSelector, mInactivityTracker));
         Assert.assertTrue(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
-                true, intent, mTabModelSelector, mInactivityTracker));
+                true, intent, null, mTabModelSelector, mInactivityTracker));
+
+        // Sets the return time not arrive.
+        START_SURFACE_RETURN_TIME_SECONDS.setForTesting(-1);
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
+        doReturn(true)
+                .when(mSaveInstanceState)
+                .getBoolean(FoldTransitionController.DID_CHANGE_TABLET_MODE, false);
+        doReturn(true)
+                .when(mSaveInstanceState)
+                .getBoolean(RESUME_HOME_SURFACE_ON_MODE_CHANGE, false);
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
+                false, intent, null, mTabModelSelector, mInactivityTracker));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
+                false, intent, mSaveInstanceState, mTabModelSelector, mInactivityTracker));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
+                false, intent, null, mTabModelSelector, mInactivityTracker));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
+                true, intent, mSaveInstanceState, mTabModelSelector, mInactivityTracker));
     }
 
     @Test
@@ -609,21 +639,25 @@ public class ReturnToChromeUtilUnitTest {
 
         // Verifies that if the NTP is the last active Tab, we don't call showHomeSurfaceUi().
         doReturn(1).when(mCurrentTabModel).index();
-        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(
-                false, true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(false,
+                true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater,
+                mHomeSurfaceTracker);
         verify(mTabCreater, never()).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
         verify(mCurrentTabModel, never())
                 .setIndex(anyInt(), eq(TabSelectionType.FROM_USER), eq(false));
         verify(mNewTabPage, never()).showHomeSurfaceUi(any());
+        verify(mHomeSurfaceTracker).updateHomeSurfaceAndTrackingTabs(eq(mNtpTab), eq(null));
 
         // Verifies that if the NTP isn't the last active Tab, we reuse it, set index and call
         // showHomeSurfaceUi() to show the single tab card module.
         doReturn(0).when(mCurrentTabModel).index();
-        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(
-                false, true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(false,
+                true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater,
+                mHomeSurfaceTracker);
         verify(mTabCreater, never()).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
         verify(mCurrentTabModel).setIndex(eq(1), eq(TabSelectionType.FROM_USER), eq(false));
         verify(mNewTabPage).showHomeSurfaceUi(eq(mTab1));
+        verify(mHomeSurfaceTracker).updateHomeSurfaceAndTrackingTabs(eq(mNtpTab), eq(mTab1));
     }
 
     @Test
@@ -638,8 +672,10 @@ public class ReturnToChromeUtilUnitTest {
 
         // Verifies that if the return time doesn't arrive, there isn't a new NTP is created.
         ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(false,
-                false /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+                false /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater,
+                mHomeSurfaceTracker);
         verify(mTabCreater, never()).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
+        verify(mHomeSurfaceTracker, never()).updateHomeSurfaceAndTrackingTabs(any(), any());
 
         // Verifies that a new NTP is created when there isn't any existing one to reuse.
         doReturn(2).when(mNtpTab).getId();
@@ -649,10 +685,12 @@ public class ReturnToChromeUtilUnitTest {
                 .when(mTabCreater)
                 .createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
         doReturn(0).when(mCurrentTabModel).index();
-        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(
-                false, true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(false,
+                true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater,
+                mHomeSurfaceTracker);
         verify(mTabCreater, times(1)).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
         verify(mNewTabPage).showHomeSurfaceUi(eq(mTab1));
+        verify(mHomeSurfaceTracker).updateHomeSurfaceAndTrackingTabs(eq(mNtpTab), eq(mTab1));
     }
 
     @Test
@@ -664,9 +702,70 @@ public class ReturnToChromeUtilUnitTest {
         doReturn(0).when(mCurrentTabModel).getCount();
 
         // Verifies that if there isn't any existing Tab, we don't create a home surface NTP.
-        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(
-                false, true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(false,
+                true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater,
+                mHomeSurfaceTracker);
         verify(mTabCreater, never()).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
+        verify(mHomeSurfaceTracker, never()).updateHomeSurfaceAndTrackingTabs(any(), any());
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
+    public void testColdStartupWithOnlyLastActiveTabUrl() {
+        Assert.assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
+
+        doReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1)).when(mTab1).getUrl();
+        doReturn(true).when(mNtpTab).isNativePage();
+        doReturn(mNewTabPage).when(mNtpTab).getNativePage();
+        doReturn(mNtpTab)
+                .when(mTabCreater)
+                .createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
+        doReturn(mCurrentTabModel).when(mTabModelSelector).getModel(false);
+
+        // Tests the case that a new NTP is created and waits for its tracking last active Tab being
+        // restored.
+        ReturnToChromeUtil.createNewTabAndShowHomeSurfaceUi(
+                mTabCreater, mHomeSurfaceTracker, mTabModelSelector, JUnitTestGURLs.URL_1, null);
+        verify(mCurrentTabModel).addObserver(mTabModelObserverCaptor.capture());
+
+        mTabModelObserverCaptor.getValue().willAddTab(mTab1, TabLaunchType.FROM_RESTORE);
+        verify(mNewTabPage).showHomeSurfaceUi(eq(mTab1));
+        verify(mHomeSurfaceTracker).updateHomeSurfaceAndTrackingTabs(eq(mNtpTab), eq(mTab1));
+    }
+
+    @Test
+    @SmallTest
+    public void testShouldResumeHomeSurfaceOnFoldConfigurationChange() {
+        Assert.assertFalse(
+                ReturnToChromeUtil.shouldResumeHomeSurfaceOnFoldConfigurationChange(null));
+
+        doReturn(true)
+                .when(mSaveInstanceState)
+                .getBoolean(FoldTransitionController.DID_CHANGE_TABLET_MODE, false);
+        doReturn(false)
+                .when(mSaveInstanceState)
+                .getBoolean(RESUME_HOME_SURFACE_ON_MODE_CHANGE, false);
+        Assert.assertFalse(ReturnToChromeUtil.shouldResumeHomeSurfaceOnFoldConfigurationChange(
+                mSaveInstanceState));
+
+        doReturn(false)
+                .when(mSaveInstanceState)
+                .getBoolean(FoldTransitionController.DID_CHANGE_TABLET_MODE, false);
+        doReturn(true)
+                .when(mSaveInstanceState)
+                .getBoolean(RESUME_HOME_SURFACE_ON_MODE_CHANGE, false);
+        Assert.assertFalse(ReturnToChromeUtil.shouldResumeHomeSurfaceOnFoldConfigurationChange(
+                mSaveInstanceState));
+
+        doReturn(true)
+                .when(mSaveInstanceState)
+                .getBoolean(FoldTransitionController.DID_CHANGE_TABLET_MODE, false);
+        doReturn(true)
+                .when(mSaveInstanceState)
+                .getBoolean(RESUME_HOME_SURFACE_ON_MODE_CHANGE, false);
+        Assert.assertTrue(ReturnToChromeUtil.shouldResumeHomeSurfaceOnFoldConfigurationChange(
+                mSaveInstanceState));
     }
 
     private Intent createMainIntentFromLauncher() {

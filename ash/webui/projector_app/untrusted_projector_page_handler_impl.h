@@ -7,6 +7,8 @@
 
 #include "ash/webui/projector_app/mojom/untrusted_projector.mojom.h"
 #include "ash/webui/projector_app/projector_app_client.h"
+#include "base/memory/raw_ptr.h"
+#include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -24,7 +26,8 @@ class UntrustedProjectorPageHandlerImpl
       mojo::PendingReceiver<projector::mojom::UntrustedProjectorPageHandler>
           receiver,
       mojo::PendingRemote<projector::mojom::UntrustedProjectorPage>
-          projector_remote);
+          projector_remote,
+      PrefService* pref_service);
   UntrustedProjectorPageHandlerImpl(const UntrustedProjectorPageHandlerImpl&) =
       delete;
   UntrustedProjectorPageHandlerImpl& operator=(
@@ -37,20 +40,28 @@ class UntrustedProjectorPageHandlerImpl
   void OnSodaProgress(int percentage) override;
   void OnSodaError() override;
   void OnSodaInstalled() override;
+  void OnScreencastsPendingStatusChanged(
+      const PendingScreencastContainerSet& pending_screencast) override;
 
   //  projector::mojom::UntrustedProjectorPageHandler:
   void GetNewScreencastPrecondition(
-      projector::mojom::UntrustedProjectorPageHandler::
-          GetNewScreencastPreconditionCallback callback) override;
-  void ShouldDownloadSoda(projector::mojom::UntrustedProjectorPageHandler::
-                              ShouldDownloadSodaCallback callback) override;
-  void InstallSoda(
-      projector::mojom::UntrustedProjectorPageHandler::InstallSodaCallback
-          callback) override;
+      GetNewScreencastPreconditionCallback callback) override;
+  void ShouldDownloadSoda(ShouldDownloadSodaCallback callback) override;
+  void InstallSoda(InstallSodaCallback callback) override;
+  void GetPendingScreencasts(GetPendingScreencastsCallback callback) override;
+  void GetUserPref(projector::mojom::PrefsThatProjectorCanAskFor pref,
+                   GetUserPrefCallback callback) override;
+  void SetUserPref(projector::mojom::PrefsThatProjectorCanAskFor pref,
+                   base::Value value,
+                   SetUserPrefCallback callback) override;
+  void OpenFeedbackDialog(OpenFeedbackDialogCallback callback) override;
 
  private:
   mojo::Receiver<projector::mojom::UntrustedProjectorPageHandler> receiver_;
   mojo::Remote<projector::mojom::UntrustedProjectorPage> projector_remote_;
+
+  // Primary user pref service.
+  const raw_ptr<PrefService, ExperimentalAsh> pref_service_;
 };
 
 }  // namespace ash

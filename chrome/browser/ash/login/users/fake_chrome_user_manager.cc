@@ -20,11 +20,8 @@
 #include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/login/users/fake_supervised_user_manager.h"
-#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
@@ -374,13 +371,6 @@ bool FakeChromeUserManager::IsStubAccountId(const AccountId& account_id) const {
 
 bool FakeChromeUserManager::IsDeprecatedSupervisedAccountId(
     const AccountId& account_id) const {
-  const policy::BrowserPolicyConnectorAsh* connector =
-      g_browser_process->platform_part()->browser_policy_connector_ash();
-  // Supervised accounts are not allowed on the Active Directory devices. It
-  // also makes sure "locally-managed.localhost" would work properly and would
-  // not be detected as supervised users.
-  if (connector->IsActiveDirectoryManaged())
-    return false;
   return gaia::ExtractDomainName(account_id.GetUserEmail()) ==
          user_manager::kSupervisedUserDomain;
 }
@@ -695,10 +685,6 @@ void FakeChromeUserManager::LoadDeviceLocalAccounts(
 
 bool FakeChromeUserManager::IsEnterpriseManaged() const {
   return is_enterprise_managed_;
-}
-
-void FakeChromeUserManager::PerformPostUserListLoadingActions() {
-  NOTREACHED();
 }
 
 void FakeChromeUserManager::PerformPostUserLoggedInActions(

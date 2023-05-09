@@ -429,7 +429,6 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(mojo_handler_);
   visitor->Trace(text_fragment_handler_);
   visitor->Trace(scroll_snapshot_clients_);
-  visitor->Trace(unvalidated_scroll_snapshot_clients_);
   visitor->Trace(saved_scroll_offsets_);
   visitor->Trace(background_color_paint_image_generator_);
   visitor->Trace(box_shadow_paint_image_generator_);
@@ -527,30 +526,42 @@ bool LocalFrame::NavigationShouldReplaceCurrentHistoryEntry(
   // { history: "push" } specified, this should override all implicit
   // conversions to a replacing navigation.
   if (request.ForceHistoryPush() == mojom::blink::ForceHistoryPush::kYes) {
-    DCHECK(!ShouldMaintainTrivialSessionHistory());
+    CHECK(!ShouldMaintainTrivialSessionHistory());
     return false;
   }
 
-  // Non-user navigation before the page has finished firing onload should not
-  // create a new back/forward item. The spec only explicitly mentions this in
-  // the context of navigating an iframe.
-  if (request.ClientRedirectReason() != ClientNavigationReason::kNone &&
-      !GetDocument()->LoadEventFinished() &&
-      !HasTransientUserActivation(this) &&
-      request.ClientRedirectReason() != ClientNavigationReason::kAnchorClick)
+  if (ShouldMaintainTrivialSessionHistory()) {
+    // TODO(http://crbug.com/1197384): We may want to assert that
+    // WebFrameLoadType is never kStandard in prerendered pages/portals before
+    // commit. DCHECK can be in FrameLoader::CommitNavigation or somewhere
+    // similar.
     return true;
+  }
 
   // In most cases, we will treat a navigation to the current URL as replacing.
   if (ShouldReplaceForSameUrlNavigation(request)) {
     return true;
   }
 
-  return ShouldMaintainTrivialSessionHistory();
+  // Form submissions targeting another window should not replace.
+  if (request.Form() && request.GetOriginWindow() != DomWindow()) {
+    return false;
+  }
 
-  // TODO(http://crbug.com/1197384): We may want to assert that
-  // WebFrameLoadType is never kStandard in prerendered pages/portals before
-  // commit. DCHECK can be in FrameLoader::CommitNavigation or somewhere
-  // similar.
+  // If the load event has finished or the user initiated the navigation,
+  // don't replace.
+  if (GetDocument()->LoadEventFinished() || HasTransientUserActivation(this)) {
+    return false;
+  }
+
+  // Most non-user-initiated navigations before the load event replace. The
+  // exceptions are "internal" navigations (e.g., drag-and-drop triggered
+  // navigations), and anchor clicks.
+  if (request.ClientRedirectReason() == ClientNavigationReason::kNone ||
+      request.ClientRedirectReason() == ClientNavigationReason::kAnchorClick) {
+    return false;
+  }
+  return true;
 }
 
 bool LocalFrame::ShouldMaintainTrivialSessionHistory() const {
@@ -2017,8 +2028,7 @@ FrameNavigationDisabler::~FrameNavigationDisabler() {
 
 LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
   DCHECK(GetSettings());
-  if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled() ||
-      !GetSettings()->GetLazyLoadEnabled()) {
+  if (!GetSettings()->GetLazyLoadEnabled()) {
     return LocalFrame::LazyLoadImageSetting::kDisabled;
   }
 
@@ -3464,7 +3474,6 @@ LocalFrame::GetNotRestoredReasons() {
 
 void LocalFrame::AddScrollSnapshotClient(ScrollSnapshotClient& client) {
   scroll_snapshot_clients_.insert(&client);
-  unvalidated_scroll_snapshot_clients_.insert(&client);
 }
 
 void LocalFrame::UpdateScrollSnapshots() {
@@ -3476,10 +3485,14 @@ void LocalFrame::UpdateScrollSnapshots() {
 
 bool LocalFrame::ValidateScrollSnapshotClients() {
   bool valid = true;
-  for (auto& client : unvalidated_scroll_snapshot_clients_)
-    valid &= client->ValidateSnapshot();
-  unvalidated_scroll_snapshot_clients_.clear();
+  for (auto& client : scroll_snapshot_clients_) {
+    valid &= client->ValidateSnapshotIfNeeded();
+  }
   return valid;
+}
+
+void LocalFrame::ClearScrollSnapshotClients() {
+  scroll_snapshot_clients_.clear();
 }
 
 void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {

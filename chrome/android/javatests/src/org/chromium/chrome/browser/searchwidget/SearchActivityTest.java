@@ -19,9 +19,9 @@ import android.net.Uri;
 import android.view.KeyEvent;
 import android.view.View;
 
-import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.lifecycle.Stage;
 
 import org.hamcrest.Matchers;
@@ -512,6 +512,7 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1440967")
     public void testRealPromoDialogDismissWithoutSelection() throws Exception {
         // Start the Activity.  It should pause when the promo dialog appears.
         mTestDelegate.shouldShowRealSearchDialog = true;

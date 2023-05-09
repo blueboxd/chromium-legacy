@@ -63,6 +63,19 @@ class WaylandToplevelWindow : public WaylandWindow,
 
   // WaylandWindow overrides:
   void UpdateWindowScale(bool update_bounds) override;
+  void LockFrame() override;
+  void UnlockFrame() override;
+  void OcclusionStateChanged(uint32_t mode) override;
+  void DeskChanged(int state) override;
+  void StartThrottle() override;
+  void EndThrottle() override;
+  void TooltipShown(const char* text,
+                    int32_t x,
+                    int32_t y,
+                    int32_t width,
+                    int32_t height) override;
+  void TooltipHidden() override;
+  WaylandToplevelWindow* AsWaylandToplevelWindow() override;
 
   // Configure related:
   void HandleToplevelConfigure(int32_t width,
@@ -181,28 +194,6 @@ class WaylandToplevelWindow : public WaylandWindow,
   // toplevel window.
   void UpdateWindowMask() override;
 
-  // zaura_surface listeners
-  static void OcclusionChanged(void* data,
-                               zaura_surface* surface,
-                               wl_fixed_t occlusion_fraction,
-                               uint32_t occlusion_reason);
-  static void LockFrame(void* data, zaura_surface* surface);
-  static void UnlockFrame(void* data, zaura_surface* surface);
-  static void OcclusionStateChanged(void* data,
-                                    zaura_surface* surface,
-                                    uint32_t mode);
-  static void DeskChanged(void* data, zaura_surface* surface, int state);
-  static void StartThrottle(void* data, zaura_surface* surface);
-  static void EndThrottle(void* data, zaura_surface* surface);
-  static void TooltipShown(void* data,
-                           zaura_surface* surface,
-                           const char* text,
-                           int32_t x,
-                           int32_t y,
-                           int32_t width,
-                           int32_t height);
-  static void TooltipHidden(void* data, zaura_surface* surface);
-
   void UpdateSystemModal();
 
   void TriggerStateChanges();
@@ -303,6 +294,9 @@ class WaylandToplevelWindow : public WaylandWindow,
   int32_t restore_session_id_ = 0;
   absl::optional<int32_t> restore_window_id_ = 0;
   absl::optional<std::string> restore_window_id_source_;
+
+  // Information pertaining to a window's persistability.
+  bool persistable_ = true;
 
   // Current modal status.
   bool system_modal_ = false;

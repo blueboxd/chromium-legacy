@@ -271,17 +271,6 @@
       "use_remoteexec": true
     }
   },
-  "Mac Builder (reclient)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_remoteexec": true
-    }
-  },
   "Mac Builder Next": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -414,7 +403,8 @@
       "is_debug": true,
       "symbol_level": 2,
       "target_cpu": "arm64",
-      "target_os": "android"
+      "target_os": "android",
+      "use_remoteexec": true
     }
   },
   "android-fieldtrial-rel": {
@@ -973,7 +963,8 @@
       "enable_nacl": false,
       "is_component_build": true,
       "is_debug": true,
-      "symbol_level": 2
+      "symbol_level": 2,
+      "use_remoteexec": true
     }
   },
   "linux-chromeos-annotator-rel": {
@@ -984,6 +975,15 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "target_os": "chromeos",
+      "use_remoteexec": true
+    }
+  },
+  "linux-cr23-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
       "use_remoteexec": true
     }
   },
@@ -1185,11 +1185,12 @@
       "use_remoteexec": true
     }
   },
-  "mac-hermetic-upgrade-rel": {
+  "mac-cr23-rel": {
     "gn_args": {
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
+      "symbol_level": 1,
       "use_remoteexec": true
     }
   },
@@ -1323,10 +1324,20 @@
       "enable_nacl": false,
       "is_component_build": true,
       "is_debug": true,
-      "symbol_level": 2
+      "symbol_level": 2,
+      "use_remoteexec": true
     }
   },
   "win-celab-builder-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
+  "win-cr23-rel": {
     "gn_args": {
       "dcheck_always_on": false,
       "is_component_build": false,

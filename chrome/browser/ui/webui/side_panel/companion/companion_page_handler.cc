@@ -10,6 +10,8 @@
 #include "chrome/browser/companion/core/companion_url_builder.h"
 #include "chrome/browser/companion/core/promo_handler.h"
 #include "chrome/browser/companion/core/signin_delegate.h"
+#include "chrome/browser/companion/text_finder/text_finder_manager.h"
+#include "chrome/browser/companion/text_finder/text_highlighter_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
@@ -80,6 +82,8 @@ void CompanionPageHandler::ShowUI() {
     helper->SetCompanionPageHandler(weak_ptr_factory_.GetWeakPtr());
     std::string initial_text_query = helper->GetTextQuery();
     if (!initial_text_query.empty()) {
+      metrics_logger_->RecordOpenTrigger(
+          companion::OpenTrigger::kContextMenuTextSearch);
       OnSearchTextQuery(initial_text_query);
       return;
     }
@@ -87,10 +91,13 @@ void CompanionPageHandler::ShowUI() {
     std::unique_ptr<side_panel::mojom::ImageQuery> image_query =
         helper->GetImageQuery();
     if (image_query) {
+      metrics_logger_->RecordOpenTrigger(
+          companion::OpenTrigger::kContextMenuImageSearch);
       OnImageQuery(*image_query);
       return;
     }
 
+    metrics_logger_->RecordOpenTrigger(companion::OpenTrigger::kOther);
     NotifyURLChanged(/*is_full_reload=*/true);
   }
 }
@@ -143,6 +150,8 @@ void CompanionPageHandler::OnRegionSearchClicked() {
   auto* helper = companion::CompanionTabHelper::FromWebContents(web_contents());
   CHECK(helper);
   helper->StartRegionSearch(web_contents(), /*use_fullscreen_capture=*/false);
+  metrics_logger_->RecordUiSurfaceClicked(
+      side_panel::mojom::UiSurface::kRegionSearch);
 }
 
 void CompanionPageHandler::OnExpsOptInStatusAvailable(bool is_exps_opted_in) {
@@ -173,6 +182,30 @@ void CompanionPageHandler::RecordUiSurfaceClicked(
   metrics_logger_->RecordUiSurfaceClicked(ui_surface);
 }
 
+void CompanionPageHandler::OnCqCandidatesAvailable(
+    const std::vector<std::string>& text_directives) {
+  auto* text_finder_manager =
+      TextFinderManager::GetOrCreateForPage(web_contents()->GetPrimaryPage());
+  CHECK(text_finder_manager);
+  text_finder_manager->CreateTextFinders(
+      text_directives,
+      base::BindOnce(&CompanionPageHandler::DidFinishFindingCqTexts,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CompanionPageHandler::OnPhFeedback(
+    side_panel::mojom::PhFeedback ph_feedback) {
+  metrics_logger_->OnPhFeedback(ph_feedback);
+}
+
+void CompanionPageHandler::OnCqJumptagClicked(
+    const std::string& text_directive) {
+  auto* text_highlighter_manager = TextHighlighterManager::GetOrCreateForPage(
+      web_contents()->GetPrimaryPage());
+  text_highlighter_manager->CreateTextHighlighterAndRemoveExistingInstance(
+      text_directive);
+}
+
 void CompanionPageHandler::EnableMsbb(bool enable_msbb) {
   auto* consent_service =
       UnifiedConsentServiceFactory::GetForProfile(GetProfile());
@@ -188,6 +221,18 @@ Browser* CompanionPageHandler::GetBrowser() {
 Profile* CompanionPageHandler::GetProfile() {
   CHECK(companion_untrusted_ui_);
   return Profile::FromWebUI(companion_untrusted_ui_->web_ui());
+}
+
+void CompanionPageHandler::DidFinishFindingCqTexts(
+    const std::vector<std::pair<std::string, bool>>& text_found_vec) {
+  std::vector<std::string> text_directives(text_found_vec.size(), "");
+  std::vector<bool> find_results(text_found_vec.size(), false);
+  for (size_t i = 0; i < text_found_vec.size(); i++) {
+    const auto& text_found = text_found_vec[i];
+    text_directives[i] = text_found.first;
+    find_results[i] = text_found.second;
+  }
+  page_->OnCqFindTextResultsAvailable(text_directives, find_results);
 }
 
 }  // namespace companion

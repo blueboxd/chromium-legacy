@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/i18n/char_iterator.h"
 #include "base/strings/string_util.h"
@@ -26,10 +27,13 @@
 #include "ui/base/ime/ash/text_input_method.h"
 #include "ui/base/ime/ash/typing_session_manager.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/constants.h"
+#include "ui/base/ime/events.h"
 #include "ui/base/ime/ime_key_event_dispatcher.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/events_ozone.h"
@@ -559,7 +563,9 @@ void InputMethodAsh::ConfirmComposition(bool reset_engine) {
     pending_composition_ = absl::nullopt;
     composition_changed_ = false;
   }
-  if (client && client->HasCompositionText()) {
+  if (client &&
+      (client->HasCompositionText() ||
+       base::FeatureList::IsEnabled(features::kAlwaysConfirmComposition))) {
     const size_t characters_committed =
         client->ConfirmCompositionText(/*keep_selection*/ true);
     typing_session_manager_.CommitCharacters(characters_committed);
@@ -609,11 +615,23 @@ ui::EventDispatchDetails InputMethodAsh::ProcessKeyEventPostIME(
     ui::KeyEvent* event,
     ui::ime::KeyEventHandledState handled_state,
     bool stopped_propagation) {
-  bool handled = (handled_state != ui::ime::KeyEventHandledState::kNotHandled);
+  bool handled =
+      handled_state == ui::ime::KeyEventHandledState::kHandledByIME ||
+      handled_state ==
+          ui::ime::KeyEventHandledState::kHandledByAssistiveSuggester;
 
+  auto properties =
+      event->properties() ? *event->properties() : ui::Event::Properties();
   // Mark whether the key is handled by IME or not.
-  ui::SetKeyboardImeFlags(event, handled ? ui::kPropertyKeyboardImeHandledFlag
+  ui::SetKeyboardImeFlagProperty(&properties,
+                                 handled ? ui::kPropertyKeyboardImeHandledFlag
                                          : ui::kPropertyKeyboardImeIgnoredFlag);
+  // Mark whether autorepeat needs to be suppressed.
+  if (handled_state ==
+      ui::ime::KeyEventHandledState::kNotHandledSuppressAutoRepeat) {
+    ui::SetKeyEventSuppressAutoRepeat(properties);
+  }
+  event->SetProperties(properties);
 
   TextInputClient* client = GetTextInputClient();
   if (!client) {

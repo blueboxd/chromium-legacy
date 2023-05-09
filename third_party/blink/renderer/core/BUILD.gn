@@ -372,6 +372,7 @@ component("core") {
 
   if (is_mac) {
     deps += [ "//ui/base/mojom" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (enable_printing) {
@@ -480,8 +481,6 @@ source_set("testing") {
     "fetch/testing/worker_internals_fetch.h",
     "html/forms/mock_file_chooser.h",
     "streams/test_underlying_source.h",
-    "testing/attribution_reporting_automation.cc",
-    "testing/attribution_reporting_automation.h",
     "testing/callback_function_test.cc",
     "testing/callback_function_test.h",
     "testing/color_scheme_helper.cc",
@@ -1413,6 +1412,10 @@ source_set("unit_tests") {
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:inside_blink",
   ]
+
+  if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+  }
 
   deps = [
     ":core",

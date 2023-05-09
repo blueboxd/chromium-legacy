@@ -887,7 +887,7 @@
       'dimensions': {
         'cpu': 'arm64',
         'mac_model': 'Macmini9,1',
-        'os': 'Mac-12.5.1',
+        'os': 'Mac-13.2',
         'pool': 'chromium.tests',
         'display_attached': '1',
       },
@@ -925,7 +925,7 @@
       'dimensions': {
         'cpu': 'x86-64',
         'gpu': '8086:3e9b',
-        'os': 'Mac-12.5.1',
+        'os': 'Mac-13.3.1',
         'display_attached': '1',
       },
     },
@@ -1010,7 +1010,7 @@
         {
           "cipd_package": 'infra/tools/mac_toolchain/${platform}',
           'location': '.',
-          'revision': 'git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118',
+          'revision': 'git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2',
         },
       ],
     },
@@ -1316,6 +1316,7 @@
     '$mixin_append': {
       'args': [
         '--extra-browser-args=--force_high_performance_gpu',
+        '--use-webgpu-power-preference=default-high-performance',
         '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
       ],
       'linux_args': [

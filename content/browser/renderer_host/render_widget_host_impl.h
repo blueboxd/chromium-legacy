@@ -1199,7 +1199,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-null until DetachDelegate() is called.
-  raw_ptr<RenderWidgetHostDelegate, DanglingUntriaged> delegate_;
+  raw_ptr<RenderWidgetHostDelegate, FlakyDanglingUntriaged> delegate_;
 
   // The delegate of the owner of this object.
   // This member is non-null if and only if this RenderWidgetHost is associated
@@ -1496,11 +1496,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   std::unique_ptr<power_scheduler::PowerModeVoter> power_mode_loading_voter_;
   absl::optional<BrowserUIThreadScheduler::UserInputActiveHandle>
       user_input_active_handle_;
-
-  // Use for metrics reporting. Used to check if
-  // OnRenderFrameMetadataChangedAfterActivation is being called for the first
-  // time.
-  bool first_surface_activated_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 };

@@ -22,6 +22,7 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_config.h"
+#include "content/browser/attribution_reporting/attribution_interop_parser.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
@@ -32,16 +33,6 @@
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace content {
-
-bool operator==(const AttributionTriggerAndTime& a,
-                const AttributionTriggerAndTime& b) {
-  return a.trigger == b.trigger && a.time == b.time;
-}
-
-std::ostream& operator<<(std::ostream& out,
-                         const AttributionTriggerAndTime& t) {
-  return out << "{time=" << t.time << ",trigger=" << t.trigger << "}";
-}
 
 bool operator==(const AttributionSimulationEvent& a,
                 const AttributionSimulationEvent& b) {
@@ -83,9 +74,12 @@ bool operator==(AttributionConfig::EventLevelLimit a,
 bool operator==(AttributionConfig::AggregateLimit a,
                 AttributionConfig::AggregateLimit b) {
   const auto tie = [](AttributionConfig::AggregateLimit config) {
-    return std::make_tuple(config.max_reports_per_destination,
-                           config.aggregatable_budget_per_source,
-                           config.min_delay, config.delay_span);
+    return std::make_tuple(
+        config.max_reports_per_destination,
+        config.aggregatable_budget_per_source, config.min_delay,
+        config.delay_span,
+        config.null_reports_rate_include_source_registration_time,
+        config.null_reports_rate_exclude_source_registration_time);
   };
   return tie(a) == tie(b);
 }
@@ -164,7 +158,6 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
   base::Value::Dict value = base::test::ParseJsonDict(kJson);
 
   auto result = ParseAttributionInteropInput(std::move(value), kOffsetTime);
-
   ASSERT_TRUE(result.has_value()) << result.error();
   ASSERT_EQ(result->size(), 2u);
 
@@ -174,7 +167,7 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
   const auto* source2 = absl::get_if<StorableSource>(&result->back().event);
   ASSERT_TRUE(source2);
 
-  EXPECT_EQ(source1->common_info().source_time(),
+  EXPECT_EQ(result->front().time,
             kOffsetTime + base::Milliseconds(1643235573123));
   EXPECT_EQ(source1->common_info().source_type(),
             attribution_reporting::mojom::SourceType::kNavigation);
@@ -187,7 +180,7 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
   EXPECT_FALSE(source1->is_within_fenced_frame());
   EXPECT_TRUE(result->front().debug_permission);
 
-  EXPECT_EQ(source2->common_info().source_time(),
+  EXPECT_EQ(result->back().time,
             kOffsetTime + base::Milliseconds(1643235574123));
   EXPECT_EQ(source2->common_info().source_type(),
             attribution_reporting::mojom::SourceType::kEvent);
@@ -222,21 +215,21 @@ TEST(AttributionInteropParserTest, ValidTriggerParses) {
   base::Value::Dict value = base::test::ParseJsonDict(kJson);
 
   auto result = ParseAttributionInteropInput(std::move(value), kOffsetTime);
-
   ASSERT_TRUE(result.has_value());
   ASSERT_EQ(result->size(), 1u);
 
   const auto* trigger =
-      absl::get_if<AttributionTriggerAndTime>(&result->front().event);
+      absl::get_if<AttributionTrigger>(&result->front().event);
   ASSERT_TRUE(trigger);
 
-  EXPECT_EQ(trigger->time, kOffsetTime + base::Milliseconds(1643235575123));
-  EXPECT_EQ(trigger->trigger.reporting_origin(),
+  EXPECT_EQ(result->front().time,
+            kOffsetTime + base::Milliseconds(1643235575123));
+  EXPECT_EQ(trigger->reporting_origin(),
             *SuitableOrigin::Deserialize("https://a.r.test"));
-  EXPECT_EQ(trigger->trigger.destination_origin(),
+  EXPECT_EQ(trigger->destination_origin(),
             *SuitableOrigin::Deserialize("https://b.d.test"));
-  EXPECT_EQ(trigger->trigger.attestation(), absl::nullopt);
-  EXPECT_FALSE(trigger->trigger.is_within_fenced_frame());
+  EXPECT_EQ(trigger->verification(), absl::nullopt);
+  EXPECT_FALSE(trigger->is_within_fenced_frame());
   EXPECT_TRUE(result->front().debug_permission);
 }
 
@@ -678,7 +671,7 @@ TEST(AttributionInteropParserTest, ValidConfig) {
     base::Value::Dict json = base::test::ParseJsonDict(test_case.json);
     if (test_case.required) {
       auto result = ParseAttributionConfig(json);
-      EXPECT_TRUE(result.has_value()) << json;
+      ASSERT_TRUE(result.has_value()) << json;
       EXPECT_EQ(result, test_case.expected) << json;
     } else {
       AttributionConfig config;

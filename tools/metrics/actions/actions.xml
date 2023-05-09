@@ -1307,6 +1307,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Accel_Toggle_Snap_Group_Windows_Minimize_Restore">
+  <owner>michelefan@chromium.org</owner>
+  <owner>xdai@chromium.org</owner>
+  <description>
+    Records how often the snap group windows are minimized or restored from
+    accelerator.
+  </description>
+</action>
+
 <action name="Accel_Toggle_Spoken_Feedback">
   <owner>dtseng@chromium.org</owner>
   <owner>aleventhal@chromium.org</owner>
@@ -17950,6 +17959,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Mobile.Signin.SnackbarUndoTapped">
+  <owner>triploblastic@chromium.org</owner>
+  <owner>chrome-signin-team@google.org</owner>
+  <description>
+    User tapped on 'Undo' button on a snackbar shown right after signin through
+    promos in bookmarks or reading list page (iOS only).
+  </description>
+</action>
+
 <action name="Mobile.SystemNotification.Content.Click.Downloads_Files">
   <owner>chrome-analysis-team@google.com</owner>
   <description>
@@ -19195,9 +19213,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileInactiveTabsCloseAll">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User pressed 'Close All Inactive' from the inactive tabs view. iOS only.
+  </description>
+</action>
+
+<action name="MobileInactiveTabsCloseAllConfirm">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User pressed 'Close All' from the 'Close All Inactive' confirmation toast.
+    iOS only.
+  </description>
+</action>
+
 <action name="MobileInactiveTabsSettingsBack">
   <owner>alionadangla@chromium.org</owner>
   <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <description>
     Reported when user goes back from Inactive Tabs Settings UI to Tabs Settings
     screen. iOS only.
@@ -19207,6 +19245,7 @@ should be able to be added at any place in this file.
 <action name="MobileInactiveTabsSettingsClose">
   <owner>alionadangla@chromium.org</owner>
   <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <description>
     Reported when Inactive Tabs Settings UI was dismissed. iOS only.
   </description>
@@ -20714,6 +20753,15 @@ should be able to be added at any place in this file.
   <description>User switched on torch in the QR Scanner.</description>
 </action>
 
+<action name="MobileReadingListAccessibilityClose">
+  <owner>myuu@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when a user closes Reading List on iOS by performing a VoiceOver
+    dismiss action.
+  </description>
+</action>
+
 <action name="MobileReadingListAdd">
   <owner>gambard@chromium.org</owner>
   <description>
@@ -20724,7 +20772,10 @@ should be able to be added at any place in this file.
 <action name="MobileReadingListClose">
   <owner>rohitrao@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
-  <description>Recorded when a user closes Reading List on iOS.</description>
+  <description>
+    Recorded when a user closes Reading List on iOS by tapping the
+    dismiss(&quot;Done&quot;) button.
+  </description>
 </action>
 
 <action name="MobileReadingListDeleteEntry">
@@ -21539,6 +21590,25 @@ should be able to be added at any place in this file.
   <description>User adds one new bookmark, in the iOS tab grid.</description>
 </action>
 
+<action name="MobileTabGridOpenInactiveTab">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User in the iOS tab grid opened an inactive tab by tapping on it.
+  </description>
+</action>
+
+<action name="MobileTabGridOpenInactiveTabSearchResult">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User in the iOS tab grid opened an inactive tab by tapping on it from search
+    results.
+  </description>
+</action>
+
 <action name="MobileTabGridOpenIncognitoTab">
   <owner>edchin@chromium.org</owner>
   <owner>marq@chromium.org</owner>
@@ -21762,6 +21832,23 @@ should be able to be added at any place in this file.
   <description>
     User in the iOS tab grid used the Undo control after closing all regular
     tabs.
+  </description>
+</action>
+
+<action name="MobileTabGridUserScrolled">
+  <owner>lpromero@chromium.org</owner>
+  <owner>alionadangla@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>User in the iOS tab grid scrolled the grid of tabs.</description>
+</action>
+
+<action name="MobileTabGridUserScrolledToTop">
+  <owner>lpromero@chromium.org</owner>
+  <owner>alionadangla@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User in the iOS tab grid tapped the status bar to scroll to the top of the
+    grid of tabs.
   </description>
 </action>
 
@@ -22407,6 +22494,23 @@ should be able to be added at any place in this file.
   <owner>michaeldo@chromium.org</owner>
   <description>
     Recorded when user taps Search By Image in context menu. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebInspectorSettingsBack">
+  <owner>ajuma@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Reported when user goes back from Web Inspector Settings UI to root Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileWebInspectorSettingsClose">
+  <owner>ajuma@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Reported when Web Inspector Settings UI was dismissed. iOS only.
   </description>
 </action>
 
@@ -27043,14 +27147,85 @@ should be able to be added at any place in this file.
   <description>User pressed back on a Phishing interstitial.</description>
 </action>
 
+<action name="PhishingInterstitial.CloseInterstitialWithoutUI">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User exits interstitial page without clicking the back button on a Phishing
+    interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.Diagnostic">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to show diagnostic on a Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.EnhancedProtectionMessage">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to show enhanced protection message on a Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.EnhancedProtectionSettings">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to open enhanced protection settings on a Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.LearnMore">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to learn more on a Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.PrivacyPolicy">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to show privacy policy on a Phishing interstitial.
+  </description>
+</action>
+
 <action name="PhishingInterstitial.Proceed">
   <owner>psarouthakis@chromium.org</owner>
   <description>User proceeded on a Phishing interstitial.</description>
 </action>
 
+<action name="PhishingInterstitial.ReportPhishingError">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to report an error on a Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.SetExtendedReportingDisabled">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to disable extended reporting on a Phishing interstitial.
+  </description>
+</action>
+
+<action name="PhishingInterstitial.SetExtendedReportingEnabled">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to enable extended reporting on a Phishing interstitial.
+  </description>
+</action>
+
 <action name="PhishingInterstitial.Show">
   <owner>psarouthakis@chromium.org</owner>
   <description>User saw the Phishing interstitial.</description>
+</action>
+
+<action name="PhishingInterstitial.WhitePaper">
+  <owner>skrakowi@chromium.org</owner>
+  <description>
+    User clicks to show white paper on a Phishing interstitial.
+  </description>
 </action>
 
 <action name="PhysicalWeb.NotificationPressed">
@@ -29647,6 +29822,13 @@ should be able to be added at any place in this file.
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <description>User clicks the extensions row in safety check.</description>
+</action>
+
+<action name="Settings.SafetyCheck.ReviewExtensionsThroughSafetyCheck">
+  <owner>psarouthakis@google.com</owner>
+  <description>
+    User clicks the review button in the extensions safety check.
+  </description>
 </action>
 
 <action name="Settings.SafetyCheck.ReviewUnusedSitePermissions">
@@ -37234,8 +37416,11 @@ should be able to be added at any place in this file.
       label="For AutoDarkUserEducationMessageOptIn feature."/>
   <suffix name="AutofillExternalAccountProfileSuggestion"
       label="For AutofillExternalAccountProfileSuggestion feature."/>
+  <suffix name="AutofillFeedbackNewBadge"
+      label="For AutofillFeedbackNewBadge feature."/>
   <suffix name="AutofillVirtualCardSuggestion"
       label="For AutofillVirtualCardSuggestion feature."/>
+  <suffix name="BackNavigationMenu" label="For BackNavigationMenu feature."/>
   <suffix name="BadgedReadingList" label="For BadgedReadingList feature."/>
   <suffix name="BadgedTranslateManualTrigger"
       label="For BadgedTranslateManualTrigger feature."/>
@@ -37372,6 +37557,10 @@ should be able to be added at any place in this file.
       label="For iOSDefaultBrowserOverflowMenuBadge feature"/>
   <suffix name="iOSDefaultBrowserSettingsBadge"
       label="For iOSDefaultBrowserSettingsBadge feature"/>
+  <suffix name="iOSHistoryOnOverflowMenuFeature"
+      label="For iOSHistoryOnOverflowMenuFeature feature"/>
+  <suffix name="iOSNewTabToolbarItemFeature"
+      label="For iOSNewTabToolbarItemFeature feature"/>
   <suffix name="iOSPromoAppStore" label="For iOSPromoAppStore feature"/>
   <suffix name="iOSPromoCredentialProviderExtension"
       label="For iOSPromoCredentialProviderExtension feature"/>
@@ -37379,6 +37568,10 @@ should be able to be added at any place in this file.
       label="For iOSPromoDefaultBrowser feature"/>
   <suffix name="iOSPromoPostRestore" label="For iOSPromoPostRestore feature"/>
   <suffix name="iOSPromoWhatsNew" label="For iOSPromoWhatsNew feature"/>
+  <suffix name="iOSShareToolbarItemFeature"
+      label="For iOSShareToolbarItemFeature feature"/>
+  <suffix name="iOSTabGridToolbarItemFeature"
+      label="For iOSTabGridToolbarItemFeature feature"/>
   <suffix name="KeyboardAccessoryAddressFilling"
       label="For KeyboardAccessoryAddressFilling feature."/>
   <suffix name="KeyboardAccessoryBarSwiping"
@@ -37423,6 +37616,8 @@ should be able to be added at any place in this file.
   <suffix name="PreviewsOmniboxUI"
       label="For the Previews UI in the Android Omnibox feature."/>
   <suffix name="PriceDropNTP" label="For PriceDropNTP feature."/>
+  <suffix name="PriceTrackingChipFeature"
+      label="For PriceTrackingChipFeature feature."/>
   <suffix name="PriceTrackingInSidePanel"
       label="For PriceTrackingInSidePanelFeature feature."/>
   <suffix name="PriceTrackingPageActionIconLabel"

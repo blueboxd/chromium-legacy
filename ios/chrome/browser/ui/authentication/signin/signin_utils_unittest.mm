@@ -17,11 +17,11 @@
 #import "components/sync/base/pref_names.h"
 #import "components/sync_preferences/pref_service_mock_factory.h"
 #import "components/sync_preferences/pref_service_syncable.h"
-#import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/browser_prefs.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
@@ -306,7 +306,8 @@ TEST_F(SigninUtilsTest,
       AuthenticationServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
   authentication_service->SignIn(identity);
-  authentication_service->GrantSyncConsent(identity);
+  authentication_service->GrantSyncConsent(
+      identity, signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO);
   chrome_browser_state_->GetPrefs()->SetBoolean(
       syncer::prefs::kSyncFirstSetupComplete, true);
 
@@ -332,7 +333,8 @@ TEST_F(SigninUtilsTest, TestGetPrimaryIdentitySigninStateSyncGranted) {
       AuthenticationServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
   authentication_service->SignIn(identity);
-  authentication_service->GrantSyncConsent(identity);
+  authentication_service->GrantSyncConsent(
+      identity, signin_metrics::AccessPoint::ACCESS_POINT_SIGNIN_PROMO);
 
   IdentitySigninState state =
       signin::GetPrimaryIdentitySigninState(chrome_browser_state_.get());

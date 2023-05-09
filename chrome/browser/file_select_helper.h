@@ -37,7 +37,7 @@ struct SelectedFileInfo;
 }
 
 namespace policy {
-FORWARD_DECLARE_TEST(DlpFilesControllerBrowserTest, FilesUploadCallerPassed);
+FORWARD_DECLARE_TEST(DlpFilesControllerAshBrowserTest, FilesUploadCallerPassed);
 }  // namespace policy
 
 // This class handles file-selection requests coming from renderer processes.
@@ -107,7 +107,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
       ContentAnalysisCompletionCallback_FolderUpload_OKBad);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, GetFileTypesFromAcceptType);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, MultipleFileExtensionsForMime);
-  FRIEND_TEST_ALL_PREFIXES(policy::DlpFilesControllerBrowserTest,
+  FRIEND_TEST_ALL_PREFIXES(policy::DlpFilesControllerAshBrowserTest,
                            FilesUploadCallerPassed);
 
   explicit FileSelectHelper(Profile* profile);
@@ -311,7 +311,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
       const base::FilePath& suggested_path);
 
   // Profile used to set/retrieve the last used directory.
-  raw_ptr<Profile> profile_;
+  raw_ptr<Profile, DanglingUntriaged> profile_;
 
   // The RenderFrameHost and WebContents for the page showing a file dialog
   // (may only be one such dialog).

@@ -279,8 +279,12 @@ TailoredSecurityService::GetNumberOfPendingTailoredSecurityServiceRequests() {
   return pending_tailored_security_requests_.size();
 }
 
-void TailoredSecurityService::AddQueryRequest() {
+bool TailoredSecurityService::AddQueryRequest() {
   DCHECK(!is_shut_down_);
+  if (!can_query_) {
+    return false;
+  }
+
   active_query_request_++;
   if (active_query_request_ == 1) {
     if (base::Time::Now() - last_updated_ <=
@@ -301,6 +305,7 @@ void TailoredSecurityService::AddQueryRequest() {
           &TailoredSecurityService::QueryTailoredSecurityBit);
     }
   }
+  return true;
 }
 
 void TailoredSecurityService::RemoveQueryRequest() {
@@ -321,6 +326,10 @@ void TailoredSecurityService::QueryTailoredSecurityBit() {
 void TailoredSecurityService::StartRequest(
     QueryTailoredSecurityBitCallback callback) {
   DCHECK(!is_shut_down_);
+  if (!can_query_) {
+    saved_callback_ = std::move(callback);
+    return;
+  }
 
   // Wrap the original callback into a generic completion callback.
   CompletionCallback completion_callback =
@@ -462,9 +471,8 @@ void TailoredSecurityService::SetTailoredSecurityBitForTesting(
   std::unique_ptr<Request> request =
       CreateRequest(url, std::move(completion_callback), traffic_annotation);
 
-  base::Value enable_tailored_security_service(base::Value::Type::DICT);
-  enable_tailored_security_service.SetBoolKey("history_recording_enabled",
-                                              is_enabled);
+  auto enable_tailored_security_service =
+      base::Value::Dict().Set("history_recording_enabled", is_enabled);
   std::string post_data;
   base::JSONWriter::Write(enable_tailored_security_service, &post_data);
   request->SetPostData(post_data);
@@ -499,6 +507,17 @@ void TailoredSecurityService::Shutdown() {
 void TailoredSecurityService::TailoredSecurityTimestampUpdateCallback() {
   StartRequest(base::BindOnce(&TailoredSecurityService::MaybeNotifySyncUser,
                               weak_ptr_factory_.GetWeakPtr()));
+}
+
+void TailoredSecurityService::SetCanQuery(bool can_query) {
+  can_query_ = can_query;
+  if (can_query) {
+    if (!saved_callback_.is_null()) {
+      StartRequest(std::move(saved_callback_));
+    }
+  } else {
+    timer_.Stop();
+  }
 }
 
 }  // namespace safe_browsing

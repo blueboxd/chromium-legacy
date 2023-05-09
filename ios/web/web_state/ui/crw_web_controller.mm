@@ -44,7 +44,6 @@
 #import "ios/web/public/annotations/annotations_text_manager.h"
 #import "ios/web/public/browser_state.h"
 #import "ios/web/public/find_in_page/crw_find_interaction.h"
-#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/permissions/permissions.h"
 #import "ios/web/public/ui/crw_context_menu_item.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
@@ -726,8 +725,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   web::WKBackForwardListItemHolder* holder =
       web::WKBackForwardListItemHolder::FromNavigationItem(item);
   holder->set_navigation_type(WKNavigationTypeBackForward);
-  context->SetIsPost((holder && [holder->http_method() isEqual:@"POST"]) ||
-                     item->HasPostData());
+  context->SetIsPost(
+      (holder && [holder->http_method() isEqualToString:@"POST"]) ||
+      item->HasPostData());
 
   if (holder) {
     context->SetMimeType(holder->mime_type());
@@ -955,9 +955,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self.jsNavigationHandler handleNavigationWillChangeState];
 }
 
-- (void)handleNavigationDidPushStateMessage:(base::Value*)message {
+- (void)handleNavigationDidPushStateMessage:(base::Value::Dict*)dict {
   [self.jsNavigationHandler
-      handleNavigationDidPushStateMessage:message
+      handleNavigationDidPushStateMessage:dict
                                  webState:_webStateImpl
                            hasUserGesture:self.isUserInteracting
                      userInteractionState:&_userInteractionState
@@ -965,9 +965,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self updateSSLStatusForCurrentNavigationItem];
 }
 
-- (void)handleNavigationDidReplaceStateMessage:(base::Value*)message {
+- (void)handleNavigationDidReplaceStateMessage:(base::Value::Dict*)dict {
   [self.jsNavigationHandler
-      handleNavigationDidReplaceStateMessage:message
+      handleNavigationDidReplaceStateMessage:dict
                                     webState:_webStateImpl
                               hasUserGesture:self.isUserInteracting
                         userInteractionState:&_userInteractionState

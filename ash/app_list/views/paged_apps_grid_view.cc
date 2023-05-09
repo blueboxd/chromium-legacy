@@ -24,7 +24,6 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
@@ -647,6 +646,10 @@ void PagedAppsGridView::ScrollStarted() {
 void PagedAppsGridView::ScrollEnded() {
   // Scroll can end without triggering state animation.
   presentation_time_recorder_.reset();
+}
+
+bool PagedAppsGridView::ShouldContainerHandleDragEvents() {
+  return true;
 }
 
 bool PagedAppsGridView::DoesIntersectRect(const views::View* target,

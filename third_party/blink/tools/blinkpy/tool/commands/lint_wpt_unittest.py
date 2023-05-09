@@ -131,7 +131,7 @@ class LintWPTTest(LoggingTestCase):
             'INFO: \n',
             "INFO: However, for errors in test files, it's sometimes OK "
             'to add lines to\n',
-            'INFO: `web_tests/external/wpt/lint.ignore` to ignore them.\n',
+            'INFO: `external/wpt/lint.ignore` to ignore them.\n',
             'INFO: \n',
             'INFO: For example, to make the lint tool ignore all '
             "'PARSE-FAILED' errors in\n",
@@ -669,3 +669,27 @@ class LintWPTTest(LoggingTestCase):
                   expected: TIMEOUT
                 """)
         self.assertEqual(errors, [])
+
+    def test_invalid_rules_in_ignorelist(self):
+        self.fs.write_text_file(
+            self.finder.path_from_wpt_tests('variant.html'), '')
+        self.fs.write_text_file(
+            self.finder.path_from_wpt_tests('lint.ignore'),
+            textwrap.dedent("""\
+                DOES-NOT-EXIST: variant.html
+                META-EMPTY-SECTION: variant.html
+                """))
+        nonexistent_error, must_fix_error = self.command.check_ignorelist(
+            self.finder.path_from_wpt_tests())
+        name, description, path, _ = nonexistent_error
+        self.assertEqual(name, 'IGNORELIST-BAD-RULE')
+        self.assertEqual(path, 'lint.ignore')
+        self.assertEqual(
+            description, "Rule 'DOES-NOT-EXIST' cannot be ignored "
+            'or does not exist')
+        name, description, path, _ = must_fix_error
+        self.assertEqual(name, 'IGNORELIST-BAD-RULE')
+        self.assertEqual(path, 'lint.ignore')
+        self.assertEqual(
+            description, "Rule 'META-EMPTY-SECTION' cannot be ignored "
+            'or does not exist')

@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#include "chrome/browser/chained_back_navigation_tracker.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/complex_tasks/task_tab_helper.h"
@@ -301,6 +302,14 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // ChromeSubresourceFilterClient has it as a dependency.
   infobars::ContentInfoBarManager::CreateForWebContents(web_contents);
 
+  // `PageSpecificContentSettings` (PSCS) needs to come before
+  // `DIPSWebContentsObserver` for this latter to be correctly added to the PSCS
+  // observer list.
+  content_settings::PageSpecificContentSettings::CreateForWebContents(
+      web_contents,
+      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
+          web_contents));
+
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -319,6 +328,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
   if (breadcrumbs::IsEnabled())
     BreadcrumbManagerTabHelper::CreateForWebContents(web_contents);
+  chrome::ChainedBackNavigationTracker::CreateForWebContents(web_contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
@@ -436,10 +446,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
           profile));
-  content_settings::PageSpecificContentSettings::CreateForWebContents(
-      web_contents,
-      std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
-          web_contents));
   TabUIHelper::CreateForWebContents(web_contents);
   tasks::TaskTabHelper::CreateForWebContents(web_contents);
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents);
@@ -647,7 +653,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
+  // Do not create for Incognito mode.
+  if (!profile->IsOffTheRecord()) {
+    SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
+  }
 #endif
 
 #if BUILDFLAG(ENABLE_FEED_V2)

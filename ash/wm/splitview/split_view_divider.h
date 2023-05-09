@@ -6,8 +6,6 @@
 #define ASH_WM_SPLITVIEW_SPLIT_VIEW_DIVIDER_H_
 
 #include "ash/ash_export.h"
-#include "base/containers/flat_set.h"
-#include "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -123,7 +121,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   // This variable indicates the dragging state and records the window being
   // dragged which will be used to refresh the stacking order of the
   // `divider_widget_` to be stacked below the `dragged_window_`.
-  aura::Window* dragged_window_ = nullptr;
+  raw_ptr<aura::Window, ExperimentalAsh> dragged_window_ = nullptr;
 
   // The window(s) observed by the divider which will be updated upon adding or
   // removing window.

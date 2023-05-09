@@ -9,6 +9,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "build/build_config.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -759,6 +760,7 @@ void FocusFakebox() {
 - (void)tearDown {
   // Clear the pasteboard after every test.
   [ChromeEarlGrey clearPasteboard];
+  [super tearDown];
 }
 
 // Tests that tapping on steady view on webpage and starting typing a query
@@ -795,8 +797,9 @@ void FocusFakebox() {
   [ChromeEarlGrey copyTextToPasteboard:@"hello"];
 
   // Tap on Omnibox on pre edit state.
+  // TODO(crbug.com/1442458): Find a better way to tap on the selected url.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_tap()];
+      performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
   // Wait for callout copy button to be displayed.
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
@@ -826,8 +829,9 @@ void FocusFakebox() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Tap on Omnibox on pre edit state.
+  // TODO(crbug.com/1442458): Find a better way to tap on the selected url.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_tap()];
+      performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
   // Wait for callout cut button to be displayed.
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
@@ -859,8 +863,9 @@ void FocusFakebox() {
   [ChromeEarlGrey copyTextToPasteboard:@"hello"];
 
   // Tap on Omnibox on pre edit state.
+  // TODO(crbug.com/1442458): Find a better way to tap on the selected url.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_tap()];
+      performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
   // Wait for callout paste button to be displayed.
   [ChromeEarlGrey waitForUIElementToAppearWithMatcher:

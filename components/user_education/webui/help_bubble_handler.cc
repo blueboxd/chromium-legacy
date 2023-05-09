@@ -119,7 +119,7 @@ struct HelpBubbleHandlerBase::ElementData {
 
   std::unique_ptr<TrackedElementWebUI> element;
   std::unique_ptr<HelpBubbleParams> params;
-  base::raw_ptr<HelpBubbleWebUI> help_bubble = nullptr;
+  raw_ptr<HelpBubbleWebUI> help_bubble = nullptr;
   base::CallbackListSubscription external_bubble_subscription;
 
   // This is set to true if we are closing the help bubble as the result of a
@@ -211,7 +211,6 @@ std::unique_ptr<HelpBubbleWebUI> HelpBubbleHandlerBase::CreateHelpBubble(
   mojom_params->body_text = base::UTF16ToUTF8(data.params->body_text);
   mojom_params->close_button_alt_text =
       base::UTF16ToUTF8(data.params->close_button_alt_text);
-  mojom_params->force_close_button = data.params->force_close_button;
   auto timeout = data.params->timeout.value_or(
       data.params->buttons.empty() ? kDefaultTimeoutWithoutButtons
                                    : kDefaultTimeoutWithButtons);

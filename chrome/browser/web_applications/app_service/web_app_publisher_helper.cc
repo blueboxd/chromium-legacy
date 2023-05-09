@@ -1013,7 +1013,8 @@ void WebAppPublisherHelper::LaunchAppWithParams(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Terminal SWA has custom launch code and manages its own restore data.
   if (params.app_id == guest_os::kTerminalSystemAppId) {
-    guest_os::LaunchTerminalHome(profile_, params.display_id);
+    guest_os::LaunchTerminalHome(profile_, params.display_id,
+                                 params.restore_id);
     std::move(on_complete).Run(nullptr);
     return;
   }
@@ -1047,8 +1048,8 @@ void WebAppPublisherHelper::LaunchAppWithParams(
       std::move(on_complete));
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kExperimentalWebAppProfileIsolation)) {
+  if (ResolveExperimentalWebAppIsolationFeature() ==
+      ExperimentalWebAppIsolationMode::kProfile) {
     WebAppRegistrar& registrar = provider_->registrar_unsafe();
     const WebApp* web_app = registrar.GetAppById(params.app_id);
     const auto& chromeos_data = web_app->chromeos_data();
@@ -1059,14 +1060,25 @@ void WebAppPublisherHelper::LaunchAppWithParams(
           chromeos_data->app_profile_path.value(),
           /*incognito=*/false,
           base::BindOnce(
-              [](apps::AppLaunchParams params, LaunchWebAppCallback on_complete,
-                 Profile* profile) {
+              [](Profile* origin_profile, apps::AppLaunchParams params,
+                 LaunchWebAppCallback on_complete, Profile* app_profile) {
+                Profile* profile = app_profile;
+                if (profile == nullptr) {
+                  // We can reach here if the user has cleared all the app
+                  // profiles from chrome://web-app-internals. In this case, we
+                  // just act as if this app is not in isolation mode.
+                  LOG(WARNING)
+                      << "unable to load app profile. Fallback to "
+                         "non-isolation mode (i.e. using default profile)";
+                  profile = origin_profile;
+                }
                 WebAppProvider::GetForWebApps(profile)
                     ->scheduler()
                     .LaunchAppWithCustomParams(std::move(params),
                                                std::move(on_complete));
               },
-              std::move(params), std::move(launch_web_app_callback)));
+              /*origin_profile=*/profile_, std::move(params),
+              std::move(launch_web_app_callback)));
 
       return;
     }

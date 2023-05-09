@@ -11,13 +11,14 @@
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
@@ -34,7 +35,6 @@
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_mediator.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller_delegate.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/components/webui/web_ui_url_constants.h"
 #import "ios/web/public/navigation/referrer.h"
 
@@ -101,7 +101,8 @@
 
   // Button factory requires that the omnibox commands are set up, which is
   // done by the location bar.
-  self.viewController.buttonFactory = [self buttonFactoryWithType:PRIMARY];
+  self.viewController.buttonFactory =
+      [self buttonFactoryWithType:ToolbarType::kPrimary];
 
   self.viewController.locationBarViewController =
       self.locationBarCoordinator.locationBarViewController;
@@ -170,17 +171,15 @@
   if (!webState)
     return;
 
-  BOOL isPrerendered =
-      (_prerenderService && _prerenderService->IsLoadingPrerender());
-
   // Please note, this notion of isLoading is slightly different from WebState's
   // IsLoading().
   BOOL isToolbarLoading =
       webState->IsLoading() &&
       !webState->GetLastCommittedURL().SchemeIs(kChromeUIScheme);
 
-  if (isPrerendered && isToolbarLoading)
+  if (self.isLoadingPrerenderer && isToolbarLoading) {
     [self showPrerenderingAnimation];
+  }
 
   id<FindInPageCommands> findInPageCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), FindInPageCommands);
@@ -208,6 +207,10 @@
                      IsSplitToolbarMode(self.viewController);
 
   [self.viewController.view setHidden:hideToolbar];
+}
+
+- (BOOL)isLoadingPrerenderer {
+  return _prerenderService && _prerenderService->IsLoadingPrerender();
 }
 
 #pragma mark - PrimaryToolbarViewControllerDelegate

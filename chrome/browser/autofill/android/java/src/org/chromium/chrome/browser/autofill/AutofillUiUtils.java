@@ -29,6 +29,7 @@ import android.text.style.ImageSpan;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -446,14 +447,6 @@ public class AutofillUiUtils {
      */
     public static GURL getCreditCardIconUrlWithParams(
             GURL customIconUrl, @Px int width, @Px int height) {
-        // TODO(crbug.com/1313616): There is only one gstatic card art image we are using currently.
-        // Remove this logic and append FIFE URL suffix by default when the static image is
-        // deprecated.
-        // Check if the image is gstatic stored in Static Content Service. If not append the
-        // dimension params to the FIFE URL.
-        if (customIconUrl.getSpec().equals(CAPITAL_ONE_ICON_URL)) {
-            return customIconUrl;
-        }
         // Params can be added to a FIFE URL by appending them at the end like URL[=params]. "w"
         // option is used to set the width in pixels, and "h" is used to set the height in pixels.
         StringBuilder url = new StringBuilder(customIconUrl.getSpec());
@@ -534,6 +527,22 @@ public class AutofillUiUtils {
         return R.dimen.card_unmask_dialog_credit_card_icon_height;
     }
 
+    public static int getVirtualCardEnrollmentDialogIconWidthId() {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES)) {
+            return R.dimen.virtual_card_enrollment_dialog_card_art_width_new;
+        }
+        return R.dimen.virtual_card_enrollment_dialog_card_art_width;
+    }
+
+    public static int getVirtualCardEnrollmentDialogIconHeightId() {
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES)) {
+            return R.dimen.virtual_card_enrollment_dialog_card_art_height_new;
+        }
+        return R.dimen.virtual_card_enrollment_dialog_card_art_height;
+    }
+
     /**
      * Resize the bitmap to the required specs, round corners, and add grey border.
      * @param bitmap to be updated.
@@ -583,23 +592,27 @@ public class AutofillUiUtils {
      * @param parentView View that contains the card details section.
      * @param cardName Card's nickname/product name/network name.
      * @param cardNumber Card's obfuscated last 4 digits.
-     * @param cardExpiration Card's expiration.
+     * @param cardLabel Card's label.
      * @param cardArtUrl URL to fetch custom card art.
      * @param defaultIconId Resource Id for the default (network) icon if the card art doesn't exist
      *         or couldn't be retrieved.
      * @param cardNameAndNumberTextAppearance Text appearance Id for the card name and the card
      *         number.
-     * @param cardExpirationTextAppearance Text appearance Id for the card expiration.
+     * @param cardLabelTextAppearance Text appearance Id for the card label.
      * @param showCustomIcon If true, custom card icon is shown, else, default icon is shown.
      */
     public static void addCardDetails(Context context, View parentView, String cardName,
-            String cardNumber, String cardExpiration, GURL cardArtUrl, int defaultIconId,
-            int cardNameAndNumberTextAppearance, int cardExpirationTextAppearance,
+            String cardNumber, String cardLabel, GURL cardArtUrl, int defaultIconId,
+            int iconWidthId, int iconHeightId, int iconEndMarginId,
+            int cardNameAndNumberTextAppearance, int cardLabelTextAppearance,
             boolean showCustomIcon) {
         ImageView cardIconView = parentView.findViewById(R.id.card_icon);
-        cardIconView.setImageDrawable(getCardIcon(context, cardArtUrl, defaultIconId,
-                getCardUnmaskDialogIconWidthId(), getCardUnmaskDialogIconHeightId(),
-                R.dimen.card_art_corner_radius, showCustomIcon));
+        cardIconView.setImageDrawable(getCardIcon(context, cardArtUrl, defaultIconId, iconWidthId,
+                iconHeightId, R.dimen.card_art_corner_radius, showCustomIcon));
+
+        // Set margin between the card icon and the card details.
+        MarginLayoutParams params = (MarginLayoutParams) cardIconView.getLayoutParams();
+        params.setMarginEnd(context.getResources().getDimensionPixelSize(iconEndMarginId));
 
         TextView cardNameView = parentView.findViewById(R.id.card_name);
         cardNameView.setText(cardName);
@@ -609,8 +622,8 @@ public class AutofillUiUtils {
         cardNumberView.setText(cardNumber);
         cardNumberView.setTextAppearance(cardNameAndNumberTextAppearance);
 
-        TextView cardExpirationView = parentView.findViewById(R.id.card_expiration);
-        cardExpirationView.setText(cardExpiration);
-        cardExpirationView.setTextAppearance(cardExpirationTextAppearance);
+        TextView cardLabelView = parentView.findViewById(R.id.card_label);
+        cardLabelView.setText(cardLabel);
+        cardLabelView.setTextAppearance(cardLabelTextAppearance);
     }
 }

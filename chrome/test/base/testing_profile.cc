@@ -665,10 +665,14 @@ const Profile* TestingProfile::GetOriginalProfile() const {
   return this;
 }
 
-void TestingProfile::SetIsSupervisedProfile() {
+void TestingProfile::SetIsSupervisedProfile(bool is_supervised_profile) {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  GetPrefs()->SetString(prefs::kSupervisedUserId,
-                        supervised_user::kChildAccountSUID);
+  if (is_supervised_profile) {
+    GetPrefs()->SetString(prefs::kSupervisedUserId,
+                          supervised_user::kChildAccountSUID);
+  } else {
+    GetPrefs()->ClearPref(prefs::kSupervisedUserId);
+  }
 #else
   NOTREACHED() << "Supervised users are not enabled";
 #endif
@@ -846,11 +850,6 @@ TestingProfile::GetPolicySchemaRegistryService() {
 policy::UserCloudPolicyManagerAsh*
 TestingProfile::GetUserCloudPolicyManagerAsh() {
   return user_cloud_policy_manager_.get();
-}
-
-policy::ActiveDirectoryPolicyManager*
-TestingProfile::GetActiveDirectoryPolicyManager() {
-  return nullptr;
 }
 #else
 policy::UserCloudPolicyManager* TestingProfile::GetUserCloudPolicyManager() {

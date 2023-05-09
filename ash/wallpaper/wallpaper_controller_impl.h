@@ -24,6 +24,7 @@
 #include "ash/shell_observer.h"
 #include "ash/system/scheduled_feature/scheduled_feature.h"
 #include "ash/wallpaper/online_wallpaper_variant_info_fetcher.h"
+#include "ash/wallpaper/wallpaper_blur_manager.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -187,10 +188,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // and add user screens.
   bool ShouldApplyShield() const;
 
-  // Returns whether the current wallpaper is allowed to be blurred on
-  // lock/login screen. See https://crbug.com/775591.
-  bool IsBlurAllowedForLockState() const;
-
   // True if the wallpaper is set.
   bool is_wallpaper_set() const { return !!current_wallpaper_.get(); }
 
@@ -229,6 +226,8 @@ class ASH_EXPORT WallpaperControllerImpl
   // system state (e.g. wallpaper image, SessionState, etc.).
   bool ShouldCalculateColors() const;
 
+  WallpaperBlurManager* blur_manager() { return blur_manager_.get(); }
+
   // WallpaperController:
   void SetClient(WallpaperControllerClient* client) override;
   WallpaperDragDropDelegate* GetDragDropDelegate() override;
@@ -255,6 +254,8 @@ class ASH_EXPORT WallpaperControllerImpl
                                  const gfx::ImageSkia& image) override;
   void SetOnlineWallpaper(const OnlineWallpaperParams& params,
                           SetWallpaperCallback callback) override;
+  void ShowOobeWallpaper() override;
+  bool IsOobeWallpaper() const;
   void SetGooglePhotosWallpaper(const GooglePhotosWallpaperParams& params,
                                 SetWallpaperCallback callback) override;
   void SetGooglePhotosDailyRefreshAlbumId(const AccountId& account_id,
@@ -307,7 +308,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void AddObserver(WallpaperControllerObserver* observer) override;
   void RemoveObserver(WallpaperControllerObserver* observer) override;
   gfx::ImageSkia GetWallpaperImage() override;
-  scoped_refptr<base::RefCountedMemory> GetPreviewImage() override;
+  void LoadPreviewImage(LoadPreviewImageCallback callback) override;
   bool IsWallpaperBlurredForLockState() const override;
   bool IsActiveUserWallpaperControlledByPolicy() override;
   bool IsWallpaperControlledByPolicy(
@@ -377,9 +378,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   void set_bypass_decode_for_testing() { bypass_decode_for_testing_ = true; }
 
-  void set_allow_blur_or_shield_for_testing() {
-    allow_blur_or_shield_for_testing_ = true;
-  }
+  void set_allow_shield_for_testing() { allow_shield_for_testing_ = true; }
 
   // Exposed for testing.
   void UpdateDailyRefreshWallpaperForTesting();
@@ -423,12 +422,13 @@ class ASH_EXPORT WallpaperControllerImpl
   // Update a Wallpaper for all root windows.
   void UpdateWallpaperForAllRootWindows(bool lock_state_changed);
 
-  // Moves the wallpaper to the specified container across all root windows.
+  // Moves the wallpaper to the correct container across all root windows.
   // Returns true if a wallpaper moved.
-  bool ReparentWallpaper(int container);
+  bool ReparentWallpaper();
 
-  // Returns the wallpaper container id for unlocked and locked states.
-  int GetWallpaperContainerId(bool locked);
+  // Returns the wallpaper container id for different session and wallpaper
+  // states.
+  int GetWallpaperContainerId();
 
   // Implementation of |RemoveUserWallpaper|, which deletes |account_id|'s
   // custom wallpapers and directories.
@@ -491,6 +491,11 @@ class ASH_EXPORT WallpaperControllerImpl
                                 bool save_file,
                                 SetWallpaperCallback callback,
                                 const gfx::ImageSkia& image);
+
+  // Used as the callback as soon as the OOBE wallpaper is loaded and decoded
+  // from file system.
+  void OnOobeWallpaperDecoded(const base::FilePath& path,
+                              const gfx::ImageSkia& image);
 
   // Used as the callback of fetching the data for a Google Photos photo from
   // the unique id.
@@ -774,7 +779,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void CleanUpBeforeSettingUserWallpaperInfo(const AccountId& account_id,
                                              const WallpaperInfo& info);
 
-  bool locked_ = false;
+  bool is_session_active_ = false;
 
   WallpaperMode wallpaper_mode_ = WALLPAPER_NONE;
 
@@ -807,6 +812,9 @@ class ASH_EXPORT WallpaperControllerImpl
   // Delegate to resolve online wallpaper variants.
   std::unique_ptr<OnlineWallpaperVariantInfoFetcher> variant_info_fetcher_;
 
+  // Manages the state of wallpaper blur.
+  const std::unique_ptr<WallpaperBlurManager> blur_manager_;
+
   // The calculated colors extracted from the current wallpaper.
   // Empty state is used to denote when colors have not yet been calculated.
   absl::optional<WallpaperCalculatedColors> calculated_colors_;
@@ -822,6 +830,9 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Cached default wallpaper.
   CachedDefaultWallpaper cached_default_wallpaper_;
+
+  // Cached OOBE wallpaper.
+  CachedDefaultWallpaper cached_oobe_wallpaper_;
 
   // The paths of the customized default wallpapers, if they exist.
   base::FilePath customized_default_small_path_;
@@ -893,8 +904,11 @@ class ASH_EXPORT WallpaperControllerImpl
   // Tracks how many wallpapers have been set.
   int wallpaper_count_for_testing_ = 0;
 
-  // If true, the one shot wallpaper is allowed to be blurred or shielded.
-  bool allow_blur_or_shield_for_testing_ = false;
+  // If true, the one shot wallpaper is allowed to be blurred.
+  bool allow_blur_for_testing_ = false;
+
+  // If true, the one shot wallpaper is allowed to be shielded.
+  bool allow_shield_for_testing_ = false;
 
   // The file paths of decoding requests that have been initiated. Must be a
   // list because more than one decoding requests may happen during a single

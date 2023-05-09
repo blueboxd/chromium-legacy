@@ -21,7 +21,6 @@
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/containers/fixed_flat_set.h"
-#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -1805,7 +1804,7 @@ int HttpCache::Transaction::DoStartPartialCacheValidation() {
 }
 
 int HttpCache::Transaction::DoCompletePartialCacheValidation(int result) {
-  if (!result) {
+  if (!result && reading_) {
     // This is the end of the request.
     DoneWithEntry(true);
     TransitionToState(STATE_FINISH_HEADERS);

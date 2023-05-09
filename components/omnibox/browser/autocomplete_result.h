@@ -103,7 +103,7 @@ class AutocompleteResult {
   // the best GetMaxMatches() matches. Sets the default match to the best match
   // and updates the alternate nav URL.
   //
-  // |preserve_default_match| can be used to prevent the default match from
+  // |default_match_to_preserve| can be used to prevent the default match from
   // being surprisingly swapped out during the asynchronous pass. If it has a
   // value, this method searches the results for that match, and promotes it to
   // the top. But we don't add back that match if it doesn't already exist.
@@ -113,7 +113,8 @@ class AutocompleteResult {
   void SortAndCull(const AutocompleteInput& input,
                    TemplateURLService* template_url_service,
                    OmniboxTriggeredFeatureService* triggered_feature_service,
-                   const AutocompleteMatch* preserve_default_match = nullptr);
+                   absl::optional<AutocompleteMatch> default_match_to_preserve =
+                       absl::nullopt);
 
   // Ensures that matches belonging to suggestion groups, i.e., those with a
   // suggestion_group_id value and a corresponding suggestion group info, are

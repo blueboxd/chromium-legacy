@@ -18,6 +18,10 @@ struct InterestGroupAd {
   url.mojom.Url render_url;
   // Optional size groups assigned to this Ad.
   string? size_group;
+  // Optional identifiers that may be passed to reporting functions, if
+  // sufficiently k-anonymous.
+  string? buyer_reporting_id;
+  string? buyer_and_seller_reporting_id;
   // Opaque JSON data, persisted, then passed as object to auction worklet.
   string? metadata;
 };
@@ -371,6 +375,12 @@ struct AuctionAdConfigNonSharedParams {
   // participate in the auction. Interest groups that don't declare all these
   // capabilities will not participate in the auction.
   SellerCapabilities required_seller_capabilities;
+
+  // The requested ad creative size for the auction (strictly optional).
+  // If specified in the auction config, it is surfaced during the auction
+  // through browser signals and stored after the auction in the winning
+  // fenced frame config as its container size.
+  AdSize? requested_size;
 
   // Nested auctions whose results will also be fed to `seller`. Only the top
   // level auction config can have component auctions.

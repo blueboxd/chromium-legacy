@@ -144,11 +144,11 @@ BASE_FEATURE(kOpaqueResponseBlockingV02,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables preprocessing the Attribution API's trigger registration ping
-// requests, potentially adding attestation headers, and handling their
+// requests, potentially adding verification headers, and handling their
 // responses. (See
-// https://github.com/WICG/attribution-reporting-api/blob/main/trigger_attestation.md)
-BASE_FEATURE(kAttributionReportingTriggerAttestation,
-             "AttributionReportingTriggerAttestation",
+// https://github.com/WICG/attribution-reporting-api/blob/main/report_verification.md)
+BASE_FEATURE(kAttributionReportingReportVerification,
+             "AttributionReportingReportVerification",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Gate access to Attribution Reporting cross app and web APIs that allow
@@ -331,7 +331,7 @@ BASE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout,
 // preflights.
 BASE_FEATURE(kLocalNetworkAccessAllowPotentiallyTrustworthySameOrigin,
              "LocalNetworkAccessAllowPotentiallyTrustworthySameOrigin",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables out-of-process system DNS resolution so getaddrinfo() never runs in
 // the network service sandbox. System DNS resolution will instead be brokered

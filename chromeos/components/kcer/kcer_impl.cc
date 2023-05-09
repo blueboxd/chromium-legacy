@@ -19,6 +19,7 @@
 #include "base/types/expected.h"
 #include "chromeos/components/kcer/kcer.h"
 #include "chromeos/components/kcer/kcer_token.h"
+#include "chromeos/components/kcer/token_key_finder.h"
 #include "chromeos/components/kcer/token_results_merger.h"
 #include "net/cert/x509_certificate.h"
 
@@ -182,8 +183,38 @@ void KcerImpl::ListCerts(base::flat_set<Token> tokens,
   }
 }
 
-void KcerImpl::DoesPrivateKeyExist(PrivateKeyHandle key, DoesKeyExistCallback) {
-  // TODO(244408716): Implement.
+void KcerImpl::DoesPrivateKeyExist(PrivateKeyHandle key,
+                                   DoesKeyExistCallback callback) {
+  if (key.GetTokenInternal().has_value()) {
+    const base::WeakPtr<KcerToken>& kcer_token =
+        GetToken(key.GetTokenInternal().value());
+    if (!kcer_token.MaybeValid()) {
+      return std::move(callback).Run(
+          base::unexpected(Error::kTokenIsNotAvailable));
+    }
+    token_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &KcerToken::DoesPrivateKeyExist, kcer_token, std::move(key),
+            base::BindPostTaskToCurrentDefault(std::move(callback))));
+    return;
+  }
+
+  auto on_find_key_done =
+      base::BindOnce(&KcerImpl::DoesPrivateKeyExistWithToken,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
+  return FindKeyToken(/*allow_guessing=*/false,
+                      /*key=*/std::move(key), std::move(on_find_key_done));
+}
+
+void KcerImpl::DoesPrivateKeyExistWithToken(
+    DoesKeyExistCallback callback,
+    base::expected<absl::optional<Token>, Error> find_key_result) {
+  if (!find_key_result.has_value()) {
+    return std::move(callback).Run(base::unexpected(find_key_result.error()));
+  }
+  const absl::optional<Token>& token = find_key_result.value();
+  return std::move(callback).Run(token.has_value());
 }
 
 void KcerImpl::Sign(PrivateKeyHandle key,
@@ -221,7 +252,37 @@ void KcerImpl::GetKeyInfo(PrivateKeyHandle key, GetKeyInfoCallback callback) {
 void KcerImpl::SetKeyNickname(PrivateKeyHandle key,
                               std::string nickname,
                               StatusCallback callback) {
-  // TODO(244408716): Implement.
+  if (key.GetTokenInternal().has_value()) {
+    return SetKeyNicknameWithToken(std::move(nickname), std::move(callback),
+                                   std::move(key));
+  }
+
+  auto on_token_populated = base::BindOnce(
+      &KcerImpl::SetKeyNicknameWithToken, weak_factory_.GetWeakPtr(),
+      std::move(nickname), std::move(callback));
+  return PopulateTokenForKey(std::move(key), std::move(on_token_populated));
+}
+
+void KcerImpl::SetKeyNicknameWithToken(
+    std::string nickname,
+    StatusCallback callback,
+    base::expected<PrivateKeyHandle, Error> key_or_error) {
+  if (!key_or_error.has_value()) {
+    return std::move(callback).Run(base::unexpected(key_or_error.error()));
+  }
+  PrivateKeyHandle key = std::move(key_or_error).value();
+
+  const base::WeakPtr<KcerToken>& kcer_token =
+      GetToken(key.GetTokenInternal().value());
+  if (!kcer_token.MaybeValid()) {
+    return std::move(callback).Run(
+        base::unexpected(Error::kTokenIsNotAvailable));
+  }
+  token_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&KcerToken::SetKeyNickname, kcer_token, std::move(key),
+                     std::move(nickname),
+                     base::BindPostTaskToCurrentDefault(std::move(callback))));
 }
 
 void KcerImpl::SetKeyPermissions(PrivateKeyHandle key,
@@ -243,6 +304,61 @@ base::WeakPtr<internal::KcerToken>& KcerImpl::GetToken(Token token) {
     case Token::kDevice:
       return device_token_;
   }
+}
+
+void KcerImpl::FindKeyToken(
+    bool allow_guessing,
+    PrivateKeyHandle key,
+    base::OnceCallback<void(base::expected<absl::optional<Token>, Error>)>
+        callback) {
+  base::flat_set<Token> tokens = GetAvailableTokens();
+
+  if (tokens.empty()) {
+    return std::move(callback).Run(
+        base::unexpected(Error::kTokenIsNotAvailable));
+  }
+
+  if (allow_guessing && (tokens.size() == 1)) {
+    return std::move(callback).Run(*tokens.begin());
+  }
+
+  auto key_finder = TokenKeyFinder::Create(
+      /*results_to_receive=*/tokens.size(), std::move(callback));
+  for (Token token : tokens) {
+    auto token_callback =
+        base::BindPostTaskToCurrentDefault(key_finder->GetCallback(token));
+    token_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&KcerToken::DoesPrivateKeyExist, GetToken(token), key,
+                       std::move(token_callback)));
+  }
+}
+
+void KcerImpl::PopulateTokenForKey(
+    PrivateKeyHandle key,
+    base::OnceCallback<void(base::expected<PrivateKeyHandle, Error>)>
+        callback) {
+  auto on_find_key_done =
+      base::BindOnce(&KcerImpl::PopulateTokenForKeyWithToken,
+                     weak_factory_.GetWeakPtr(), key, std::move(callback));
+  FindKeyToken(/*allow_guessing=*/true,
+               /*key=*/std::move(key), std::move(on_find_key_done));
+}
+
+void KcerImpl::PopulateTokenForKeyWithToken(
+    PrivateKeyHandle key,
+    base::OnceCallback<void(base::expected<PrivateKeyHandle, Error>)> callback,
+    base::expected<absl::optional<Token>, Error> find_key_result) {
+  if (!find_key_result.has_value()) {
+    return std::move(callback).Run(base::unexpected(find_key_result.error()));
+  }
+
+  if (!find_key_result.value().has_value()) {
+    return std::move(callback).Run(base::unexpected(Error::kKeyNotFound));
+  }
+
+  Token token = find_key_result.value().value();
+  return std::move(callback).Run(PrivateKeyHandle(token, std::move(key)));
 }
 
 }  // namespace kcer::internal

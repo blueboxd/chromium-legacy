@@ -75,8 +75,10 @@ class TestBubbleView : public AccountSelectionBubbleViewInterface {
 
   void ShowFailureDialog(
       const std::u16string& top_frame_for_display,
+      const absl::optional<std::u16string>& iframe_for_display,
       const std::u16string& idp_for_display,
-      const content::IdentityProviderMetadata& idp_metadata) override {
+      const content::IdentityProviderMetadata& idp_metadata,
+      IdentityRegistryCallback identity_registry_callback) override {
     sheet_type_ = SheetType::kFailure;
     account_ids_ = {};
   }
@@ -84,6 +86,11 @@ class TestBubbleView : public AccountSelectionBubbleViewInterface {
   std::string GetDialogTitle() const override { return std::string(); }
   absl::optional<std::string> GetDialogSubtitle() const override {
     return absl::nullopt;
+  }
+
+  bool HasIdentityRegistryCallback() override { return false; }
+  IdentityRegistryCallback GetIdentityRegistryCallback() override {
+    return base::DoNothing();
   }
 
   bool show_back_button_{false};
@@ -129,8 +136,8 @@ class TestFedCmAccountSelectionView : public FedCmAccountSelectionView {
   }
 
  private:
-  base::raw_ptr<views::Widget> widget_;
-  base::raw_ptr<TestBubbleView> bubble_view_;
+  raw_ptr<views::Widget> widget_;
+  raw_ptr<TestBubbleView> bubble_view_;
 };
 
 // Stub AccountSelectionView::Delegate.
@@ -154,7 +161,7 @@ class StubAccountSelectionViewDelegate : public AccountSelectionView::Delegate {
   content::WebContents* GetWebContents() override { return web_contents_; }
 
  private:
-  base::raw_ptr<content::WebContents> web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 };
 
 }  // namespace
@@ -322,8 +329,10 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
   AccountSelectionBubbleView::Observer* observer =
       static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
 
-  controller->ShowFailureDialog(kTopFrameEtldPlusOne, kIdpEtldPlusOne,
-                                content::IdentityProviderMetadata());
+  controller->ShowFailureDialog(
+      kTopFrameEtldPlusOne, kIframeEtldPlusOne, kIdpEtldPlusOne,
+      content::IdentityProviderMetadata(),
+      /*identity_provider_callback=*/base::DoNothing());
   EXPECT_EQ(TestBubbleView::SheetType::kFailure, bubble_view_->sheet_type_);
 
   const char kAccountId[] = "account_id";
@@ -352,8 +361,10 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
   AccountSelectionBubbleView::Observer* observer =
       static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
 
-  controller->ShowFailureDialog(kTopFrameEtldPlusOne, kIdpEtldPlusOne,
-                                content::IdentityProviderMetadata());
+  controller->ShowFailureDialog(
+      kTopFrameEtldPlusOne, kIframeEtldPlusOne, kIdpEtldPlusOne,
+      content::IdentityProviderMetadata(),
+      /*identity_provider_callback=*/base::DoNothing());
   EXPECT_EQ(TestBubbleView::SheetType::kFailure, bubble_view_->sheet_type_);
 
   const char kAccountId[] = "account_id";

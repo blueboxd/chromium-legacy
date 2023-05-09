@@ -35,11 +35,11 @@ BASE_FEATURE(kBlockRepeatedNotificationPermissionPrompts,
 
 BASE_FEATURE(kConfirmationChip,
              "ConfirmationChip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kChipLocationBarIconOverride,
              "ChipLocationIconOverride",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNotificationInteractionHistory,
              "NotificationInteractionHistory",
@@ -49,18 +49,22 @@ BASE_FEATURE(kOneTimePermission,
              "OneTimePermission",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables an experimental permission prompt that uses a chip in the location
-// bar.
+#if BUILDFLAG(IS_ANDROID)
+// Not supported on Android.
 BASE_FEATURE(kPermissionChip,
              "PermissionChip",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_ANDROID)
-// Not supported on Android.
 BASE_FEATURE(kPermissionQuietChip,
              "PermissionQuietChip",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #else
+
+// Enables an experimental permission prompt that uses a chip in the location
+// bar.
+BASE_FEATURE(kPermissionChip,
+             "PermissionChip",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables a less prominent permission prompt that uses a chip in the location
 // bar. Requires chrome://flags/#quiet-notification-prompts to be enabled.
@@ -129,14 +133,14 @@ BASE_FEATURE(kRecordPermissionExpirationTimestamps,
              "RecordPermissionExpirationTimestamps",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#endif  // BUILDFLAG(IS_ANDROID)
+
 // When enabled, permission grants for Storage Access API will be enabled.
 // This includes enabling prompts, a new settings page and page info and
 // omnibox integration.
 BASE_FEATURE(kPermissionStorageAccessAPI,
              "PermissionStorageAccessAPI",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-#endif  // BUILDFLAG(IS_ANDROID)
 
 // When enabled "window-management" may be used as an alias for
 // "window-placement". Additionally, reverse mappings (i.e. enum to string) will
@@ -148,10 +152,8 @@ BASE_FEATURE(kWindowManagementPermissionAlias,
 }  // namespace features
 namespace feature_params {
 
-const base::FeatureParam<bool> kOkButtonBehavesAsAllowAlways(
-    &permissions::features::kOneTimePermission,
-    "OkButtonBehavesAsAllowAlways",
-    true);
+const base::FeatureParam<bool> kUseStrongerPromptLanguage{
+    &features::kOneTimePermission, "use_stronger_prompt_language", false};
 
 const base::FeatureParam<std::string> kPermissionPredictionServiceUrlOverride{
     &permissions::features::kPermissionPredictionServiceUseUrlOverride,

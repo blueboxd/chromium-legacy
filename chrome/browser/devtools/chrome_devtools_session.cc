@@ -10,11 +10,13 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/devtools/protocol/autofill_handler.h"
 #include "chrome/browser/devtools/protocol/browser_handler.h"
 #include "chrome/browser/devtools/protocol/cast_handler.h"
 #include "chrome/browser/devtools/protocol/emulation_handler.h"
 #include "chrome/browser/devtools/protocol/page_handler.h"
 #include "chrome/browser/devtools/protocol/security_handler.h"
+#include "chrome/browser/devtools/protocol/storage_handler.h"
 #include "chrome/browser/devtools/protocol/target_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
@@ -57,6 +59,16 @@ ChromeDevToolsSession::ChromeDevToolsSession(
         channel->GetClient()->IsTrusted()) {
       cast_handler_ = std::make_unique<CastHandler>(
           agent_host->GetWebContents(), &dispatcher_);
+    }
+    if (IsDomainAvailableToUntrustedClient<StorageHandler>() ||
+        channel->GetClient()->IsTrusted()) {
+      storage_handler_ = std::make_unique<StorageHandler>(
+          agent_host->GetWebContents(), &dispatcher_);
+    }
+    if (IsDomainAvailableToUntrustedClient<AutofillHandler>() ||
+        channel->GetClient()->IsTrusted()) {
+      autofill_handler_ =
+          std::make_unique<AutofillHandler>(&dispatcher_, agent_host->GetId());
     }
   }
   if (IsDomainAvailableToUntrustedClient<EmulationHandler>() ||

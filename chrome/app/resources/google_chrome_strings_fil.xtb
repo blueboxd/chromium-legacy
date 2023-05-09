@@ -118,6 +118,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2929907241665500097">Hindi na-update ang Chrome, nagkaproblema. <ph name="BEGIN_LINK" />Ayusin ang mga problema sa pag-update ng Chrome at ang mga hindi naisagawang pag-update dito.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Pag-sign in sa Network - Chrome</translation>
 <translation id="3019382870990049182">Maglunsad ulit para i-update ang &amp;ChromeOS Flex</translation>
+<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Ina-access ng mga extension ng Google Chrome ang mga HID device}=1{Ina-access ng mga extension ng Google Chrome ang mga HID device}one{Ina-access ng mga extension ng Google Chrome ang # HID device}other{Ina-access ng mga extension ng Google Chrome ang # na HID device}}</translation>
 <translation id="303514781271618814">Nag-e-explore ang Chrome ng mga bagong feature na nagbibigay-daan sa mga site na ihatid ang parehong karanasan sa pag-browse nang hindi gaanong gumagamit ng iyong data</translation>
 <translation id="3037838751736561277">Nasa background mode ang Google Chrome.</translation>
 <translation id="3038232873781883849">Naghihintay sa pag-install...</translation>
@@ -211,6 +212,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Maaaring mapanganib ang file na ito, kaya na-block ito ng Chrome.</translation>
 <translation id="479167709087336770">Ginagamit nito ang parehong spellchecker na ginagamit sa paghahanap sa Google. Ipinapadala sa Google ang text na tina-type mo sa browser. Puwede mong baguhin ang gawing ito sa mga setting sa lahat ng oras.</translation>
+<translation id="4828579605166583682">Sinusubukang palitan ng Google Chrome ang mga kasalukuyang password. I-type ang iyong password sa Windows para payagan ito.</translation>
 <translation id="4842397268809523050">Hindi ma-sync ng ChromeOS Flex ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="4873783916118289636">Suriin ang mga pangunahing kontrol sa privacy at seguridad sa Chrome</translation>
 <translation id="4891791193823137474">Hayaan ang Google Chrome na tumakbo sa background</translation>
@@ -222,6 +224,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4970880042055371251">Bersyon ng ChromeOS</translation>
 <translation id="4970947549776831107">Na-block ng Chrome ang file na ito dahil mapanganib ang ganitong uri ng file</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
+<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Ina-access ng extension ng Google Chrome ang mga HID device}=1{Ina-access ng extension ng Google Chrome ang 1 HID device}one{Ina-access ng extension ng Google Chrome ang # HID device}other{Ina-access ng extension ng Google Chrome ang # na HID device}}</translation>
 <translation id="5064155331105009416">{COUNT,plural, =1{Awtomatikong isinasara ng iyong administrator ang Chrome kapag hindi ito nagamit nang 1 minuto. Ide-delete ang data mula sa pag-browse. Posibleng kasama rito ang history, autofill, at mga download.}one{Awtomatikong isinasara ng iyong administrator ang Chrome kapag hindi ito nagamit nang # minuto. Ide-delete ang data mula sa pag-browse. Posibleng kasama rito ang history, autofill, at mga download.}other{Awtomatikong isinasara ng iyong administrator ang Chrome kapag hindi ito nagamit nang # na minuto. Ide-delete ang data mula sa pag-browse. Posibleng kasama rito ang history, autofill, at mga download.}}</translation>
 <translation id="5098668839038261629">Kapag naka-on, masa-sign out ka rin sa Chrome</translation>
 <translation id="5132929315877954718">Tumuklas ng mahuhusay na app, laro, extension at tema para sa Google Chrome.</translation>
@@ -419,7 +422,6 @@ Posibleng malapat sa account na ito ang mga pahintulot na naibigay mo na sa mga 
 <translation id="9054037008353851982">Ilunsad Ulit para I-update - Bubukas ulit ang iyong mga tab</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
 <translation id="9138603949443464873">Para ilapat ang iyong mga pagbabago, muling ilunsad ang Chrome</translation>
-<translation id="9190003950176692491">{NUM_DEVICES,plural, =0{Nag-aacess ang Google Chrome ng HID device}=1{Nag-aacess ang Google Chrome ng HID device}one{Nag-aacess ang Google Chrome ng mga HID device}other{Nag-aacess ang Google Chrome ng mga HID device}}</translation>
 <translation id="9195993889682885387">Puwedeng tantyahin ng Chrome ang iyong mga interes batay sa history ng pag-browse mo mula sa mga nakalipas na ilang linggo. Mananatili ang impormasyong ito sa iyong device.</translation>
 <translation id="919706545465235479">I-update ang Chrome upang simulan ang pag-sync</translation>
 <translation id="922152298093051471">I-customize ang Chrome</translation>

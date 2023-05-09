@@ -44,16 +44,17 @@ display UI to the user.
 
 ![Updater process architecture diagram](images/architecture.svg)
 
-The updater may be installed *per-user* or *system-wide*. If installed per-user,
-the updater can only update applications owned by that user, whereas a system-
-wide updater can update applications owned by any entity on the system. In
-multi-user systems, it is efficient for software such as the browser to be
-installed system-wide, owned by root (or the system user) and run by individual
-users, but this requires the updater to maintain root privileges in order to
-update it. Therefore, in a system-wide installation, the server process runs as
-root (or at high integrity). One system-wide installation of the updater and any
-number of per-user installations of the updater can coexist and operate
-independently on the same system.
+The updater may be installed *per-user* or *system-wide*. If installed
+per-user, the updater may lack permissions to update applications owned by
+other users, whereas a system- wide updater can update applications owned by
+any entity on the system. In multi-user systems, it is efficient for software
+such as the browser to be installed system-wide, owned by root (or the system
+user) and run by individual users, but this requires the updater to maintain
+root privileges in order to update it. Therefore, in a system-wide
+installation, the server process runs as root (or at high integrity). One
+system-wide installation of the updater and any number of per-user
+installations of the updater can coexist and operate independently on the same
+system.
 
 Different versions of the updater can coexist even within the same installation
 of the updater, but only one such instance is *active*. Inactive versions of the
@@ -784,16 +785,11 @@ Here is an example:
 ```
 BEGIN_INTERFACE(
   {
-    "user": {
-      "PLACEHOLDER-GUID-2FCD14AF-B645-4351-8359-E80A0E202A0B":
-          "PLACEHOLDER-GUID-9AD1A645-5A4B-4D36-BC21-F0059482E6EA",
-      "ICompleteStatus":"ICompleteStatusUser"
+    "uuid": {
+      "user":"PLACEHOLDER-GUID-9AD1A645-5A4B-4D36-BC21-F0059482E6EA",
+      "system":"PLACEHOLDER-GUID-E2BD9A6B-0A19-4C89-AE8B-B7E9E51D9A07"
     },
-    "system": {
-      "PLACEHOLDER-GUID-2FCD14AF-B645-4351-8359-E80A0E202A0B":
-          "PLACEHOLDER-GUID-E2BD9A6B-0A19-4C89-AE8B-B7E9E51D9A07",
-      "ICompleteStatus":"ICompleteStatusSystem"
-    }
+    "tokensToSuffix": ["ICompleteStatus"]
   }
 )
 [
@@ -920,8 +916,8 @@ a lock.
 On POSIX, the most common means of uninstalling a program is to delete the
 program's application bundle from disk. When a program registers itself with
 the updater, it provides the path to the application bundle. If the bundle has
-been removed (or is owned by a user different from the updater), the updater
-considers it uninstalled and ceases attempting to update it.
+been removed (or is owned by root and the updater is a user-scope updater), the
+updater considers it uninstalled and ceases attempting to update it.
 
 ### Periodic Task Scheduling
 On Mac, the scheduler is implemented via LaunchAgents (for user-level installs)

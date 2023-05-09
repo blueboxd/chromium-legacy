@@ -785,6 +785,10 @@ bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
     return false;
   }
 
+  if (event.code() == ui::DomCode::ESCAPE) {
+    HideUndoWindow();
+    return true;
+  }
   if (event.code() == ui::DomCode::ARROW_UP ||
       event.code() == ui::DomCode::TAB) {
     HighlightButtons(/*should_highlight_undo=*/true,
@@ -1216,7 +1220,7 @@ void AutocorrectManager::AcceptOrClearPendingAutocorrect() {
 
 void AutocorrectManager::OnTextFieldContextualInfoChanged(
     const TextFieldContextualInfo& info) {
-  disabled_by_rule_ = IsAutoCorrectDisabled(info);
+  disabled_by_rule_ = IsAssistiveInputDisabled(info.tab_url);
   if (disabled_by_rule_) {
     LogAssistiveAutocorrectInternalState(
         AutocorrectInternalStates::kAppIsInDenylist);

@@ -181,11 +181,9 @@ class MockPasswordManagerExporter
 
   ~MockPasswordManagerExporter() override = default;
 
-  MOCK_METHOD0(PreparePasswordsForExport, void());
-  MOCK_METHOD0(Cancel, void());
-  MOCK_METHOD1(SetDestination, void(const base::FilePath&));
-  MOCK_METHOD0(GetExportProgressStatus,
-               password_manager::ExportProgressStatus());
+  MOCK_METHOD(void, PreparePasswordsForExport, (), (override));
+  MOCK_METHOD(void, Cancel, (), (override));
+  MOCK_METHOD(void, SetDestination, (const base::FilePath&), (override));
 };
 
 class FakePasswordParserService
@@ -226,9 +224,9 @@ class PasswordManagerPorterTest : public ChromeRenderViewHostTestHarness {
     ui::SelectFileDialog::SetFactory(
         new TestSelectFileDialogFactory(temp_file_path()));
 
-    std::unique_ptr<TestingProfile> profile = CreateTestingProfile();
+    profile_ = CreateTestingProfile();
     porter_ = std::make_unique<PasswordManagerPorter>(
-        profile.get(), &presenter(),
+        profile_.get(), &presenter(),
         /*on_export_progress_callback=*/base::DoNothing());
 
     auto importer =
@@ -245,6 +243,8 @@ class PasswordManagerPorterTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
+    porter_.reset();
+    profile_.reset();
     store_->ShutdownOnUIThread();
     task_environment()->RunUntilIdle();
     ChromeRenderViewHostTestHarness::TearDown();
@@ -272,6 +272,7 @@ class PasswordManagerPorterTest : public ChromeRenderViewHostTestHarness {
  private:
   FakePasswordParserService service;
   mojo::Receiver<password_manager::mojom::CSVPasswordParser> receiver{&service};
+  std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<PasswordManagerPorter> porter_;
   scoped_refptr<password_manager::TestPasswordStore> store_ =
       base::MakeRefCounted<password_manager::TestPasswordStore>();

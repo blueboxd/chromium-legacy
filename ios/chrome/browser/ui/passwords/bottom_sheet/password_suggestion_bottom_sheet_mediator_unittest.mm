@@ -11,9 +11,7 @@
 #import "components/password_manager/core/browser/affiliation/mock_affiliation_service.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
-#import "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -22,10 +20,11 @@
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/test/fake_web_state_list_delegate.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_consumer.h"
-#import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
@@ -164,8 +163,7 @@ class PasswordSuggestionBottomSheetMediatorTest : public PlatformTest {
         chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
 
   void SetUp() override {
-    GURL url("http://foo.com");
-    test_web_state_->SetCurrentURL(url);
+    test_web_state_->SetCurrentURL(URL());
 
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(ios::FaviconServiceFactory::GetInstance(),
@@ -214,17 +212,16 @@ class PasswordSuggestionBottomSheetMediatorTest : public PlatformTest {
             IOSChromePasswordStoreFactory::GetForBrowserState(
                 chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
                 .get()));
-    presenter_ = std::make_unique<password_manager::SavedPasswordsPresenter>(
-        &affiliation_service_, store_, /*accont_store=*/nullptr);
-
     mediator_ = [[PasswordSuggestionBottomSheetMediator alloc]
-           initWithWebStateList:&web_state_list_
-                  faviconLoader:IOSChromeFaviconLoaderFactory::
-                                    GetForBrowserState(
-                                        chrome_browser_state_.get())
-                    prefService:chrome_browser_state_->GetPrefs()
-                         params:params_
-        savedPasswordsPresenter:presenter_.get()];
+        initWithWebStateList:&web_state_list_
+               faviconLoader:IOSChromeFaviconLoaderFactory::GetForBrowserState(
+                                 chrome_browser_state_.get())
+                 prefService:chrome_browser_state_->GetPrefs()
+                      params:params_
+                reauthModule:nil
+                         URL:URL()
+        profilePasswordStore:store_
+        accountPasswordStore:nullptr];
   }
 
   void CreateMediatorWithSuggestions() {
@@ -234,13 +231,14 @@ class PasswordSuggestionBottomSheetMediatorTest : public PlatformTest {
     CreateMediator();
   }
 
+  GURL URL() { return GURL("http://foo.com"); }
+
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<web::FakeWebState> test_web_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   scoped_refptr<password_manager::TestPasswordStore> store_;
-  std::unique_ptr<password_manager::SavedPasswordsPresenter> presenter_;
   id consumer_;
   NSArray<id<FormSuggestionProvider>>* suggestion_providers_;
   autofill::FormActivityParams params_;

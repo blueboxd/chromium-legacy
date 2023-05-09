@@ -118,6 +118,8 @@ static_library("browser") {
     "actions/omnibox_pedal_concepts.h",
     "actions/omnibox_pedal_provider.cc",
     "actions/omnibox_pedal_provider.h",
+    "actions/tab_switch_action.cc",
+    "actions/tab_switch_action.h",
     "answers_cache.cc",
     "answers_cache.h",
     "autocomplete_classifier.cc",
@@ -225,8 +227,6 @@ static_library("browser") {
     "on_device_head_provider.h",
     "on_device_model_update_listener.cc",
     "on_device_model_update_listener.h",
-    "on_device_tail_model_observer.cc",
-    "on_device_tail_model_observer.h",
     "on_device_tail_tokenizer.cc",
     "on_device_tail_tokenizer.h",
     "open_tab_provider.cc",
@@ -290,6 +290,8 @@ static_library("browser") {
       "autocomplete_scoring_model_service.h",
       "on_device_tail_model_executor.cc",
       "on_device_tail_model_executor.h",
+      "on_device_tail_model_service.cc",
+      "on_device_tail_model_service.h",
     ]
   }
 
@@ -357,6 +359,10 @@ static_library("browser") {
 
   if ((!is_android || enable_vr) && !is_ios) {
     deps += [ ":vector_icons" ]
+  }
+
+  if (is_chrome_branded) {
+    deps += [ "//components/vector_icons" ]
   }
 
   if (!is_android) {
@@ -645,6 +651,8 @@ static_library("test_support") {
     "//components/bookmarks/test",
     "//components/history/core/browser",
     "//components/history/core/test",
+    "//components/optimization_guide/core:core",
+    "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs:test_support",
     "//components/query_tiles/test:test_support",
     "//components/resources",
@@ -662,6 +670,13 @@ static_library("test_support") {
   if (toolkit_views) {
     # Needed to get the TOOLKIT_VIEWS define.
     deps += [ "//ui/views" ]
+  }
+
+  if (build_with_tflite_lib) {
+    sources += [
+      "fake_on_device_tail_model_service.cc",
+      "fake_on_device_tail_model_service.h",
+    ]
   }
 }
 
@@ -756,6 +771,7 @@ source_set("unit_tests") {
       "autocomplete_scoring_model_executor_unittest.cc",
       "autocomplete_scoring_model_handler_unittest.cc",
       "on_device_tail_model_executor_unittest.cc",
+      "on_device_tail_model_service_unittest.cc",
     ]
   }
 
@@ -802,7 +818,7 @@ source_set("unit_tests") {
     deps += [
       ":buildflags",
       "//components/omnibox/browser:vector_icons",
-      "//components/vector_icons:vector_icons",
+      "//components/vector_icons",
     ]
   }
 

@@ -227,10 +227,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // ScrollableArea.
   gfx::Vector2d PixelSnappedScrolledContentOffset() const;
 
-  // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
-  // fails in some tests, for example, fast/repaint/clipped-relative.html.
-  const LayoutSize& Size() const { return size_; }
-
 #if DCHECK_IS_ON()
   // Do not use this function.  We're going to remove this.
   bool NeedsPositionUpdate() const { return needs_position_update_; }
@@ -238,8 +234,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   bool IsRootLayer() const { return is_root_layer_; }
 
-  bool UpdateSize();
-  void UpdateSizeAndScrollingAfterLayout();
+  void UpdateScrollingAfterLayout();
 
   void UpdateLayerPositionsAfterLayout();
 
@@ -317,7 +312,12 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     return position;
   }
 
-  // Note that this transform has the transform-origin baked in.
+  // Note that this transform has the transform-origin baked in. Due to this
+  // fact, this transform is pretty useless if we're fragmented, since each
+  // fragment has its own origin. Avoid calling this method if a box is
+  // fragmented. Ideally, we should have a DCHECK for being non-fragmented here,
+  // but that's going to fail currently. LayoutBox::MapVisualRectToContainer()
+  // calls this function without any checks, for instance.
   gfx::Transform* Transform() const { return transform_.get(); }
 
   // Returns *Transform(), or identity matrix if Transform() is nullptr.
@@ -779,12 +779,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // excluding positioning offset and scroll.
   // TODO(crbug.com/1432839): Remove this.
   PhysicalOffset location_without_position_offset_;
-
-  // The layer's size.
-  //
-  // If the associated LayoutBoxModelObject is a LayoutBox, it's its border
-  // box. Otherwise, this is the LayoutInline's lines' bounding box.
-  LayoutSize size_;
 
   // Cached normal flow values for absolute positioned elements with static
   // left/top values.

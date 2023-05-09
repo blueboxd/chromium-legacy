@@ -60,10 +60,16 @@ const long kToMicroCurrency = 1e6;
 const char kImageAvailabilityHistogramName[] =
     "Commerce.ShoppingService.ProductInfo.ImageAvailability";
 
+const uint64_t kProductInfoJavascriptDelayMs = 2000;
+
 ProductInfo::ProductInfo() = default;
 ProductInfo::ProductInfo(const ProductInfo&) = default;
 ProductInfo& ProductInfo::operator=(const ProductInfo&) = default;
 ProductInfo::~ProductInfo() = default;
+
+ProductInfoCacheEntry::ProductInfoCacheEntry() = default;
+ProductInfoCacheEntry::~ProductInfoCacheEntry() = default;
+
 MerchantInfo::MerchantInfo() = default;
 MerchantInfo::MerchantInfo(const MerchantInfo&) = default;
 MerchantInfo& MerchantInfo::operator=(const MerchantInfo&) = default;
@@ -164,41 +170,98 @@ void ShoppingService::HandleDidNavigatePrimaryMainFrameForProductInfo(
       optimization_guide::proto::OptimizationType::PRICE_TRACKING,
       base::BindOnce(
           [](base::WeakPtr<ShoppingService> service, const GURL& url,
-             bool is_off_the_record,
+             base::WeakPtr<WebWrapper> web_wrapper,
              optimization_guide::OptimizationGuideDecision decision,
              const optimization_guide::OptimizationMetadata& metadata) {
+            if (service.WasInvalidated() || web_wrapper.WasInvalidated()) {
+              return;
+            }
+
             service->HandleOptGuideProductInfoResponse(
-                url,
+                url, web_wrapper.get(),
                 base::BindOnce(
                     [](const GURL&, const absl::optional<ProductInfo>&) {}),
                 decision, metadata);
 
-            service->PDPMetricsCallback(is_off_the_record, decision, metadata);
+            service->PDPMetricsCallback(web_wrapper->IsOffTheRecord(), decision,
+                                        metadata);
           },
           weak_ptr_factory_.GetWeakPtr(), web->GetLastCommittedURL(),
-          web->IsOffTheRecord()));
+          web->GetWeakPtr()));
 }
 
 void ShoppingService::DidNavigateAway(WebWrapper* web, const GURL& from_url) {
   UpdateProductInfoCacheForRemoval(from_url);
 }
 
-void ShoppingService::DidFinishLoad(WebWrapper* web) {
-  HandleDidFinishLoadForProductInfo(web);
+void ShoppingService::DidStopLoading(WebWrapper* web) {
+  ScheduleProductInfoJavascript(web);
 }
 
-void ShoppingService::HandleDidFinishLoadForProductInfo(WebWrapper* web) {
-  if (!IsProductInfoApiEnabled())
+void ShoppingService::ScheduleProductInfoJavascript(WebWrapper* web) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsProductInfoApiEnabled()) {
     return;
+  }
+
+  // If we weren't provided a web wrapper or the page hasn't finished loading
+  // for the navigation, do nothing. This will be called when the page has a
+  // document to run the script on.
+  if (!web || !web->IsFirstLoadForNavigationFinished()) {
+    return;
+  }
+
+  auto it = product_info_cache_.find(web->GetLastCommittedURL().spec());
+
+  if (it == product_info_cache_.end() || !it->second->needs_javascript_run) {
+    return;
+  }
+
+  ProductInfoCacheEntry* entry = it->second.get();
+
+  // If there's already a task scheduled, cancel it.
+  if (entry->run_javascript_task.get()) {
+    entry->run_javascript_task->Cancel();
+    entry->run_javascript_task.reset();
+  }
+
+  entry->run_javascript_task = std::make_unique<base::CancelableOnceClosure>(
+      base::BindOnce(&ShoppingService::TryRunningJavascriptForProductInfo,
+                     weak_ptr_factory_.GetWeakPtr(), web->GetWeakPtr()));
+
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, entry->run_javascript_task->callback(),
+      base::Milliseconds(kProductInfoJavascriptDelayMs));
+}
+
+void ShoppingService::DidFinishLoad(WebWrapper* web) {
+  ScheduleProductInfoJavascript(web);
+}
+
+void ShoppingService::TryRunningJavascriptForProductInfo(
+    base::WeakPtr<WebWrapper> web) {
+  if (web.WasInvalidated()) {
+    return;
+  }
+
+  // Make sure we actually need the javascript to run based on the cache.
+  auto it = product_info_cache_.find(web->GetLastCommittedURL().spec());
+  if (it == product_info_cache_.end() || !it->second->needs_javascript_run) {
+    return;
+  }
+
+  if (!IsProductInfoApiEnabled()) {
+    return;
+  }
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto it = product_info_cache_.find(web->GetLastCommittedURL().spec());
   // If there is both an entry in the cache and the javascript fallback needs
   // to run, run it.
-  if (it != product_info_cache_.end() && std::get<1>(it->second)) {
+  if (it != product_info_cache_.end() && it->second->needs_javascript_run) {
     // Since we're about to run the JS, flip the flag in the cache.
-    std::get<1>(it->second) = false;
+    it->second->needs_javascript_run = false;
 
     std::string script =
         ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
@@ -237,7 +300,7 @@ void ShoppingService::OnProductInfoJsonSanitizationCompleted(
   // If there was no entry or the data doesn't need javascript run, do
   // nothing.
   if (it != product_info_cache_.end())
-    MergeProductInfoData(std::get<2>(it->second).get(),
+    MergeProductInfoData(it->second->product_info.get(),
                          result.value().GetDict());
 }
 
@@ -253,10 +316,11 @@ void ShoppingService::UpdateProductInfoCacheForInsertion(const GURL& url) {
 
   auto it = product_info_cache_.find(url.spec());
   if (it != product_info_cache_.end()) {
-    std::get<0>(it->second) = std::get<0>(it->second) + 1;
+    it->second->pages_with_url_open++;
   } else {
-    product_info_cache_[url.spec()] = std::make_tuple(1, false, nullptr);
-    std::get<2>(product_info_cache_[url.spec()]).reset();
+    product_info_cache_.emplace(url.spec(),
+                                std::make_unique<ProductInfoCacheEntry>());
+    product_info_cache_[url.spec()]->pages_with_url_open++;
   }
 }
 
@@ -270,9 +334,8 @@ void ShoppingService::UpdateProductInfoCache(
   if (it == product_info_cache_.end())
     return;
 
-  int count = std::get<0>(it->second);
-  product_info_cache_[url.spec()] =
-      std::make_tuple(count, needs_js, std::move(info));
+  it->second->needs_javascript_run = needs_js;
+  it->second->product_info = std::move(info);
 }
 
 const ProductInfo* ShoppingService::GetFromProductInfoCache(const GURL& url) {
@@ -280,7 +343,7 @@ const ProductInfo* ShoppingService::GetFromProductInfoCache(const GURL& url) {
   if (it == product_info_cache_.end())
     return nullptr;
 
-  return std::get<2>(it->second).get();
+  return it->second->product_info.get();
 }
 
 void ShoppingService::UpdateProductInfoCacheForRemoval(const GURL& url) {
@@ -291,10 +354,15 @@ void ShoppingService::UpdateProductInfoCacheForRemoval(const GURL& url) {
   // the internal count.
   auto it = product_info_cache_.find(url.spec());
   if (it != product_info_cache_.end()) {
-    if (std::get<0>(it->second) <= 1) {
+    ProductInfoCacheEntry* entry = it->second.get();
+    if (entry->pages_with_url_open <= 1) {
+      if (entry->run_javascript_task.get()) {
+        entry->run_javascript_task->Cancel();
+        entry->run_javascript_task.reset();
+      }
       product_info_cache_.erase(it);
     } else {
-      std::get<0>(it->second) = std::get<0>(it->second) - 1;
+      entry->pages_with_url_open--;
     }
   }
 }
@@ -331,7 +399,8 @@ void ShoppingService::GetProductInfoForUrl(const GURL& url,
   opt_guide_->CanApplyOptimization(
       url, optimization_guide::proto::OptimizationType::PRICE_TRACKING,
       base::BindOnce(&ShoppingService::HandleOptGuideProductInfoResponse,
-                     weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), url, nullptr,
+                     std::move(callback)));
 }
 
 absl::optional<ProductInfo> ShoppingService::GetAvailableProductInfoForUrl(
@@ -426,6 +495,7 @@ bool ShoppingService::IsCommercePriceTrackingEnabled() {
 
 void ShoppingService::HandleOptGuideProductInfoResponse(
     const GURL& url,
+    WebWrapper* web,
     ProductInfoCallback callback,
     optimization_guide::OptimizationGuideDecision decision,
     const optimization_guide::OptimizationMetadata& metadata) {
@@ -445,9 +515,16 @@ void ShoppingService::HandleOptGuideProductInfoResponse(
     UpdateProductInfoCache(url, true, std::move(info));
   }
 
-  // TODO(mdjones): Longer-term it probably makes sense to wait until the
-  // javascript has run to execute this.
+  // TODO(mdjones): Longer-term it might make sense to wait until the
+  // javascript has run to execute this. The problem is that optimization guide
+  // is fast and the javascript is slow.
   std::move(callback).Run(url, optional_info);
+
+  // Check if we still need to run the javascript. This could happen if page
+  // load happened prior to optimization guide responding.
+  if (web) {
+    ScheduleProductInfoJavascript(web);
+  }
 }
 
 std::unique_ptr<ProductInfo> ShoppingService::OptGuideResultToProductInfo(

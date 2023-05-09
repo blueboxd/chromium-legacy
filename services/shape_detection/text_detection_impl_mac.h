@@ -5,10 +5,11 @@
 #ifndef SERVICES_SHAPE_DETECTION_TEXT_DETECTION_IMPL_MAC_H_
 #define SERVICES_SHAPE_DETECTION_TEXT_DETECTION_IMPL_MAC_H_
 
-#import <os/availability.h>
-
-#include "base/mac/scoped_nsobject.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @class CIDetector;
 
@@ -28,7 +29,7 @@ class API_AVAILABLE(macosx(10.11)) TextDetectionImplMac
               mojom::TextDetection::DetectCallback callback) override;
 
  private:
-  base::scoped_nsobject<CIDetector> detector_;
+  CIDetector* __strong detector_;
 };
 
 }  // namespace shape_detection

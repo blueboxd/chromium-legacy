@@ -21,6 +21,7 @@
 
 class PrefRegistrySimple;
 class PrefService;
+class PrefValueMap;
 
 namespace syncer {
 
@@ -69,10 +70,16 @@ class SyncPrefs {
   void SetSyncRequested(bool is_requested);
   bool IsSyncRequestedSetExplicitly() const;
 
+  // Whether the "Sync everything" toggle is enabled. Note that even if this is
+  // true, some types may be disabled e.g. due to enterprise policy.
   bool HasKeepEverythingSynced() const;
 
-  // Returns UserSelectableTypeSet::All() if HasKeepEverythingSynced() is true.
+  // Returns UserSelectableTypeSet::All() if HasKeepEverythingSynced() is true
+  // (except if some types are force-disabled by policy).
   UserSelectableTypeSet GetSelectedTypes() const;
+
+  // Returns whether `type` is "managed" i.e. controlled by enterprise policy.
+  bool IsTypeManagedByPolicy(UserSelectableType type) const;
 
   // Sets the selection state for all |registered_types| and "keep everything
   // synced" flag.
@@ -87,18 +94,34 @@ class SyncPrefs {
                         UserSelectableTypeSet registered_types,
                         UserSelectableTypeSet selected_types);
 
+#if BUILDFLAG(IS_IOS)
+  // Sets the transport bookmarks & reading list pref on opt in/out.
+  void SetBookmarksAndReadingListAccountStorageOptIn(bool value);
+
+  // Gets the transport bookmarks & reading list pref.
+  bool IsOptedInForBookmarksAndReadingListAccountStorage();
+
+  // Clears the transport bookmarks & reading list pref on sign out.
+  void ClearBookmarksAndReadingListAccountStorageOptIn();
+#endif  // BUILDFLAG(IS_IOS)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Chrome OS provides a separate settings UI surface for sync of OS types,
   // including a separate "Sync All" toggle for OS types.
   bool IsSyncAllOsTypesEnabled() const;
   UserSelectableOsTypeSet GetSelectedOsTypes() const;
+  bool IsOsTypeManagedByPolicy(UserSelectableOsType type) const;
   void SetSelectedOsTypes(bool sync_all_os_types,
                           UserSelectableOsTypeSet registered_types,
                           UserSelectableOsTypeSet selected_types);
 
-  // Maps |type| to its corresponding preference name. Returns nullptr if |type|
-  // isn't an OS type.
-  static const char* GetPrefNameForOsType(UserSelectableOsType type);
+  // Maps |type| to its corresponding preference name.
+  static const char* GetPrefNameForOsTypeForTesting(UserSelectableOsType type);
+
+  // Sets |type| as disabled in the given |policy_prefs|, which should
+  // correspond to the "managed" (aka policy-controlled) pref store.
+  static void SetOsTypeDisabledByPolicy(PrefValueMap* policy_prefs,
+                                        UserSelectableOsType type);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -110,7 +133,12 @@ class SyncPrefs {
   bool IsSyncClientDisabledByPolicy() const;
 
   // Maps |type| to its corresponding preference name.
-  static const char* GetPrefNameForType(UserSelectableType type);
+  static const char* GetPrefNameForTypeForTesting(UserSelectableType type);
+
+  // Sets |type| as disabled in the given |policy_prefs|, which should
+  // correspond to the "managed" (aka policy-controlled) pref store.
+  static void SetTypeDisabledByPolicy(PrefValueMap* policy_prefs,
+                                      UserSelectableType type);
 
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
@@ -126,9 +154,18 @@ class SyncPrefs {
   void SetPassphrasePromptMutedProductVersion(int major_version);
   void ClearPassphrasePromptMutedProductVersion();
 
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  static void MigrateSyncRequestedPrefPostMice(PrefService* pref_service);
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+
  private:
   static void RegisterTypeSelectedPref(PrefRegistrySimple* prefs,
                                        UserSelectableType type);
+
+  static const char* GetPrefNameForType(UserSelectableType type);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  static const char* GetPrefNameForOsType(UserSelectableOsType type);
+#endif
 
   void OnSyncManagedPrefChanged();
   void OnFirstSetupCompletePrefChange();
@@ -148,10 +185,6 @@ class SyncPrefs {
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
-
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-void MigrateSyncRequestedPrefPostMice(PrefService* pref_service);
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 }  // namespace syncer
 

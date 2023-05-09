@@ -103,7 +103,7 @@ SyncStatusLabels GetSyncStatusLabelsImpl(
 
   // Check to see if sync has been disabled via the dashboard and needs to be
   // set up once again.
-  if (service->GetDisableReasons().Has(
+  if (service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_USER_CHOICE)) {
     return {SyncStatusMessageType::kSyncError,
             IDS_SIGNED_IN_WITH_SYNC_STOPPED_VIA_DASHBOARD,
@@ -220,9 +220,10 @@ SyncStatusLabels GetSyncStatusLabels(
 }
 
 SyncStatusLabels GetSyncStatusLabels(Profile* profile) {
-  DCHECK(profile);
+  CHECK(profile);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
+  CHECK(identity_manager);
   return GetSyncStatusLabels(
       SyncServiceFactory::GetForProfile(profile), identity_manager,
       ChromeSigninClientFactory::GetForProfile(profile)

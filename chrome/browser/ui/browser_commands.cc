@@ -8,9 +8,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/chained_back_navigation_tracker.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -201,6 +204,8 @@ namespace {
 
 const char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
 const char kChPlatformOverrideForTabletSite[] = "Android";
+const char kBackForwardNavigationIsTriggered[] =
+    "back_forward_navigation_is_triggered";
 
 translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
     ShowTranslateBubbleResult result) {
@@ -426,10 +431,10 @@ bool IsShowingWebContentsModalDialog(Browser* browser) {
 bool PrintPreviewShowing(const Browser* browser) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
-  printing::PrintPreviewDialogController* controller =
-      printing::PrintPreviewDialogController::GetInstance();
-  return controller && (controller->GetPrintPreviewForContents(contents) ||
-                        controller->is_creating_print_preview_dialog());
+  auto* controller = printing::PrintPreviewDialogController::GetInstance();
+  CHECK(controller);
+  return controller->GetPrintPreviewForContents(contents) ||
+         controller->is_creating_print_preview_dialog();
 #else
   return false;
 #endif
@@ -574,12 +579,59 @@ bool CanGoBack(content::WebContents* web_contents) {
   return web_contents->GetController().CanGoBack();
 }
 
+enum class BackNavigationMenuIPHTrigger : int {
+  kUserPerformsManyBackNavigation = 0,
+  kUserPerformsChainedBackNavigation,
+  kUserPerformsChainedBackNavigationWithBackButton
+};
+
+const char kBackNavigationMenuIPHExperimentParamName[] = "x_experiment";
+
+void MaybeShowFeatureBackNavigationMenuPromo(Browser* browser,
+                                             WebContents* web_contents) {
+  if (!base::FeatureList::IsEnabled(
+          feature_engagement::kIPHBackNavigationMenuFeature)) {
+    return;
+  }
+
+  bool should_show_feature_promo;
+  const ChainedBackNavigationTracker* tracker =
+      ChainedBackNavigationTracker::FromWebContents(web_contents);
+  CHECK(tracker);
+  switch (static_cast<BackNavigationMenuIPHTrigger>(
+      base::GetFieldTrialParamByFeatureAsInt(
+          feature_engagement::kIPHBackNavigationMenuFeature,
+          kBackNavigationMenuIPHExperimentParamName, 0))) {
+    case BackNavigationMenuIPHTrigger::kUserPerformsChainedBackNavigation:
+      should_show_feature_promo =
+          tracker->IsChainedBackNavigationRecentlyPerformed();
+      break;
+
+    case BackNavigationMenuIPHTrigger::
+        kUserPerformsChainedBackNavigationWithBackButton:
+      should_show_feature_promo =
+          tracker->IsBackButtonChainedBackNavigationRecentlyPerformed();
+      break;
+    default:
+      should_show_feature_promo = true;
+      break;
+  }
+
+  if (should_show_feature_promo) {
+    browser->window()->MaybeShowFeaturePromo(
+        feature_engagement::kIPHBackNavigationMenuFeature);
+  }
+}
+
 void GoBack(Browser* browser, WindowOpenDisposition disposition) {
   base::RecordAction(UserMetricsAction("Back"));
 
   if (CanGoBack(browser)) {
     WebContents* new_tab = GetTabAndRevertIfNecessary(browser, disposition);
     new_tab->GetController().GoBack();
+    MaybeShowFeatureBackNavigationMenuPromo(browser, new_tab);
+    browser->window()->NotifyFeatureEngagementEvent(
+        kBackForwardNavigationIsTriggered);
   }
 }
 
@@ -588,6 +640,12 @@ void GoBack(content::WebContents* web_contents) {
 
   if (CanGoBack(web_contents)) {
     web_contents->GetController().GoBack();
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+    if (browser) {
+      browser->window()->NotifyFeatureEngagementEvent(
+          kBackForwardNavigationIsTriggered);
+      MaybeShowFeatureBackNavigationMenuPromo(browser, web_contents);
+    }
   }
 }
 
@@ -608,6 +666,8 @@ void GoForward(Browser* browser, WindowOpenDisposition disposition) {
     GetTabAndRevertIfNecessary(browser, disposition)
         ->GetController()
         .GoForward();
+    browser->window()->NotifyFeatureEngagementEvent(
+        kBackForwardNavigationIsTriggered);
   }
 }
 
@@ -615,6 +675,11 @@ void GoForward(content::WebContents* web_contents) {
   base::RecordAction(UserMetricsAction("Forward"));
   if (CanGoForward(web_contents)) {
     web_contents->GetController().GoForward();
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+    if (browser) {
+      browser->window()->NotifyFeatureEngagementEvent(
+          kBackForwardNavigationIsTriggered);
+    }
   }
 }
 
@@ -1463,9 +1528,12 @@ void Print(Browser* browser) {
 #if BUILDFLAG(ENABLE_PRINTING)
   auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
   printing::StartPrint(
-      web_contents, mojo::NullAssociatedRemote() /* print_renderer */,
+      web_contents,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      /*print_renderer=*/mojo::NullAssociatedRemote(),
+#endif
       browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled),
-      false /* has_selection? */);
+      /*has_selection=*/false);
 #endif
 }
 
@@ -1650,8 +1718,8 @@ void OpenTaskManager(Browser* browser) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Open linux version of task manager UI if ash TaskManager
   // interface is in an old version.
-  if (chromeos::LacrosService::Get()->GetInterfaceVersion(
-          crosapi::mojom::TaskManager::Uuid_) < 1) {
+  if (chromeos::LacrosService::Get()
+          ->GetInterfaceVersion<crosapi::mojom::TaskManager>() < 1) {
     base::RecordAction(UserMetricsAction("TaskManager"));
     chrome::ShowTaskManager(browser);
     return;

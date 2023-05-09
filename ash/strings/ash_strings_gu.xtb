@@ -56,6 +56,7 @@
 <translation id="121097972571826261">એક શબ્દ આગળ જાઓ</translation>
 <translation id="1217633719248931900">ઍપ પર જાઓ</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store ઍપ</translation>
+<translation id="1219309685806246869"><ph name="APP_TITLE" /> પર પાછા ફરો.</translation>
 <translation id="1225748608451425081">એક જાણીતી સમસ્યાને કારણે તમારું Chromebook લૉક થઈ ગયું છે. અહીં જણાવેલા સમય પછી તમે સાઇન ઇન કરી શકશો: <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">પસંદ કરવાનું બંધ કરો</translation>
 <translation id="1235458158152011030">જાણીતા નેટવર્ક્સ</translation>
@@ -221,6 +222,7 @@
 <translation id="1961239773406905488">કૅમેરા પ્રીવ્યૂ છુપાવેલો છે</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">સ્ક્રીન લૉક કરો</translation>
+<translation id="1962972976741217487">તમારા <ph name="DEVICE_NAME" />ના હૉટસ્પૉટ સાથે 1 ડિવાઇસ કનેક્ટેડ છે</translation>
 <translation id="1967970931040389207">હૉટસ્પૉટ ચાલુ કરો</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">નમસ્કાર, <ph name="USERNAME" /></translation>
@@ -301,7 +303,6 @@
 <translation id="2367972762794486313">ઍપ્લિકેશનો બતાવો</translation>
 <translation id="2369165858548251131">ચીની ભાષામાં "નમસ્કાર"</translation>
 <translation id="2386292613071805067">પેજ પરનું બધું પસંદ કરો</translation>
-<translation id="2390318262976603432">લોકેલ સેટિંગ</translation>
 <translation id="2397416548179033562">Chrome મેનૂ દર્શાવો</translation>
 <translation id="240006516586367791">મીડિયા નિયંત્રણો</translation>
 <translation id="2402411679569069051">તમારી Chromebook અનલૉક કરવા માટે, તમારી ફિંગરપ્રિન્ટનો ઉપયોગ કરો અથવા તમારો ફોન અનલૉક કરો</translation>
@@ -382,6 +383,7 @@
 <translation id="2791421900609674576">તમને સુઝાવો દેખાશે જેથી તમે જ્યાંથી છોડી દીધું હતું ત્યાંથી ચાલુ રાખી શકો.  સુઝાવો કાઢી નાખવા માટે, તમે ટચ કરીને થોડીવાર દબાવી રાખી શકો છો.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2797741504905337289">શેલ્ફ પાર્ટી</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, પસંદ કર્યું</translation>
 <translation id="2805756323405976993">ઍપ</translation>
 <translation id="2814448776515246190">આંશિક સ્ક્રીન કૅપ્ચર</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
@@ -600,6 +602,7 @@
 <translation id="3735740477244556633">આ પ્રમાણે સૉર્ટ કરો</translation>
 <translation id="3738664582935948253">તમે હવે સ્ક્રીન રેકોર્ડિંગમાં ક્લિક અને કીબોર્ડ શૉર્ટકટ બતાવી શકો છો</translation>
 <translation id="3742055079367172538">સ્ક્રીનશૉટ લેવાયો</translation>
+<translation id="3756485814916578707">સ્ક્રીનને કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="3765841986579723851">આજે ફેરફાર કરવામાં આવ્યો હતો</translation>
 <translation id="3773700760453577392">એડમિને <ph name="USER_EMAIL" /> માટે એકથી વધુ સાઇન ઇનને નામંજૂર કર્યું છે. ચાલુ રાખવા માટે બધા વપરાશકર્તાઓએ સાઇન આઉટ કરવું જરૂરી છે.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> કનેક્ટ કરી રહ્યાં છીએ</translation>
@@ -821,6 +824,7 @@
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">ડેમો સત્રમાં Google Assistant ઉપલબ્ધ નથી.</translation>
 <translation id="4789348252524569426">સ્પીચ માટેની ફાઇલો ઇન્સ્ટૉલ કરી શકતા નથી. તમારા ડિવાઇસને અપડેટ કરવાની જરૂર છે. તમારું ડિવાઇસ ફરી શરૂ કરો અને ફરી પ્રયાસ કરો.</translation>
+<translation id="478959186716341421">કાસ્ટ કરી રહ્યાં છે</translation>
 <translation id="479989351350248267">શોધ</translation>
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
 <translation id="4814539958450445987">લૉગ ઇન સ્ક્રીન</translation>
@@ -928,6 +932,7 @@
 <translation id="5297704307811127955">બંધ</translation>
 <translation id="5300589172476337783">બતાવો</translation>
 <translation id="5302048478445481009">ભાષા</translation>
+<translation id="5303783651764314393">તમારા <ph name="DEVICE_NAME" />ના હૉટસ્પૉટ સાથે <ph name="DEVICECOUNT" /> ડિવાઇસ કનેક્ટેડ છે</translation>
 <translation id="5308380583665731573">કનેક્ટ કરો</translation>
 <translation id="5313326810920013265">Bluetooth સેટિંગ</translation>
 <translation id="5314219114274263156">સ્ક્રીન રેકોર્ડિંગ કર્યું</translation>
@@ -996,7 +1001,6 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">બોલાયેલા પ્રતિસાદને બંધ કરવા માટે Ctrl + Alt + Z દબાવો.</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5601571553788043181">ફાઇલને Chrome બ્રાઉઝરમાં ખોલો</translation>
 <translation id="5618148318840095371">અમે તમને વધુ સારા નેટવર્ક પર સ્વિચ કર્યા છે</translation>
 <translation id="5619862035903135339">વ્યવસ્થાપક પૉલિસીને કારણે સ્ક્રીન કૅપ્ચરની સુવિધા બંધ કરવામાં આવે છે</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1056,6 +1060,7 @@
 <translation id="5881540930187678962">થોડા સમય પછી ફોન હબનું સેટઅપ કરો</translation>
 <translation id="5881663018261910378">બંધ છે</translation>
 <translation id="5887954372087850114"><ph name="WINDOW_TITLE" /> વિન્ડો <ph name="DESK_TITLE" />ને સોંપાઈ અને અન્ય બધી ડેસ્કમાંથી તેની સોંપણી રદ કરાઈ</translation>
+<translation id="588817334757907802">ફાઇલને Chrome બ્રાઉઝરમાં ખોલો</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="589817443623831496">પૉઇન્ટ સ્કૅનિંગ</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -1117,6 +1122,7 @@
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> માટે કાઢી નાખવાનો સંવાદ ખોલો</translation>
 <translation id="6141988275892716286">ડાઉનલોડની પુષ્ટિ કરો</translation>
 <translation id="6154006699632741460">પેરિફેરલને સપોર્ટ આપવામાં આવતો નથી</translation>
+<translation id="6156960295318603523">ભાષા સેટિંગ્સ</translation>
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6166852626429024716">તમારા ડિવાઇસ, ઍપ, સેટિંગ અને વેબ પર શોધો...</translation>
@@ -1335,6 +1341,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">રિફ્રેશ કરો</translation>
+<translation id="7187711731540696127">તમારા <ph name="DEVICE_NAME" />નું હૉટસ્પૉટ ચાલુ છે, કોઈ ડિવાઇસ કનેક્ટેડ નથી</translation>
 <translation id="7188494361780961876">મેનૂને સ્ક્રીનની ઉપરના ડાબા ખૂણામાં ખસેડ્યું.</translation>
 <translation id="7189412385142492784">શુક્રનો ગ્રહ પૃથ્વીથી કેટલી દૂરીએ?</translation>
 <translation id="7198435252016571249">કૅમેરાને નીચેના જમણા ખૂણામાં સ્નેપ કર્યો. સિસ્ટમની સપાટીને ઓવરલેપ કરે છે.</translation>
@@ -1392,6 +1399,7 @@
 <translation id="7497767806359279797">ભાષા અને કીબોર્ડ પસંદ કરો</translation>
 <translation id="7508690557411636492">ગયા મહિનામાં ખોલેલી</translation>
 <translation id="7509246181739783082">તમારી ઓળખ ચકાસો</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, પસંદ કરેલું નથી</translation>
 <translation id="7513622367902644023">સ્ક્રીનશૉટ મોડ પસંદ કર્યો</translation>
 <translation id="7513922695575567867">કૅલેન્ડર, <ph name="DATE" />ની તારીખવાળું અઠવાડિયું, હાલમાં <ph name="SELECTED_DATE" /> પસંદ કરેલી છે.</translation>
 <translation id="7514365320538308">ડાઉનલોડ કરો</translation>
@@ -1413,7 +1421,6 @@
 <translation id="7569509451529460200">બ્રેઇલ અને ChromeVox સક્ષમ કર્યાં</translation>
 <translation id="7573585051776738856">સક્રિય વિન્ડોને જમણે ડૉક કરી.</translation>
 <translation id="7579778809502851308">સ્ક્રીન કૅપ્ચર</translation>
-<translation id="7590883480672980941">ઇનપુટ સેટિંગ</translation>
 <translation id="7593891976182323525">Search અથવા Shift</translation>
 <translation id="7600875258240007829">બધા નોટિફિકેશન જુઓ</translation>
 <translation id="7607002721634913082">થોભાવેલું</translation>
@@ -1555,6 +1562,7 @@
 <translation id="8185090165691050712">લૉક મોડનું કદ બદલવા માટે મેનૂ ચાલુ/બંધ કરો</translation>
 <translation id="8192202700944119416">નોટિફિકેશન છુપાવેલા છે.</translation>
 <translation id="8196787716797768628">ઍપ વચ્ચે ઝડપથી સ્વિચ કરવા માટે અને તમારી Chromebook સાથે ટૅબ્લેટ મોડમાં ક્રિયાપ્રતિક્રિયા કરવા માટે સંકેતોનો ઉપયોગ કરો.</translation>
+<translation id="8198456017687137612">ટૅબ કાસ્ટ કરી રહ્યાં છીએ</translation>
 <translation id="8200772114523450471">રિઝ્યુમે</translation>
 <translation id="8203795194971602413">રાઇટ ક્લિક કરો</translation>
 <translation id="8209010265547628927">રીસેટ કરો</translation>
@@ -1583,6 +1591,7 @@
 <translation id="8349964124165471584">નવી વિન્ડોમાં લિંક ખોલો</translation>
 <translation id="8351131234907093545">નોંધ બનાવો</translation>
 <translation id="8364673525741149932">શેલ્ફ પાર્ટીનું ટૉગલ. <ph name="STATE_TEXT" /></translation>
+<translation id="8367948981300340152"><ph name="CAPTURE_MEDIUM" />નો ઉપયોગ થઈ રહ્યો છે.</translation>
 <translation id="8369166482916924789">સાચવેલી ડેસ્ક, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">એક અક્ષર આગળ જાઓ</translation>
 <translation id="8371991222807690464">અતિથિ મોડમાં પેરિફેરલ કાર્યપ્રદર્શન કદાચ મર્યાદિત કરવામાં આવી શકે છે</translation>

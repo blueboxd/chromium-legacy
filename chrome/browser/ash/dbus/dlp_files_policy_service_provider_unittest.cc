@@ -7,7 +7,7 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/dbus/dlp_files_policy_service_provider.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
+#include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
@@ -109,7 +109,7 @@ class DlpFilesPolicyServiceProviderTest
         .WillByDefault(testing::Return(true));
 
     files_controller_ =
-        std::make_unique<policy::DlpFilesController>(*mock_rules_manager_);
+        std::make_unique<policy::DlpFilesControllerAsh>(*mock_rules_manager_);
 
     return dlp_rules_manager;
   }
@@ -137,7 +137,6 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(DlpFilesPolicyServiceProviderTest, IsDlpPolicyMatched) {
   dlp::IsDlpPolicyMatchedRequest request;
-  request.set_source_url(kExampleUrl);
   request.mutable_file_metadata()->set_inode(kInode);
   request.mutable_file_metadata()->set_path(kFilePath);
   request.mutable_file_metadata()->set_source_url(kExampleUrl);

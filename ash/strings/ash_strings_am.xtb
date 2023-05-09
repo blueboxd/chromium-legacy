@@ -221,6 +221,7 @@
 <translation id="1961239773406905488">የካሜራ ቅድመ እይታ ተደብቋል</translation>
 <translation id="1961832440516943645"><ph name="DATE" />፣ <ph name="TIME" /></translation>
 <translation id="1962969542251276847">የማያ ገፅ ቁልፍ</translation>
+<translation id="1962972976741217487">1 መሣሪያ ከእርስዎ <ph name="DEVICE_NAME" /> መገናኛ ነጥብ ጋር ተገናኝቷል</translation>
 <translation id="1967970931040389207">መገናኛ ነጥብን አብራ</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">ሠላም <ph name="USERNAME" /></translation>
@@ -301,7 +302,6 @@
 <translation id="2367972762794486313">መተግበሪያዎችን አሳይ</translation>
 <translation id="2369165858548251131">«Hello» በቻይንኛ</translation>
 <translation id="2386292613071805067">በገጹ ላይ ሁሉንም ይምረጡ</translation>
-<translation id="2390318262976603432">የቋንቋ ቅንብሮች</translation>
 <translation id="2397416548179033562">የChrome ምናሌ አሳይ</translation>
 <translation id="240006516586367791">የሚዲያ መቆጣጠሪያዎች</translation>
 <translation id="2402411679569069051">የእርስዎን Chromebook ለመክፈት የጣት አሻራዎን ይጠቀሙ ወይም ስልክዎን ይክፈቱ</translation>
@@ -382,6 +382,7 @@
 <translation id="2791421900609674576">ካቆሙበት መቀጠል እንዲችሉ ምክሮችን ይመለከታሉ። ምክሮችን ለማስወገድ መንካት እና መያዝ ይችላሉ።</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2797741504905337289">የመደርደሪያ ፓርቲ</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />፣ ተመርጧል</translation>
 <translation id="2805756323405976993">መተግበሪያዎች</translation>
 <translation id="2814448776515246190">ከፊል መያዝ</translation>
 <translation id="2819276065543622893">አሁን ዘግተው እንዲወጡ ይደረጋሉ።</translation>
@@ -600,6 +601,7 @@
 <translation id="3735740477244556633">ደርድር በ</translation>
 <translation id="3738664582935948253">አሁን በማያ ቀረጻዎች ውስጥ ጠቅታዎችን እና የቁልፍ ሰሌዳ አቋራጮችን ማሳየት ይችላሉ</translation>
 <translation id="3742055079367172538">ቅጽበታዊ ገፅ እይታ ተነስቷል</translation>
+<translation id="3756485814916578707">ማያ ገጽን Cast በማድረግ ላይ</translation>
 <translation id="3765841986579723851">ዛሬ አርትዖት ተደርጎበታል</translation>
 <translation id="3773700760453577392">አንድ አስተዳዳሪ ለ<ph name="USER_EMAIL" /> በበርካታ መለያ መግባቶችን ከልክሏል። ለመቀጠል ሁሉም ተጠቃሚዎች ዘግተው መውጣት አለባቸው።</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> በማገናኘት ላይ</translation>
@@ -821,6 +823,7 @@
 <translation id="4777825441726637019">Play  መደብር</translation>
 <translation id="4778095205580009397">የGoogle ረዳቱ በማሳያ ክፍለ-ጊዜ ውስጥ አይገኝም።</translation>
 <translation id="4789348252524569426">የንግግር ፋይሎችን መጫን አልተቻለም። መሣሪያዎ መዘመን አለበት። መሣሪያዎን ዳግም ያስጀምሩት እና እንደገና ይሞክሩ።</translation>
+<translation id="478959186716341421">Cast በማድረግ ላይ</translation>
 <translation id="479989351350248267">ፈልግ</translation>
 <translation id="4804818685124855865">ግንኙነት አቋርጥ</translation>
 <translation id="4814539958450445987">በመለያ መግቢያ ማያ ገፅ</translation>
@@ -928,6 +931,7 @@
 <translation id="5297704307811127955">ጠፍቷል</translation>
 <translation id="5300589172476337783">አሳይ</translation>
 <translation id="5302048478445481009">ቋንቋ</translation>
+<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> መሣሪያዎች ከእርስዎ <ph name="DEVICE_NAME" /> መገናኛ ነጥብ ጋር ተገናኝተዋል</translation>
 <translation id="5308380583665731573">ይገናኙ</translation>
 <translation id="5313326810920013265">የብሉቱዝ ቅንብሮች</translation>
 <translation id="5314219114274263156">የማያ ገፅ ቀረጻ ተቀድቷል</translation>
@@ -996,7 +1000,6 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />፣ <ph name="DATE" /></translation>
 <translation id="5600837773213129531">የሚነገር ግብረመልስን ለማሰናከል Ctrl + Alt + Z ይጫኑ።</translation>
 <translation id="5601503069213153581">ፒን</translation>
-<translation id="5601571553788043181">ፋይልን በChrome ውስጥ ይክፈቱ</translation>
 <translation id="5618148318840095371">ወደተሻለ አውታረ መረብ ቀይረንዎታል</translation>
 <translation id="5619862035903135339">የአስተዳዳሪ መመሪያ የማያ ገፅ ቀረጻን ያሰናክላል</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1117,6 +1120,7 @@
 <translation id="6137566720514957455">ለ<ph name="USER_EMAIL_ADDRESS" /> የአስወግድ መገናኛን ክፈት</translation>
 <translation id="6141988275892716286">ማውረድ ያረጋግጡ</translation>
 <translation id="6154006699632741460">መለዋወጫ አይደገፍም</translation>
+<translation id="6156960295318603523">የቋንቋ ቅንብሮች</translation>
 <translation id="615957422585914272">የማያ ገፅ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
 <translation id="6165508094623778733">የበለጠ ለመረዳት</translation>
 <translation id="6166852626429024716">የእርስዎን መሣሪያ፣ መተግበሪያዎች፣ ቅንብሮች፣ ድር ይፈልጉ...</translation>
@@ -1335,6 +1339,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደ ቀድሞው ጥራት በመመለስ ላይ</translation>
 <translation id="7180611975245234373">አድስ</translation>
+<translation id="7187711731540696127">የእርስዎ <ph name="DEVICE_NAME" /> መገናኛ ነጥብ በርቷል፣ ምንም መሣሪያዎች አልተገናኙም</translation>
 <translation id="7188494361780961876">ምናሌ ወደ የማያ ገጹ የላይኛው ግራ ጥግ ተወስዷል።</translation>
 <translation id="7189412385142492784">ቬኑስ ምን ያህል ይርቃል</translation>
 <translation id="7198435252016571249">ካሜራ ወደ ታችኛው ቀኝ ጥግ ገጥሟል። ከስርዓት ወለል ጋር ግጭት።</translation>
@@ -1392,6 +1397,7 @@
 <translation id="7497767806359279797">ቋንቋ እና ቁልፍ ሰሌዳን ይምረጡ</translation>
 <translation id="7508690557411636492">ባለፈው ወር ተከፍቷል</translation>
 <translation id="7509246181739783082">ማንነትዎን ያረጋግጡ</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />፣ አልተመረጠም</translation>
 <translation id="7513622367902644023">የቅጽበታዊ ገፅ እይታ ሁነታ ተመርጧል</translation>
 <translation id="7513922695575567867">ቀን መቁጠሪያ፣ የ<ph name="DATE" /> ሳምንት፣ <ph name="SELECTED_DATE" /> በአሁኑ ጊዜ ተመርጧል።</translation>
 <translation id="7514365320538308">አውርድ</translation>
@@ -1413,7 +1419,6 @@
 <translation id="7569509451529460200">ብሬይል እና ChromeVox ነቅተዋል</translation>
 <translation id="7573585051776738856">ገባሪ መስኮት በቀኝ በኩል ተተክሏል።</translation>
 <translation id="7579778809502851308">የማያ ገፅ ቀረጻ</translation>
-<translation id="7590883480672980941">የግቤት ቅንብሮች</translation>
 <translation id="7593891976182323525">Search ወይም Shift</translation>
 <translation id="7600875258240007829">ሁሉንም ማሳወቂያዎች ይመልከቱ</translation>
 <translation id="7607002721634913082">ለአፍታ ቆሟል</translation>
@@ -1555,6 +1560,7 @@
 <translation id="8185090165691050712">መጠን ለማሳነስ የመቆለፊያ ሁኔታን አብራ/አጥፋ</translation>
 <translation id="8192202700944119416">ማሳወቂያዎች ተደብቀዋል</translation>
 <translation id="8196787716797768628">በመተግበሪያዎች መካከል በፍጥነት ለመቀያየር እና ከእርስዎ Chromebook ጋር በጡባዊ ሁነታ መስተጋብር ለመፈጸም የእጅ ምልክቶችን ይጠቀሙ።</translation>
+<translation id="8198456017687137612">የCast ማድረጊያ ትር</translation>
 <translation id="8200772114523450471">ከቆመበት ቀጥል</translation>
 <translation id="8203795194971602413">የቀኝ ጠቅታ</translation>
 <translation id="8209010265547628927">ዳግም አስጀምር</translation>

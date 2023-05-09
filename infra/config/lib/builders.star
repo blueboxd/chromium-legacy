@@ -139,13 +139,13 @@ reclient = struct(
         TEST_TRUSTED = "rbe-chromium-trusted-test",
         DEFAULT_UNTRUSTED = "rbe-chromium-untrusted",
         TEST_UNTRUSTED = "rbe-chromium-untrusted-test",
+        DEVELOPER = "rbe-chrome-untrusted",
     ),
     jobs = struct(
         DEFAULT = 250,
         LOW_JOBS_FOR_CI = 80,
         HIGH_JOBS_FOR_CI = 500,
         LOW_JOBS_FOR_CQ = 150,
-        MID_JOBS_FOR_CQ = 225,
         HIGH_JOBS_FOR_CQ = 300,
     ),
 )

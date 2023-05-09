@@ -539,6 +539,12 @@ bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
   }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+  size_t app_extended_scope_score =
+      registrar().GetAppExtendedScopeScore(url, app_id());
+  if (app_extended_scope_score > 0) {
+    return true;
+  }
+
   GURL app_scope = registrar().GetAppScope(app_id());
   if (!app_scope.is_valid())
     return false;
@@ -751,8 +757,7 @@ void WebAppBrowserController::PerformDigitalAssetLinkVerification(
   auto* lacros_service = chromeos::LacrosService::Get();
   if (chromeos::BrowserParamsProxy::Get()->WebAppsEnabled() && lacros_service &&
       lacros_service->IsAvailable<crosapi::mojom::WebAppService>() &&
-      lacros_service->GetInterfaceVersion(
-          crosapi::mojom::WebAppService::Uuid_) >=
+      lacros_service->GetInterfaceVersion<crosapi::mojom::WebAppService>() >=
           int{crosapi::mojom::WebAppService::MethodMinVersions::
                   kGetAssociatedAndroidPackageMinVersion}) {
     lacros_service->GetRemote<crosapi::mojom::WebAppService>()

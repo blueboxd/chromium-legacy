@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/web_contents.h"
@@ -153,27 +154,18 @@ void SitePermissionsHelper::UpdateSiteAccess(
   } else if (blocked_actions != BLOCKED_ACTION_NONE) {
     runner->RunBlockedActions(&extension);
   }
+
+  // Clear extension's active tab permission since it is set when granting user
+  // site permissions.
+  if (revoking_current_site_permissions) {
+    TabHelper::FromWebContents(web_contents)
+        ->active_tab_permission_granter()
+        ->ClearActiveExtensionAndNotify(extension.id());
+  }
 }
 
 bool SitePermissionsHelper::PageNeedsRefreshToRun(int blocked_actions) {
   return blocked_actions & kRefreshRequiredActionsMask;
-}
-
-void SitePermissionsHelper::UpdateUserSiteSettings(
-    const base::flat_set<ToolbarActionsModel::ActionId>& action_ids,
-    content::WebContents* web_contents,
-    extensions::PermissionsManager::UserSiteSetting site_setting) {
-  DCHECK(web_contents);
-
-  ExtensionActionRunner* runner =
-      ExtensionActionRunner::GetForWebContents(web_contents);
-  if (!runner) {
-    return;
-  }
-
-  runner->HandleUserSiteSettingModified(
-      action_ids, web_contents->GetPrimaryMainFrame()->GetLastCommittedOrigin(),
-      site_setting);
 }
 
 bool SitePermissionsHelper::HasBeenBlocked(

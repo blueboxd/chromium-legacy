@@ -39,7 +39,7 @@
 #include "ash/style/close_button.h"
 #include "ash/style/color_util.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_util.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/test_widget_builder.h"
 #include "ash/wm/desks/cros_next_default_desk_button.h"
 #include "ash/wm/desks/cros_next_desk_button_base.h"
@@ -48,6 +48,7 @@
 #include "ash/wm/desks/desk_action_context_menu.h"
 #include "ash/wm/desks/desk_action_view.h"
 #include "ash/wm/desks/desk_animation_base.h"
+#include "ash/wm/desks/desk_bar_controller.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
@@ -61,6 +62,7 @@
 #include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/root_window_desk_switch_animator_test_api.h"
 #include "ash/wm/desks/scroll_arrow_button.h"
+#include "ash/wm/desks/templates/saved_desk_test_helper.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -399,10 +401,13 @@ class DesksTest : public AshTestBase,
 
     std::vector<base::test::FeatureRef> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
+
+    enabled_features.push_back(features::kDeskButton);
+
     if (GetParam().use_16_desks) {
-      enabled_features.push_back(features::kEnable16Desks);
+      enabled_features.push_back(features::kFeatureManagement16Desks);
     } else {
-      disabled_features.push_back(features::kEnable16Desks);
+      disabled_features.push_back(features::kFeatureManagement16Desks);
     }
 
     if (GetParam().enable_jellyroll) {
@@ -414,6 +419,10 @@ class DesksTest : public AshTestBase,
 
     AshTestBase::SetUp();
     SetVirtualKeyboardEnabled(true);
+
+    // Wait for the desk model to have completed its initialization. Not doing
+    // this would lead to flaky tests.
+    ash_test_helper()->saved_desk_test_helper()->WaitForDeskModel();
   }
 
   void TearDown() override {
@@ -502,6 +511,19 @@ class DesksTest : public AshTestBase,
                : bar_view->expanded_state_new_desk_button()
                      ->GetInnerButton()
                      ->GetBackgroundColorForTest();
+  }
+
+  desks_storage::DeskModel* desk_model() {
+    return ash_test_helper()->saved_desk_test_helper()->desk_model();
+  }
+
+  void DeleteAllSavedDesks() {
+    base::RunLoop loop;
+    desk_model()->DeleteAllEntries(base::BindLambdaForTesting(
+        [&](desks_storage::DeskModel::DeleteEntryStatus status) {
+          loop.Quit();
+        }));
+    loop.Run();
   }
 
  private:
@@ -1044,9 +1066,9 @@ TEST_P(DesksTest, WindowStackingAfterWindowMoveToAnotherDesk) {
                            /*unminimize=*/true);
   desk_2->MoveWindowToDesk(win3.get(), desk_1, win1->GetRootWindow(),
                            /*unminimize=*/true);
-  EXPECT_TRUE(IsStackedBelow(win1.get(), win2.get()));
-  EXPECT_TRUE(IsStackedBelow(win2.get(), win0.get()));
-  EXPECT_TRUE(IsStackedBelow(win0.get(), win3.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win1.get(), win2.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win2.get(), win0.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win0.get(), win3.get()));
 }
 
 TEST_P(DesksTest, TransientModalChildren) {
@@ -3252,8 +3274,8 @@ TEST_P(TabletModeDesksTest,
   EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
   EXPECT_EQ(window.get(), desk_1_backdrop_controller->window_having_backdrop());
   EXPECT_FALSE(desk_2_backdrop_controller->window_having_backdrop());
-  EXPECT_TRUE(IsStackedBelow(desk_1_backdrop_controller->backdrop_window(),
-                             window.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(
+      desk_1_backdrop_controller->backdrop_window(), window.get()));
 
   // Prepare to drag and drop |window| on desk_2's mini view.
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -3288,8 +3310,8 @@ TEST_P(TabletModeDesksTest,
   ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
   EXPECT_FALSE(desk_1_backdrop_controller->window_having_backdrop());
   EXPECT_EQ(window.get(), desk_2_backdrop_controller->window_having_backdrop());
-  EXPECT_TRUE(IsStackedBelow(desk_2_backdrop_controller->backdrop_window(),
-                             window.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(
+      desk_2_backdrop_controller->backdrop_window(), window.get()));
 
   // The mini views should only be updated once for both desks.
   EXPECT_EQ(1, observer1.notify_counts());
@@ -3675,16 +3697,16 @@ TEST_P(TabletModeDesksTest, BackdropsStacking) {
 
   // The backdrop window should be stacked below both snapped windows.
   auto* desk_1_backdrop = desk_1_backdrop_controller->backdrop_window();
-  EXPECT_TRUE(IsStackedBelow(desk_1_backdrop, win1.get()));
-  EXPECT_TRUE(IsStackedBelow(desk_1_backdrop, win2.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(desk_1_backdrop, win1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(desk_1_backdrop, win2.get()));
 
   // Switching to another desk doesn't change the backdrop state of the inactive
   // desk.
   ActivateDesk(desk_2);
   ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
   EXPECT_FALSE(desk_2_backdrop_controller->backdrop_window());
-  EXPECT_TRUE(IsStackedBelow(desk_1_backdrop, win1.get()));
-  EXPECT_TRUE(IsStackedBelow(desk_1_backdrop, win2.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(desk_1_backdrop, win1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(desk_1_backdrop, win2.get()));
 
   // Snapping new windows in desk_2 should update the backdrop state of desk_2,
   // but should not affect desk_1.
@@ -3697,8 +3719,8 @@ TEST_P(TabletModeDesksTest, BackdropsStacking) {
   ASSERT_TRUE(desk_1_backdrop_controller->backdrop_window());
   ASSERT_TRUE(desk_2_backdrop_controller->backdrop_window());
   auto* desk_2_backdrop = desk_2_backdrop_controller->backdrop_window();
-  EXPECT_TRUE(IsStackedBelow(desk_2_backdrop, win3.get()));
-  EXPECT_TRUE(IsStackedBelow(desk_2_backdrop, win4.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(desk_2_backdrop, win3.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(desk_2_backdrop, win4.get()));
 }
 
 TEST_P(TabletModeDesksTest, HotSeatStateAfterMovingAWindowToAnotherDesk) {
@@ -3937,7 +3959,7 @@ TEST_P(DesksTest, SwitchToDeskWithSnappedActiveWindow) {
   auto win0 = CreateAppWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateAppWindow(gfx::Rect(50, 50, 200, 200));
   WindowState* win0_state = WindowState::Get(win0.get());
-  WMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_PRIMARY);
+  WindowSnapWMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_PRIMARY);
   win0_state->OnWMEvent(&snap_to_left);
   EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
             win0_state->GetStateType());
@@ -4874,6 +4896,9 @@ class DesksAcceleratorsTest : public DesksTest,
   bool NotifyDeprecatedSixPackKeyRewrite(ui::KeyboardCode key_code) override {
     return false;
   }
+  void RecordEventRemappedToRightClick() override {}
+  void RecordSixPackEventRewrite(ui::KeyboardCode key_code,
+                                 bool alt_based) override {}
 
   void SendAccelerator(ui::KeyboardCode key_code, int flags) {
     ui::test::EventGenerator* generator = GetEventGenerator();
@@ -6081,14 +6106,14 @@ TEST_P(DesksTest, VisibleOnAllDesksGlobalZOrder) {
   auto* widget0 = views::Widget::GetWidgetForNativeWindow(win0.get());
   auto* widget1 = views::Widget::GetWidgetForNativeWindow(win1.get());
   auto* widget2 = views::Widget::GetWidgetForNativeWindow(win2.get());
-  ASSERT_TRUE(IsStackedBelow(win0.get(), win1.get()));
-  ASSERT_TRUE(IsStackedBelow(win1.get(), win2.get()));
+  ASSERT_TRUE(window_util::IsStackedBelow(win0.get(), win1.get()));
+  ASSERT_TRUE(window_util::IsStackedBelow(win1.get(), win2.get()));
 
   // Assign |win1| to all desks. It shouldn't change stacking order.
   widget1->SetVisibleOnAllWorkspaces(true);
   ASSERT_TRUE(desks_util::IsWindowVisibleOnAllWorkspaces(win1.get()));
-  EXPECT_TRUE(IsStackedBelow(win0.get(), win1.get()));
-  EXPECT_TRUE(IsStackedBelow(win1.get(), win2.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win0.get(), win1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win1.get(), win2.get()));
   EXPECT_EQ(1u, controller->visible_on_all_desks_windows().size());
 
   // Move to desk 2. The only window on the new desk should be |win1|.
@@ -6102,8 +6127,8 @@ TEST_P(DesksTest, VisibleOnAllDesksGlobalZOrder) {
   ActivateDesk(desk_1);
   auto desk_1_children = desk_1->GetDeskContainerForRoot(root)->children();
   EXPECT_EQ(3u, desk_1_children.size());
-  EXPECT_TRUE(IsStackedBelow(win0.get(), win2.get()));
-  EXPECT_TRUE(IsStackedBelow(win2.get(), win1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win0.get(), win2.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win2.get(), win1.get()));
 
   // Assign all the other windows and rearrange the order by activating the
   // windows.
@@ -6114,8 +6139,8 @@ TEST_P(DesksTest, VisibleOnAllDesksGlobalZOrder) {
   wm::ActivateWindow(win2.get());
   wm::ActivateWindow(win1.get());
   wm::ActivateWindow(win0.get());
-  EXPECT_TRUE(IsStackedBelow(win2.get(), win1.get()));
-  EXPECT_TRUE(IsStackedBelow(win1.get(), win0.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win2.get(), win1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win1.get(), win0.get()));
   EXPECT_EQ(3u, controller->visible_on_all_desks_windows().size());
 
   // Move to desk 2. All the windows should move to the new desk and maintain
@@ -6123,8 +6148,8 @@ TEST_P(DesksTest, VisibleOnAllDesksGlobalZOrder) {
   ActivateDesk(desk_2);
   desk_2_children = desk_2->GetDeskContainerForRoot(root)->children();
   EXPECT_EQ(3u, desk_2_children.size());
-  EXPECT_TRUE(IsStackedBelow(win2.get(), win1.get()));
-  EXPECT_TRUE(IsStackedBelow(win1.get(), win0.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win2.get(), win1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win1.get(), win0.get()));
 }
 
 // Tests the behavior of windows that are visible on all desks when the active
@@ -6152,7 +6177,7 @@ TEST_P(DesksTest, VisibleOnAllDesksActiveDeskRemoval) {
   RemoveDesk(desk_1);
   auto desk_2_children = desk_2->GetDeskContainerForRoot(root)->children();
   EXPECT_EQ(2u, desk_2_children.size());
-  EXPECT_TRUE(IsStackedBelow(win0.get(), win1.get()));
+  EXPECT_TRUE(window_util::IsStackedBelow(win0.get(), win1.get()));
   EXPECT_EQ(2u, controller->visible_on_all_desks_windows().size());
 }
 
@@ -7243,7 +7268,7 @@ TEST_P(DesksTest, NameNudgesTabletMode) {
 
   // Setup an internal keyboard and an external keyboard.
   ui::DeviceDataManagerTestApi().SetKeyboardDevices(
-      std::vector<ui::InputDevice>{
+      std::vector<ui::KeyboardDevice>{
           {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"},
           {2, ui::INPUT_DEVICE_USB, "external keyboard"}});
   auto* device_data_manager = ui::DeviceDataManager::GetInstance();
@@ -7266,7 +7291,7 @@ TEST_P(DesksTest, NameNudgesTabletMode) {
 
   // Reset the devices and make it so there's only an internal keyboard.
   ui::DeviceDataManagerTestApi().SetKeyboardDevices(
-      std::vector<ui::InputDevice>{
+      std::vector<ui::KeyboardDevice>{
           {1, ui::INPUT_DEVICE_INTERNAL, "internal keyboard"},
       });
   keyboard_devices = device_data_manager->GetKeyboardDevices();
@@ -8585,6 +8610,9 @@ TEST_P(DesksCloseAllTest, InteractingWithShelfClosesToast) {
 
   // Enter overview and close the desk.
   EnterOverview();
+  // Wait for shelf animation, i.e. the desk button disappears and the
+  // scrollable shelf view expands to take more space.
+  WaitForShelfAnimation();
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ClickOnCloseAllButtonForDesk(0);
 
@@ -8607,10 +8635,10 @@ TEST_P(DesksCloseAllTest, InteractingWithShelfClosesToast) {
   EXPECT_FALSE(window.is_valid());
 }
 
-using BentoButtonTest = DesksTest;
+using DeskButtonTest = DesksTest;
 
 // Tests that `DeskTextfield` can be used outside overview.
-TEST_P(BentoButtonTest, DeskTextfieldOutsideOverview) {
+TEST_P(DeskButtonTest, DeskTextfieldOutsideOverview) {
   auto widget =
       TestWidgetBuilder()
           .SetDelegate(nullptr)
@@ -8625,6 +8653,117 @@ TEST_P(BentoButtonTest, DeskTextfieldOutsideOverview) {
   // There is no crash for committing name changes for `DeskTextfield` outside
   // overview.
   desk_text_view->CommitChanges(widget.get());
+}
+
+struct DeskButtonDeskBarTestCase {
+  std::string test_name;
+
+  // IDs of all desks.
+  std::vector<int> desks;
+
+  // ID of active desk.
+  int active_desk;
+
+  // Shelf alignment.
+  ShelfAlignment shelf_alignment;
+
+  // Indicates if there are any saved desks.
+  bool has_saved_desks;
+
+  // The expected bar widget bounds.
+  gfx::Rect bar_widget_bounds_expected;
+
+  // The expected bar view bounds.
+  gfx::Rect bar_view_bounds_expected;
+};
+
+// Tests that desk button desk bar can show outside of overview with expected
+// bounds for different shelf alignments.
+TEST_P(DeskButtonTest, DeskBarBasic) {
+  UpdateDisplay("800x600");
+
+  const DeskButtonDeskBarTestCase tests[] = {
+      {.test_name = "single desk + bottom shelf + saved desks",
+       .desks = {0},
+       .active_desk = 0,
+       .shelf_alignment = ShelfAlignment::kBottom,
+       .has_saved_desks = true,
+       .bar_widget_bounds_expected = {0, 446, 800, 98},
+       .bar_view_bounds_expected = {0, 0, 800, 98}},
+      {.test_name = "single desk + left shelf + saved desks",
+       .desks = {0},
+       .active_desk = 0,
+       .shelf_alignment = ShelfAlignment::kLeft,
+       .has_saved_desks = true,
+       .bar_widget_bounds_expected = {56, 248, 744, 98},
+       .bar_view_bounds_expected = {0, 0, 744, 98}},
+      {.test_name = "single desk + right shelf + saved desks",
+       .desks = {0},
+       .active_desk = 0,
+       .shelf_alignment = ShelfAlignment::kRight,
+       .has_saved_desks = true,
+       .bar_widget_bounds_expected = {0, 248, 744, 98},
+       .bar_view_bounds_expected = {0, 0, 744, 98}},
+      {.test_name = "multiple desks + bottom shelf + saved desks",
+       .desks = {0, 1, 2},
+       .active_desk = 0,
+       .shelf_alignment = ShelfAlignment::kBottom,
+       .has_saved_desks = true,
+       .bar_widget_bounds_expected = {0, 446, 800, 98},
+       .bar_view_bounds_expected = {0, 0, 800, 98}},
+  };
+
+  auto* root = Shell::Get()->GetPrimaryRootWindow();
+  auto* desks_controller = DesksController::Get();
+  auto desk_bar_controller = std::make_unique<DeskBarController>();
+  Shelf* shelf = GetPrimaryShelf();
+
+  for (const auto& test : tests) {
+    SCOPED_TRACE(test.test_name);
+
+    // Set up desks.
+    while (desks_controller->desks().size() < test.desks.size()) {
+      NewDesk();
+    }
+    if (!desks_controller->desks()[test.active_desk]->is_active()) {
+      ActivateDesk(desks_controller->desks()[test.active_desk].get());
+    }
+
+    // Set up shelf.
+    shelf->SetAlignment(test.shelf_alignment);
+
+    // Set up saved desk.
+    if (test.has_saved_desks) {
+      AddSavedDeskEntry(desk_model(), base::Uuid::GenerateRandomV4(),
+                        "saved_desk_1", base::Time::Now(),
+                        DeskTemplateType::kSaveAndRecall);
+    }
+
+    // Create the desk bar then verify the bar and its child UI have expected
+    // appearance.
+    desk_bar_controller->CreateDeskBar(root);
+    auto* desk_bar_view = desk_bar_controller->GetDeskBarView(root);
+    auto* desk_bar_widget = desk_bar_view->GetWidget();
+    EXPECT_THAT(desk_bar_widget->GetWindowBoundsInScreen(),
+                test.bar_widget_bounds_expected);
+    EXPECT_TRUE(desk_bar_view && desk_bar_view->GetVisible() &&
+                !desk_bar_view->IsZeroState());
+    EXPECT_THAT(desk_bar_view->bounds(), test.bar_view_bounds_expected);
+    if (GetParam().enable_jellyroll) {
+      auto* new_desk_button = desk_bar_view->new_desk_button();
+      EXPECT_THAT(new_desk_button->state(),
+                  CrOSNextDeskIconButton::State::kExpanded);
+      auto* library_button = desk_bar_view->library_button();
+      EXPECT_THAT(library_button->state(),
+                  CrOSNextDeskIconButton::State::kExpanded);
+    }
+
+    // Reset to clean state, i.e. only 1 desk and no saved desks.
+    while (desks_controller->CanRemoveDesks()) {
+      RemoveDesk(desks_controller->desks().back().get());
+    }
+    DeleteAllSavedDesks();
+  }
 }
 
 // TODO(afakhry): Add more tests:
@@ -8676,7 +8815,7 @@ INSTANTIATE_TEST_SUITE_P(All, DesksAcceleratorsTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, DesksMockTimeTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, DesksCloseAllTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, PerDeskShelfTest, ::testing::Bool());
-INSTANTIATE_TEST_SUITE_P(All, BentoButtonTest, ValuesIn(kAllCombinations));
+INSTANTIATE_TEST_SUITE_P(All, DeskButtonTest, ValuesIn(kAllCombinations));
 
 }  // namespace
 

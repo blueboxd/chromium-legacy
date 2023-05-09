@@ -99,6 +99,9 @@
     "includes": [1220],
     "structures": [1240],
   },
+  "chrome/browser/recent_tabs/internal/android/java/strings/android_restore_tabs_strings.grd": {
+    "messages": [1250],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/feedback/resources.grd": {
     "META": {"sizes": {"includes": [30],}},
     "includes": [1260],
@@ -346,7 +349,7 @@
     "includes": [1960],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings_shared/resources.grd": {
-    "META": {"sizes": {"includes": [20],}},
+    "META": {"sizes": {"includes": [30],}},
     "includes": [1970],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/signin/profile_picker/resources.grd": {
@@ -530,6 +533,18 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [2580],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/net/resources.grd": {
+    "META": {"sizes": {"includes": [5],}},
+    "includes": [2583],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/process/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [2585],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/service_worker/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [2588],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/quota/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [2590],
@@ -537,9 +552,6 @@
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/webrtc/resources/resources.grd": {
     "META": {"sizes": {"includes": [20],}},
     "includes": [2600],
-  },
-  "content/dev_ui_content_resources.grd": {
-    "includes": [2620],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/feed/resources.grd": {
     "META": {"sizes": {"includes": [20]}},

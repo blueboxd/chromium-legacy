@@ -8,13 +8,14 @@
 
 #import "base/check.h"
 #import "components/search_engines/template_url_service.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_payload.h"
-#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
@@ -29,7 +30,6 @@
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
 #import "ios/chrome/browser/ui/partial_translate/partial_translate_mediator.h"
 #import "ios/chrome/browser/ui/search_with/search_with_mediator.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "url/gurl.h"
 
 #if BUILDFLAG(IOS_SCREEN_TIME_ENABLED)

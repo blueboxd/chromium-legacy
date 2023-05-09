@@ -223,6 +223,7 @@ class PresentationObserver;
 class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
 class RenderProcessHost;
+class ResponsivenessCalculatorDelegate;
 class SerialDelegate;
 class SiteInstance;
 class SpeculationHostDelegate;
@@ -259,6 +260,29 @@ class TtsControllerDelegate;
 class SmartCardDelegate;
 #endif
 
+// Structure of data pasted from clipboard.
+struct CONTENT_EXPORT ClipboardPasteData {
+  ClipboardPasteData(std::string text,
+                     std::string image,
+                     std::vector<std::string> file_paths);
+  ClipboardPasteData();
+  ClipboardPasteData(const ClipboardPasteData&);
+  ClipboardPasteData(ClipboardPasteData&&);
+  ClipboardPasteData& operator=(ClipboardPasteData&&);
+  bool isEmpty();
+  ~ClipboardPasteData();
+
+  // UTF-8 encoded text data to scan, such as plain text, URLs, HTML, etc.
+  std::string text;
+
+  // Binary image data to scan, such as png (here we assume the data
+  // struct holds one image only).
+  std::string image;
+
+  // A list of full file paths to scan.
+  std::vector<std::string> file_paths;
+};
+
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
 // principal implementation. The methods are assumed to be called on the UI
@@ -272,8 +296,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Callback used with IsClipboardPasteContentAllowed() method.  If the paste
   // is not allowed, nullopt is passed to the callback.  Otherwise, the data
   // that should be pasted is passed in.
-  using IsClipboardPasteContentAllowedCallback =
-      base::OnceCallback<void(const absl::optional<std::string>& data)>;
+  using IsClipboardPasteContentAllowedCallback = base::OnceCallback<void(
+      absl::optional<ClipboardPasteData> clipboard_paste_data)>;
 
   virtual ~ContentBrowserClient() = default;
 
@@ -893,11 +917,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin* destination_origin,
       const url::Origin* reporting_origin);
 
-#if BUILDFLAG(IS_ANDROID)
   // Allows the embedder to control if web attribution reporting is allowed.
   // This method must be idempotent.
   virtual bool IsWebAttributionReportingAllowed();
-#endif
 
   // Allows the embedder to control if Shared Storage API operations can happen
   // in a given context.
@@ -1935,6 +1957,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // before the callback, the request has been canceled and the callback
   // should not be called.
   //
+  // NOTE: For the Negotiate challenge on ChromeOS the credentials are handled
+  // on OS level. In that case CreateLoginDelegate returns nullptr, since the
+  // credentials are not passed to the browser and the authentication
+  // should be cancelled. (See b/260522530).
+  //
   // |auth_required_callback| may not be called reentrantly. If the request may
   // be handled synchronously, CreateLoginDelegate must post the callback to a
   // separate event loop iteration, taking care not to call it if the
@@ -2206,7 +2233,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::WebContents* web_contents,
       const GURL& url,
       const ui::ClipboardFormatType& data_type,
-      const std::string& data,
+      ClipboardPasteData content_analyisis_data,
       IsClipboardPasteContentAllowedCallback callback);
 
   // Returns true if a copy to the clipboard from `url` is allowed by the
@@ -2424,6 +2451,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // in RenderFrameHostImpl. Currently in Chrome, this is true for all
   // extension origins.
   virtual bool ShouldUseFirstPartyStorageKey(const url::Origin& origin);
+
+  // Allows the embedder to return a delegate for the responsiveness calculator.
+  // The default implementation returns nullptr.
+  virtual std::unique_ptr<ResponsivenessCalculatorDelegate>
+  CreateResponsivenessCalculatorDelegate();
 };
 
 }  // namespace content

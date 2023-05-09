@@ -25,7 +25,7 @@ class CONTENT_EXPORT FakeIdentityRequestDialogController
   void ShowAccountsDialog(
       content::WebContents* rp_web_contents,
       const std::string& top_frame_for_display,
-      const absl::optional<std::string>& iframe_url_for_display,
+      const absl::optional<std::string>& iframe_for_display,
       const std::vector<content::IdentityProviderData>& identity_provider_data,
       IdentityRequestAccount::SignInMode sign_in_mode,
       bool show_auto_reauthn_checkbox,
@@ -34,7 +34,7 @@ class CONTENT_EXPORT FakeIdentityRequestDialogController
 
   std::string GetTitle() const override;
 
-  void ShowPopUpWindow(const GURL& url,
+  void ShowModalDialog(const GURL& url,
                        TokenCallback on_resolve,
                        DismissCallback dismiss_callback) override;
 

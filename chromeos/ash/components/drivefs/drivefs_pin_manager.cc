@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/logging.h"
+#include "base/memory/raw_ref.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
@@ -71,19 +72,19 @@ std::locale NiceNumLocale() {
 
 template <typename T>
 struct Quoter {
-  const T& value;
+  const raw_ref<const T, ExperimentalAsh> value;
 };
 
 template <typename T>
 Quoter<T> Quote(const T& value) {
-  return {value};
+  return {ToRawRef<ExperimentalAsh>(value)};
 }
 
 template <typename T>
   requires std::is_enum_v<T>
 ostream& operator<<(ostream& out, Quoter<T> q) {
   // Convert enum value to string.
-  const std::string s = (std::ostringstream() << q.value).str();
+  const std::string s = (std::ostringstream() << (*q.value)).str();
 
   // Does the string start with 'k'?
   if (!s.empty() && s.front() == 'k') {
@@ -96,7 +97,7 @@ ostream& operator<<(ostream& out, Quoter<T> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<TimeDelta> q) {
-  const int64_t ms = q.value.InMilliseconds();
+  const int64_t ms = q.value->InMilliseconds();
   if (ms < 1000) {
     return out << ms << " ms";
   }
@@ -116,11 +117,11 @@ ostream& operator<<(ostream& out, Quoter<TimeDelta> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<Path> q) {
-  return out << "'" << q.value << "'";
+  return out << "'" << (*q.value) << "'";
 }
 
 ostream& operator<<(ostream& out, Quoter<std::string> q) {
-  return out << "'" << q.value << "'";
+  return out << "'" << (*q.value) << "'";
 }
 
 template <typename T>
@@ -133,17 +134,17 @@ ostream& operator<<(ostream& out, Quoter<absl::optional<T>> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<ShortcutDetails> q) {
-  out << "{" << PinManager::Id(q.value.target_stable_id);
+  out << "{" << PinManager::Id(q.value->target_stable_id);
 
-  if (q.value.target_lookup_status != LookupStatus::kOk) {
-    out << " " << Quote(q.value.target_lookup_status);
+  if (q.value->target_lookup_status != LookupStatus::kOk) {
+    out << " " << Quote(q.value->target_lookup_status);
   }
 
   return out << "}";
 }
 
 ostream& operator<<(ostream& out, Quoter<FileMetadata> q) {
-  const FileMetadata& md = q.value;
+  const FileMetadata& md = *q.value;
 
   out << "{" << Quote(md.type) << " " << PinManager::Id(md.stable_id);
 
@@ -179,7 +180,7 @@ ostream& operator<<(ostream& out, Quoter<FileMetadata> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<mojom::ItemEvent> q) {
-  const mojom::ItemEvent& e = q.value;
+  const mojom::ItemEvent& e = *q.value;
   return out << "{" << Quote(e.state) << " " << PinManager::Id(e.stable_id)
              << " " << Quote(e.path) << ", bytes_transferred: "
              << HumanReadableSize(e.bytes_transferred)
@@ -189,14 +190,14 @@ ostream& operator<<(ostream& out, Quoter<mojom::ItemEvent> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<mojom::FileChange> q) {
-  const mojom::FileChange& change = q.value;
+  const mojom::FileChange& change = *q.value;
   return out << "{" << Quote(change.type) << " "
              << PinManager::Id(change.stable_id) << " " << Quote(change.path)
              << "}";
 }
 
 ostream& operator<<(ostream& out, Quoter<mojom::DriveError> q) {
-  const mojom::DriveError& e = q.value;
+  const mojom::DriveError& e = *q.value;
   return out << "{" << Quote(e.type) << " " << PinManager::Id(e.stable_id)
              << " " << Quote(e.path) << "}";
 }
@@ -343,6 +344,13 @@ bool PinManager::CanPin(const FileMetadata& md, const Path& path) {
 
   if (md.type == Type::kDirectory) {
     VLOG(2) << "Skipped " << id << " " << Quote(path) << ": Directory";
+    return false;
+  }
+
+  // Hosted docs are heuristically cached via the Docs offline extension.
+  // Ignore explicitly pinning them and prefer caching.
+  if (md.type == Type::kHosted) {
+    VLOG(2) << "Skipped " << id << " " << Quote(path) << ": Hosted doc";
     return false;
   }
 
@@ -541,10 +549,15 @@ PinManager::PinManager(Path profile_path, mojom::DriveFs* const drivefs)
       drivefs_(drivefs),
       space_getter_(base::BindRepeating(&GetFreeSpace)) {
   DCHECK(drivefs_);
+  CHECK(ash::UserDataAuthClient::Get());
+  ash::UserDataAuthClient::Get()->AddObserver(this);
 }
 
 PinManager::~PinManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(ash::UserDataAuthClient::Get());
+  ash::UserDataAuthClient::Get()->RemoveObserver(this);
+
   DCHECK(!InProgress(progress_.stage))
       << "Pin manager is " << Quote(progress_.stage);
 
@@ -587,7 +600,7 @@ void PinManager::Start() {
 void PinManager::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!progress_.IsError()) {
+  if (progress_.stage != Stage::kStopped && !progress_.IsError()) {
     VLOG(1) << "Stopping";
     Complete(Stage::kStopped);
   }
@@ -658,6 +671,7 @@ void PinManager::ListItems(const Id dir_id, Path dir_path) {
   params->page_size = 1000;
   params->my_drive_results_only = true;
   params->parent_stable_id = static_cast<int64_t>(dir_id);
+  params->query_source = mojom::QueryParameters::QuerySource::kLocalAndCloud;
 
   Query query;
   drivefs_->StartSearchQuery(query.BindNewPipeAndPassReceiver(),
@@ -708,7 +722,8 @@ void PinManager::OnSearchResult(const Id dir_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(progress_.stage, Stage::kListingFiles);
 
-  if (error != drive::FILE_ERROR_OK) {
+  if (error != drive::FILE_ERROR_OK &&
+      error != drive::FILE_ERROR_OK_WITH_MORE_RESULTS) {
     LOG(ERROR) << "Cannot visit " << dir_id << " " << Quote(dir_path) << ": "
                << error;
     switch (error) {
@@ -730,7 +745,7 @@ void PinManager::OnSearchResult(const Id dir_id,
 
   progress_.time_spent_listing_items = timer_.Elapsed();
 
-  if (items.empty()) {
+  if (items.empty() && error != drive::FILE_ERROR_OK_WITH_MORE_RESULTS) {
     VLOG(1) << "Visited " << dir_id << " " << Quote(dir_path);
 
     DCHECK_LE(progress_.active_queries, progress_.max_active_queries);
@@ -754,9 +769,14 @@ void PinManager::OnSearchResult(const Id dir_id,
     return StartPinning();
   }
 
-  progress_.listed_items += items.size();
-  VLOG(2) << "Got " << items.size() << " items from " << dir_id << " "
-          << Quote(dir_path);
+  if (error == drive::FILE_ERROR_OK_WITH_MORE_RESULTS) {
+    VLOG(2) << "No items returned from " << dir_id << " " << Quote(dir_path)
+            << " need to make cloud query";
+  } else {
+    progress_.listed_items += items.size();
+    VLOG(2) << "Got " << items.size() << " items from " << dir_id << " "
+            << Quote(dir_path);
+  }
 
   for (const QueryItemPtr& item : items) {
     DCHECK(item);
@@ -913,19 +933,6 @@ void PinManager::StartPinning() {
     return Complete(Stage::kSuccess);
   }
 
-  VLOG(1) << "Enabling Docs offline";
-  drivefs_->SetDocsOfflineEnabled(
-      true, base::BindOnce(&PinManager::OnDocsOfflineEnabled, GetWeakPtr()));
-}
-
-void PinManager::OnDocsOfflineEnabled(drive::FileError error) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (error != drive::FILE_ERROR_OK) {
-    LOG(ERROR) << "Cannot enable Docs offline: " << error;
-    return Complete(Stage::kCannotEnableDocsOffline);
-  }
-
-  VLOG(1) << "Successfully enabled Docs offline";
   timer_ = base::ElapsedTimer();
   progress_.stage = Stage::kSyncing;
   NotifyProgress();
@@ -945,7 +952,7 @@ void PinManager::PinSomeFiles() {
     return NotifyProgress();
   }
 
-  while (progress_.syncing_files < 50 && !files_to_pin_.empty()) {
+  while (progress_.syncing_files < kMaxQueueSize && !files_to_pin_.empty()) {
     const Id id = files_to_pin_.extract(files_to_pin_.begin()).value();
     const Files::iterator it = files_to_track_.find(id);
     DCHECK(it != files_to_track_.end()) << "Not tracked: " << id;
@@ -1233,6 +1240,12 @@ void PinManager::NotifyProgress() {
   for (Observer& observer : observers_) {
     observer.OnProgress(progress_);
   }
+}
+
+void PinManager::LowDiskSpace(const ::user_data_auth::LowDiskSpace& status) {
+  LOG(ERROR) << "Got LowDiskSpace "
+             << HumanReadableSize(status.disk_free_bytes());
+  OnFreeSpaceRetrieved2(status.disk_free_bytes());
 }
 
 void PinManager::CheckStalledFiles() {

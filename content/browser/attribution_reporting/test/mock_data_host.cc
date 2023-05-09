@@ -11,14 +11,12 @@
 #include <vector>
 
 #include "base/run_loop.h"
-#include "build/build_config.h"
-#include "build/buildflag.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/network/public/cpp/trigger_attestation.h"
+#include "services/network/public/cpp/trigger_verification.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/gurl.h"
@@ -65,7 +63,7 @@ void MockDataHost::SourceDataAvailable(
 void MockDataHost::TriggerDataAvailable(
     attribution_reporting::SuitableOrigin reporting_origin,
     attribution_reporting::TriggerRegistration data,
-    absl::optional<network::TriggerAttestation> attestation) {
+    absl::optional<network::TriggerVerification> verification) {
   trigger_data_.push_back(std::move(data));
   if (trigger_data_.size() < min_trigger_data_count_ ||
       source_data_.size() < min_source_data_count_) {
@@ -73,8 +71,6 @@ void MockDataHost::TriggerDataAvailable(
   }
   wait_loop_.Quit();
 }
-
-#if BUILDFLAG(IS_ANDROID)
 
 void MockDataHost::OsSourceDataAvailable(const GURL& registration_url) {
   os_sources_.push_back(registration_url);
@@ -107,8 +103,6 @@ void MockDataHost::WaitForOsTriggers(size_t num_os_triggers) {
   }
   wait_loop_.Run();
 }
-
-#endif  // BUILDFLAG(IS_ANDROID)
 
 std::unique_ptr<MockDataHost> GetRegisteredDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host) {

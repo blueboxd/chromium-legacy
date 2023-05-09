@@ -114,10 +114,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, LastError) {
   extensions::ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
   ASSERT_TRUE(host);
 
-  bool result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(host->host_contents(),
-                                                   "testLastError()", &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, content::EvalJs(host->host_contents(), "testLastError()"));
 }
 
 // Regression test that we don't delete our own bindings with about:blank
@@ -290,11 +287,9 @@ IN_PROC_BROWSER_TEST_F(FramesExtensionBindingsApiTest, FramesBeforeNavigation) {
       embedded_test_server()->GetURL(
           "/extensions/api_test/bindings/frames_before_navigation.html")));
 
-  bool page_success = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetWebContentsAt(0), "getResult()",
-      &page_success));
-  EXPECT_TRUE(page_success);
+  EXPECT_EQ(true,
+            content::EvalJs(browser()->tab_strip_model()->GetWebContentsAt(0),
+                            "getResult()"));
 
   // Reply to |sender|, causing it to send a message over to |receiver|, and
   // then ask |receiver| for the total message count. It should be 1 since
@@ -346,10 +341,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, ValidationInterception) {
           "/extensions/api_test/bindings/validation_interception.html")));
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
   ASSERT_FALSE(web_contents->IsCrashed());
-  bool caught = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents, "domAutomationController.send(caught)", &caught));
-  EXPECT_TRUE(caught);
+  EXPECT_EQ(true, content::EvalJs(web_contents, "caught"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, UncaughtExceptionLogging) {
@@ -428,10 +420,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
   EXPECT_FALSE(tab->IsCrashed());
   EXPECT_EQ(main_frame_url, main_frame->GetLastCommittedURL());
   EXPECT_EQ(main_frame_process, main_frame->GetProcess());
-  bool renderer_valid = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      main_frame, "domAutomationController.send(true);", &renderer_valid));
-  EXPECT_TRUE(renderer_valid);
+  EXPECT_EQ(true, content::EvalJs(main_frame, "true;"));
   EXPECT_FALSE(failure_listener.was_satisfied());
 }
 

@@ -2454,41 +2454,6 @@ TEST_P(ArcVmClientAdapterDalvikMemoryProfileTest, Profile) {
             test_param.arc_profile);
 }
 
-struct UsapProfileTestParam {
-  // Requested profile.
-  StartParams::UsapProfile profile;
-  // Name of profile that is expected.
-  const char* profile_name;
-  int memory;
-};
-
-constexpr UsapProfileTestParam kUsapProfileTestCases[] = {
-    {StartParams::UsapProfile::DEFAULT, nullptr,
-     vm_tools::concierge::StartArcVmRequest::USAP_PROFILE_DEFAULT},
-    {StartParams::UsapProfile::M4G, "4G",
-     vm_tools::concierge::StartArcVmRequest::USAP_PROFILE_4G},
-    {StartParams::UsapProfile::M8G, "8G",
-     vm_tools::concierge::StartArcVmRequest::USAP_PROFILE_8G},
-    {StartParams::UsapProfile::M16G, "16G",
-     vm_tools::concierge::StartArcVmRequest::USAP_PROFILE_16G}};
-
-class ArcVmClientAdapterUsapProfileTest
-    : public ArcVmClientAdapterTest,
-      public testing::WithParamInterface<UsapProfileTestParam> {};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         ArcVmClientAdapterUsapProfileTest,
-                         ::testing::ValuesIn(kUsapProfileTestCases));
-
-TEST_P(ArcVmClientAdapterUsapProfileTest, Profile) {
-  const auto& test_param = GetParam();
-  StartParams start_params(GetPopulatedStartParams());
-  start_params.usap_profile = test_param.profile;
-  StartMiniArcWithParams(true, std::move(start_params));
-  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(request.usap_profile(), test_param.memory);
-}
-
 TEST_F(ArcVmClientAdapterTest, ArcVmTTSCachingDefault) {
   StartParams start_params(GetPopulatedStartParams());
   StartMiniArcWithParams(true, std::move(start_params));
@@ -2558,26 +2523,6 @@ TEST_F(ArcVmClientAdapterTest, ConvertUpgradeParams_EnableTtsCacheSetup) {
   UpgradeArcWithParams(true, std::move(upgrade_params));
   EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
                              "ro.boot.skip_tts_cache=0"));
-}
-
-// Test that update_o4c_list_via_a2c2 is not set with the feature flag disabled.
-TEST_F(ArcVmClientAdapterTest, ArcUpdateO4CListViaA2C2Disabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(kArcUpdateO4CListViaA2C2);
-  StartParams start_params(GetPopulatedStartParams());
-  StartMiniArcWithParams(true, std::move(start_params));
-  auto request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_FALSE(request.update_o4c_list_via_a2c2());
-}
-
-// Test that update_o4c_list_via_a2c2 is set with the feature flag enabled.
-TEST_F(ArcVmClientAdapterTest, ArcUpdateO4CListViaA2C2Enabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kArcUpdateO4CListViaA2C2);
-  StartParams start_params(GetPopulatedStartParams());
-  StartMiniArcWithParams(true, std::move(start_params));
-  auto request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_TRUE(request.update_o4c_list_via_a2c2());
 }
 
 TEST_F(ArcVmClientAdapterTest, mglruReclaimDisabled) {
@@ -2685,6 +2630,53 @@ TEST_F(ArcVmClientAdapterTest, ArcEnableNotificationRefreshTrue) {
   StartMiniArcWithParams(true, std::move(start_params));
   const auto& request = GetTestConciergeClient()->start_arc_vm_request();
   EXPECT_TRUE(request.mini_instance_request().enable_notifications_refresh());
+}
+
+TEST_F(ArcVmClientAdapterTest, ArcPriorityAppLmkDelayDisabled) {
+  StartMiniArc();
+  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
+  upgrade_params.enable_priority_app_lmk_delay = false;
+  UpgradeArcWithParams(true, std::move(upgrade_params));
+  EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
+                              "ro.boot.arc.lmk.enable_priority_app_delay"));
+  EXPECT_FALSE(
+      base::Contains(boot_notification_server()->received_data(),
+                     "ro.boot.arc.lmk.priority_app_delay_duration_sec"));
+  EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
+                              "ro.boot.arc.lmk.priority_apps"));
+}
+
+TEST_F(ArcVmClientAdapterTest, ArcPriorityAppLmkDelayEnabled_NoApp) {
+  StartMiniArc();
+  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
+  upgrade_params.enable_priority_app_lmk_delay = true;
+  upgrade_params.priority_app_lmk_delay_list = "";
+  UpgradeArcWithParams(true, std::move(upgrade_params));
+  EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
+                              "ro.boot.arc.lmk.enable_priority_app_delay"));
+  EXPECT_FALSE(
+      base::Contains(boot_notification_server()->received_data(),
+                     "ro.boot.arc.lmk.priority_app_delay_duration_sec"));
+  EXPECT_FALSE(base::Contains(boot_notification_server()->received_data(),
+                              "ro.boot.arc.lmk.priority_apps"));
+}
+
+TEST_F(ArcVmClientAdapterTest, ArcPriorityAppLmkDelayEnabled_SomeApp) {
+  StartMiniArc();
+  UpgradeParams upgrade_params = GetPopulatedUpgradeParams();
+  upgrade_params.enable_priority_app_lmk_delay = true;
+  upgrade_params.priority_app_lmk_delay_list =
+      "com.example.app1,com.example.app2";
+  upgrade_params.priority_app_lmk_delay_second = 60;
+  UpgradeArcWithParams(true, std::move(upgrade_params));
+  EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
+                             "ro.boot.arc.lmk.enable_priority_app_delay=1"));
+  EXPECT_TRUE(base::Contains(
+      boot_notification_server()->received_data(),
+      "ro.boot.arc.lmk.priority_apps=com.example.app1,com.example.app2"));
+  EXPECT_TRUE(
+      base::Contains(boot_notification_server()->received_data(),
+                     "ro.boot.arc.lmk.priority_app_delay_duration_sec=60"));
 }
 
 }  // namespace

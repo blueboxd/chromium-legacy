@@ -221,6 +221,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1961239773406905488">Predogled kamere je skrit</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Zakleni zaslon</translation>
+<translation id="1962972976741217487">Z dostopno točko naprave <ph name="DEVICE_NAME" /> je povezana 1 naprava</translation>
 <translation id="1967970931040389207">Vklopi dostopno točko</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Pozdravljeni, <ph name="USERNAME" /></translation>
@@ -301,7 +302,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="2367972762794486313">Pokaži aplikacije</translation>
 <translation id="2369165858548251131">»Živijo« po kitajsko</translation>
 <translation id="2386292613071805067">Izbira vsega na strani</translation>
-<translation id="2390318262976603432">Nastavitve jezika</translation>
 <translation id="2397416548179033562">Prikaz Chromovega menija</translation>
 <translation id="240006516586367791">Kontrolniki predstavnosti</translation>
 <translation id="2402411679569069051">Če želite odkleniti Chromebook, uporabite prstni odtis ali odklenite telefon.</translation>
@@ -382,6 +382,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="2791421900609674576">Prikazana bodo priporočila, da boste lahko nadaljevali tam, kjer ste končali. Priporočila lahko odstranite tako, da se dotaknete in pridržite.</translation>
 <translation id="2792498699870441125">Alt + iskanje</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, izbrano</translation>
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2814448776515246190">Delni zajem</translation>
 <translation id="2819276065543622893">Zdaj boste odjavljeni.</translation>
@@ -600,6 +601,7 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="3735740477244556633">Razvrsti po</translation>
 <translation id="3738664582935948253">V videoposnetkih zaslona lahko zdaj prikažete klike in bližnjične tipke.</translation>
 <translation id="3742055079367172538">Posnetek zaslona je narejen</translation>
+<translation id="3756485814916578707">Predvajanje vsebine zaslona</translation>
 <translation id="3765841986579723851">Urejeno danes</translation>
 <translation id="3773700760453577392">Skrbnik je prepovedal prijavo z več računi za <ph name="USER_EMAIL" />. Če želite nadaljevati, morajo biti odjavljeni vsi uporabniki.</translation>
 <translation id="3779139509281456663">Povezovanje z napravo <ph name="NAME" /></translation>
@@ -821,6 +823,7 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="4777825441726637019">Trgovina Play</translation>
 <translation id="4778095205580009397">Pomočnik Google ni na voljo v predstavitveni seji.</translation>
 <translation id="4789348252524569426">Datotek za govor ni mogoče namestiti. Napravo je treba posodobiti. Znova zaženite napravo in poskusite znova.</translation>
+<translation id="478959186716341421">Predvajanje</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini povezavo</translation>
 <translation id="4814539958450445987">Zaslon za prijavo</translation>
@@ -928,6 +931,7 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="5297704307811127955">Izklopljeno</translation>
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5302048478445481009">Jezik</translation>
+<translation id="5303783651764314393">Z dostopno točko naprave <ph name="DEVICE_NAME" /> je povezanih toliko naprav: <ph name="DEVICECOUNT" /></translation>
 <translation id="5308380583665731573">Povezovanje</translation>
 <translation id="5313326810920013265">Nastavitve za Bluetooth</translation>
 <translation id="5314219114274263156">Videoposnetek zaslona je bil ustvarjen</translation>
@@ -996,7 +1000,6 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Če želite onemogočiti glasovni odziv, pritisnite Ctrl + Alt + Z.</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5601571553788043181">Odpiranje datoteke v brskalniku Chrome</translation>
 <translation id="5618148318840095371">Preklopili smo na boljše omrežje.</translation>
 <translation id="5619862035903135339">Pravilnik skrbnika onemogoča zajem zaslonske slike.</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1117,6 +1120,7 @@ Priklopite napravo v vir napajanja.</translation>
 <translation id="6137566720514957455">Odpri pogovorno okno za odstranjevanje za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Potrdi prenos</translation>
 <translation id="6154006699632741460">Dodatna oprema ni podprta</translation>
+<translation id="6156960295318603523">Jezikovne nastavitve</translation>
 <translation id="615957422585914272">Pokaži zaslonsko tipkovnico</translation>
 <translation id="6165508094623778733">Več o tem</translation>
 <translation id="6166852626429024716">Iščite v napravi, aplikacijah, nastavitvah, spletu …</translation>
@@ -1335,6 +1339,7 @@ Nova namestitev</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Ponastavitev na prejšnjo ločljivost čez <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Osveži</translation>
+<translation id="7187711731540696127">Dostopna točka naprave <ph name="DEVICE_NAME" /> je vklopljena, ni povezanih naprav</translation>
 <translation id="7188494361780961876">Meni je bil premaknjen v zgornji levi kot zaslona.</translation>
 <translation id="7189412385142492784">Kako daleč je Venera</translation>
 <translation id="7198435252016571249">Fotoaparat je pripet v spodnji desni kot. To je v navzkrižju s sistemskim okoljem.</translation>
@@ -1392,6 +1397,7 @@ Nova namestitev</translation>
 <translation id="7497767806359279797">Izbira jezika in tipkovnice</translation>
 <translation id="7508690557411636492">Odprto v preteklem mesecu</translation>
 <translation id="7509246181739783082">Preverjanje identitete</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, ni izbrano</translation>
 <translation id="7513622367902644023">Izbran je način posnetka zaslona</translation>
 <translation id="7513922695575567867">Koledar, v tednu <ph name="DATE" />, trenutno izbran datum: <ph name="SELECTED_DATE" />.</translation>
 <translation id="7514365320538308">Prenos</translation>
@@ -1413,7 +1419,6 @@ Nova namestitev</translation>
 <translation id="7569509451529460200">Omogočena sta braillova pisava in ChromeVox</translation>
 <translation id="7573585051776738856">Aktivno okno je zasidrano na desni.</translation>
 <translation id="7579778809502851308">Zajemanje slike</translation>
-<translation id="7590883480672980941">Nastavitve vnosa</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
 <translation id="7600875258240007829">Ogled vseh obvestil</translation>
 <translation id="7607002721634913082">Začasno ustavljeno</translation>
@@ -1555,6 +1560,7 @@ Nova namestitev</translation>
 <translation id="8185090165691050712">Vklop/izklop menija za spreminjanje velikosti zaklenjenega načina</translation>
 <translation id="8192202700944119416">Obvestila so skrita.</translation>
 <translation id="8196787716797768628">S potezami hitro preklapljajte med aplikacijami in uporabljajte Chromebook v načinu tabličnega računalnika.</translation>
+<translation id="8198456017687137612">Predvajanje vsebine zavihka</translation>
 <translation id="8200772114523450471">Nadaljuj</translation>
 <translation id="8203795194971602413">Desni klik</translation>
 <translation id="8209010265547628927">Ponastavi</translation>

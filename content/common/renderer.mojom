@@ -130,6 +130,8 @@ interface Renderer {
   // pages containing plugins.
   PurgePluginListCache(bool reload_pages);
 
+  // Tells the renderer to purge its in-memory resource cache.
+  PurgeResourceCache() => ();
 
   // Tells the renderer process of a change in visibility or background state.
   SetProcessState(RenderProcessBackgroundState background_state,
@@ -189,6 +191,5 @@ interface Renderer {
                      network.mojom.AttributionSupport attribution_support);
 
  // Set whether web or OS-level Attribution Reporting is supported.
-  [EnableIf=is_android]
   SetAttributionReportingSupport(network.mojom.AttributionSupport attribution_support);
 };

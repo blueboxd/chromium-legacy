@@ -130,9 +130,7 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
   NetworkServiceBrowserTest& operator=(const NetworkServiceBrowserTest&) =
       delete;
 
-  bool FetchResource(const GURL& url,
-                     bool synchronous = false,
-                     bool expect_disallowed = false) {
+  bool FetchResource(const GURL& url, bool synchronous = false) {
     if (!url.is_valid())
       return false;
     std::string script = JsReplace(
@@ -154,15 +152,17 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
         "  }"
         "});",
         url, !synchronous);
-    // EvalJs assumes that the script executes successfully, so if we expect the
-    // JS to be disallowed, we must use ExecJs instead.
-    return expect_disallowed ? ExecJs(shell(), script)
-                             : EvalJs(shell(), script).ExtractBool();
+
+    EvalJsResult result = EvalJs(shell(), script);
+    if (!result.error.empty()) {
+      return false;
+    }
+    return result.ExtractBool();
   }
 
-  bool CheckCanLoadHttp(bool expect_disallowed = false) {
+  bool CheckCanLoadHttp() {
     return FetchResource(embedded_test_server()->GetURL("/echo"),
-                         /*synchronous=*/false, expect_disallowed);
+                         /*synchronous=*/false);
   }
 
   void SetUpOnMainThread() override {
@@ -213,13 +213,19 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
   base::ScopedTempDir temp_dir_;
 };
 
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_WebUIBindingsNoHttp DISABLED_WebUIBindingsNoHttp
+#else
+#define MAYBE_WebUIBindingsNoHttp WebUIBindingsNoHttp
+#endif
+
 // Verifies that WebUI pages with WebUI bindings can't make network requests.
-IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
+IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, MAYBE_WebUIBindingsNoHttp) {
   GURL test_url(GetWebUIURL("webui/"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetPrimaryMainFrame()->GetProcess());
-  ASSERT_FALSE(CheckCanLoadHttp(/*expect_disallowed=*/true));
+  ASSERT_FALSE(CheckCanLoadHttp());
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 

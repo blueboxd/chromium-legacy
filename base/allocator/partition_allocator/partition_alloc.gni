@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/cronet/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build_overrides/partition_alloc.gni")
 
@@ -15,7 +16,7 @@ if (is_nacl) {
   # NaCl targets don't use 64-bit pointers.
   has_64_bit_pointers = false
 } else if (current_cpu == "x64" || current_cpu == "arm64" ||
-           current_cpu == "loong64") {
+           current_cpu == "loong64" || current_cpu == "riscv64") {
   has_64_bit_pointers = true
 } else if (current_cpu == "x86" || current_cpu == "arm") {
   has_64_bit_pointers = false
@@ -105,6 +106,11 @@ declare_args() {
   # One side effect of this is that `raw_ptr_experimental<T> foo_` must
   # not use `foo_.get()`; this is incoherent when `foo_` is a `T*`.
   # Use `base::to_address()` instead.
+  #
+  # Analogously, the same applies to `raw_ref_experimental<T>` and `T&`.
+  # However, as references are a sort of exotic arcana, a nonstandard
+  # `base::GetRawReference()` is provided in `raw_ref.h`. This fans out
+  # to `raw_ref::get()` or a no-op `T&` reflection as necessary.
   enable_raw_ptr_experimental = enable_backup_ref_ptr_support
 }
 
@@ -305,7 +311,10 @@ assert(!use_asan_backup_ref_ptr || use_hookable_raw_ptr,
        "AsanBackupRefPtr requires RawPtrHookableImpl")
 
 declare_args() {
-  enable_pkeys = is_linux && target_cpu == "x64"
+  # pkeys support is explicitly disabled in all Cronet builds, as some test dependencies that
+  # use partition_allocator are compiled in AOSP against a version of glibc that does not
+  # include pkeys syscall numbers.
+  enable_pkeys = is_linux && target_cpu == "x64" && !is_cronet_build
 }
 assert(!enable_pkeys || (is_linux && target_cpu == "x64"),
        "Pkeys are only supported on x64 linux")

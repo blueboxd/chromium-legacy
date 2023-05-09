@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 
 #import <algorithm>
+#import <memory>
 
 #import "base/check_op.h"
 #import "base/ios/block_types.h"
@@ -34,7 +35,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_header.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_shareable_items_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller+private.h"
@@ -56,6 +56,18 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+class ScrollingTimeLogger {
+ public:
+  ScrollingTimeLogger() : start_(base::TimeTicks::Now()) {}
+  ~ScrollingTimeLogger() {
+    base::TimeDelta duration = base::TimeTicks::Now() - start_;
+    base::UmaHistogramTimes("IOS.TabSwitcher.TimeSpentScrolling", duration);
+  }
+
+ private:
+  base::TimeTicks start_;
+};
 
 namespace {
 
@@ -172,10 +184,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, assign) NSInteger inactiveTabsDaysThreshold;
 // Tracks if a drop action initiated in this grid is in progress.
 @property(nonatomic) BOOL localDragActionInProgress;
-
 @end
 
-@implementation GridViewController
+@implementation GridViewController {
+  // Tracks when the grid view is scrolling. Create a new instance to start
+  // timing and reset to stop and log the associated time histogram.
+  std::unique_ptr<ScrollingTimeLogger> _scrollingTimeLogger;
+}
 
 @synthesize thumbStripEnabled = _thumbStripEnabled;
 
@@ -336,10 +351,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return self.items.count == 0;
 }
 
-- (NSSet<NSString*>*)visibleGridItems {
+- (BOOL)isInactiveGridEmpty {
+  return self.inactiveTabsCount == 0;
+}
+
+// Returns the items whose associated cell is visible.
+- (NSSet<TabSwitcherItem*>*)visibleGridItems {
   NSArray<NSIndexPath*>* visibleItemsIndexPaths =
       [self.collectionView indexPathsForVisibleItems];
-  return [self itemIdentifiersFromIndexPaths:visibleItemsIndexPaths];
+  return [self itemsFromIndexPaths:visibleItemsIndexPaths];
 }
 
 - (void)setMode:(TabGridMode)mode {
@@ -483,10 +503,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                          selectionItem:selectionItem];
 }
 
-- (void)prepareForDismissal {
-  // Stop animating the collection view to prevent the insertion animation from
-  // interfering with the tab presentation animation.
-  self.currentLayout.animatesItemUpdates = NO;
+- (void)prepareForAppearance {
+  for (TabSwitcherItem* item in [self visibleGridItems]) {
+    [item prefetchSnapshot];
+  }
 }
 
 - (void)contentWillAppearAnimated:(BOOL)animated {
@@ -507,7 +527,19 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   self.lastInsertedItemID = nil;
 }
 
+- (void)contentDidAppear {
+  for (TabSwitcherItem* item in self.items) {
+    [item clearPrefetchedSnapshot];
+  }
+}
+
 - (void)contentWillDisappear {
+}
+
+- (void)prepareForDismissal {
+  // Stop animating the collection view to prevent the insertion animation from
+  // interfering with the tab presentation animation.
+  self.currentLayout.animatesItemUpdates = NO;
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -544,7 +576,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     case TabGridModeNormal: {
       // The Regular Tabs grid has a button to inform about the hidden inactive
       // tabs.
-      DCHECK(IsInactiveTabsEnabled());
+      CHECK(IsInactiveTabsAvailable() && self.inactiveTabsCount > 0);
       InactiveTabsButtonHeader* header = [collectionView
           dequeueReusableSupplementaryViewOfKind:kind
                              withReuseIdentifier:
@@ -592,7 +624,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     case TabGridModeInactive:
       // The Inactive Tabs grid has a header to inform about the feature and a
       // link to its settings.
-      DCHECK(IsInactiveTabsEnabled());
+      CHECK(IsInactiveTabsEnabled());
       InactiveTabsPreambleHeader* header = [collectionView
           dequeueReusableSupplementaryViewOfKind:kind
                              withReuseIdentifier:
@@ -697,7 +729,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     referenceSizeForHeaderInSection:(NSInteger)section {
   switch (_mode) {
     case TabGridModeNormal:
-      if (!IsInactiveTabsEnabled() || self.inactiveTabsCount == 0) {
+      if (!IsInactiveTabsAvailable() || self.inactiveTabsCount == 0) {
         return CGSizeZero;
       }
       // The Regular Tabs grid has a button to inform about the hidden inactive
@@ -717,7 +749,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       return CGSizeMake(collectionView.bounds.size.width, height);
     }
     case TabGridModeInactive:
-      if (!IsInactiveTabsEnabled() || IsInactiveTabsExplictlyDisabledByUser()) {
+      if (!IsInactiveTabsEnabled()) {
         return CGSizeZero;
       }
       // The Inactive Tabs grid has a header to inform about the feature and a
@@ -1087,6 +1119,23 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   [self.delegate gridViewControllerWillBeginDragging:self];
+  base::RecordAction(base::UserMetricsAction("MobileTabGridUserScrolled"));
+  _scrollingTimeLogger = std::make_unique<ScrollingTimeLogger>();
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
+                  willDecelerate:(BOOL)decelerate {
+  if (!decelerate) {
+    _scrollingTimeLogger = nullptr;
+  }
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
+  _scrollingTimeLogger = nullptr;
+}
+
+- (void)scrollViewDidScrollToTop:(UIScrollView*)scrollView {
+  base::RecordAction(base::UserMetricsAction("MobileTabGridUserScrolledToTop"));
 }
 
 - (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView*)scrollView {
@@ -1246,7 +1295,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   auto completion = ^(BOOL finished) {
     [self deselectAllCollectionViewItemsAnimated:NO];
-    [self selectCollectionViewItemWithID:self.selectedItemID animated:NO];
+    [self selectCollectionViewItemWithID:self.selectedItemID
+                                animated:!self.thumbStripEnabled];
 
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
 
@@ -1724,28 +1774,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }];
 
   __weak __typeof(self) weakSelf = self;
-  TabSwitcherImageFetchingCompletionBlock completion =
-      ^(TabSwitcherItem* innerItem, UIImage* snapshot) {
-        // Only update the icon if the cell is not already reused for another
-        // item.
-        if ([cell hasIdentifier:innerItem.identifier]) {
-          if (weakSelf.thumbStripEnabled) {
-            [cell fadeInSnapshot:snapshot];
-          } else {
-            cell.snapshot = snapshot;
-          }
-        }
-      };
-  if (_mode == TabGridModeInactive) {
-    [item fetchSnapshot:completion];
-  } else {
-    // TODO(crbug.com/1421321): Migrate to using
-    // `-[TabSwitcherItem fetchSnapshot:]`.
-    [self.imageDataSource snapshotForIdentifier:item.identifier
-                                     completion:^(UIImage* snapshot) {
-                                       completion(item, snapshot);
-                                     }];
-  }
+  [item fetchSnapshot:^(TabSwitcherItem* innerItem, UIImage* snapshot) {
+    // Only update the icon if the cell is not already reused for another item.
+    if ([cell hasIdentifier:innerItem.identifier]) {
+      if (weakSelf.thumbStripEnabled) {
+        [cell fadeInSnapshot:snapshot];
+      } else {
+        cell.snapshot = snapshot;
+      }
+    }
+  }];
 
   NSString* itemIdentifier = item.identifier;
   [self.priceCardDataSource
@@ -1955,20 +1993,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                               base::SysNSStringToUTF16(resultsCount));
 }
 
-// Converts `indexPaths` into corresponding item identifiers.
-- (NSSet<NSString*>*)itemIdentifiersFromIndexPaths:
+// Returns the items at the given index paths.
+- (NSSet<TabSwitcherItem*>*)itemsFromIndexPaths:
     (NSArray<NSIndexPath*>*)indexPaths {
-  NSMutableSet<NSString*>* itemIdentifiers = [NSMutableSet set];
+  NSMutableSet<TabSwitcherItem*>* items = [[NSMutableSet alloc] init];
 
   [indexPaths enumerateObjectsUsingBlock:^(NSIndexPath* indexPath,
                                            NSUInteger index, BOOL* stop) {
     NSUInteger itemIndex = base::checked_cast<NSUInteger>(indexPath.item);
     if (itemIndex < self.items.count) {
-      [itemIdentifiers addObject:self.items[itemIndex].identifier];
+      [items addObject:self.items[itemIndex]];
     }
   }];
 
-  return [itemIdentifiers copy];
+  return items;
 }
 
 // Returns the size that should be dedicated the the Inactive Tabs button

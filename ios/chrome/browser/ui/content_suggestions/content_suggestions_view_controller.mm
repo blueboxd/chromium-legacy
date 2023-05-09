@@ -52,12 +52,17 @@ namespace {
 // The bottom padding for the vertical stack view.
 const float kBottomStackViewPadding = 6.0f;
 
+// The minimum scroll velocity in order to swipe between modules in the Magic
+// Stack.
+const float kMagicStackMinimumPaginationScrollVelocity = 0.2f;
+
 }  // namespace
 
 @interface ContentSuggestionsViewController () <
     UIGestureRecognizerDelegate,
     ContentSuggestionsSelectionActions,
-    URLDropDelegate>
+    URLDropDelegate,
+    UIScrollViewDelegate>
 
 @property(nonatomic, strong) URLDragDropHandler* dragDropHandler;
 
@@ -76,6 +81,8 @@ const float kBottomStackViewPadding = 6.0f;
     ContentSuggestionsReturnToRecentTabView* returnToRecentTabTile;
 // StackView holding all of `mostVisitedViews`.
 @property(nonatomic, strong) UIStackView* mostVisitedStackView;
+// Module Container for the `mostVisitedViews` when being shown in Magic Stack.
+@property(nonatomic, strong) ActionListModule* mostVisitedModuleContainer;
 // Width Anchor of the Most Visited Tiles container.
 @property(nonatomic, strong)
     NSLayoutConstraint* mostVisitedContainerWidthAnchor;
@@ -109,7 +116,11 @@ const float kBottomStackViewPadding = 6.0f;
   self.dragDropHandler.dropDelegate = self;
   [self.view addInteraction:[[UIDropInteraction alloc]
                                 initWithDelegate:self.dragDropHandler]];
-  self.view.backgroundColor = ntp_home::NTPBackgroundColor();
+  if (IsMagicStackEnabled()) {
+    self.view.backgroundColor = [UIColor clearColor];
+  } else {
+    self.view.backgroundColor = ntp_home::NTPBackgroundColor();
+  }
   self.view.accessibilityIdentifier = kContentSuggestionsCollectionIdentifier;
 
   self.verticalStackView = [[UIStackView alloc] init];
@@ -165,18 +176,20 @@ const float kBottomStackViewPadding = 6.0f;
     self.mostVisitedStackView.distribution = UIStackViewDistributionFillEqually;
     self.mostVisitedStackView.spacing = horizontalSpacing;
     self.mostVisitedStackView.alignment = UIStackViewAlignmentTop;
-    [self addUIElement:self.mostVisitedStackView
-        withCustomBottomSpacing:kMostVisitedBottomMargin];
-    CGFloat width =
-        MostVisitedTilesContentHorizontalSpace(self.traitCollection);
-    CGFloat height =
-        MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory)
-            .height;
-    [NSLayoutConstraint activateConstraints:@[
-      [self.mostVisitedStackView.widthAnchor constraintEqualToConstant:width],
-      [self.mostVisitedStackView.heightAnchor
-          constraintGreaterThanOrEqualToConstant:height]
-    ]];
+    if (!IsMagicStackEnabled()) {
+      [self addUIElement:self.mostVisitedStackView
+          withCustomBottomSpacing:kMostVisitedBottomMargin];
+      CGFloat width =
+          MostVisitedTilesContentHorizontalSpace(self.traitCollection);
+      CGFloat height =
+          MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory)
+              .height;
+      [NSLayoutConstraint activateConstraints:@[
+        [self.mostVisitedStackView.widthAnchor constraintEqualToConstant:width],
+        [self.mostVisitedStackView.heightAnchor
+            constraintGreaterThanOrEqualToConstant:height]
+      ]];
+    }
     [self populateMostVisitedModule];
   }
   if (self.shortcutsViews) {
@@ -478,6 +491,17 @@ const float kBottomStackViewPadding = 6.0f;
   }
 }
 
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
+                     withVelocity:(CGPoint)velocity
+              targetContentOffset:(inout CGPoint*)targetContentOffset {
+  DCHECK(IsMagicStackEnabled());
+  targetContentOffset->x =
+      [self getNextPageOffsetForOffset:scrollView.contentOffset.x
+                              velocity:velocity.x];
+}
+
 #pragma mark - Private
 
 - (void)addUIElement:(UIView*)view withCustomBottomSpacing:(CGFloat)spacing {
@@ -499,24 +523,41 @@ const float kBottomStackViewPadding = 6.0f;
     self.mostVisitedStackView.distribution = UIStackViewDistributionFillEqually;
     self.mostVisitedStackView.spacing =
         ContentSuggestionsTilesHorizontalSpacing(self.traitCollection);
-    // Find correct insertion position in the stack.
-    int insertionIndex = 0;
-    if (self.returnToRecentTabTile) {
-      insertionIndex++;
+
+    if (IsMagicStackEnabled()) {
+      self.mostVisitedModuleContainer = [[ActionListModule alloc]
+          initWithContentView:self.mostVisitedStackView
+                         type:ContentSuggestionsModuleType::kMostVisited];
+      // Find correct insertion position in the stack.
+      int insertionIndex = 0;
+      if (self.returnToRecentTabTile) {
+        insertionIndex++;
+      }
+      [self.verticalStackView
+          insertArrangedSubview:self.mostVisitedModuleContainer
+                        atIndex:insertionIndex];
+      [self.verticalStackView setCustomSpacing:kMostVisitedBottomMargin
+                                     afterView:self.mostVisitedModuleContainer];
+    } else {
+      // Find correct insertion position in the stack.
+      int insertionIndex = 0;
+      if (self.returnToRecentTabTile) {
+        insertionIndex++;
+      }
+      [self.verticalStackView insertArrangedSubview:self.mostVisitedStackView
+                                            atIndex:insertionIndex];
+      [self.verticalStackView setCustomSpacing:kMostVisitedBottomMargin
+                                     afterView:self.mostVisitedStackView];
+      CGFloat width =
+          MostVisitedTilesContentHorizontalSpace(self.traitCollection);
+      CGSize size = MostVisitedCellSize(
+          self.traitCollection.preferredContentSizeCategory);
+      [NSLayoutConstraint activateConstraints:@[
+        [self.mostVisitedStackView.widthAnchor constraintEqualToConstant:width],
+        [self.mostVisitedStackView.heightAnchor
+            constraintEqualToConstant:size.height]
+      ]];
     }
-    [self.verticalStackView insertArrangedSubview:self.mostVisitedStackView
-                                          atIndex:insertionIndex];
-    [self.verticalStackView setCustomSpacing:kMostVisitedBottomMargin
-                                   afterView:self.mostVisitedStackView];
-    CGFloat width =
-        MostVisitedTilesContentHorizontalSpace(self.traitCollection);
-    CGSize size =
-        MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
-    [NSLayoutConstraint activateConstraints:@[
-      [self.mostVisitedStackView.widthAnchor constraintEqualToConstant:width],
-      [self.mostVisitedStackView.heightAnchor
-          constraintEqualToConstant:size.height]
-    ]];
   }
   for (ContentSuggestionsMostVisitedTileView* view in self.mostVisitedViews) {
     view.menuProvider = self.menuProvider;
@@ -560,6 +601,7 @@ const float kBottomStackViewPadding = 6.0f;
   _magicStackScrollView = [[UIScrollView alloc] init];
   [_magicStackScrollView setShowsHorizontalScrollIndicator:NO];
   _magicStackScrollView.clipsToBounds = NO;
+  _magicStackScrollView.delegate = self;
   [self addUIElement:_magicStackScrollView
       withCustomBottomSpacing:kMostVisitedBottomMargin];
 
@@ -598,6 +640,30 @@ const float kBottomStackViewPadding = 6.0f;
         constraintEqualToAnchor:_magicStackScrollView.heightAnchor],
     _magicStackScrollViewWidthAnchor
   ]];
+}
+
+// Determines the final page offset given the scroll `offset` and the `velocity`
+// scroll. If the drag is slow enough, then the closest page is the final state.
+// If the drag is in the negative direction, then go to the page previous to the
+// closest current page. If the drag is in the positive direction, then go to
+// the page after the closest current page.
+- (CGFloat)getNextPageOffsetForOffset:(CGFloat)offset
+                             velocity:(CGFloat)velocity {
+  CGFloat moduleWidth = [MagicStackModuleContainer
+      moduleWidthForHorizontalTraitCollection:self.traitCollection];
+  NSUInteger moduleCount = [_magicStackModuleOrder count];
+
+  // Find closest page to the current scroll offset.
+  CGFloat closestPage = roundf(offset / moduleWidth);
+  closestPage = fminf(closestPage, moduleCount);
+
+  if (fabs(velocity) < kMagicStackMinimumPaginationScrollVelocity) {
+    return closestPage * moduleWidth;
+  }
+  if (velocity < 0) {
+    return (closestPage - 1) * moduleWidth;
+  }
+  return (closestPage + 1) * moduleWidth;
 }
 
 @end

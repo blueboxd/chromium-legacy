@@ -10,7 +10,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -170,7 +169,7 @@ public class SelectFileDialogTest {
                })
                 .when(windowAndroid)
                 .requestPermissions(aryEq(new String[] {Manifest.permission.CAMERA}),
-                        (PermissionCallback) anyObject());
+                        (PermissionCallback) any());
 
         // Test LAUNCH_CAMERA when permission is denied. Note: this is different from the other
         // events because the MediaPicker dialog stays open and the pipeline should not shut down
@@ -192,7 +191,7 @@ public class SelectFileDialogTest {
                })
                 .when(windowAndroid)
                 .requestPermissions(aryEq(new String[] {Manifest.permission.CAMERA}),
-                        (PermissionCallback) anyObject());
+                        (PermissionCallback) any());
 
         // Since the permission is now allowed, the LAUNCH_CAMERA event should keep the pipeline
         // open.
@@ -219,10 +218,20 @@ public class SelectFileDialogTest {
 
         // Force WindowAndroid#showIntent to succeed and make sure the pipeline remains open when
         // the test reruns.
-        Mockito.doAnswer((invocation) -> { return true; })
+        IntentArgumentMatcher chooserIntentArgumentMatcher =
+                new IntentArgumentMatcher(new Intent(Intent.ACTION_CHOOSER));
+        Mockito.doAnswer((invocation) -> {
+                   Intent chooserIntent = (Intent) invocation.getArguments()[0];
+                   Intent getContentIntent = (Intent) chooserIntent.getExtra(Intent.EXTRA_INTENT);
+                   assertEquals(null, getContentIntent.getExtra(Intent.EXTRA_ALLOW_MULTIPLE));
+                   assertEquals("*/*", getContentIntent.getType());
+                   assertEquals(null, getContentIntent.getExtra(Intent.EXTRA_MIME_TYPES));
+                   assertEquals(null, getContentIntent.getExtra(Intent.EXTRA_INITIAL_INTENTS));
+                   return true;
+               })
                 .when(windowAndroid)
-                .showIntent(
-                        (Intent) anyObject(), (WindowAndroid.IntentCallback) anyObject(), anyInt());
+                .showIntent(ArgumentMatchers.argThat(chooserIntentArgumentMatcher),
+                        (WindowAndroid.IntentCallback) any(), anyInt());
 
         // Rerun the test. Because showIntent now reports success, the upload should still be in
         // progress.
@@ -256,7 +265,7 @@ public class SelectFileDialogTest {
                })
                 .when(windowAndroid)
                 .requestPermissions(aryEq(new String[] {Manifest.permission.CAMERA}),
-                        (PermissionCallback) anyObject());
+                        (PermissionCallback) any());
 
         // Ensure permission request in selectFile can handle interrupted permission flow.
         int callCount = mOnActionCallback.getCallCount();

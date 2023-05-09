@@ -115,6 +115,7 @@
 <translation id="2929907241665500097">Pārlūkprogramma Chrome netika atjaunināta. Radās problēma. <ph name="BEGIN_LINK" />Novērsiet Chrome atjaunināšanas problēmas.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> — pierakstīšanās tīklā — Chrome</translation>
 <translation id="3019382870990049182">Palaist atkārtoti, lai atjauninātu &amp;Chrome OS Flex</translation>
+<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Google Chrome paplašinājumi piekļuva HID ierīcēm}=1{Google Chrome paplašinājumi piekļūst HID ierīcei}zero{Google Chrome paplašinājumi piekļūst # HID ierīcēm}one{Google Chrome paplašinājumi piekļūst # HID ierīcei}other{Google Chrome paplašinājumi piekļūst # HID ierīcēm}}</translation>
 <translation id="303514781271618814">Chrome pēta jaunas funkcijas, kas ļauj vietnēm nodrošināt tādas pašas pārlūkošanas iespējas, izmantojot mazāk datu.</translation>
 <translation id="3037838751736561277">Google Chrome darbojas fona režīmā.</translation>
 <translation id="3038232873781883849">Gaida, lai instalētu...</translation>
@@ -208,6 +209,7 @@
 <translation id="4754614261631455953">Google Chrome Canary (ienākošā mDNS datplūsma)</translation>
 <translation id="4771048833395599659">Šis fails var būt bīstams, tāpēc Chrome to bloķēja.</translation>
 <translation id="479167709087336770">Šeit tiek izmantota tāds pats pareizrakstības pārbaudītājs, kāds tiek izmantots Google meklēšanā. Pārlūkprogrammā ievadītais teksts tiek nosūtīts Google serveriem. Jebkurā brīdī varat mainīt šo darbību iestatījumos.</translation>
+<translation id="4828579605166583682">Pārlūkā Google Chrome tiek mēģināts aizstāt esošās paroles. Lai to atļautu, ierakstiet savu Windows paroli.</translation>
 <translation id="4842397268809523050">Chrome OS Flex nevarēja sinhronizēt jūsu datus, jo jūsu domēnam nav pieejama sinhronizācija.</translation>
 <translation id="4873783916118289636">Pārskatiet svarīgākās konfidencialitātes un drošības vadīklas pārlūkā Chrome.</translation>
 <translation id="4891791193823137474">Ļaut Google Chrome darboties fonā</translation>
@@ -219,6 +221,7 @@
 <translation id="4970880042055371251">Chrome OS versija</translation>
 <translation id="4970947549776831107">Pārlūkā Chrome šis fails tika bloķēts, jo šī tipa faili ir bīstami.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
+<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Google Chrome paplašinājums piekļuva HID ierīcēm}=1{Google Chrome paplašinājums piekļūst vienai HID ierīcei}zero{Google Chrome paplašinājums piekļūst # HID ierīcēm}one{Google Chrome paplašinājums piekļūst # HID ierīcei}other{Google Chrome paplašinājums piekļūst # HID ierīcēm}}</translation>
 <translation id="5064155331105009416">{COUNT,plural, =1{Jūsu administrators automātiski aizver pārlūku Chrome, ja tas nav izmantots vienu minūti. Pārlūkošanas dati tiek izdzēsti. Tie var ietvert vēsturi, automātiskās aizpildes datus un lejupielādes.}zero{Jūsu administrators automātiski aizver pārlūku Chrome, ja tas nav izmantots # minūtes. Pārlūkošanas dati tiek izdzēsti. Tie var ietvert vēsturi, automātiskās aizpildes datus un lejupielādes.}one{Jūsu administrators automātiski aizver pārlūku Chrome, ja tas nav izmantots # minūti. Pārlūkošanas dati tiek izdzēsti. Tie var ietvert vēsturi, automātiskās aizpildes datus un lejupielādes.}other{Jūsu administrators automātiski aizver pārlūku Chrome, ja tas nav izmantots # minūtes. Pārlūkošanas dati tiek izdzēsti. Tie var ietvert vēsturi, automātiskās aizpildes datus un lejupielādes.}}</translation>
 <translation id="5098668839038261629">Iestatījumam esot ieslēgtam, jūs tiksiet izrakstīts arī no pārlūka Chrome.</translation>
 <translation id="5132929315877954718">Atklājiet lieliskas lietotnes, spēles, paplašinājumus un motīvus, ko varat izmantot pārlūkā Google Chrome.</translation>

@@ -1978,6 +1978,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Cellular.EntitlementCheck"
+    enum="NetworkCellularEntitlementCheck" expires_after="2024-05-01">
+  <owner>andrewlassalle@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS cellular network metric that tracks the entitlement check results
+    used for hotspot. This metric is triggered every time the user tries to
+    enable hotspot using cellular as the upstream technology.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Cellular.ExpiredLeaseLengthSeconds2"
     units="seconds" expires_after="2023-12-30">
   <owner>ejcaruso@chromium.org</owner>
@@ -3711,7 +3722,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.Connection.FailureReason"
-    enum="ConnectionFailureReason" expires_after="2023-08-20">
+    enum="ConnectionFailureReason" expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3722,7 +3733,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.Connection.Result" enum="BooleanSuccess"
-    expires_after="2023-10-22">
+    expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3733,7 +3744,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.Hidden.Fixed" units="networks"
-    expires_after="2023-08-20">
+    expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>tnagel@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -3746,7 +3757,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.ManualConnection.FailureReason"
-    enum="ConnectionFailureReason" expires_after="2023-06-18">
+    enum="ConnectionFailureReason" expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3757,7 +3768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.ManualConnection.Result"
-    enum="BooleanSuccess" expires_after="2023-06-18">
+    enum="BooleanSuccess" expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3768,7 +3779,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.TotalCount" units="units"
-    expires_after="2023-10-22">
+    expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3779,7 +3790,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.UpdateOperation.FailureReason"
-    enum="ConnectionFailureReason" expires_after="2023-06-18">
+    enum="ConnectionFailureReason" expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3792,7 +3803,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Network.Wifi.Synced.UpdateOperation.GenerateLocalNetworkConfig.Result"
-    enum="BooleanSuccess" expires_after="2023-06-18">
+    enum="BooleanSuccess" expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3803,7 +3814,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.UpdateOperation.Result"
-    enum="BooleanSuccess" expires_after="2023-06-18">
+    enum="BooleanSuccess" expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3815,7 +3826,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.ZeroNetworksEligibleForSync.Reason"
-    enum="NetworkEligibilityStatus" expires_after="2023-06-18">
+    enum="NetworkEligibilityStatus" expires_after="2024-06-01">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>

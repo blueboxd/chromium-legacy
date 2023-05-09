@@ -34,7 +34,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
+#include "chromeos/ash/components/login/auth/auth_events_recorder.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "components/account_id/account_id.h"
@@ -416,7 +416,7 @@ class ASH_EXPORT LockContentsView
   // Record the number of password attempts for the given account id to UMA.
   // Afterwards reset the number of attempts.
   void RecordAndResetPasswordAttempts(
-      AuthMetricsRecorder::AuthenticationOutcome outcome,
+      AuthEventsRecorder::AuthenticationOutcome outcome,
       AccountId account_id);
 
   const LockScreen::ScreenType screen_type_;
@@ -482,7 +482,7 @@ class ASH_EXPORT LockContentsView
   raw_ptr<LoginErrorBubble, ExperimentalAsh> warning_banner_bubble_;
 
   // View that is shown on login timeout with camera usage.
-  base::raw_ptr<LoginCameraTimeoutView, DanglingUntriaged>
+  raw_ptr<LoginCameraTimeoutView, DanglingUntriaged>
       login_camera_timeout_view_ = nullptr;
 
   // Bottom status indicator displaying entreprise domain or ADB enabled alert

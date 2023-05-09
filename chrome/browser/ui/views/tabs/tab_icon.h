@@ -8,6 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
+#include "components/performance_manager/public/features.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia.h"
@@ -68,6 +69,8 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   // strip in order to keep the throbbers in sync.
   void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
+  gfx::LinearAnimation* GetTabDiscardAnimationForTesting();
+
  private:
   class CrashAnimation;
   friend CrashAnimation;
@@ -86,6 +89,11 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
                                       const gfx::ImageSkia& icon,
                                       const gfx::Rect& bounds);
 
+  // Paints a dimmed and shrunken favicon surrounded by the discard ring
+  void PaintDiscardRingAndIcon(gfx::Canvas* canvas,
+                               const gfx::ImageSkia& icon,
+                               const gfx::Rect& bounds);
+
   // Paint either the indeterimate throbber or progress indicator according to
   // current tab state.
   void PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds);
@@ -101,6 +109,9 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
 
   // Sets the icon.
   void SetIcon(const gfx::ImageSkia& icon, bool should_themify_favicon);
+
+  // Start or stops the favicon fade animation for discard tabs
+  void SetDiscarded(bool show_discard_status);
 
   // For certain types of tabs the loading animation is not desired so the
   // caller can set inhibit_loading_animation to true. When false, the loading
@@ -153,6 +164,19 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   // Animation used when the favicon fades in after being shown inside the
   // loading-state spinner.
   gfx::LinearAnimation favicon_fade_in_animation_;
+
+  // Animation used when a tab is discarded so the favicon will partially
+  // fade out
+  gfx::LinearAnimation tab_discard_animation_;
+
+  bool was_discard_indicator_shown_ = false;
+
+  performance_manager::features::DiscardTabTreatmentOptions
+      discard_tab_treatment_option_ =
+          performance_manager::features::DiscardTabTreatmentOptions::kNone;
+
+  // Favicon opacity after the discard animation completes
+  double discard_tab_icon_final_opacity_ = 1.0;
 
   // Crash animation (in place of favicon). Lazily created since most of the
   // time it will be unneeded.

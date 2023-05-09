@@ -14,9 +14,9 @@
 
 #include "base/time/time.h"
 #include "base/uuid.h"
+#include "components/bookmarks/common/storage_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-class AuthenticationService;
 class ChromeBrowserState;
 class GURL;
 @class MDCSnackbarMessage;
@@ -27,10 +27,9 @@ class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
 
-enum class BookmarkModelType {
-  kProfile,
-  kAccount,
-};
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 namespace bookmark_utils_ios {
 
@@ -97,7 +96,7 @@ NSString* TitleForBookmarkNode(const bookmarks::BookmarkNode* node);
 // This function is linear in time in the depth of the bookmark_node.
 // TODO(crbug.com/1417992): once the bookmark nodes has access to its model,
 // rewrite the function to be constant time.
-BookmarkModelType GetBookmarkModelType(
+bookmarks::StorageType GetBookmarkModelType(
     const bookmarks::BookmarkNode* bookmark_node,
     bookmarks::BookmarkModel* profile_model,
     bookmarks::BookmarkModel* account_model);
@@ -117,15 +116,22 @@ bookmarks::BookmarkModel* GetBookmarkModelForNode(
     bookmarks::BookmarkModel* profile_model,
     bookmarks::BookmarkModel* account_model);
 
-// Whether the Cloud Slash icon should be displayed for `bookmark_node`.
-// This method should be called only for nodes part of the profile model.
+// Checks if `account_model` is available and returns true if all the available
+// bookmark models are loaded. Note that `profile_model` is always available.
+// `profile_model` must not be `nullptr`. `account_model` may be `nullptr` if
+// it is not available. Otherwise it must not be `nullptr`.
+bool AreAllAvailableBookmarkModelsLoaded(
+    bookmarks::BookmarkModel* profile_model,
+    bookmarks::BookmarkModel* account_model);
+
+// Whether the Cloud Slash icon should be displayed for the profile model.
 // For nodes in account model, the icon should never been shown.
 bool ShouldDisplayCloudSlashIconForProfileModel(
     SyncSetupService* sync_setup_service);
 
-// Returns true if the account bookmark model is available.
-bool IsAccountBookmarkModelAvailable(
-    AuthenticationService* authenticationService);
+// Returns true if the user is signed in and they opted in for the account
+// bookmark storage.
+bool IsAccountBookmarkStorageOptedIn(syncer::SyncService* sync_service);
 
 // Creates the bookmark if `node` is NULL. Otherwise updates `node`.
 // `folder` is the intended parent of `node`.
@@ -177,17 +183,19 @@ void DeleteBookmarks(const std::set<const bookmarks::BookmarkNode*>& bookmarks,
 // undo action. Returns nil if the operation wasn't successful or there's
 // nothing to undo.
 MDCSnackbarMessage* MoveBookmarksWithUndoToast(
-    std::set<const bookmarks::BookmarkNode*> bookmarks,
-    bookmarks::BookmarkModel* model,
-    const bookmarks::BookmarkNode* folder,
+    std::set<const bookmarks::BookmarkNode*> bookmarks_to_move,
+    bookmarks::BookmarkModel* local_model,
+    bookmarks::BookmarkModel* account_model,
+    const bookmarks::BookmarkNode* destination_folder,
     ChromeBrowserState* browser_state);
 
 // Move all `bookmarks` to the given `folder`.
 // Returns whether this method actually moved bookmarks (for example, only
 // moving a folder to its parent will return `false`).
-bool MoveBookmarks(std::set<const bookmarks::BookmarkNode*> bookmarks,
-                   bookmarks::BookmarkModel* model,
-                   const bookmarks::BookmarkNode* folder);
+bool MoveBookmarks(std::set<const bookmarks::BookmarkNode*> bookmarks_to_move,
+                   bookmarks::BookmarkModel* local_model,
+                   bookmarks::BookmarkModel* account_model,
+                   const bookmarks::BookmarkNode* destination_folder);
 
 // Category name for all bookmarks related snackbars.
 extern NSString* const kBookmarksSnackbarCategory;

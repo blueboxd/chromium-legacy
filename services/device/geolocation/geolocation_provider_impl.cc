@@ -41,8 +41,20 @@ GeolocationManager* g_geolocation_manager = nullptr;
 }  // namespace
 
 // static
+GeolocationProvider* GeolocationProvider::instance_for_testing_ = nullptr;
+
+// static
 GeolocationProvider* GeolocationProvider::GetInstance() {
+  if (instance_for_testing_) {
+    return instance_for_testing_;
+  }
   return GeolocationProviderImpl::GetInstance();
+}
+
+// static
+void GeolocationProvider::SetInstanceForTesting(
+    GeolocationProvider* instance_for_testing) {
+  instance_for_testing_ = instance_for_testing;
 }
 
 // static
@@ -172,7 +184,7 @@ void GeolocationProviderImpl::OnClientsChanged() {
   } else {
     if (!IsRunning()) {
       base::Thread::Options options;
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
       options.message_pump_type = base::MessagePumpType::NS_RUNLOOP;
 #endif
       StartWithOptions(std::move(options));

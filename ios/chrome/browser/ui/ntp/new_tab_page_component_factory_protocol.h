@@ -11,10 +11,16 @@ class WebState;
 }
 
 @class ContentSuggestionsCoordinator;
+@class DiscoverFeedViewControllerConfiguration;
+@class FeedHeaderViewController;
 @class FeedMetricsRecorder;
+@class FeedWrapperViewController;
+@protocol FeedWrapperViewControllerDelegate;
+typedef NS_ENUM(NSInteger, FollowingFeedSortType);
 @class NewTabPageHeaderViewController;
 @class NewTabPageMediator;
 @class NewTabPageViewController;
+@class UIViewController;
 @protocol UserAccountImageUpdateDelegate;
 
 @protocol NewTabPageComponentFactoryProtocol
@@ -37,6 +43,30 @@ class WebState;
 
 // View controller for the regular NTP.
 - (NewTabPageViewController*)NTPViewController;
+
+// Discover feed view controller.
+- (UIViewController*)discoverFeedForBrowser:(Browser*)browser
+                viewControllerConfiguration:
+                    (DiscoverFeedViewControllerConfiguration*)
+                        viewControllerConfiguration;
+
+// Following feed view controller.
+- (UIViewController*)followingFeedForBrowser:(Browser*)browser
+                 viewControllerConfiguration:
+                     (DiscoverFeedViewControllerConfiguration*)
+                         viewControllerConfiguration
+                                    sortType:(FollowingFeedSortType)sortType;
+
+// Wrapper for the feed view controller.
+- (FeedWrapperViewController*)
+    feedWrapperViewControllerWithDelegate:
+        (id<FeedWrapperViewControllerDelegate>)delegate
+                       feedViewController:(UIViewController*)feedViewController;
+
+// The header of the feed with the Following feed segment dot visibility as
+// `followingDotVisible`.
+- (FeedHeaderViewController*)feedHeaderViewControllerWithFollowingDotVisible:
+    (BOOL)followingDotVisible;
 
 @end
 

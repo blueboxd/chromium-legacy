@@ -50,11 +50,7 @@ static inline TextRun ConstructTextRunInternal(const CharacterType* characters,
       directional_override |= IsOverride(style.GetUnicodeBidi());
   }
 
-  TextRun::ExpansionBehavior expansion =
-      TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion;
-  TextRun run(characters, length, 0, 0, expansion, text_direction,
-              directional_override);
-  return run;
+  return TextRun(characters, length, text_direction, directional_override);
 }
 
 TextRun ConstructTextRun(const String& string,

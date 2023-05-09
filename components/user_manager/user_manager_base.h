@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -86,6 +87,9 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   const UserList& GetLoggedInUsers() const override;
   const UserList& GetLRULoggedInUsers() const override;
   const AccountId& GetOwnerAccountId() const override;
+  void GetOwnerAccountIdAsync(
+      base::OnceCallback<void(const AccountId&)> callback) const override;
+
   const AccountId& GetLastSessionActiveAccountId() const override;
   void UserLoggedIn(const AccountId& account_id,
                     const std::string& user_id_hash,
@@ -215,9 +219,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void NotifyUserAddedToSession(const User* added_user,
                                         bool user_switch_pending);
 
-  // Performs any additional actions after user list is loaded.
-  virtual void PerformPostUserListLoadingActions() = 0;
-
   // Performs any additional actions after UserLoggedIn() execution has been
   // completed.
   // |browser_restart| is true when reloading Chrome after crash to distinguish
@@ -289,10 +290,13 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   virtual void SetEphemeralModeConfig(
       EphemeralModeConfig ephemeral_mode_config);
 
+  virtual void ResetOwnerId();
   virtual void SetOwnerId(const AccountId& owner_account_id);
 
   virtual const AccountId& GetPendingUserSwitchID() const;
   virtual void SetPendingUserSwitchId(const AccountId& account_id);
+
+  base::ObserverList<UserManager::Observer>::Unchecked observer_list_;
 
   // The logged-in user that is currently active in current session.
   // NULL until a user has logged in, then points to one
@@ -393,9 +397,10 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Cached name of device owner. Defaults to empty if the value has not
   // been read from trusted device policy yet.
-  AccountId owner_account_id_ = EmptyAccountId();
+  absl::optional<AccountId> owner_account_id_ = absl::nullopt;
 
-  base::ObserverList<UserManager::Observer>::Unchecked observer_list_;
+  mutable base::OnceCallbackList<void(const AccountId&)>
+      pending_owner_callbacks_;
 
   // TODO(nkostylev): Merge with session state refactoring CL.
   base::ObserverList<UserManager::UserSessionStateObserver>::Unchecked
@@ -417,7 +422,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // TaskRunner for UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  const base::raw_ptr<PrefService> local_state_;
+  const raw_ptr<PrefService> local_state_;
 
   base::WeakPtrFactory<UserManagerBase> weak_factory_{this};
 };

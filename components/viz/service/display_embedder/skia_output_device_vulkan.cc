@@ -22,6 +22,7 @@
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
 #include "ui/gfx/presentation_feedback.h"
 
@@ -54,6 +55,7 @@ SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(context_provider->GetGrContext(),
+                       /*graphite_context=*/nullptr,
                        memory_tracker,
                        did_swap_buffer_complete_callback),
       context_provider_(context_provider),
@@ -213,8 +215,8 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint(
       return nullptr;
     }
   } else {
-    auto backend = sk_surface->getBackendRenderTarget(
-        SkSurface::kFlushRead_BackendHandleAccess);
+    auto backend = SkSurfaces::GetBackendRenderTarget(
+        sk_surface.get(), SkSurfaces::BackendHandleAccess::kFlushRead);
     backend.setVkImageLayout(scoped_write.image_layout());
   }
 
@@ -242,8 +244,8 @@ void SkiaOutputDeviceVulkan::EndPaint() {
 
   auto& sk_surface =
       sk_surface_size_pairs_[scoped_write_->image_index()].sk_surface;
-  auto backend = sk_surface->getBackendRenderTarget(
-      SkSurface::kFlushRead_BackendHandleAccess);
+  auto backend = SkSurfaces::GetBackendRenderTarget(
+        sk_surface.get(), SkSurfaces::BackendHandleAccess::kFlushRead);
   GrVkImageInfo vk_image_info;
   if (UNLIKELY(!backend.getVkImageInfo(&vk_image_info)))
     NOTREACHED() << "Failed to get the image info.";

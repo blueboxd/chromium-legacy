@@ -49,6 +49,10 @@ class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
   void RecordUiSurfaceShown(side_panel::mojom::UiSurface ui_surface,
                             uint32_t child_element_count) override;
   void RecordUiSurfaceClicked(side_panel::mojom::UiSurface ui_surface) override;
+  void OnCqCandidatesAvailable(
+      const std::vector<std::string>& text_directives) override;
+  void OnPhFeedback(side_panel::mojom::PhFeedback ph_feedback) override;
+  void OnCqJumptagClicked(const std::string& text_directive) override;
 
   // content::WebContentsObserver:
   void PrimaryPageChanged(content::Page& page) override;
@@ -77,6 +81,11 @@ class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
   Browser* GetBrowser();
   // Get the profile associated with the WebUI.
   Profile* GetProfile();
+
+  // A callback function called when the text finder manager finishes finding
+  // all input text directives.
+  void DidFinishFindingCqTexts(
+      const std::vector<std::pair<std::string, bool>>& text_found_vec);
 
   mojo::Receiver<side_panel::mojom::CompanionPageHandler> receiver_;
   mojo::Remote<side_panel::mojom::CompanionPage> page_;

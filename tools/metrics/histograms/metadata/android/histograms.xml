@@ -991,34 +991,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="Android.DownloadManager.InitialCount.Viewed{AndroidDownloadTypes}"
-    units="units" expires_after="2020-10-04">
-  <owner>dtrainor@chromium.org</owner>
-  <owner>clank-downloads@google.com</owner>
-  <summary>
-    The number of non-incognito download items displayed that are already viewed
-    by the user at any time, recorded when the download UI is initialized.
-    {AndroidDownloadTypes}
-  </summary>
-  <token key="AndroidDownloadTypes" variants="AndroidDownloadTypes">
-    <variant name=""/>
-  </token>
-</histogram>
-
-<histogram name="Android.DownloadManager.InitialCount{AndroidDownloadTypes}"
-    units="units" expires_after="2021-01-24">
-  <owner>dtrainor@chromium.org</owner>
-  <owner>clank-downloads@google.com</owner>
-  <summary>
-    The number of non-incognito download items displayed when the download UI is
-    initialized. {AndroidDownloadTypes}
-  </summary>
-  <token key="AndroidDownloadTypes" variants="AndroidDownloadTypes">
-    <variant name=""/>
-  </token>
-</histogram>
-
 <histogram name="Android.DownloadManager.Item.OpenFailed"
     enum="AndroidDownloadFilterType" expires_after="M81">
   <owner>dtrainor@chromium.org</owner>
@@ -1031,13 +1003,6 @@ chromium-metrics-reviews@google.com.
   <owner>dtrainor@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>Recorded when a download is opened.</summary>
-</histogram>
-
-<histogram name="Android.DownloadManager.List.View.Action"
-    enum="Android.DownloadManager.List.View.Actions" expires_after="2021-01-24">
-  <owner>dtrainor@chromium.org</owner>
-  <owner>clank-downloads@google.com</owner>
-  <summary>The count of Download Home list entry actions taken.</summary>
 </histogram>
 
 <histogram name="Android.DownloadManager.Menu.Action"
@@ -1741,16 +1706,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Intent.IntentUriWithSelector" enum="Boolean"
-    expires_after="2023-06-18">
-  <owner>mthiesse@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
-  <summary>
-    When a site attempts to navigate an intent: or android-app: URI, records
-    whether or not the URI contained an intent selector.
-  </summary>
-</histogram>
-
 <histogram name="Android.Intent.MainFrameIntentLaunch"
     enum="MainFrameIntentLaunch" expires_after="2023-10-15">
   <owner>mthiesse@chromium.org</owner>
@@ -2214,19 +2169,6 @@ chromium-metrics-reviews@google.com.
     impression counting happens at construction time of the NTP (=whenever a new
     tab is opened).
   </summary>
-</histogram>
-
-<histogram name="Android.OfflineItems.StateAtCancel{OfflineItemsSource}"
-    enum="OfflineItemsStateAtCancel" expires_after="M81">
-  <owner>chili@chromium.org</owner>
-  <summary>
-    State of a download or offline page request at user-initiated cancel.
-    {OfflineItemsSource}
-  </summary>
-  <token key="OfflineItemsSource">
-    <variant name=".Downloads" summary="Downloads"/>
-    <variant name=".OfflinePages" summary="Offline pages"/>
-  </token>
 </histogram>
 
 <histogram name="Android.Omnibox.ActionInSuggest.IntentResult"
@@ -2761,6 +2703,17 @@ chromium-metrics-reviews@google.com.
     created. A value of false means the first tab might be using a different
     homepage than the one customized by the partner. Recorded during Chrome
     start up when the very first tab is created.
+  </summary>
+</histogram>
+
+<histogram name="Android.PartnerHomepageCustomization.Delegate"
+    enum="PartnerHomepageCustomizationDelegate" expires_after="M120">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>wenyufu@chromium.org</owner>
+  <summary>
+    Records which delegate will be used to provide the home page URL that is
+    needed for a custom provider's home page. Recorded at startup on Android.
   </summary>
 </histogram>
 
@@ -4265,6 +4218,17 @@ chromium-metrics-reviews@google.com.
     &quot;data:&quot;). also records if this value is &quot;empty&quot;, which
     means either null or &quot;about:blank&quot;. This intentionally excludes
     loadDataWithBaseURL().
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Metrics.BadRequest"
+    enum="WebViewMetricBadRequest" expires_after="2023-07-01">
+  <owner>bewise@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records the exact reason for a WebView metric being recorded as a
+    &quot;bad&quot; request. A bad request is any metric attempt that results in
+    an http 400 being reported by the Android platform.
   </summary>
 </histogram>
 

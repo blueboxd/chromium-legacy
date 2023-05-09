@@ -58,7 +58,6 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/api/runtime.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -81,12 +80,8 @@ class MessageSender : public ExtensionHostRegistry::Observer {
  private:
   static base::Value::List BuildEventArguments(const bool last_message,
                                                const std::string& data) {
-    base::Value::Dict event;
-    event.Set("lastMessage", last_message);
-    event.Set("data", data);
-    base::Value::List arguments;
-    arguments.Append(std::move(event));
-    return arguments;
+    return base::Value::List().Append(
+        base::Value::Dict().Set("lastMessage", last_message).Set("data", data));
   }
 
   static std::unique_ptr<Event> BuildEvent(
@@ -306,11 +301,9 @@ class ExternallyConnectableMessagingTest : public MessagingApiTest {
   };
 
   bool AppendIframe(const GURL& src) {
-    bool result;
-    CHECK(content::ExecuteScriptAndExtractBool(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        "actions.appendIframe('" + src.spec() + "');", &result));
-    return result;
+    return content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           "actions.appendIframe('" + src.spec() + "');")
+        .ExtractBool();
   }
 
   Result CanConnectAndSendMessagesToMainFrame(const Extension* extension,
@@ -391,11 +384,10 @@ class ExternallyConnectableMessagingTest : public MessagingApiTest {
     }
     as_js_array += "]";
 
-    bool any_defined;
-    CHECK(content::ExecuteScriptAndExtractBool(
-        frame,
-        "assertions.areAnyRuntimePropertiesDefined(" + as_js_array + ")",
-        &any_defined));
+    bool any_defined =
+        content::EvalJs(frame, "assertions.areAnyRuntimePropertiesDefined(" +
+                                   as_js_array + ")")
+            .ExtractBool();
     return any_defined ?
         testing::AssertionSuccess() : testing::AssertionFailure();
   }
@@ -607,11 +599,10 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, NotInstalled) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder()
           .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-          .SetManifest(DictionaryBuilder()
+          .SetManifest(base::Value::Dict()
                            .Set("name", "Fake extension")
                            .Set("version", "1")
-                           .Set("manifest_version", 2)
-                           .Build())
+                           .Set("manifest_version", 2))
           .Build();
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), chromium_org_url()));
@@ -1041,11 +1032,9 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, IllegalArguments) {
   // Regression test for crbug.com/472700.
   LoadChromiumConnectableExtension();
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), chromium_org_url()));
-  bool result;
-  CHECK(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "assertions.tryIllegalArguments()", &result));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(true, content::EvalJs(
+                      browser()->tab_strip_model()->GetActiveWebContents(),
+                      "assertions.tryIllegalArguments()"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
@@ -1478,11 +1467,10 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   scoped_refptr<const Extension> invalid =
       ExtensionBuilder()
           .SetID(crx_file::id_util::GenerateId("invalid"))
-          .SetManifest(DictionaryBuilder()
+          .SetManifest(base::Value::Dict()
                            .Set("name", "Fake extension")
                            .Set("version", "1")
-                           .Set("manifest_version", 2)
-                           .Build())
+                           .Set("manifest_version", 2))
           .Build();
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), chromium_org_url()));

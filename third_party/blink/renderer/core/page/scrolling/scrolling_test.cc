@@ -22,8 +22,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "base/guid.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "cc/base/features.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -35,8 +35,6 @@
 #include "cc/trees/sticky_position_constraint.h"
 #include "content/test/test_blink_web_unit_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -64,6 +62,8 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
+#include "third_party/blink/renderer/platform/scheduler/public/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
@@ -1430,9 +1430,9 @@ TEST_P(ScrollingTest, ElementRegionCaptureData) {
       GetFrame()->GetDocument()->getElementById("content");
 
   const RegionCaptureCropId scrollable_id(
-      GUIDToToken(base::GUID::GenerateRandomV4()));
+      GUIDToToken(base::Uuid::GenerateRandomV4()));
   const RegionCaptureCropId content_id(
-      GUIDToToken(base::GUID::GenerateRandomV4()));
+      GUIDToToken(base::Uuid::GenerateRandomV4()));
 
   scrollable_element->SetRegionCaptureCropId(
       std::make_unique<RegionCaptureCropId>(scrollable_id));
@@ -2090,10 +2090,9 @@ class UnifiedScrollingSimTest : public SimTest, public PaintTestConfigurations {
   }
 
   void RunIdleTasks() {
-    auto& scheduler =
-        blink::scheduler::WebThreadScheduler::MainThreadScheduler();
-    blink::scheduler::RunIdleTasksForTesting(scheduler,
-                                             base::BindOnce([]() {}));
+    ThreadScheduler::Current()
+        ->ToMainThreadScheduler()
+        ->StartIdlePeriodForTesting();
     test::RunPendingTasks();
   }
 
@@ -2656,7 +2655,7 @@ TEST_P(ScrollingSimTest, ImmediateCompositedScroll) {
 }
 
 TEST_P(ScrollingSimTest, CompositedScrollDeferredWithLinkedAnimation) {
-  ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
+  ScopedScrollTimelineForTest scroll_timeline_enabled(true);
 
   String kUrl = "https://example.com/test.html";
   SimRequest request(kUrl, "text/html");

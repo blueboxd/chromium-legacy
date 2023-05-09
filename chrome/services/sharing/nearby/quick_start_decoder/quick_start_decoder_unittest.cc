@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/values.h"
 #include "chromeos/ash/components/quick_start/quick_start_message.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-forward.h"
@@ -52,6 +53,10 @@ constexpr char kWifiNetworkSecurityTypeKey[] = "wifi_security_type";
 // Key in wifi_network dictionary containing if the wifi network is hidden.
 constexpr char kWifiNetworkIsHiddenKey[] = "wifi_hidden_ssid";
 
+// Key in Notify Source of Update response containing bool acknowledging the
+// message.
+constexpr char kNotifySourceOfUpdateAckKey[] = "forced_update_acknowledged";
+
 const std::vector<uint8_t> kValidCredentialId = {0x01, 0x02, 0x03};
 const std::vector<uint8_t> kValidAuthData = {0x02, 0x03, 0x04};
 const std::vector<uint8_t> kValidSignature = {0x03, 0x04, 0x05};
@@ -90,7 +95,7 @@ class QuickStartDecoderTest : public testing::Test {
   QuickStartDecoderTest() {
     QuickStartMessage::DisableSandboxCheckForTesting();
     decoder_ = std::make_unique<QuickStartDecoder>(
-        remote_.BindNewPipeAndPassReceiver());
+        remote_.BindNewPipeAndPassReceiver(), base::DoNothing());
   }
 
   mojom::GetAssertionResponsePtr DoDecodeGetAssertionResponse(
@@ -103,9 +108,16 @@ class QuickStartDecoderTest : public testing::Test {
     return decoder_->DoDecodeBootstrapConfigurations(data);
   }
 
-  mojom::GetWifiCredentialsResponsePtr DoDecodeWifiCredentialsResponse(
-      QuickStartMessage* message) {
+  void DoDecodeWifiCredentialsResponse(
+      QuickStartMessage* message,
+      QuickStartDecoder::DecodeWifiCredentialsResponseCallback callback) {
     return decoder_->DoDecodeWifiCredentialsResponse(
+        ConvertMessageToBytes(message), std::move(callback));
+  }
+
+  absl::optional<bool> DoDecodeNotifySourceOfUpdateResponse(
+      QuickStartMessage* message) {
+    return decoder_->DoDecodeNotifySourceOfUpdateResponse(
         ConvertMessageToBytes(message));
   }
 
@@ -405,16 +417,19 @@ TEST_F(QuickStartDecoderTest, ExtractWifiInformationPassesOnValidResponse) {
   message.GetPayload()->Set(kWifiNetworkInformationKey,
                             std::move(wifi_information));
 
-  mojom::GetWifiCredentialsResponsePtr response =
-      DoDecodeWifiCredentialsResponse(&message);
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::WifiCredentialsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
 
-  EXPECT_TRUE(response->is_credentials());
+  DoDecodeWifiCredentialsResponse(&message, future.GetCallback());
 
-  EXPECT_EQ(response->get_credentials()->ssid, "ssid");
-  EXPECT_EQ(response->get_credentials()->password, "password");
-  EXPECT_EQ(response->get_credentials()->security_type,
-            mojom::WifiSecurityType::kPSK);
-  EXPECT_TRUE(response->get_credentials()->is_hidden);
+  ASSERT_FALSE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<0>()->ssid, "ssid");
+  EXPECT_EQ(future.Get<0>()->password, "password");
+  EXPECT_EQ(future.Get<0>()->security_type, mojom::WifiSecurityType::kPSK);
+  EXPECT_TRUE(future.Get<0>()->is_hidden);
+  EXPECT_EQ(future.Get<1>(), absl::nullopt);
 }
 
 TEST_F(QuickStartDecoderTest, ExtractWifiInformationFailsIfSSIDLengthIsZero) {
@@ -428,12 +443,16 @@ TEST_F(QuickStartDecoderTest, ExtractWifiInformationFailsIfSSIDLengthIsZero) {
   message.GetPayload()->Set(kWifiNetworkInformationKey,
                             std::move(wifi_information));
 
-  mojom::GetWifiCredentialsResponsePtr response =
-      DoDecodeWifiCredentialsResponse(&message);
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::WifiCredentialsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
 
-  EXPECT_TRUE(response->is_failure_reason());
-  EXPECT_EQ(response->get_failure_reason(),
-            mojom::GetWifiCredentialsFailureReason::kEmptyWifiSSID);
+  DoDecodeWifiCredentialsResponse(&message, future.GetCallback());
+
+  EXPECT_TRUE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<1>(),
+            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
 }
 
 TEST_F(QuickStartDecoderTest, ExtractWifiInformationFailsWhenMissingSSID) {
@@ -446,12 +465,16 @@ TEST_F(QuickStartDecoderTest, ExtractWifiInformationFailsWhenMissingSSID) {
   message.GetPayload()->Set(kWifiNetworkInformationKey,
                             std::move(wifi_information));
 
-  mojom::GetWifiCredentialsResponsePtr response =
-      DoDecodeWifiCredentialsResponse(&message);
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::WifiCredentialsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
 
-  EXPECT_TRUE(response->is_failure_reason());
-  EXPECT_EQ(response->get_failure_reason(),
-            mojom::GetWifiCredentialsFailureReason::kMissingWifiSSID);
+  DoDecodeWifiCredentialsResponse(&message, future.GetCallback());
+
+  EXPECT_TRUE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<1>(),
+            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
 }
 
 TEST_F(QuickStartDecoderTest, ExtractWifiInformationFailsWhenMissingPassword) {
@@ -464,12 +487,16 @@ TEST_F(QuickStartDecoderTest, ExtractWifiInformationFailsWhenMissingPassword) {
   message.GetPayload()->Set(kWifiNetworkInformationKey,
                             std::move(wifi_information));
 
-  mojom::GetWifiCredentialsResponsePtr response =
-      DoDecodeWifiCredentialsResponse(&message);
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::WifiCredentialsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
 
-  EXPECT_TRUE(response->is_failure_reason());
-  EXPECT_EQ(response->get_failure_reason(),
-            mojom::GetWifiCredentialsFailureReason::kMissingWifiPassword);
+  DoDecodeWifiCredentialsResponse(&message, future.GetCallback());
+
+  EXPECT_TRUE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<1>(),
+            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
 }
 
 TEST_F(QuickStartDecoderTest,
@@ -483,12 +510,16 @@ TEST_F(QuickStartDecoderTest,
   message.GetPayload()->Set(kWifiNetworkInformationKey,
                             std::move(wifi_information));
 
-  mojom::GetWifiCredentialsResponsePtr response =
-      DoDecodeWifiCredentialsResponse(&message);
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::WifiCredentialsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
 
-  EXPECT_TRUE(response->is_failure_reason());
-  EXPECT_EQ(response->get_failure_reason(),
-            mojom::GetWifiCredentialsFailureReason::kMissingWifiSecurityType);
+  DoDecodeWifiCredentialsResponse(&message, future.GetCallback());
+
+  EXPECT_TRUE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<1>(),
+            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
 }
 
 TEST_F(QuickStartDecoderTest,
@@ -503,12 +534,16 @@ TEST_F(QuickStartDecoderTest,
   message.GetPayload()->Set(kWifiNetworkInformationKey,
                             std::move(wifi_information));
 
-  mojom::GetWifiCredentialsResponsePtr response =
-      DoDecodeWifiCredentialsResponse(&message);
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::WifiCredentialsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
 
-  EXPECT_TRUE(response->is_failure_reason());
-  EXPECT_EQ(response->get_failure_reason(),
-            mojom::GetWifiCredentialsFailureReason::kInvalidWifiSecurityType);
+  DoDecodeWifiCredentialsResponse(&message, future.GetCallback());
+
+  EXPECT_TRUE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<1>(),
+            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
 }
 
 TEST_F(QuickStartDecoderTest,
@@ -522,24 +557,52 @@ TEST_F(QuickStartDecoderTest,
   message.GetPayload()->Set(kWifiNetworkInformationKey,
                             std::move(wifi_information));
 
-  mojom::GetWifiCredentialsResponsePtr response =
-      DoDecodeWifiCredentialsResponse(&message);
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::WifiCredentialsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
 
-  EXPECT_TRUE(response->is_failure_reason());
-  EXPECT_EQ(response->get_failure_reason(),
-            mojom::GetWifiCredentialsFailureReason::kMissingWifiHiddenStatus);
+  DoDecodeWifiCredentialsResponse(&message, future.GetCallback());
+
+  EXPECT_TRUE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<1>(),
+            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
 }
 
 TEST_F(QuickStartDecoderTest,
        ExtractWifiInformationFailsWhenMissingWifiInformation) {
   QuickStartMessage message(QuickStartMessageType::kQuickStartPayload);
 
-  mojom::GetWifiCredentialsResponsePtr response =
-      DoDecodeWifiCredentialsResponse(&message);
+  base::test::TestFuture<
+      ::ash::quick_start::mojom::WifiCredentialsPtr,
+      absl::optional<::ash::quick_start::mojom::QuickStartDecoderError>>
+      future;
 
-  EXPECT_TRUE(response->is_failure_reason());
-  EXPECT_EQ(response->get_failure_reason(),
-            mojom::GetWifiCredentialsFailureReason::kMissingWifiInformation);
+  DoDecodeWifiCredentialsResponse(&message, future.GetCallback());
+
+  EXPECT_TRUE(future.Get<0>().is_null());
+  EXPECT_EQ(future.Get<1>(),
+            mojom::QuickStartDecoderError::kMessageDoesNotMatchSchema);
+}
+
+TEST_F(QuickStartDecoderTest, DecodeNotifySourceOfUpdateResponseSuccess) {
+  QuickStartMessage message(QuickStartMessageType::kQuickStartPayload);
+  message.GetPayload()->Set(kNotifySourceOfUpdateAckKey, true);
+
+  EXPECT_TRUE(DoDecodeNotifySourceOfUpdateResponse(&message).has_value());
+  EXPECT_TRUE(DoDecodeNotifySourceOfUpdateResponse(&message).value());
+
+  message.GetPayload()->Set(kNotifySourceOfUpdateAckKey, false);
+
+  EXPECT_TRUE(DoDecodeNotifySourceOfUpdateResponse(&message).has_value());
+  EXPECT_FALSE(DoDecodeNotifySourceOfUpdateResponse(&message).value());
+}
+
+TEST_F(QuickStartDecoderTest,
+       DecodeNotifySourceOfUpdateResponseFailsWhenMissingValue) {
+  QuickStartMessage message(QuickStartMessageType::kQuickStartPayload);
+
+  EXPECT_FALSE(DoDecodeNotifySourceOfUpdateResponse(&message).has_value());
 }
 
 }  // namespace ash::quick_start

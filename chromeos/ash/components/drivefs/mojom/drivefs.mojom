@@ -147,6 +147,17 @@ interface DriveFs {
   // Unpins all currently pinned items and force evicts them from the cache.
   // NOTE: Force eviction does not work for hosted documents.
   ClearOfflineFiles() => (FileError error);
+
+  // Uploads a file by skipping any remaining queue time, if possible.
+  ImmediatelyUpload(mojo_base.mojom.FilePath path) => (FileError error);
+
+  // Forces the server to export any pending paired doc content into a new
+  // revision.
+  UpdateFromPairedDoc(mojo_base.mojom.FilePath path) => (FileError error);
+
+  // Pulls the updated file content from the server into the cache, if a newer
+  // revision is available.
+  GetItemFromCloudStore(mojo_base.mojom.FilePath path) => (FileError error);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -325,6 +336,7 @@ enum FileError {
   kNoConnection = -16,
   kNoLocalSpace = -17,
   kServiceUnavailable = -18,
+  kOkWithMoreResults = -19,
 };
 
 // Errors received from DriveFS to be forwarded to the file manager UI.
@@ -571,6 +583,7 @@ struct QueryParameters {
   enum QuerySource {
     kLocalOnly = 0,
     kCloudOnly = 1,
+    kLocalAndCloud = 2,
   };
 
   // Which field should be used for sorting the results.

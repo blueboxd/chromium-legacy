@@ -91,10 +91,9 @@ namespace {
 // Password is considered not generated when user edits it below 4 characters.
 constexpr int kMinimumLengthForEditedPassword = 4;
 
-// The string ' •••' appended to the username in the suggestion.
-NSString* const kSuggestionSuffix = @" ••••••••";
-
 }  // namespace
+
+NSString* const kPasswordFormSuggestionSuffix = @" ••••••••";
 
 @interface SharedPasswordController ()
 
@@ -107,7 +106,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 // Tracks current potential generated password until accepted or rejected.
 @property(nonatomic, copy) NSString* generatedPotentialPassword;
 
-- (BOOL)isIncognito;
+- (BOOL)IsOffTheRecord;
 
 @end
 
@@ -193,9 +192,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   }
 }
 
-- (BOOL)isIncognito {
+- (BOOL)IsOffTheRecord {
   DCHECK(_delegate.passwordManagerClient);
-  return _delegate.passwordManagerClient->IsIncognito();
+  return _delegate.passwordManagerClient->IsOffTheRecord();
 }
 
 #pragma mark - PasswordGenerationProvider
@@ -460,8 +459,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       continue;
     }
     DCHECK(self.delegate.passwordManagerClient);
-    NSString* value =
-        [rawSuggestion.value stringByAppendingString:kSuggestionSuffix];
+    NSString* value = [rawSuggestion.value
+        stringByAppendingString:kPasswordFormSuggestionSuffix];
     FormSuggestion* suggestion =
         [FormSuggestion suggestionWithValue:value
                          displayDescription:rawSuggestion.displayDescription
@@ -493,7 +492,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   }
 
   if (suggestionState) {
-    LogPasswordDropdownShown(*suggestionState, [self isIncognito]);
+    LogPasswordDropdownShown(*suggestionState, [self IsOffTheRecord]);
   }
 
   if (suggestions.count == 0 || ![_delegate shouldShowAccountStorageNotice]) {
@@ -538,7 +537,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       password_manager::metrics_util::LogPasswordDropdownItemSelected(
           password_manager::metrics_util::PasswordDropdownSelectedOption::
               kShowAll,
-          [self isIncognito]);
+          [self IsOffTheRecord]);
       return;
     }
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
@@ -551,17 +550,18 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       password_manager::metrics_util::LogPasswordDropdownItemSelected(
           password_manager::metrics_util::PasswordDropdownSelectedOption::
               kGenerate,
-          [self isIncognito]);
+          [self IsOffTheRecord]);
       return;
     }
     default: {
       password_manager::metrics_util::LogPasswordDropdownItemSelected(
           password_manager::metrics_util::PasswordDropdownSelectedOption::
               kPassword,
-          [self isIncognito]);
-      DCHECK([suggestion.value hasSuffix:kSuggestionSuffix]);
+          [self IsOffTheRecord]);
+      DCHECK([suggestion.value hasSuffix:kPasswordFormSuggestionSuffix]);
       NSString* username = [suggestion.value
-          substringToIndex:suggestion.value.length - kSuggestionSuffix.length];
+          substringToIndex:suggestion.value.length -
+                           kPasswordFormSuggestionSuffix.length];
       std::unique_ptr<password_manager::FillData> fillData =
           [self.suggestionHelper passwordFillDataForUsername:username
                                                      inFrame:frame];

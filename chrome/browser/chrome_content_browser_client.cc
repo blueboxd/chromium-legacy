@@ -299,6 +299,7 @@
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
+#include "content/public/browser/user_level_memory_pressure_signal_features.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_contents.h"
@@ -415,6 +416,7 @@
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/webui/ash/kerberos/kerberos_in_browser_dialog.h"
 #include "chromeos/ash/services/network_health/public/cpp/network_health_helper.h"
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "components/crash/core/app/breakpad_linux.h"
@@ -480,6 +482,7 @@
 #include "chrome/browser/direct_sockets/chrome_direct_sockets_delegate.h"
 #include "chrome/browser/headless/chrome_browser_main_extra_parts_headless.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
+#include "chrome/browser/metrics/chrome_responsiveness_calculator_delegate.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
 #include "chrome/browser/page_info/about_this_site_side_panel_throttle.h"
 #include "chrome/browser/search/instant_service.h"
@@ -493,6 +496,7 @@
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
 #include "chrome/browser/ui/web_applications/tabbed_web_app_navigation_throttle.h"
 #include "chrome/browser/ui/web_applications/webui_web_app_navigation_throttle.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_error_page.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_loader_factory.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -1485,7 +1489,8 @@ void HandleExpandedPaths(
                  callback,
              const enterprise_connectors::ContentAnalysisDelegate::Data& data,
              enterprise_connectors::ContentAnalysisDelegate::Result& result) {
-            absl::optional<std::string> final_data;
+            absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
+                clipboard_paste_data;
             auto blocked = fsd->IndexesToBlock(result.paths_results);
             if (blocked.size() != paths.size()) {
               // Build the data string of the allowed paths.
@@ -1499,9 +1504,11 @@ void HandleExpandedPaths(
                   result.paths_results[i] = false;
                 }
               }
-              final_data = base::JoinString(string_paths, "\n");
+              clipboard_paste_data =
+                  ChromeContentBrowserClient::ClipboardPasteData(
+                      std::string(), std::string(), std::move(string_paths));
             }
-            std::move(callback).Run(final_data);
+            std::move(callback).Run(std::move(clipboard_paste_data));
           },
           std::move(fsd), std::move(paths), std::move(callback)),
       safe_browsing::DeepScanAccessPoint::PASTE);
@@ -1520,10 +1527,14 @@ void HandleStringData(
                  callback,
              const enterprise_connectors::ContentAnalysisDelegate::Data& data,
              enterprise_connectors::ContentAnalysisDelegate::Result& result) {
-            std::move(callback).Run(
-                result.text_results[0]
-                    ? absl::optional<std::string>(data.text[0])
-                    : absl::nullopt);
+            absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
+                clipboard_paste_data;
+            clipboard_paste_data =
+                ChromeContentBrowserClient::ClipboardPasteData(
+                    data.text[0], std::string(), {});
+            std::move(callback).Run(result.text_results[0]
+                                        ? std::move(clipboard_paste_data)
+                                        : absl::nullopt);
           },
           std::move(callback)),
       safe_browsing::DeepScanAccessPoint::PASTE);
@@ -2858,7 +2869,32 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if BUILDFLAG(IS_ANDROID)
     // If the platform is Android, force the distillability service on.
     command_line->AppendSwitch(switches::kEnableDistillabilityService);
-#endif
+
+    // The browser process only decides to enable or disable
+    // UserLevelMemoryPressureSignalGenerator feature. Renderer processes
+    // follow the decision. If the browser process enables the feature, renderer
+    // processes will provide private memory footprint for the browser process
+    // and will generate memory pressure signals when the browser process
+    // requests. So the decision will be provided for renderer processes
+    // via commandline flag.
+    std::ostringstream user_level_memory_pressure_params;
+    if (features::IsUserLevelMemoryPressureSignalEnabledOn4GbDevices()) {
+      user_level_memory_pressure_params
+          << features::InertIntervalFor4GbDevices().InSeconds() << "s,"
+          << features::MinUserMemoryPressureIntervalOn4GbDevices().InSeconds()
+          << "s";
+    } else if (features::IsUserLevelMemoryPressureSignalEnabledOn6GbDevices()) {
+      user_level_memory_pressure_params
+          << features::InertIntervalFor6GbDevices().InSeconds() << "s,"
+          << features::MinUserMemoryPressureIntervalOn6GbDevices().InSeconds()
+          << "s";
+    }
+    if (user_level_memory_pressure_params.tellp() > 0) {
+      command_line->AppendSwitchASCII(
+          switches::kUserLevelMemoryPressureSignalParams,
+          user_level_memory_pressure_params.str());
+    }
+#endif  // BUILDFLAG(IS_ANDROID)
 
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
@@ -4135,75 +4171,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     web_prefs->immersive_mode_enabled = vr::VrTabHelper::IsInVr(web_contents);
   }
 
-  web_prefs->lazy_load_enabled =
-      !web_contents || !web_contents->GetDelegate() ||
-      web_contents->GetDelegate()->ShouldAllowLazyLoad();
-
-  if (base::FeatureList::IsEnabled(features::kLazyFrameLoading)) {
-    const char* param_name =
-        web_prefs->data_saver_enabled
-            ? "lazy_frame_loading_distance_thresholds_px_by_ect"
-            : "lazy_frame_loading_distance_thresholds_px_by_ect_with_data_"
-              "saver_enabled";
-
-    base::StringPairs pairs;
-    base::SplitStringIntoKeyValuePairs(
-        base::GetFieldTrialParamValueByFeature(features::kLazyFrameLoading,
-                                               param_name),
-        ':', ',', &pairs);
-
-    for (const auto& pair : pairs) {
-      absl::optional<net::EffectiveConnectionType> effective_connection_type =
-          net::GetEffectiveConnectionTypeForName(pair.first);
-      int value = 0;
-      if (effective_connection_type && base::StringToInt(pair.second, &value)) {
-        web_prefs->lazy_frame_loading_distance_thresholds_px[static_cast<
-            EffectiveConnectionType>(effective_connection_type.value())] =
-            value;
-      }
-    }
-  }
-
-  if (base::FeatureList::IsEnabled(features::kLazyImageLoading)) {
-    const char* param_name =
-        web_prefs->data_saver_enabled
-            ? "lazy_image_loading_distance_thresholds_px_by_ect"
-            : "lazy_image_loading_distance_thresholds_px_by_ect_with_data_"
-              "saver_enabled";
-
-    base::StringPairs pairs;
-    base::SplitStringIntoKeyValuePairs(
-        base::GetFieldTrialParamValueByFeature(features::kLazyImageLoading,
-                                               param_name),
-        ':', ',', &pairs);
-
-    for (const auto& pair : pairs) {
-      absl::optional<net::EffectiveConnectionType> effective_connection_type =
-          net::GetEffectiveConnectionTypeForName(pair.first);
-      int value = 0;
-      if (effective_connection_type && base::StringToInt(pair.second, &value)) {
-        web_prefs->lazy_image_loading_distance_thresholds_px[static_cast<
-            EffectiveConnectionType>(effective_connection_type.value())] =
-            value;
-      }
-    }
-
-    pairs.clear();
-    base::SplitStringIntoKeyValuePairs(
-        base::GetFieldTrialParamValueByFeature(features::kLazyImageLoading,
-                                               "lazy_image_first_k_fully_load"),
-        ':', ',', &pairs);
-
-    for (const auto& pair : pairs) {
-      absl::optional<net::EffectiveConnectionType> effective_connection_type =
-          net::GetEffectiveConnectionTypeForName(pair.first);
-      int value = 0;
-      if (effective_connection_type && base::StringToInt(pair.second, &value)) {
-        web_prefs->lazy_image_first_k_fully_load[static_cast<
-            EffectiveConnectionType>(effective_connection_type.value())] =
-            value;
-      }
-    }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableLazyLoading)) {
+    web_prefs->lazy_load_enabled = false;
+  } else {
+    web_prefs->lazy_load_enabled =
+        !web_contents || !web_contents->GetDelegate() ||
+        web_contents->GetDelegate()->ShouldAllowLazyLoad();
   }
 
   if (base::FeatureList::IsEnabled(
@@ -5189,7 +5163,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       MaybeAddThrottle(
           HttpsUpgradesNavigationThrottle::MaybeCreateThrottleFor(
               handle, std::make_unique<ChromeSecurityBlockingPageFactory>(),
-              profile->GetPrefs()),
+              profile),
           &throttles);
     } else {
       MaybeAddThrottle(
@@ -6442,6 +6416,18 @@ ChromeContentBrowserClient::CreateLoginDelegate(
     bool first_auth_attempt,
     LoginAuthRequiredCallback auth_required_callback) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Negotiate challenge is handled via GSSAPI library, which can not receive
+  // external credentials. However, on ChromeOS we can suggest the user to
+  // create a TGT using their credentials. Note that the credentials are NOT
+  // passed to the browser and everything happens on OS level, hence we return
+  // nullptr instead of LoginDelegate to fail authentication. (See b/260522530).
+  if (base::FeatureList::IsEnabled(net::features::kKerberosInBrowserRedirect) &&
+      auth_info.scheme ==
+          net::HttpAuth::SchemeToString(net::HttpAuth::AUTH_SCHEME_NEGOTIATE)) {
+    ash::KerberosInBrowserDialog::Show();
+    return nullptr;
+  }
+
   auto* system_proxy_manager = ash::SystemProxyManager::Get();
   // For Managed Guest Session and Kiosk devices, the credentials configured
   // via the policy SystemProxySettings may be used for proxy authentication.
@@ -7118,8 +7104,10 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
 
   // or (4) origination from a process that at least might be running a
   // content script from an extension with the clipboardRead permission.
-  extensions::ExtensionIdSet extension_ids =
-      extensions::ContentScriptTracker::GetExtensionsThatRanScriptsInProcess(
+  // Note that we currently don't allow clipboard operations based just on user
+  // script injections.
+  extensions::ExtensionIdSet extension_ids = extensions::ContentScriptTracker::
+      GetExtensionsThatRanContentScriptsInProcess(
           *render_frame_host->GetProcess());
   for (const auto& extension_id : extension_ids) {
     const Extension* extension =
@@ -7138,17 +7126,9 @@ void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
     content::WebContents* web_contents,
     const GURL& url,
     const ui::ClipboardFormatType& data_type,
-    const std::string& data,
+    ClipboardPasteData clipboard_paste_data,
     IsClipboardPasteContentAllowedCallback callback) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  // Safe browsing does not support images, so accept without checking.
-  // TODO(crbug.com/1013584): check policy on what to do about unsupported
-  // types when it is implemented.
-  if (data_type == ui::ClipboardFormatType::BitmapType()) {
-    std::move(callback).Run(data);
-    return;
-  }
-
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   bool is_files = data_type == ui::ClipboardFormatType::FilenamesType();
@@ -7160,13 +7140,12 @@ void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
   if (!enterprise_connectors::ContentAnalysisDelegate::IsEnabled(
           profile, web_contents->GetLastCommittedURL(), &dialog_data,
           connector)) {
-    std::move(callback).Run(data);
+    std::move(callback).Run(std::move(clipboard_paste_data));
     return;
   }
 
   if (is_files) {
-    auto string_paths = base::SplitString(data, "\n", base::TRIM_WHITESPACE,
-                                          base::SPLIT_WANT_NONEMPTY);
+    auto string_paths = std::move(clipboard_paste_data.file_paths);
     std::vector<base::FilePath> paths;
     paths.reserve(string_paths.size());
     base::ranges::transform(string_paths, std::back_inserter(paths),
@@ -7178,12 +7157,16 @@ void ChromeContentBrowserClient::IsClipboardPasteContentAllowed(
                                         std::move(dialog_data), connector,
                                         std::move(paths), std::move(callback)));
   } else {
-    dialog_data.text.push_back(data);
+    dialog_data.text.push_back(clipboard_paste_data.text);
+    // Send image only to local agent for analysis.
+    if (dialog_data.settings.cloud_or_local_settings.is_local_analysis()) {
+      dialog_data.image = std::move(clipboard_paste_data.image);
+    }
     HandleStringData(web_contents, std::move(dialog_data), connector,
                      std::move(callback));
   }
 #else
-  std::move(callback).Run(data);
+  std::move(callback).Run(std::move(clipboard_paste_data));
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 }
 
@@ -7507,6 +7490,21 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     content::RenderFrameHost* render_frame_host,
     content::BrowserContext* browser_context,
     int32_t error_code) {
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kIsolatedWebApps) &&
+      url.SchemeIs(chrome::kIsolatedAppScheme)) {
+    content::mojom::AlternativeErrorPageOverrideInfoPtr
+        alternative_error_page_override_info =
+            web_app::MaybeGetIsolatedWebAppErrorPageInfo(
+                url, render_frame_host, browser_context, error_code);
+    if (alternative_error_page_override_info) {
+      alternative_error_page_override_info->alternative_error_page_params.Set(
+          error_page::kOverrideErrorPage, base::Value(true));
+      return alternative_error_page_override_info;
+    }
+  }
+#endif
+
   if (base::FeatureList::IsEnabled(features::kPWAsDefaultOfflinePage) &&
       error_code == net::ERR_INTERNET_DISCONNECTED) {
     content::mojom::AlternativeErrorPageOverrideInfoPtr
@@ -7631,26 +7629,14 @@ bool ChromeContentBrowserClient::OpenExternally(
   // crash dump for various cases so that we can better understand the
   // situation. For now, continue as usual afterwards (i.e. don't handle the
   // request here).
-  if (is_lacros_only) {
-    size_t id = 0;
-    if (url.SchemeIs(content::kChromeDevToolsScheme)) {
-      id = 1;
-    } else if (url.SchemeIs(content::kChromeUIUntrustedScheme) &&
-               (!url.has_host() || url.host() != "terminal")) {
-      id = 2;
-    } else if (url.SchemeIs(content::kChromeUIScheme)) {
-      id = 3;
-    } else if (url.SchemeIs(extensions::kExtensionScheme)) {
-      id = 4;
-    } else {
+  if (is_lacros_only &&
       // We know that Terminal still needs to open Ash windows, no need to dump.
-      DCHECK(url.SchemeIs(content::kChromeUIUntrustedScheme));
-      DCHECK(url.host() == "terminal");
-    }
-    if (id > 0) {
-      base::debug::DumpWithoutCrashingWithUniqueId(id);
-      LOG(WARNING) << "Allowing Ash window creation for url " << url;
-    }
+      !(url.SchemeIs(content::kChromeUIUntrustedScheme) && url.has_host() &&
+        url.host() == "terminal")) {
+    SCOPED_CRASH_KEY_STRING32("CCBC", "OpenExternally",
+                              url.possibly_invalid_spec());
+    base::debug::DumpWithoutCrashing();
+    LOG(WARNING) << "Allowing Ash window creation for url " << url;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -7764,4 +7750,13 @@ bool ChromeContentBrowserClient::ShouldUseFirstPartyStorageKey(
 #else
   return false;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+}
+
+std::unique_ptr<content::ResponsivenessCalculatorDelegate>
+ChromeContentBrowserClient::CreateResponsivenessCalculatorDelegate() {
+#if !BUILDFLAG(IS_ANDROID)
+  return ChromeResponsivenessCalculatorDelegate::Create();
+#else
+  return nullptr;
+#endif
 }

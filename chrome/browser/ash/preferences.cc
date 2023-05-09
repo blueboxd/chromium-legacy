@@ -159,9 +159,6 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kChromadToCloudMigrationEnabled, false);
   registry->RegisterBooleanPref(prefs::kLoginScreenWebUILazyLoading, false);
   registry->RegisterBooleanPref(::prefs::kConsumerAutoUpdateToggle, true);
-  registry->RegisterBooleanPref(::prefs::kHindiInscriptLayoutEnabled, false);
-  registry->RegisterBooleanPref(::prefs::kDeviceHindiInscriptLayoutEnabled,
-                                false);
 
   RegisterLocalStatePrefs(registry);
   ash::hid_detection_revamp_field_trial::RegisterLocalStatePrefs(registry);
@@ -349,6 +346,13 @@ void Preferences::RegisterProfilePrefs(
   // depending on whether an external keyboard is attached to a particular
   // device.
   registry->RegisterBooleanPref(prefs::kSendFunctionKeys, false);
+
+  registry->RegisterBooleanPref(prefs::kEventRemappedToRightClick, false);
+  registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackDelete, 0);
+  registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackEnd, 0);
+  registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackHome, 0);
+  registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackPageUp, 0);
+  registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackPageDown, 0);
 
   // Don't sync the note-taking app; it may not be installed on other devices.
   registry->RegisterStringPref(::prefs::kNoteTakingAppId, std::string());
@@ -577,6 +581,13 @@ void Preferences::RegisterProfilePrefs(
                               0);
   registry->RegisterBooleanPref(::prefs::kHatsOsSettingsSearchSurveyIsSelected,
                                 false);
+
+  // Borealis HaTS survey prefs for game satisfaction.
+  registry->RegisterInt64Pref(::prefs::kHatsBorealisGamesSurveyCycleEndTs, 0);
+  registry->RegisterBooleanPref(::prefs::kHatsBorealisGamesSurveyIsSelected,
+                                false);
+
+  registry->RegisterBooleanPref(prefs::kShowDisplaySizeScreenEnabled, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

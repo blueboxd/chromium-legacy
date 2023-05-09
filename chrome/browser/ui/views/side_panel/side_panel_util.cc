@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/browser/ui/views/side_panel/user_note/user_note_ui_coordinator.h"
-#include "chrome/browser/ui/views/side_panel/webview/webview_side_panel_coordinator.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
@@ -113,11 +112,6 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
         ->CreateAndRegisterEntry(global_registry);
   }
 
-  if (base::FeatureList::IsEnabled(features::kSidePanelWebView)) {
-    WebViewSidePanelCoordinator::GetOrCreateForBrowser(browser)
-        ->CreateAndRegisterEntry(global_registry);
-  }
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (base::FeatureList::IsEnabled(
           extensions_features::kExtensionSidePanelIntegration)) {
@@ -135,6 +129,14 @@ SidePanelContentProxy* SidePanelUtil::GetSidePanelContentProxy(
         kSidePanelContentProxyKey,
         std::make_unique<SidePanelContentProxy>(true).release());
   return content_view->GetProperty(kSidePanelContentProxyKey);
+}
+
+std::unique_ptr<views::View> SidePanelUtil::DeregisterAndReturnView(
+    SidePanelRegistry* registry,
+    SidePanelEntry::Key key) {
+  std::unique_ptr<SidePanelEntry> entry =
+      registry->DeregisterAndReturnEntry(key);
+  return entry->CachedView() ? entry->GetContent() : nullptr;
 }
 
 void SidePanelUtil::RecordSidePanelOpen(

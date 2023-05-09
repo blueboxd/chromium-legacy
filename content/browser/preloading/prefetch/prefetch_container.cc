@@ -87,6 +87,8 @@ void SetIneligibilityFromStatus(PreloadingAttempt* attempt,
       case PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker:
       case PrefetchStatus::kPrefetchNotEligibleUserHasCookies:
       case PrefetchStatus::kPrefetchNotEligibleExistingProxy:
+      case PrefetchStatus::
+          kPrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy:
         attempt->SetEligibility(ToPreloadingEligibility(status));
         break;
       default:
@@ -120,8 +122,7 @@ void SetTriggeringOutcomeAndFailureReasonFromStatus(
     absl::optional<PrefetchStatus> old_prefetch_status,
     PrefetchStatus new_prefetch_status) {
   if (old_prefetch_status &&
-      (old_prefetch_status.value() == PrefetchStatus::kPrefetchUsedNoProbe ||
-       old_prefetch_status.value() == PrefetchStatus::kPrefetchResponseUsed)) {
+      old_prefetch_status.value() == PrefetchStatus::kPrefetchResponseUsed) {
     // Skip this update if the triggering outcome has already been updated
     // to kSuccess.
     return;
@@ -147,7 +148,6 @@ void SetTriggeringOutcomeAndFailureReasonFromStatus(
         }
         attempt->SetTriggeringOutcome(PreloadingTriggeringOutcome::kReady);
         break;
-      case PrefetchStatus::kPrefetchUsedNoProbe:
       case PrefetchStatus::kPrefetchResponseUsed:
         if (old_prefetch_status && old_prefetch_status.value() !=
                                        PrefetchStatus::kPrefetchSuccessful) {
@@ -159,7 +159,6 @@ void SetTriggeringOutcomeAndFailureReasonFromStatus(
           // before the body is fully received.
           attempt->SetTriggeringOutcome(PreloadingTriggeringOutcome::kReady);
         }
-
         if (initiator_devtools_navigation_token.has_value()) {
           devtools_instrumentation::DidUpdatePrefetchStatus(
               ftn, initiator_devtools_navigation_token.value(), url,
@@ -176,6 +175,7 @@ void SetTriggeringOutcomeAndFailureReasonFromStatus(
       case PrefetchStatus::kPrefetchFailedMIMENotSupported:
       case PrefetchStatus::kPrefetchFailedInvalidRedirect:
       case PrefetchStatus::kPrefetchFailedIneligibleRedirect:
+      case PrefetchStatus::kPrefetchFailedPerPageLimitExceeded:
         if (initiator_devtools_navigation_token.has_value()) {
           devtools_instrumentation::DidUpdatePrefetchStatus(
               ftn, initiator_devtools_navigation_token.value(), url,
@@ -197,7 +197,6 @@ void SetTriggeringOutcomeAndFailureReasonFromStatus(
         // heldback. This is covered by attempt's holdback status. For these two
         // reasons this PrefetchStatus does not fire a `SetTriggeringOutcome`.
         break;
-      case PrefetchStatus::kPrefetchNotEligibleGoogleDomain:
       case PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker:
       case PrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps:
       case PrefetchStatus::kPrefetchNotEligibleNonDefaultStoragePartition:
@@ -211,22 +210,8 @@ void SetTriggeringOutcomeAndFailureReasonFromStatus(
       case PrefetchStatus::kPrefetchNotUsedCookiesChanged:
       case PrefetchStatus::kPrefetchIsStale:
       case PrefetchStatus::kPrefetchNotUsedProbeFailed:
-      case PrefetchStatus::kNavigatedToLinkNotOnSRP:
-      case PrefetchStatus::kPrefetchUsedNoProbeWithNSP:
-      case PrefetchStatus::kPrefetchUsedProbeSuccessWithNSP:
-      case PrefetchStatus::kPrefetchNotUsedProbeFailedWithNSP:
-      case PrefetchStatus::kPrefetchUsedNoProbeNSPAttemptDenied:
-      case PrefetchStatus::kPrefetchUsedProbeSuccessNSPAttemptDenied:
-      case PrefetchStatus::kPrefetchNotUsedProbeFailedNSPAttemptDenied:
-      case PrefetchStatus::kPrefetchUsedNoProbeNSPNotStarted:
-      case PrefetchStatus::kPrefetchUsedProbeSuccessNSPNotStarted:
-      case PrefetchStatus::kPrefetchNotUsedProbeFailedNSPNotStarted:
-      case PrefetchStatus::kPrefetchIsStaleWithNSP:
-      case PrefetchStatus::kPrefetchIsStaleNSPAttemptDenied:
-      case PrefetchStatus::kPrefetchIsStaleNSPNotStarted:
-      case PrefetchStatus::kSubresourceThrottled:
-      case PrefetchStatus::kPrefetchPositionIneligible:
-      case PrefetchStatus::kPrefetchFailedRedirectsDisabled_DEPRECATED:
+      case PrefetchStatus::
+          kPrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy:
         NOTIMPLEMENTED();
     }
   }
@@ -273,38 +258,40 @@ PrefetchContainer::PrefetchContainer(
     const GURL& url,
     const PrefetchType& prefetch_type,
     const blink::mojom::Referrer& referrer,
-    absl::optional<net::HttpNoVarySearchData> no_vary_search_expected,
+    absl::optional<net::HttpNoVarySearchData> no_vary_search_hint,
+    blink::mojom::SpeculationInjectionWorld world,
     base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager)
     : referring_render_frame_host_id_(referring_render_frame_host_id),
       prefetch_url_(url),
       prefetch_type_(prefetch_type),
       referrer_(referrer),
-      no_vary_search_expected_(std::move(no_vary_search_expected)),
+      referring_origin_(url::Origin::Create(referrer_.url)),
+      referring_site_(net::SchemefulSite(referrer_.url)),
+      no_vary_search_hint_(std::move(no_vary_search_hint)),
       prefetch_document_manager_(prefetch_document_manager),
       ukm_source_id_(prefetch_document_manager_
                          ? prefetch_document_manager_->render_frame_host()
                                .GetPageUkmSourceId()
                          : ukm::kInvalidSourceId),
-      request_id_(base::UnguessableToken::Create().ToString()),
-      initiator_devtools_navigation_token_(
-          prefetch_document_manager
-              ? prefetch_document_manager->initiator_devtools_navigation_token()
-              : absl::nullopt) {
-  auto* rfh = RenderFrameHost::FromID(referring_render_frame_host_id_);
-  if (rfh) {
+      request_id_(base::UnguessableToken::Create().ToString()) {
+  auto* rfhi = RenderFrameHostImpl::FromID(referring_render_frame_host_id);
+  // Note: |rfhi| is only nullptr in unit tests.
+  if (rfhi) {
     auto* preloading_data = PreloadingData::GetOrCreateForWebContents(
-        WebContents::FromRenderFrameHost(rfh));
+        WebContents::FromRenderFrameHost(rfhi));
     auto matcher =
         base::FeatureList::IsEnabled(network::features::kPrefetchNoVarySearch)
             ? PreloadingDataImpl::GetSameURLAndNoVarySearchURLMatcher(
                   prefetch_document_manager_, prefetch_url_)
             : PreloadingDataImpl::GetSameURLMatcher(prefetch_url_);
     auto* attempt = preloading_data->AddPreloadingAttempt(
-        content_preloading_predictor::kSpeculationRules,
-        PreloadingType::kPrefetch, std::move(matcher));
+        GetPredictorForSpeculationRules(world), PreloadingType::kPrefetch,
+        std::move(matcher));
     attempt_ = attempt->GetWeakPtr();
-    // `PreloadingPrediction` is added in `PreloadingDecider`.
+    initiator_devtools_navigation_token_ = rfhi->GetDevToolsNavigationToken();
   }
+
+  // `PreloadingPrediction` is added in `PreloadingDecider`.
 
   redirect_chain_.push_back(std::make_unique<SinglePrefetch>(prefetch_url_));
 }
@@ -698,7 +685,7 @@ void PrefetchContainer::UpdateServingPageMetrics() {
   }
 
   serving_page_metrics_container_->SetRequiredPrivatePrefetchProxy(
-      GetPrefetchType().IsProxyRequired());
+      GetPrefetchType().IsProxyRequiredWhenCrossOrigin());
   serving_page_metrics_container_->SetPrefetchHeaderLatency(
       GetPrefetchHeaderLatency());
   if (HasPrefetchStatus()) {
@@ -767,6 +754,11 @@ void PrefetchContainer::OnReturnPrefetchToServe(bool served) {
         base::TimeTicks::Now() - blocked_until_head_start_time_.value(),
         served);
   }
+}
+
+bool PrefetchContainer::IsProxyRequiredForURL(const GURL& url) const {
+  return !referring_origin_.IsSameOriginWith(url) &&
+         prefetch_type_.IsProxyRequiredWhenCrossOrigin();
 }
 
 std::ostream& operator<<(std::ostream& ostream,

@@ -62,7 +62,6 @@ _CONFIG = [
             'base::AutoReset',
             'base::Contains',
             'base::ConditionVariable',
-            'base::ShouldLogHistogramForCpuReductionExperiment',
             'base::ValuesEquivalent',
             'base::Days',
             'base::DefaultTickClock',
@@ -86,6 +85,7 @@ _CONFIG = [
             'base::MakeRefCounted',
             'base::MappedReadOnlyRegion',
             'base::MatcherStringPattern',
+            'base::MetricsSubSampler',
             'base::Microseconds',
             'base::Milliseconds',
             'base::Minutes',
@@ -181,12 +181,6 @@ _CONFIG = [
             'base::CancelableOnceClosure',
             'base::CancelableRepeatingCallback',
             'base::CancelableRepeatingClosure',
-
-            # //base/mac/scoped_nsobject.h
-            'base::scoped_nsobject',
-
-            # //base/memory/scoped_policy.h
-            'base::scoped_policy::RETAIN',
 
             # //base/memory/ptr_util.h.
             'base::WrapUnique',
@@ -726,9 +720,9 @@ _CONFIG = [
             'crash_reporter::.*CrashKey.*',
 
             # Useful for platform-specific code.
-            'base::mac::(CFToNSCast|NSToCFCast)',
+            'base::mac::(CFToNSPtrCast|NSToCFPtrCast|CFToNSOwnershipCast|NSToCFOwnershipCast)',
             'base::mac::Is(AtMost|AtLeast)?OS.+',
-            'base::(scoped_nsobject|ScopedCFTypeRef)',
+            'base::ScopedCFTypeRef',
         ],
         'disallowed': [
             ('base::Bind(|Once|Repeating)',

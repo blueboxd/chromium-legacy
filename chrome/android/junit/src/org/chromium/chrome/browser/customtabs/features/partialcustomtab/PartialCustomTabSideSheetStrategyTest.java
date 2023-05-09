@@ -52,7 +52,9 @@ import org.robolectric.annotation.LooperMode.Mode;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabBaseStrategy.ResizeType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.base.LocalizationUtils;
@@ -416,7 +418,14 @@ public class PartialCustomTabSideSheetStrategyTest {
         doReturn(47)
                 .when(mPCCTTestRule.mResources)
                 .getDimensionPixelSize(eq(R.dimen.custom_tabs_shadow_offset));
-        var strategy = createPcctSideSheetStrategy(1000);
+        doReturn(10)
+                .when(mPCCTTestRule.mResources)
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_handle_height));
+        var strategy = createPcctSideSheetStrategy(1000, ACTIVITY_SIDE_SHEET_POSITION_END,
+                ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW,
+                ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_TOP);
+        strategy.onToolbarInitialized(
+                mPCCTTestRule.mToolbarCoordinator, mPCCTTestRule.mToolbarView, 5);
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
                 .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),
                         eq(ACTIVITY_LAYOUT_STATE_SIDE_SHEET));
@@ -432,6 +441,7 @@ public class PartialCustomTabSideSheetStrategyTest {
         strategy.onEnterFullscreen(null, null);
         assertTrue(getWindowAttributes().isFullscreen());
         assertEquals("Shadow should be removed.", 0, mPCCTTestRule.mLayoutParams.leftMargin);
+        assertEquals("Toolbar still present.", 0, mPCCTTestRule.mLayoutParams.topMargin);
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(DEVICE_HEIGHT), eq(DEVICE_WIDTH));
         clearInvocations(mPCCTTestRule.mOnResizedCallback);
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
@@ -446,6 +456,7 @@ public class PartialCustomTabSideSheetStrategyTest {
         assertEquals(height, getWindowAttributes().height);
         assertEquals(width, getWindowAttributes().width);
         assertNotEquals("Shadow should be restored.", 0, mPCCTTestRule.mLayoutParams.leftMargin);
+        assertNotEquals("Toolbar should be restored.", 0, mPCCTTestRule.mLayoutParams.topMargin);
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(height), eq(width));
         clearInvocations(mPCCTTestRule.mOnResizedCallback);
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
@@ -456,9 +467,12 @@ public class PartialCustomTabSideSheetStrategyTest {
 
     @Test
     public void enterAndExitHtmlFullscreen_useDivider() {
-        var strategy = createPcctSideSheetStrategy(800, ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE,
+        doReturn(10)
+                .when(mPCCTTestRule.mResources)
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_handle_height));
+        var strategy = createPcctSideSheetStrategy(800, ACTIVITY_SIDE_SHEET_POSITION_END,
                 ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER,
-                ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_NONE);
+                ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_TOP);
         strategy.onToolbarInitialized(
                 mPCCTTestRule.mToolbarCoordinator, mPCCTTestRule.mToolbarView, 5);
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
@@ -476,6 +490,7 @@ public class PartialCustomTabSideSheetStrategyTest {
         mFullscreen = true;
         strategy.onEnterFullscreen(null, null);
         assertTrue(getWindowAttributes().isFullscreen());
+        assertEquals("Toolbar still present.", 0, mPCCTTestRule.mLayoutParams.topMargin);
         // this line gets called when divider line is removed
         verify(mPCCTTestRule.mCoordinatorLayout).getPaddingRight();
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(DEVICE_HEIGHT), eq(DEVICE_WIDTH));
@@ -489,6 +504,7 @@ public class PartialCustomTabSideSheetStrategyTest {
         strategy.onExitFullscreen(null);
         PartialCustomTabTestRule.waitForAnimationToFinish();
         assertFalse(getWindowAttributes().isFullscreen());
+        assertNotEquals("Toolbar should be restored.", 0, mPCCTTestRule.mLayoutParams.topMargin);
         assertEquals(height, getWindowAttributes().height);
         assertEquals(width, getWindowAttributes().width);
         // called twice because divider line is restored
@@ -567,8 +583,16 @@ public class PartialCustomTabSideSheetStrategyTest {
 
     @Test
     public void maximizeAndFullscreen() {
+        doReturn(16)
+                .when(mPCCTTestRule.mResources)
+                .getDimensionPixelSize(eq(R.dimen.custom_tabs_handle_height));
         // Ensure maximize -> fullscreen enter/exit -> comes back to maximize mode
-        var strategy = createPcctSideSheetStrategy(700);
+        var strategy = createPcctSideSheetStrategy(700, ACTIVITY_SIDE_SHEET_POSITION_END,
+                ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW,
+                ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_TOP);
+        strategy.onToolbarInitialized(
+                mPCCTTestRule.mToolbarCoordinator, mPCCTTestRule.mToolbarView, 5);
+        assertNotEquals("Corner not rounded", 0, mPCCTTestRule.mLayoutParams.topMargin);
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
                 .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),
                         eq(ACTIVITY_LAYOUT_STATE_SIDE_SHEET));
@@ -582,11 +606,13 @@ public class PartialCustomTabSideSheetStrategyTest {
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
                 .onActivityLayout(eq(0), eq(0), eq(DEVICE_WIDTH), eq(DEVICE_HEIGHT - NAVBAR_HEIGHT),
                         eq(ACTIVITY_LAYOUT_STATE_SIDE_SHEET_MAXIMIZED));
+        assertEquals("Corner rounded while maximized", 0, mPCCTTestRule.mLayoutParams.topMargin);
 
         clearInvocations(mPCCTTestRule.mOnActivityLayoutCallback);
 
         mFullscreen = true;
         strategy.onEnterFullscreen(null, null);
+        assertEquals("Corner rounded in fullscreen", 0, mPCCTTestRule.mLayoutParams.topMargin);
         clearInvocations(mPCCTTestRule.mOnResizedCallback);
         clearInvocations(mPCCTTestRule.mOnActivityLayoutCallback);
 
@@ -595,6 +621,7 @@ public class PartialCustomTabSideSheetStrategyTest {
         mFullscreen = false;
         strategy.onExitFullscreen(null);
         PartialCustomTabTestRule.waitForAnimationToFinish();
+        assertEquals("Corner rounded while maximized", 0, mPCCTTestRule.mLayoutParams.topMargin);
         verify(mPCCTTestRule.mOnResizedCallback).onResized(eq(FULL_HEIGHT), eq(DEVICE_WIDTH));
         clearInvocations(mPCCTTestRule.mOnResizedCallback);
         verify(mPCCTTestRule.mOnActivityLayoutCallback)
@@ -635,6 +662,32 @@ public class PartialCustomTabSideSheetStrategyTest {
         PartialCustomTabTestRule.waitForAnimationToFinish();
         assertTrue(invoked.get());
         assertEquals(DEVICE_HEIGHT, mPCCTTestRule.getWindowAttributes().y);
+    }
+    @Test
+    public void maximizeMinimize() {
+        mPCCTTestRule.configLandscapeMode();
+        var strategy = createPcctSideSheetStrategy(700);
+        verify(mPCCTTestRule.mOnActivityLayoutCallback)
+                .onActivityLayout(anyInt(), anyInt(), anyInt(), anyInt(),
+                        eq(ACTIVITY_LAYOUT_STATE_SIDE_SHEET));
+        clearInvocations(mPCCTTestRule.mOnActivityLayoutCallback);
+
+        int expected = ResizeType.MANUAL_EXPANSION;
+        var histogramExpansion =
+                HistogramWatcher.newSingleRecordWatcher("CustomTabs.SideSheetResizeType", expected);
+        strategy.toggleMaximize(true);
+        PartialCustomTabTestRule.waitForAnimationToFinish();
+        assertTrue("Should be in maximized state.", strategy.isMaximized());
+        histogramExpansion.assertExpected("ResizeType.MANUAL_EXPANSION should be recorded once.");
+
+        expected = PartialCustomTabBottomSheetStrategy.ResizeType.MANUAL_MINIMIZATION;
+        var histogramMinimization =
+                HistogramWatcher.newSingleRecordWatcher("CustomTabs.SideSheetResizeType", expected);
+        strategy.toggleMaximize(true);
+        PartialCustomTabTestRule.waitForAnimationToFinish();
+        assertFalse("Should be in minimized state.", strategy.isMaximized());
+        histogramMinimization.assertExpected(
+                "ResizeType.MANUAL_MINIMIZATION should be recorded once.");
     }
 
     private static void assertPosition(boolean isRightSide, boolean isRtl, int position) {

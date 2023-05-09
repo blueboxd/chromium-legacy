@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
@@ -290,14 +291,35 @@ const char kCastStreamingForceEnableHardwareVp8[] =
 const char kDisableUseMojoVideoDecoderForPepper[] =
     "disable-use-mojo-video-decoder-for-pepper";
 
+#if !BUILDFLAG(IS_ANDROID)
+const char kCastMirroringTargetPlayoutDelay[] =
+    "cast-mirroring-target-playout-delay";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 }  // namespace switches
 
 namespace media {
+
+// Enables customized AudioRendererAlgorithmParameters.
+BASE_FEATURE(kAudioRendererAlgorithmParameters,
+             "AudioRendererAlgorithmParameters",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<base::TimeDelta>
+    kAudioRendererAlgorithmStartingCapacityForEncrypted{
+        &kAudioRendererAlgorithmParameters, "starting_capacity_for_encrypted",
+        base::Milliseconds(500)};
 
 // Prefer FFmpeg to LibVPX for Vp8 decoding with opaque alpha mode.
 BASE_FEATURE(kFFmpegDecodeOpaqueVP8,
              "FFmpegDecodeOpaqueVP8",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable an updated dialog UI for the getDisplayMedia picker dialog under the
+// preferCurrentTab constraint.
+BASE_FEATURE(kShareThisTabDialog,
+             "ShareThisTabDialog",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Only used for disabling overlay fullscreen (aka SurfaceView) in Clank.
 BASE_FEATURE(kOverlayFullscreenVideo,
@@ -632,7 +654,12 @@ BASE_FEATURE(kGlobalMediaControlsCrOSUpdatedUI,
 // If enabled, users can request Media Remoting without fullscreen-in-tab.
 BASE_FEATURE(kMediaRemotingWithoutFullscreen,
              "MediaRemotingWithoutFullscreen",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 #endif
 
 // Allow Global Media Controls in system tray of CrOS.
@@ -781,6 +808,17 @@ BASE_FEATURE(kVaapiVp9kSVCHWEncoding,
              "VaapiVp9kSVCHWEncoding",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
+#if defined(ARCH_CPU_ARM_FAMILY) && BUILDFLAG(IS_CHROMEOS)
+// Enables the new V4L2StatefulVideoDecoder instead of V4L2VideoDecoder.
+BASE_FEATURE(kV4L2FlatStatelessVideoDecoder,
+             "V4L2FlatStatelessVideoDecoder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the new V4L2StatefulVideoDecoder instead of V4L2VideoDecoder.
+BASE_FEATURE(kV4L2FlatStatefulVideoDecoder,
+             "V4L2FlatStatefulVideoDecoder",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Inform video blitter of video color space.
 BASE_FEATURE(kVideoBlitColorAccuracy,
@@ -1027,12 +1065,6 @@ BASE_FEATURE(kUseAudioLatencyFromHAL,
 // the GPU main thread during VideoFrame construction.
 BASE_FEATURE(kUsePooledSharedImageVideoProvider,
              "UsePooledSharedImageVideoProvider",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Historically we hardcoded sRGB for color space. This flags controls if we
-// pass real color space to VideoFrame/SharedImages.
-BASE_FEATURE(kUseRealColorSpaceForAndroidVideo,
-             "UseRealColorSpaceForAndroidVideo",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #endif  // BUILDFLAG(IS_ANDROID)

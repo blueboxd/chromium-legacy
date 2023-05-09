@@ -58,7 +58,6 @@ function getCSS(): CSSResultGroup {
       display: flex;
       flex-direction: row;
       align-items: center;
-      width: 100%;
       line-height: 20px;
       padding: 10px 0px;
       border-top: 1px solid var(--cros-separator-color);
@@ -112,12 +111,9 @@ function getCSS(): CSSResultGroup {
         display: flex;
         flex-direction: row;
         align-items: center;
-        width: 100%;
-        line-height: 24px;
         padding: 8px;
         border-top: 1px solid var(--cros-sys-separator);
-        font-family: 'Roboto Medium';
-        font-size: 13px;
+        font: var(--cros-button-1-font);
         outline: none;
         user-select: none;
       }

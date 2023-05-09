@@ -13,7 +13,6 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -32,7 +31,6 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/location.h"
-#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -40,7 +38,6 @@
 #include "base/system/sys_info.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -57,7 +54,6 @@
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/window_util.h"
@@ -164,12 +160,14 @@ bool ShouldObserveSequence(ui::LayerAnimationSequence* sequence) {
 
 // Check if there is any external and internal pointing device in
 // |input_devices|.
+template <typename PointingDeviceType>
 void CheckHasPointingDevices(
-    const std::vector<ui::InputDevice>& input_devices,
+    const std::vector<PointingDeviceType>& input_devices,
     BluetoothDevicesObserver* bluetooth_device_observer,
     bool* out_has_external_pointing_device,
     bool* out_has_internal_pointing_device) {
-  for (const ui::InputDevice& input_device : input_devices) {
+  static_assert(std::is_base_of<ui::InputDevice, PointingDeviceType>::value);
+  for (const PointingDeviceType& input_device : input_devices) {
     if (input_device.type == ui::INPUT_DEVICE_INTERNAL) {
       *out_has_internal_pointing_device = true;
     } else if (input_device.type == ui::INPUT_DEVICE_USB ||

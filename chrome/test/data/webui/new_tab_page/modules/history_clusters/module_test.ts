@@ -8,7 +8,8 @@ import {Cart} from 'chrome://new-tab-page/cart.mojom-webui.js';
 import {Cluster, URLVisit} from 'chrome://new-tab-page/history_cluster_types.mojom-webui.js';
 import {PageHandlerRemote} from 'chrome://new-tab-page/history_clusters.mojom-webui.js';
 import {DismissModuleEvent, HistoryClusterElementType, HistoryClusterImageDisplayState, HistoryClusterLayoutType, historyClustersDescriptor, HistoryClustersModuleElement, HistoryClustersProxyImpl, LAYOUT_1_MIN_IMAGE_VISITS, LAYOUT_1_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS, LAYOUT_2_MIN_VISITS, LAYOUT_3_MIN_IMAGE_VISITS, LAYOUT_3_MIN_VISITS, PageImageServiceBrowserProxy} from 'chrome://new-tab-page/lazy_load.js';
-import {$$} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, NewTabPageProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {PageRemote} from 'chrome://new-tab-page/new_tab_page.mojom-webui.js';
 import {PageImageServiceHandlerRemote} from 'chrome://resources/cr_components/page_image_service/page_image_service.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -19,7 +20,7 @@ import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {installMock} from '../../test_support.js';
 
-import {createRelatedSearches, createSampleVisits, GOOGLE_SEARCH_BASE_URL, MIN_RELATED_SEARCHES} from './test_support.js';
+import {assertModuleHeaderTitle, createRelatedSearches, createSampleVisits, GOOGLE_SEARCH_BASE_URL, MIN_RELATED_SEARCHES} from './test_support.js';
 
 const DISPLAY_LAYOUT_METRIC_NAME = 'NewTabPage.HistoryClusters.DisplayLayout';
 
@@ -30,13 +31,6 @@ function assertLayoutSet(
   assertEquals(layoutType, moduleElement.layoutType);
   assertEquals(layoutElements.length, 1);
   assertEquals(layoutElements[0]!.id, `layout${layoutType}`);
-}
-
-function assertModuleHeaderTitle(headerElement: HTMLElement, title: string) {
-  const moduleHeaderTextContent = headerElement.textContent!.trim();
-  const headerText = moduleHeaderTextContent.split(/\r?\n/);
-  assertTrue(headerText.length > 0);
-  assertEquals(title, headerText[0]!.trim());
 }
 
 function createLayoutSuitableSampleVisits(
@@ -76,6 +70,7 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
   let handler: TestMock<PageHandlerRemote>;
   let imageServiceHandler: TestMock<PageImageServiceHandlerRemote>;
   let metrics: MetricsTracker;
+  let newTabPageCallbackRouterRemote: PageRemote;
 
   setup(() => {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
@@ -88,6 +83,9 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
         mock => PageImageServiceBrowserProxy.setInstance(
             new PageImageServiceBrowserProxy(mock)));
     metrics = fakeMetricsPrivate();
+    newTabPageCallbackRouterRemote =
+        NewTabPageProxy.getInstance()
+            .callbackRouter.$.bindNewPipeAndPassRemote();
   });
 
   async function initializeModule(clusters: Cluster[], cart: Cart|null = null):
@@ -449,6 +447,58 @@ suite('NewTabPageModulesHistoryClustersModuleTest', () => {
       const cartTile = moduleElement.shadowRoot!.getElementById('cartTile');
       assertTrue(!!cartTile);
       assertTrue(!!moduleElement.cart);
+    });
+
+    test('Cart tile controlled by settings', async () => {
+      loadTimeData.overrideValues({
+        modulesChromeCartInHistoryClustersModuleEnabled: true,
+      });
+
+      // Arrange.
+      const cart: Cart = Object.assign({
+        domain: 'foo.com',
+        merchant: 'Foo',
+        cartUrl: {url: 'https://foo.com'},
+        productImageUrls: [],
+        discountText: '',
+        relativeDate: '6 mins ago',
+      });
+      const moduleElement = await initializeModule(
+          [createSampleCluster(HistoryClusterLayoutType.LAYOUT_1)], cart);
+
+      assertEquals(1, handler.getCallCount('getCartForCluster'));
+      assertTrue(!!moduleElement);
+      await waitAfterNextRender(moduleElement);
+      let cartTile = moduleElement.shadowRoot!.getElementById('cartTile');
+      let questTiles = moduleElement.shadowRoot!.querySelectorAll(
+          'ntp-history-clusters-tile');
+      assertTrue(!!cartTile);
+      assertTrue(!!moduleElement.cart);
+      assertEquals(1, questTiles.length);
+
+      // Act.
+      newTabPageCallbackRouterRemote.setDisabledModules(false, ['chrome_cart']);
+      await waitAfterNextRender(moduleElement);
+
+      // Assert.
+      cartTile = moduleElement.shadowRoot!.getElementById('cartTile');
+      questTiles = moduleElement.shadowRoot!.querySelectorAll(
+          'ntp-history-clusters-tile');
+      assertTrue(!cartTile);
+      assertTrue(!moduleElement.cart);
+      assertEquals(2, questTiles.length);
+
+      // Act.
+      newTabPageCallbackRouterRemote.setDisabledModules(false, []);
+      await waitAfterNextRender(moduleElement);
+
+      // Assert.
+      cartTile = moduleElement.shadowRoot!.getElementById('cartTile');
+      questTiles = moduleElement.shadowRoot!.querySelectorAll(
+          'ntp-history-clusters-tile');
+      assertTrue(!!cartTile);
+      assertTrue(!!moduleElement.cart);
+      assertEquals(1, questTiles.length);
     });
   });
 });

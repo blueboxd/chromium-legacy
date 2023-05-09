@@ -635,17 +635,9 @@ BASE_FEATURE(kLazyFrameLoading,
              "LazyFrameLoading",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kLazyImageLoading,
-             "LazyImageLoading",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kLazyImageVisibleLoadTimeMetrics,
              "LazyImageVisibleLoadTimeMetrics",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable lazy initialization of the media controls.
 BASE_FEATURE(kLazyInitializeMediaControls,
@@ -988,7 +980,25 @@ BASE_FEATURE(kRenderDocument,
 // by a service crash.
 BASE_FEATURE(kRetryGetVideoCaptureDeviceInfos,
              "RetryGetVideoCaptureDeviceInfos",
+#if BUILDFLAG(IS_MAC)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
+
+// Reuses RenderProcessHost up to a certain threshold. This mode ignores the
+// soft process limit and behaves just like a process-per-site policy for all
+// sites, with an additional restriction that a process may only be reused while
+// the number of main frames in that process stays below a threshold.
+BASE_FEATURE(kProcessPerSiteUpToMainFrameThreshold,
+             "ProcessPerSiteUpToMainFrameThreshold",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Specifies the threshold for `kProcessPerSiteUpToMainFrameThreshold` feature.
+constexpr base::FeatureParam<int> kProcessPerSiteMainFrameThreshold{
+    &kProcessPerSiteUpToMainFrameThreshold, "ProcessPerSiteMainFrameThreshold",
+    2};
 
 // Enables skipping the early call to CommitPending when navigating away from a
 // crashed frame.
@@ -1428,6 +1438,11 @@ BASE_FEATURE(kWebBluetoothNewPermissionsBackend,
              "WebBluetoothNewPermissionsBackend",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the Web Environment Integrity API.
+BASE_FEATURE(kWebEnvironmentIntegrity,
+             "WebEnvironmentIntegrity",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
 BASE_FEATURE(kWebGLImageChromium,
@@ -1487,12 +1502,6 @@ BASE_FEATURE(kAutoDisableAccessibilityV2,
 // Else the renderer will have strong binding.
 BASE_FEATURE(kBackgroundMediaRendererHasModerateBinding,
              "BackgroundMediaRendererHasModerateBinding",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When this feature is enabled a cap is placed on the number of bindings held
-// by the BindingManager.
-BASE_FEATURE(kBindingManagerConnectionLimit,
-             "BindingManagerConnectionLimit",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Reduce the priority of GPU process when in background so it is more likely

@@ -83,6 +83,10 @@ CompanionMetricsLogger::~CompanionMetricsLogger() {
   FlushStats();
 }
 
+void CompanionMetricsLogger::RecordOpenTrigger(OpenTrigger open_trigger) {
+  open_trigger_ = open_trigger;
+}
+
 void CompanionMetricsLogger::RecordUiSurfaceShown(
     UiSurface ui_surface,
     uint32_t child_element_count) {
@@ -91,8 +95,11 @@ void CompanionMetricsLogger::RecordUiSurfaceShown(
   // Clamped to record as having max 10 child elements.
   surface.child_element_count = std::clamp(child_element_count, 0u, 10u);
 
-  base::UmaHistogramBoolean(
-      "Companion." + UiSurfaceToHistogramVariant(ui_surface) + ".Shown", true);
+  if (child_element_count > 0) {
+    base::UmaHistogramBoolean(
+        "Companion." + UiSurfaceToHistogramVariant(ui_surface) + ".Shown",
+        true);
+  }
 }
 
 void CompanionMetricsLogger::RecordUiSurfaceClicked(UiSurface ui_surface) {
@@ -112,8 +119,17 @@ void CompanionMetricsLogger::OnPromoAction(PromoType promo_type,
                                 last_promo_event_.value());
 }
 
+void CompanionMetricsLogger::OnPhFeedback(PhFeedback ph_feedback) {
+  last_ph_feedback_ = ph_feedback;
+}
+
 void CompanionMetricsLogger::FlushStats() {
   ukm::builders::Companion_PageView ukm_builder(ukm_source_id_);
+
+  // Open trigger.
+  if (open_trigger_.has_value()) {
+    ukm_builder.SetOpenTrigger(static_cast<int>(open_trigger_.value()));
+  }
 
   // CQ surface.
   auto iter = ui_surface_metrics_.find(UiSurface::kCQ);
@@ -128,8 +144,13 @@ void CompanionMetricsLogger::FlushStats() {
     ukm_builder.SetPH_LastEvent(static_cast<int64_t>(iter->second.last_event));
   }
 
+  // PH feedback.
+  if (last_ph_feedback_.has_value()) {
+    ukm_builder.SetPH_Feedback(static_cast<int>(last_ph_feedback_.value()));
+  }
+
   // Region search.
-  iter = ui_surface_metrics_.find(UiSurface::kPH);
+  iter = ui_surface_metrics_.find(UiSurface::kRegionSearch);
   if (iter != ui_surface_metrics_.end()) {
     ukm_builder.SetRegionSearch_ClickCount(iter->second.click_count);
   }

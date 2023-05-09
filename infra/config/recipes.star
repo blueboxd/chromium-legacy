@@ -145,6 +145,11 @@ build_recipe(
 )
 
 build_recipe(
+    name = "recipe:chromium/autosharder",
+    bootstrappable = True,
+)
+
+build_recipe(
     name = "recipe:chromium/orchestrator",
     bootstrappable = True,
 )
@@ -157,6 +162,10 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium/builder_cache_prewarmer",
     bootstrappable = True,
+)
+
+build_recipe(
+    name = "recipe:chromium/targets_config_verifier",
 )
 
 build_recipe(
@@ -194,10 +203,6 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_libfuzzer",
-)
-
-build_recipe(
-    name = "recipe:chromium_libfuzzer_trybot",
 )
 
 build_recipe(

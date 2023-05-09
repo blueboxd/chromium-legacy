@@ -36,7 +36,9 @@
 #include "media/base/media_switches.h"
 #include "ui/accessibility/accessibility_features.h"
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/constants/chromeos_features.h"
+#else
 #include "chrome/browser/signin/signin_features.h"
 #endif
 
@@ -173,7 +175,9 @@ class ChromeURLDataManagerWebUITrustedTypesTest
     if (GetParam() == std::string("chrome://welcome"))
       enabled_features.push_back(welcome::kForceEnabled);
 #endif
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    enabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
+#else
     enabled_features.push_back(kForYouFre);
 #endif
     enabled_features.push_back(media::kUseMediaHistoryStore);
@@ -374,11 +378,16 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://linux-proxy-config",
     "chrome://multidevice-internals",
     "chrome://nearby-internals",
+    "chrome://network",
+    "chrome://office-fallback/",
+    "chrome://parent-access",
     "chrome://power",
     "chrome://projector",
     "chrome://proximity-auth/proximity_auth.html",
     "chrome://set-time",
     "chrome://slow",
+    "chrome://smb-credentials-dialog/",
+    "chrome://smb-share-dialog/",
 #endif
 #if !BUILDFLAG(IS_CHROMEOS)
     "chrome://apps",

@@ -30,7 +30,6 @@ Só pode ler os datos encriptados alguén que coñeza a túa frase de acceso. A 
 <translation id="1145536944570833626">Elimina os datos existentes.</translation>
 <translation id="1149401351239820326">Mes de caducidade</translation>
 <translation id="1150263420752757504"><ph name="APP_NAME" /> abrirase en Chrome. Ao continuar, aceptas as <ph name="BEGIN_LINK1" />Condicións de servizo de Google<ph name="END_LINK1" />, así como as <ph name="BEGIN_LINK2" />Condicións de servizo adicionais de Google Chrome e Chrome OS<ph name="END_LINK2" />.</translation>
-<translation id="1154704303112745282">Páxina non dispoñible sen conexión: <ph name="VIOLATED_URL" /></translation>
 <translation id="1173894706177603556">Cambiar o nome</translation>
 <translation id="1177863135347784049">Personalizada</translation>
 <translation id="1181037720776840403">Eliminar</translation>
@@ -120,6 +119,7 @@ Cando eliminas o teu historial de navegación (completo ou dun sitio en concreto
 <translation id="1571304935088121812">Copia o nome de usuario</translation>
 <translation id="1592864538817356322">Protección estándar:</translation>
 <translation id="1594635596540195766">A lista de abaixo contén <ph name="SUGGESTIONS_COUNT" /> elementos suxeridos.</translation>
+<translation id="1598163867407640634">Usa <ph name="SITE_ETLD_PLUS_ONE" /> con <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Como podes xestionar os teus datos?<ph name="END_BOLD" /> Para protexer a túa privacidade, eliminamos automaticamente os teus intereses cuxa antigüidade sexa superior a 4 semanas. Algúns poderían volver incluírse na lista ao seguires navegando. Se o prefires, podes quitar os intereses que non queiras que teña en conta Chrome.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Quitar 1 elemento seleccionado}other{Quitar # elementos seleccionados}}</translation>
 <translation id="1633659023549081553">Descubre novo contido na páxina de inicio de Chrome</translation>
@@ -150,6 +150,7 @@ Cando eliminas o teu historial de navegación (completo ou dun sitio en concreto
 <translation id="1810845389119482123">Non se completou a configuración de sincronización inicial</translation>
 <translation id="1829244130665387512">Buscar na páxina</translation>
 <translation id="1832459821645506983">Si, acepto</translation>
+<translation id="185383612275551373">Activa a sincronización para desfrutar do contido máis relevante de Google</translation>
 <translation id="1854311313115643875">Cando as probas están activas, a medición dos anuncios permite que os sitios que visites lle soliciten a Chrome información que lles axude a medir o rendemento dos seus anuncios. Ademais, restrinxe o seguimento en varios sitios, dado que se transfire a menor cantidade posible de información entre eles.
 
 Cando eliminas o teu historial de navegación (completo ou dun sitio en concreto), tamén eliminas a información de medición asociada. Consulta <ph name="BEGIN_LINK" />o teu historial de navegación<ph name="END_LINK" />.</translation>
@@ -241,7 +242,6 @@ Cando eliminas o teu historial de navegación (completo ou dun sitio en concreto
 <translation id="2386938421315164605">Ocultar e mostrar temas</translation>
 <translation id="2390510615457643724">Queres descargar <ph name="FILE_NAME" /> (<ph name="FILE_SIZE" />) de novo?</translation>
 <translation id="2394602618534698961">Os ficheiros descargados aparecen aquí</translation>
-<translation id="2407481962792080328">Cando inicies sesión na túa Conta de Google, activarase esta función</translation>
 <translation id="2410754283952462441">Escolle unha conta</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2426805022920575512">Escoller outra conta</translation>
@@ -298,6 +298,7 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="265156376773362237">Precarga estándar</translation>
 <translation id="2656405586795711023">Aplicacións web</translation>
 <translation id="2669454659051515572">Calquera que use este dispositivo pode ver os ficheiros descargados</translation>
+<translation id="2688382350024736268">Agora Chrome só comparte información moi limitada entre os sitios e as aplicacións (como, por exemplo, cando se che mostrou un anuncio) co fin de axudar aos sitios a medir o rendemento dos anuncios.</translation>
 <translation id="2702516483241149200">Novidade: Comparte unha ligazón que leve directamente a este texto</translation>
 <translation id="2707726405694321444">Actualiza páxina</translation>
 <translation id="271033894570825754">Novo</translation>
@@ -386,7 +387,6 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="3091010850649238832">Mostrar contido do portapapeis</translation>
 <translation id="3098745985164956033">Algunhas imaxes envíanse a Google coa finalidade de mellorar as descricións para ti</translation>
 <translation id="3114507951000454849">Le as noticias do día <ph name="NEWS_ICON" /></translation>
-<translation id="311958134571892113">vinculouse a</translation>
 <translation id="3123734510202723619">Avisos</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Páxina de inicio de Chrome</translation>
@@ -546,6 +546,7 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4035877632587724847">Non permitir</translation>
 <translation id="4036177530563778041">Continúa facilmente onde o deixaches</translation>
+<translation id="4042941173059740150">Continúa ata <ph name="SITE_ETLD_PLUS_ONE" /> con <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="4045764304651014138">Datos de uso</translation>
 <translation id="405399507749852140">Recibe alertas se baixa o prezo en calquera sitio</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -692,7 +693,6 @@ Os tokens de estado privado melloran a privacidade na Web e non se poden usar pa
 Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />restablecer a sincronización<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Nome que aparece na tarxeta</translation>
 <translation id="481574578487123132">Dispositivos vinculados</translation>
-<translation id="4818017973810341238">Non se puido realizar a verificación de Digital Asset Links en <ph name="VIOLATED_URL" /></translation>
 <translation id="4826163340425232009">Panel inferior de inicio de sesión.</translation>
 <translation id="4831037795716408498">Descarga contido</translation>
 <translation id="4834007576107377210">En caso aplicable, consulta as instrucións do teu motor de busca para eliminar o historial de busca</translation>
@@ -785,7 +785,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5235196193381275927">Produciuse un erro ao iniciar sesión</translation>
 <translation id="5246093389635966745">Editar atallo da barra de ferramentas</translation>
 <translation id="5271967389191913893">O dispositivo non pode abrir o contido que se debe descargar.</translation>
-<translation id="5274286919938458946">Vinculada a <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Enviar a</translation>
 <translation id="5300426565656326054">Personalización de anuncios baseada no navegador</translation>
 <translation id="5304593522240415983">Este campo non pode quedar baleiro</translation>
@@ -847,8 +846,10 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="562289928968387744">Xestionar reaccións</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5628604359369369630">Sen ler: dispoñibles sen conexión</translation>
+<translation id="5635091213277904818">Chrome elimina automaticamente os sitios que teñan máis de 30 días de antigüidade. Se volves visitar un sitio, é posible que apareza na lista outra vez. Tamén podes impedir que un sitio che suxira anuncios.</translation>
 <translation id="5639724618331995626">Permitir todos os sitios</translation>
 <translation id="5641456720590409793">O <ph name="BEGIN_LINK1" />historial de busca<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />outros tipos de actividade<ph name="END_LINK2" /> poden gardarse na túa Conta de Google</translation>
+<translation id="564667659802381754">Guía de privacidade <ph name="BEGIN_NEW" />Novidade<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">Últimos 7 días</translation>
 <translation id="5655963694829536461">Buscar as túas descargas</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
@@ -887,7 +888,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5833984609253377421">Compartir ligazón</translation>
 <translation id="5834764604050996579">Para escanear un código QR, permite que Chrome utilice a cámara</translation>
 <translation id="5839058148541733625">O dinosauro de Chrome</translation>
-<translation id="5842437907245493289">Organizar produtos dos que fagas un seguimento en Marcadores desde a icona do cartafol</translation>
 <translation id="5853623416121554550">en pausa</translation>
 <translation id="5854512288214985237">Non se envían estatísticas nin informes de fallos a Google</translation>
 <translation id="5855546874025048181">Refinar: <ph name="REFINE_TEXT" /></translation>
@@ -989,7 +989,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6395288395575013217">LIGAZÓN</translation>
 <translation id="6397616442223433927">De novo en liña</translation>
 <translation id="6401458660421980302">Para enviar esta pestana a outro dispositivo, inicia sesión en Chrome nel</translation>
-<translation id="6402652558933147609"><ph name="ERROR_CODE" /> o <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronización</translation>
 <translation id="6407224748847589805">Non se puido establecer conexión co teu ordenador. Proba con outra opción de verificación.</translation>
@@ -1172,6 +1171,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7291910923717764901">Engadíronse descricións de imaxes para esta páxina</translation>
 <translation id="7293429513719260019">Seleccionar idioma</translation>
 <translation id="729975465115245577">O dispositivo non ten unha aplicación para almacenar o ficheiro de contrasinais.</translation>
+<translation id="7304072650267745798">Talvez o teu dispositivo Android inclúa unha opción de configuración similar. Se esta opción está activada en Chrome e no teu dispositivo Android, é posible que unha empresa poida medir a eficacia dos anuncios nos sitios web que visites e nas aplicacións que uses.</translation>
 <translation id="7304873321153398381">Estás sen conexión. Chrome non puido comprobar os teus contrasinais.</translation>
 <translation id="7313188324932846546">Toca para configurar a sincronización</translation>
 <translation id="7332075081379534664">Iniciouse sesión</translation>
@@ -1211,6 +1211,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7482656565088326534">Pestana de vista previa</translation>
 <translation id="7484997419527351112">Discover: desactivado</translation>
 <translation id="7485033510383818941">Para actualizar o contido do feed, arrastra a páxina cara abaixo</translation>
+<translation id="7486953194485875763">Os seguintes datos dos últimos 15 minutos eliminaranse:</translation>
 <translation id="749294055653435199">Google Lens non está dispoñible neste dispositivo</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualizouse <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7497755084107113646">Tema engadido de novo aos temas potenciais</translation>
@@ -1253,6 +1254,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7682724950699840886">Sigue estes consellos: asegúrate de que hai espazo suficiente no dispositivo e proba a exportar os contrasinais de novo.</translation>
 <translation id="7686086654630106285">Máis información sobre os anuncios suxeridos polos sitios</translation>
 <translation id="768618399695552958">Precárganse algunhas das páxinas que visitas. As páxinas poden precargarse a través dos nosos servidores se están vinculadas a un sitio de Google.</translation>
+<translation id="7690596512217303514">O teu dispositivo non puido abrir Chrome. Para solucionar o problema, descarga a actualización máis recente de Chrome desde a tenda de aplicacións.</translation>
 <translation id="7691043218961417207">Descubre contido para seguir</translation>
 <translation id="7697383401610880082">Controlador de arrastre</translation>
 <translation id="7698359219371678927">Crea un correo electrónico en <ph name="APP_NAME" /></translation>
@@ -1261,6 +1263,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7709918231054955894">Accede a todas as túas pestanas</translation>
 <translation id="772434085369393266">Cambia ao protocolo HTTPS para a navegación. Mostraráseche un aviso antes de cargar os sitios que non sexan compatibles. Non podes cambiar esta opción de configuración porque tes activada a opción Protección avanzada.</translation>
 <translation id="7725024127233776428">As páxinas que engadas aos marcadores aparecerán aquí</translation>
+<translation id="7733878270780732638">Non hai suficiente espazo no dispositivo.</translation>
 <translation id="7757787379047923882">O texto compartiuse desde <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Tarxeta SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Engadir enderezo</translation>
@@ -1363,6 +1366,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8209050860603202033">Abrir imaxe</translation>
 <translation id="8216351761227087153">Ver</translation>
 <translation id="8218622182176210845">Xestiona a túa conta</translation>
+<translation id="8221401890884589479">Podes bloquear os sitios que non che interesen. Chrome tamén elimina automaticamente da lista os sitios que teñan máis de 30 días de antigüidade. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="8223642481677794647">Menú da tarxeta do feed</translation>
 <translation id="8236097722223016103">Engadir aos marcadores</translation>
 <translation id="8250920743982581267">Documentos</translation>
@@ -1454,6 +1458,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8664215986015753476">Utiliza Chrome ao teu xeito</translation>
 <translation id="8664979001105139458">Xa existe un ficheiro con este nome</translation>
 <translation id="8666759526542103597">Acerca da personalización de anuncios baseada no navegador</translation>
+<translation id="8676276370198826499">Rexístrate en <ph name="SITE_ETLD_PLUS_ONE" /> con <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="8676789164135894283">Verificacións inicio de sesión</translation>
 <translation id="8683039184091909753">imaxe</translation>
 <translation id="869891660844655955">Data de vencemento</translation>
@@ -1547,7 +1552,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="9158770349521403363">Compartir só contido</translation>
 <translation id="9159716826369098114">Restablecer grupo de <ph name="TAB_COUNT" /> pestanas como un novo grupo de pestanas en segundo plano.</translation>
 <translation id="9169507124922466868">O historial de navegación abriuse ata a metade</translation>
-<translation id="9183331776983279456">Chrome elimina automaticamente os sitios que leven máis de 4 semanas na lista. Se volves visitar un sitio, é posible que apareza na lista outra vez. Tamén podes bloquear sitios para que non che suxiran anuncios.</translation>
 <translation id="9190276265094487094">Terás o teu historial en todos os dispositivos sincronizados, de tal xeito que poidas continuar co que estabas facendo</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{A comprobación realizouse hai 1 minuto}other{A comprobación realizouse hai # minutos}}</translation>
 <translation id="9204836675896933765">Queda 1 ficheiro</translation>
@@ -1569,7 +1573,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="96681097142096641">Queres ver a páxina simplificada?</translation>
 <translation id="968900484120156207">As páxinas que visites aparecerán aquí</translation>
 <translation id="970715775301869095">Quedan <ph name="MINUTES" /> minutos</translation>
-<translation id="978317418833355355">Podes bloquear os sitios que non che interesen. Chrome tamén elimina automaticamente da lista os sitios que leven nela máis de 4 semanas. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="981121421437150478">Sen conexión</translation>
 <translation id="983192555821071799">Pechar todas as pestanas</translation>
 <translation id="987264212798334818">Xeral</translation>

@@ -16,7 +16,7 @@
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/sync/base/features.h"
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -35,7 +35,7 @@
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/password_test_util.h"
+#import "ios/chrome/test/app/mock_reauthentication_module.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -437,7 +437,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestAddingPasswordWithNote) {
 
   SetEditCellMultiLineText(@"note", 1, 2);
   [passwordDetails editButtonPressed];
-  [passwordDetails passwordEditingConfirmed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
   EXPECT_NSEQ(@"note", delegate().password.note);
@@ -463,7 +462,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditingPasswordWithNote) {
 
   SetEditCellMultiLineText(@"new_note", 1, 2);
   [passwordDetails editButtonPressed];
-  [passwordDetails passwordEditingConfirmed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
   EXPECT_NSEQ(@"new_note", delegate().password.note);
@@ -490,7 +488,6 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestRemovingPasswordWithNote) {
 
   SetEditCellMultiLineText(@"", 1, 2);
   [passwordDetails editButtonPressed];
-  [passwordDetails passwordEditingConfirmed];
 
   EXPECT_FALSE(passwordDetails.tableView.editing);
   EXPECT_NSEQ(@"", delegate().password.note);

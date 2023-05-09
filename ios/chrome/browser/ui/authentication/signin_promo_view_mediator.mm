@@ -599,7 +599,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
   // For the top-of-feed promo, the user must have engaged with a feed first.
   if (accessPoint ==
           signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO &&
-      ![[NSUserDefaults standardUserDefaults] boolForKey:kEngagedWithFeedKey]) {
+      (![[NSUserDefaults standardUserDefaults]
+           boolForKey:kEngagedWithFeedKey] ||
+       ShouldIgnoreFeedEngagementConditionForTopSyncPromo())) {
     return NO;
   }
 
@@ -647,7 +649,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)dealloc {
-  DCHECK_EQ(ios::SigninPromoViewState::Invalid, _signinPromoViewState);
+  DCHECK_EQ(ios::SigninPromoViewState::Invalid, _signinPromoViewState)
+      << base::SysNSStringToUTF8([self description]);
 }
 
 - (SigninPromoViewConfigurator*)createConfigurator {
@@ -900,6 +903,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
   _authenticationFlow = [[AuthenticationFlow alloc]
                initWithBrowser:_browser
                       identity:self.identity
+                   accessPoint:self.accessPoint
               postSignInAction:PostSignInAction::
                                    kEnableBookmarkReadingListAccountStorage
       presentingViewController:_baseViewController];

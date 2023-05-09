@@ -11,11 +11,6 @@
 
 namespace flag_descriptions {
 
-const char kAdaptiveSuggestionsCountName[] = "Omnibox adaptive suggestions";
-const char kAdaptiveSuggestionsCountDescription[] =
-    "Allows Omnibox to dynamically adjust number of offered suggestions to "
-    "fill in the space between Omnibox and the soft keyboard.";
-
 const char kAddToHomeScreenName[] = "Add to home screen";
 const char kAddToHomeScreenDescription[] =
     "Allows to add a bookmark on the device home screen when sharing from a "
@@ -217,17 +212,6 @@ extern const char kMagicStackDescription[] =
     "When enabled, a Magic Stack will be shown in the Home surface displaying "
     "a variety of modules.";
 
-extern const char kMapsExperienceKitName[] = "Experience Kit Maps";
-extern const char kMapsExperienceKitDescription[] =
-    "When enabled, long pressing on an address will trigger Experience Kit Maps"
-    "location and directions handling. Requires "
-    "#enable-long-press-surrounding-text to be enabled.";
-
-extern const char kLongPressSurroundingTextName[] =
-    "Enable Long Press Surrounding Text";
-extern const char kLongPressSurroundingTextDescription[] =
-    "When enabled, long pressing a text will analyze larger part of the text.";
-
 const char kCredentialProviderExtensionPromoName[] =
     "Enable the Credential Provider Extension promo.";
 const char kCredentialProviderExtensionPromoDescription[] =
@@ -279,11 +263,6 @@ const char kEnableFeedHeaderSettingsName[] =
     "Enables the feed header settings.";
 const char kEnableFeedHeaderSettingsDescription[] =
     "When enabled, some UI elements of the feed header can be modified.";
-
-const char kDmTokenDeletionName[] = "DMToken deletion";
-const char kDmTokenDeletionDescription[] =
-    "Delete the corresponding DMToken when a managed browser is deleted in "
-    "Chrome Browser Cloud Management.";
 
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
@@ -506,6 +485,10 @@ const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "
     "disabled, the the web view's frame are updated.";
 
+extern const char kHistorySyncOptInName[] = "History Sync Opt-In";
+extern const char kHistorySyncOptInDescription[] =
+    "Enables history sync opt-in";
+
 const char kHttpsOnlyModeName[] = "HTTPS-Only Mode Setting";
 const char kHttpsOnlyModeDescription[] = "Enables the HTTPS-Only Mode setting";
 
@@ -603,12 +586,6 @@ const char kIOSSharedHighlightingV2Name[] = "Text Fragments UI improvements";
 const char kIOSSharedHighlightingV2Description[] =
     "Enables improvements to text fragments UI, including a menu for removing "
     "or resharing a highlight.";
-
-const char kIOSShowPasswordStorageInSaveInfobarName[] =
-    "Show password storage in save infobar";
-const char kIOSShowPasswordStorageInSaveInfobarDescription[] =
-    "Modifies the save password infobar to show whether the save happens to an "
-    "account or only to the current device";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -832,16 +809,6 @@ const char kOptimizationGuidePushNotificationClientDescription[] =
     "Enables the client that handles incoming push notifications on behalf of "
     "the optimization guide.";
 
-const char kOptimizationGuideModelDownloadingName[] =
-    "Allow optimization guide model downloads";
-const char kOptimizationGuideModelDownloadingDescription[] =
-    "Enables the optimization guide to download prediction models.";
-
-const char kOptimizationTargetPredictionDescription[] =
-    "Enables prediction of optimization targets";
-const char kOptimizationTargetPredictionName[] =
-    "Enables usage of optimization guide TFLite models.";
-
 const char kPasswordNotesWithBackupName[] = "Password notes in settings";
 const char kPasswordNotesWithBackupDescription[] =
     "Enables a note section for each password in the settings page.";
@@ -1005,12 +972,6 @@ const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
 
-const char kUseLensToSearchForImageName[] =
-    "Use Google Lens to Search for images";
-const char kUseLensToSearchForImageDescription[] =
-    "When enabled, use Lens to search for images from the long press context "
-    "menu when Google is the selected search engine. iPhone only.";
-
 const char kEnableLensInHomeScreenWidgetName[] =
     "Enable Google Lens in the Home Screen Widget";
 const char kEnableLensInHomeScreenWidgetDescription[] =
@@ -1057,6 +1018,11 @@ const char kSFSymbolsFollowUpDescription[] = "Change the + button.";
 const char kTabGridRecencySortName[] = "Change TabGrid sorting";
 const char kTabGridRecencySortDescription[] =
     "When enabled, the tabs in the Tab Grid are sorted differently.";
+
+const char kTabGridNewTransitionsName[] = "Enable new TabGrid transitions";
+const char kTabGridNewTransitionsDescription[] =
+    "When enabled, the new Tab Grid to Browser (and vice versa) transitions"
+    "are used.";
 
 const char kTabInactivityThresholdName[] = "Change Tab inactivity threshold";
 const char kTabInactivityThresholdDescription[] =

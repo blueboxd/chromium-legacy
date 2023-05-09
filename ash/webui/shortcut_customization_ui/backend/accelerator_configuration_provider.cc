@@ -24,6 +24,7 @@
 #include "ash/webui/shortcut_customization_ui/backend/accelerator_layout_table.h"
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/strcat.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
@@ -56,26 +57,26 @@ using HiddenAcceleratorMap =
 // accelerators and hide them from display.
 const HiddenAcceleratorMap& GetHiddenAcceleratorMap() {
   static auto hiddenAcceleratorMap = base::NoDestructor<HiddenAcceleratorMap>(
-      {{TOGGLE_APP_LIST,
+      {{AcceleratorAction::kToggleAppList,
         {ui::Accelerator(ui::VKEY_BROWSER_SEARCH, ui::EF_SHIFT_DOWN,
                          ui::Accelerator::KeyState::PRESSED),
          ui::Accelerator(ui::VKEY_LWIN, ui::EF_SHIFT_DOWN,
                          ui::Accelerator::KeyState::RELEASED)}},
-       {SHOW_SHORTCUT_VIEWER,
+       {AcceleratorAction::kShowShortcutViewer,
         {ui::Accelerator(ui::VKEY_F14, ui::EF_NONE,
                          ui::Accelerator::KeyState::PRESSED),
          ui::Accelerator(
              ui::VKEY_OEM_2,
              ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
              ui::Accelerator::KeyState::PRESSED)}},
-       {OPEN_GET_HELP,
+       {AcceleratorAction::kOpenGetHelp,
         {ui::Accelerator(ui::VKEY_OEM_2,
                          ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
                          ui::Accelerator::KeyState::PRESSED)}},
-       {TOGGLE_FULLSCREEN,
+       {AcceleratorAction::kToggleFullscreen,
         {ui::Accelerator(ui::VKEY_ZOOM, ui::EF_SHIFT_DOWN,
                          ui::Accelerator::KeyState::PRESSED)}},
-       {SWITCH_TO_LAST_USED_IME,
+       {AcceleratorAction::kSwitchToLastUsedIme,
         {ui::Accelerator(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
                          ui::Accelerator::KeyState::RELEASED)}}});
   return *hiddenAcceleratorMap;
@@ -84,6 +85,11 @@ const HiddenAcceleratorMap& GetHiddenAcceleratorMap() {
 constexpr int kCustomizationModifierMask =
     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN |
     ui::EF_COMMAND_DOWN;
+
+// The following are keys that are not allowed to be used as a customized
+// activation key.
+constexpr ui::KeyboardCode kReservedKeys[] = {ui::VKEY_POWER, ui::VKEY_F13,
+                                              ui::VKEY_SLEEP};
 
 // Gets the parts of the string that don't contain replacements.
 // Ex: "Press and " -> ["Press ", " and "]
@@ -263,6 +269,11 @@ absl::optional<AcceleratorConfigResult> ValidateAccelerator(
     return AcceleratorConfigResult::kMissingModifier;
   }
 
+  // Case: Reserved keys cannot be part of a custom accelerator.
+  if (base::Contains(kReservedKeys, accelerator.key_code())) {
+    return AcceleratorConfigResult::kKeyNotAllowed;
+  }
+
   // Case: Top-row action keys cannot be part of the accelerator.
   if (ui::KeyboardCapability::IsTopRowActionKey(accelerator.key_code())) {
     return AcceleratorConfigResult::kKeyNotAllowed;
@@ -290,9 +301,6 @@ namespace shortcut_ui {
 AcceleratorConfigurationProvider::AcceleratorConfigurationProvider()
     : ash_accelerator_configuration_(
           Shell::Get()->ash_accelerator_configuration()) {
-  // Observe connected keyboard events.
-  ui::DeviceDataManager::GetInstance()->AddObserver(this);
-
   // Observe keyboard input method changes.
   input_method::InputMethodManager::Get()->AddObserver(this);
 
@@ -300,7 +308,13 @@ AcceleratorConfigurationProvider::AcceleratorConfigurationProvider()
   Shell::Get()->keyboard_capability()->AddObserver(this);
 
   if (features::IsInputDeviceSettingsSplitEnabled()) {
+    // `InputDeviceSettingsController` provides updates whenever a device is
+    // connected/disconnected or if its settings changed. In any of these cases,
+    // accelerators must be updated.
     Shell::Get()->input_device_settings_controller()->AddObserver(this);
+  } else {
+    // Observe connected keyboard events.
+    ui::DeviceDataManager::GetInstance()->AddObserver(this);
   }
 
   ash_accelerator_configuration_->AddAcceleratorsUpdatedCallback(
@@ -342,15 +356,20 @@ AcceleratorConfigurationProvider::~AcceleratorConfigurationProvider() {
 void AcceleratorConfigurationProvider::IsMutable(
     ash::mojom::AcceleratorSource source,
     IsMutableCallback callback) {
-  if (source == ash::mojom::AcceleratorSource::kBrowser) {
-    // Browser shortcuts are not mutable.
-    std::move(callback).Run(/*is_mutable=*/false);
-    return;
+  bool is_mutable = false;
+  switch (source) {
+    case ash::mojom::AcceleratorSource::kAsh:
+      is_mutable = ash_accelerator_configuration_->IsMutable();
+      break;
+    case ash::mojom::AcceleratorSource::kBrowser:
+    case ash::mojom::AcceleratorSource::kAmbient:
+    case ash::mojom::AcceleratorSource::kAndroid:
+    case ash::mojom::AcceleratorSource::kEventRewriter:
+      // The sources above are not mutable.
+      break;
   }
 
-  // TODO(jimmyxgong): Add more cases for other source types when they're
-  // available.
-  std::move(callback).Run(/*is_mutable=*/true);
+  std::move(callback).Run(is_mutable);
 }
 
 void AcceleratorConfigurationProvider::HasLauncherButton(
@@ -403,12 +422,12 @@ void AcceleratorConfigurationProvider::OnTopRowKeysAreFKeysChanged() {
 
 void AcceleratorConfigurationProvider::OnKeyboardConnected(
     const mojom::Keyboard& keyboard) {
-  NotifyAcceleratorsUpdated();
+  UpdateKeyboards();
 }
 
 void AcceleratorConfigurationProvider::OnKeyboardDisconnected(
     const mojom::Keyboard& keyboard) {
-  NotifyAcceleratorsUpdated();
+  UpdateKeyboards();
 }
 
 void AcceleratorConfigurationProvider::OnKeyboardSettingsUpdated(

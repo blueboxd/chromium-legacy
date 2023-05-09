@@ -17,6 +17,12 @@ BASE_FEATURE(kBluetoothPhoneFilter,
              "BluetoothPhoneFilter",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables updated UI for the clipboard history menu and new system behavior
+// related to clipboard history.
+BASE_FEATURE(kClipboardHistoryRefresh,
+             "ClipboardHistoryRefresh",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables cloud game features. A separate flag "LauncherGameSearch" controls
 // launcher-only cloud gaming features, since they can also be enabled on
 // non-cloud-gaming devices.
@@ -58,18 +64,12 @@ BASE_FEATURE(kExperimentalWebAppStoragePartitionIsolation,
              "ExperimentalWebAppStoragePartitionIsolation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables Jelly features.
+// Enables Jelly features. go/jelly-flags
 BASE_FEATURE(kJelly, "Jelly", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Jellyroll features. Jellyroll is a feature flag for CrOSNext, which
-// controls all system UI updates and new system components.
+// controls all system UI updates and new system components. go/jelly-flags
 BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables system authentication on Ash for password manager, which uses
-// WebUI instead by default. Cleanup CL: https://crrev.com/c/4055733/2.
-BASE_FEATURE(kPasswordManagerSystemAuthentication,
-             "PasswordManagerSystemAuthentication",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to enable quick answers V2 settings sub-toggles.
 BASE_FEATURE(kQuickAnswersV2SettingsSubToggle,
@@ -85,6 +85,15 @@ BASE_FEATURE(kQuickAnswersRichCard,
 BASE_FEATURE(kUploadOfficeToCloud,
              "UploadOfficeToCloud",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsClipboardHistoryRefreshEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()->EnableClipboardHistoryRefresh();
+#else
+  return base::FeatureList::IsEnabled(kClipboardHistoryRefresh) &&
+         IsJellyEnabled();
+#endif
+}
 
 bool IsCloudGamingDeviceEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -106,10 +115,6 @@ bool IsJellyrollEnabled() {
   // Force Jellyroll features on if Jelly is enabled since they need to be
   // tested together. b/270742469
   return IsJellyEnabled() || base::FeatureList::IsEnabled(kJellyroll);
-}
-
-bool IsPasswordManagerSystemAuthenticationEnabled() {
-  return base::FeatureList::IsEnabled(kPasswordManagerSystemAuthentication);
 }
 
 bool IsQuickAnswersV2TranslationDisabled() {

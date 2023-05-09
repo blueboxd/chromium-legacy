@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
-#include "build/buildflag.h"
 #include "services/network/public/mojom/attribution.mojom-blink.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +24,6 @@
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
-#include "third_party/blink/renderer/platform/loader/attribution_header_constants.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -100,14 +97,14 @@ struct IntegrityTestCase {
 
 struct LazyLoadImageTestCase {
   const char* input_html;
-  bool lazy_load_image_enabled;
+  bool should_preload;
 };
 
 struct AttributionSrcTestCase {
   bool use_secure_document_url;
   const char* base_url;
   const char* input_html;
-  const char* expected_eligible_header;
+  network::mojom::AttributionReportingEligibility expected_eligibility;
   network::mojom::AttributionSupport attribution_support =
       network::mojom::AttributionSupport::kWeb;
 };
@@ -243,25 +240,26 @@ class HTMLMockHTMLResourcePreloader : public ResourcePreloader {
     }
   }
 
-  void LazyLoadImageEnabledVerification(bool expected_enabled) {
-    if (expected_enabled) {
-      EXPECT_FALSE(preload_request_) << preload_request_->ResourceURL();
+  void LazyLoadImagePreloadVerification(bool expected) {
+    if (expected) {
+      EXPECT_TRUE(preload_request_.get());
     } else {
-      ASSERT_TRUE(preload_request_.get());
+      EXPECT_FALSE(preload_request_) << preload_request_->ResourceURL();
     }
   }
 
   void AttributionSrcRequestVerification(
       Document* document,
-      const char* expected_eligible_header,
+      network::mojom::AttributionReportingEligibility expected_eligibility,
       network::mojom::AttributionSupport expected_support) {
     ASSERT_TRUE(preload_request_.get());
     Resource* resource = preload_request_->Start(document);
     ASSERT_TRUE(resource);
 
-    EXPECT_EQ(expected_eligible_header,
-              resource->GetResourceRequest().HttpHeaderField(
-                  http_names::kAttributionReportingEligible));
+    EXPECT_EQ(
+        expected_eligibility,
+        resource->GetResourceRequest().GetAttributionReportingEligibility());
+
     EXPECT_EQ(expected_support,
               resource->GetResourceRequest().GetAttributionReportingSupport());
   }
@@ -433,8 +431,7 @@ class HTMLPreloadScannerTest : public PageTestBase {
     scanner_->AppendToEnd(String(test_case.input_html));
     std::unique_ptr<PendingPreloadData> preload_data = scanner_->Scan(base_url);
     preloader.TakePreloadData(std::move(preload_data));
-    preloader.LazyLoadImageEnabledVerification(
-        test_case.lazy_load_image_enabled);
+    preloader.LazyLoadImagePreloadVerification(test_case.should_preload);
   }
 
   void Test(AttributionSrcTestCase test_case) {
@@ -448,9 +445,9 @@ class HTMLPreloadScannerTest : public PageTestBase {
     scanner_->AppendToEnd(String(test_case.input_html));
     std::unique_ptr<PendingPreloadData> preload_data = scanner_->Scan(base_url);
     preloader.TakePreloadData(std::move(preload_data));
-    preloader.AttributionSrcRequestVerification(
-        &GetDocument(), test_case.expected_eligible_header,
-        test_case.attribution_support);
+    preloader.AttributionSrcRequestVerification(&GetDocument(),
+                                                test_case.expected_eligibility,
+                                                test_case.attribution_support);
   }
 
  private:
@@ -1125,35 +1122,39 @@ TEST_F(HTMLPreloadScannerTest, testAttributionSrc) {
   static constexpr char kInsecureBaseURL[] = "http://example.test";
 
   AttributionSrcTestCase test_cases[] = {
-    // Insecure context
-    {kInsecureDocumentUrl, kSecureBaseURL, "<img src='/image' attributionsrc>",
-     nullptr},
-    {kInsecureDocumentUrl, kSecureBaseURL,
-     "<script src='/script' attributionsrc></script>", nullptr},
-    // No attributionsrc attribute
-    {kSecureDocumentUrl, kSecureBaseURL, "<img src='/image'>", nullptr},
-    {kSecureDocumentUrl, kSecureBaseURL, "<script src='/script'></script>",
-     nullptr},
-    // Irrelevant element type
-    {kSecureDocumentUrl, kSecureBaseURL,
-     "<video poster='/image' attributionsrc>", nullptr},
-    // Not potentially trustworthy reporting origin
-    {kSecureDocumentUrl, kInsecureBaseURL, "<img src='/image' attributionsrc>",
-     nullptr},
-    {kSecureDocumentUrl, kInsecureBaseURL,
-     "<script src='/script' attributionsrc></script>", nullptr},
-    // Secure context, potentially trustworthy reporting origin,
-    // attributionsrc attribute
-    {kSecureDocumentUrl, kSecureBaseURL, "<img src='/image' attributionsrc>",
-     kAttributionEligibleEventSourceAndTrigger},
-    {kSecureDocumentUrl, kSecureBaseURL,
-     "<script src='/script' attributionsrc></script>",
-     kAttributionEligibleEventSourceAndTrigger},
-#if BUILDFLAG(IS_ANDROID)
-    {kSecureDocumentUrl, kSecureBaseURL, "<img src='/image' attributionsrc>",
-     kAttributionEligibleEventSourceAndTrigger,
-     network::mojom::AttributionSupport::kWebAndOs},
-#endif
+      // Insecure context
+      {kInsecureDocumentUrl, kSecureBaseURL,
+       "<img src='/image' attributionsrc>",
+       network::mojom::AttributionReportingEligibility::kUnset},
+      {kInsecureDocumentUrl, kSecureBaseURL,
+       "<script src='/script' attributionsrc></script>",
+       network::mojom::AttributionReportingEligibility::kUnset},
+      // No attributionsrc attribute
+      {kSecureDocumentUrl, kSecureBaseURL, "<img src='/image'>",
+       network::mojom::AttributionReportingEligibility::kUnset},
+      {kSecureDocumentUrl, kSecureBaseURL, "<script src='/script'></script>",
+       network::mojom::AttributionReportingEligibility::kUnset},
+      // Irrelevant element type
+      {kSecureDocumentUrl, kSecureBaseURL,
+       "<video poster='/image' attributionsrc>",
+       network::mojom::AttributionReportingEligibility::kUnset},
+      // Not potentially trustworthy reporting origin
+      {kSecureDocumentUrl, kInsecureBaseURL,
+       "<img src='/image' attributionsrc>",
+       network::mojom::AttributionReportingEligibility::kUnset},
+      {kSecureDocumentUrl, kInsecureBaseURL,
+       "<script src='/script' attributionsrc></script>",
+       network::mojom::AttributionReportingEligibility::kUnset},
+      // Secure context, potentially trustworthy reporting origin,
+      // attributionsrc attribute
+      {kSecureDocumentUrl, kSecureBaseURL, "<img src='/image' attributionsrc>",
+       network::mojom::AttributionReportingEligibility::kEventSourceOrTrigger},
+      {kSecureDocumentUrl, kSecureBaseURL,
+       "<script src='/script' attributionsrc></script>",
+       network::mojom::AttributionReportingEligibility::kEventSourceOrTrigger},
+      {kSecureDocumentUrl, kSecureBaseURL, "<img src='/image' attributionsrc>",
+       network::mojom::AttributionReportingEligibility::kEventSourceOrTrigger,
+       network::mojom::AttributionSupport::kWebAndOs},
   };
 
   for (const auto& test_case : test_cases) {
@@ -1392,168 +1393,15 @@ TEST_F(HTMLPreloadScannerTest, MetaCsp_NoPreloadsAfter) {
     Test(test_case);
 }
 
-TEST_F(HTMLPreloadScannerTest, LazyLoadImage_SmallImages) {
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
+TEST_F(HTMLPreloadScannerTest, LazyLoadImage) {
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {
-      {"<img src='foo.jpg' loading='lazy'>", true},
-      {"<img src='foo.jpg' height='1px' width='1px' loading='lazy'>", true},
-      {"<img src='foo.jpg' style='height: 1px; width: 1px' loading='lazy'>",
-       true},
-      {"<img src='foo.jpg' height='10px' width='10px' loading='lazy'>", true},
-      {"<img src='foo.jpg' style='height: 10px; width: 10px' loading='lazy'>",
-       true},
-      {"<img src='foo.jpg' height='1px' loading='lazy'>", true},
-      {"<img src='foo.jpg' style='height: 1px;' loading='lazy'>", true},
-      {"<img src='foo.jpg' width='1px' loading='lazy'>", true},
-      {"<img src='foo.jpg' style='width: 1px;' loading='lazy'>", true},
-  };
-
-  for (const auto& test_case : test_cases)
-    Test(test_case);
-}
-
-TEST_F(HTMLPreloadScannerTest, LazyLoadImage_FeatureDisabledWithAttribute) {
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(false);
-  RunSetUp(kViewportEnabled);
-  LazyLoadImageTestCase test_cases[] = {
-      {"<img src='foo.jpg' loading='auto'>", false},
+      {"<img src='foo.jpg' loading='auto'>", true},
       {"<img src='foo.jpg' loading='lazy'>", false},
-      {"<img src='foo.jpg' loading='eager'>", false},
+      {"<img src='foo.jpg' loading='eager'>", true},
   };
   for (const auto& test_case : test_cases)
     Test(test_case);
-}
-
-TEST_F(HTMLPreloadScannerTest,
-       LazyLoadImage_FeatureAutomaticEnabledWithAttribute) {
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  RunSetUp(kViewportEnabled);
-  LazyLoadImageTestCase test_cases[] = {
-      {"<img src='foo.jpg' loading='auto'>", false},
-      {"<img src='foo.jpg' loading='lazy'>", true},
-      {"<img src='foo.jpg' loading='eager'>", false},
-      // loading=lazy should override other conditions.
-      {"<img src='foo.jpg' style='height: 1px;' loading='lazy'>", true},
-      {"<img src='foo.jpg' style='height: 1px; width: 1px' loading='lazy'>",
-       true},
-  };
-  for (const auto& test_case : test_cases)
-    Test(test_case);
-}
-
-TEST_F(HTMLPreloadScannerTest,
-       LazyLoadImage_FeatureExplicitEnabledWithAttribute) {
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  RunSetUp(kViewportEnabled);
-  LazyLoadImageTestCase test_cases[] = {
-      {"<img src='foo.jpg' loading='auto'>", false},
-      {"<img src='foo.jpg' loading='lazy'>", true},
-      {"<img src='foo.jpg' loading='eager'>", false},
-  };
-  for (const auto& test_case : test_cases)
-    Test(test_case);
-}
-
-TEST_F(HTMLPreloadScannerTest,
-       LazyLoadImage_FeatureAutomaticPreloadForLargeImages) {
-  // Large images should not be preloaded, when loading is auto or lazy.
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  RunSetUp(kViewportEnabled);
-  PreloadScannerTestCase test_cases[] = {
-      {"http://example.test",
-       "<img src='foo.jpg' height='20px' width='20px' loading='lazy'>", nullptr,
-       "http://example.test/", ResourceType::kImage, 0},
-      {"http://example.test",
-       "<img src='foo.jpg' style='height: 20px; width: 20px' loading='lazy'>",
-       nullptr, "http://example.test/", ResourceType::kImage, 0},
-      {"http://example.test",
-       "<img src='foo.jpg' height='20px' width='20px' loading='lazy'>", nullptr,
-       "http://example.test/", ResourceType::kImage, 0},
-      {"http://example.test",
-       "<img src='foo.jpg' height='20px' width='20px' loading='lazy'>", nullptr,
-       "http://example.test/", ResourceType::kImage, 0},
-      {"http://example.test",
-       "<img src='foo.jpg' style='height: 20px; width: 20px' loading='lazy'>",
-       nullptr, "http://example.test/", ResourceType::kImage, 0},
-      {"http://example.test",
-       "<img src='foo.jpg' style='height: 20px; width: 20px' loading='lazy'>",
-       nullptr, "http://example.test/", ResourceType::kImage, 0},
-  };
-  for (const auto& test_case : test_cases)
-    Test(test_case);
-
-  // When loading is eager, lazyload is disabled and preload happens.
-  LazyLoadImageTestCase test_cases_that_preload[] = {
-      {"<img src='foo.jpg' height='20px' width='20px' loading='eager'>", false},
-      {"<img src='foo.jpg' style='height: 20px; width: 20px' loading='eager'>",
-       false},
-  };
-  for (const auto& test_case : test_cases_that_preload)
-    Test(test_case);
-}
-
-TEST_F(HTMLPreloadScannerTest,
-       LazyLoadImage_FeatureExplicitPreloadForLargeImages) {
-  // Large images should not be preloaded, when loading is lazy.
-  ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
-  RunSetUp(kViewportEnabled);
-  PreloadScannerTestCase test_cases[] = {
-      {"http://example.test",
-       "<img src='foo.jpg' height='20px' width='20px' loading='lazy'>", nullptr,
-       "http://example.test/", ResourceType::kImage, 0},
-      {"http://example.test",
-       "<img src='foo.jpg' style='height: 20px; width: 20px' loading='lazy'>",
-       nullptr, "http://example.test/", ResourceType::kImage, 0},
-  };
-  for (const auto& test_case : test_cases)
-    Test(test_case);
-
-  // When loading is eager or auto, lazyload is disabled and preload happens.
-  LazyLoadImageTestCase test_cases_that_preload[] = {
-      {"<img src='foo.jpg' height='20px' width='20px' loading='eager'>", false},
-      {"<img src='foo.jpg' style='height: 20px; width: 20px' loading='eager'>",
-       false},
-      {"<img src='foo.jpg' height='20px' width='20px' loading='auto'>", false},
-      {"<img src='foo.jpg' style='height: 20px; width: 20px' loading='auto'>",
-       false},
-  };
-  for (const auto& test_case : test_cases_that_preload)
-    Test(test_case);
-}
-
-// TODO(domfarolino): Before merging, can we just delete this test, since we no
-// longer have metadata fetching?
-TEST_F(HTMLPreloadScannerTest, LazyLoadImage_DisableMetadataFetch) {
-  struct TestCase {
-    const char* loading_attr_value;
-    bool expected_is_preload;
-  };
-  const TestCase test_cases[] = {
-      // The lazyload eligible cases should not trigger a preload.
-      {"lazy", false},
-
-      // Lazyload ineligible case.
-      {"auto", true},
-
-      // Full image should be fetched when loading='eager' irrespective of
-      // automatic lazyload feature state.
-      {"eager", true},
-  };
-  for (const auto& test_case : test_cases) {
-    RunSetUp(kViewportEnabled);
-    const std::string img_html = base::StringPrintf(
-        "<img src='foo.jpg' loading='%s'>", test_case.loading_attr_value);
-    if (test_case.expected_is_preload) {
-      LazyLoadImageTestCase test_preload = {img_html.c_str(), false};
-      Test(test_preload);
-    } else {
-      PreloadScannerTestCase test_no_preload = {
-          "http://example.test",  img_html.c_str(),     nullptr,
-          "http://example.test/", ResourceType::kImage, 0};
-      Test(test_no_preload);
-    }
-  }
 }
 
 // https://crbug.com/1087854

@@ -4300,6 +4300,7 @@ TEST_F(ProjectorCaptureModeCameraTest,
   EXPECT_TRUE(camera_controller->selected_camera().is_valid());
   StartVideoRecordingImmediately();
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+  WaitForCaptureFileToBeSaved();
 
   // Starts the capture mode session again and the camera selection settings
   // will be restored.
@@ -4607,7 +4608,7 @@ TEST_F(CaptureModePrivacyIndicatorsTest, DuringRecordingPrivacyIndicators) {
 
   // When the user selects audio recording, the idicators won't change.
   // Recording has to start first.
-  capture_controller->EnableAudioRecording(true);
+  capture_controller->SetAudioRecordingMode(AudioRecordingMode::kMicrophone);
   EXPECT_FALSE(IsMicrophoneIndicatorIconVisible());
 
   StartRecordingFromSource(CaptureModeSource::kFullscreen);

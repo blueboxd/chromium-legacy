@@ -70,6 +70,15 @@ bool IsAccessibilityTreeForViewsEnabled() {
       ::features::kEnableAccessibilityTreeForViews);
 }
 
+BASE_FEATURE(kEnableAccessibilityRestrictiveIA2AXModes,
+             "AccessibilityRestrictiveIA2AXModes",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+bool IsAccessibilityRestrictiveIA2AXModesEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kEnableAccessibilityRestrictiveIA2AXModes);
+}
+
 BASE_FEATURE(kAccessibilityFocusHighlight,
              "AccessibilityFocusHighlight",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -141,7 +150,7 @@ bool IsExperimentalAccessibilityDictationContextCheckingEnabled() {
 
 BASE_FEATURE(kExperimentalAccessibilityGoogleTtsLanguagePacks,
              "ExperimentalAccessibilityGoogleTtsLanguagePacks",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsExperimentalAccessibilityGoogleTtsLanguagePacksEnabled() {
   return base::FeatureList::IsEnabled(

@@ -30,6 +30,7 @@ class MockReadAnythingModelObserver : public ReadAnythingModel::Observer {
                ui::ColorId separator_color_id,
                ui::ColorId dropdown_color_id,
                ui::ColorId selected_color_id,
+               ui::ColorId focus_ring_color_id,
                read_anything::mojom::LineSpacing line_spacing,
                read_anything::mojom::LetterSpacing letter_spacing),
               (override));
@@ -50,6 +51,16 @@ class ReadAnythingModelTest : public TestWithBrowserView {
 
   ReadAnythingFontModel* GetFontModel() { return model_->GetFontModel(); }
 
+  // Initializing the model will populate the font model with options that work
+  // with the input language.
+  void InitModel(std::string language = "en") {
+    std::string font_name;
+    model_->Init(language, font_name, 0.5,
+                 read_anything::mojom::Colors::kDefaultValue,
+                 read_anything::mojom::LineSpacing::kLoose,
+                 read_anything::mojom::LetterSpacing::kStandard);
+  }
+
  protected:
   std::unique_ptr<ReadAnythingModel> model_;
 
@@ -66,11 +77,11 @@ TEST_F(ReadAnythingModelTest, AddingModelObserverNotifiesAllObservers) {
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   EXPECT_CALL(model_observer_2_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->AddObserver(&model_observer_2_);
@@ -81,26 +92,27 @@ TEST_F(ReadAnythingModelTest, RemovedModelObserversDoNotReceiveNotifications) {
   model_->AddObserver(&model_observer_2_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   EXPECT_CALL(model_observer_2_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(0);
 
   EXPECT_CALL(model_observer_3_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->RemoveObserver(&model_observer_2_);
   model_->AddObserver(&model_observer_3_);
 }
 
-TEST_F(ReadAnythingModelTest, NotificationsOnSetSelectedFontIndex) {
+TEST_F(ReadAnythingModelTest, NotificationsOnSetSelectedFontIndexaa) {
+  InitModel();
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->SetSelectedFontByIndex(2);
@@ -110,7 +122,7 @@ TEST_F(ReadAnythingModelTest, NotificationsOnDecreasedFontSize) {
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->DecreaseTextSize();
@@ -122,7 +134,7 @@ TEST_F(ReadAnythingModelTest, NotificationsOnIncreasedFontSize) {
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->IncreaseTextSize();
@@ -134,7 +146,7 @@ TEST_F(ReadAnythingModelTest, NotificationsOnSetSelectedColorsIndex) {
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->SetSelectedColorsByIndex(2);
@@ -144,7 +156,7 @@ TEST_F(ReadAnythingModelTest, NotificationsOnSetSelectedLineSpacingIndex) {
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->SetSelectedLineSpacingByIndex(2);
@@ -154,7 +166,7 @@ TEST_F(ReadAnythingModelTest, NotificationsOnSetSelectedLetterSpacingIndex) {
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->SetSelectedLetterSpacingByIndex(2);
@@ -164,7 +176,7 @@ TEST_F(ReadAnythingModelTest, NotificationsOnSystemThemeChanged) {
   model_->AddObserver(&model_observer_1_);
 
   EXPECT_CALL(model_observer_1_,
-              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _))
+              OnReadAnythingThemeChanged(_, _, _, _, _, _, _, _, _, _))
       .Times(1);
 
   model_->OnSystemThemeChanged();
@@ -172,7 +184,9 @@ TEST_F(ReadAnythingModelTest, NotificationsOnSystemThemeChanged) {
 
 TEST_F(ReadAnythingModelTest, MinimumFontScaleIsEnforced) {
   std::string font_name;
-  model_->Init(font_name, 0.5, read_anything::mojom::Colors::kDefaultValue,
+  std::string language;
+  model_->Init(language, font_name, 0.5,
+               read_anything::mojom::Colors::kDefaultValue,
                read_anything::mojom::LineSpacing::kLoose,
                read_anything::mojom::LetterSpacing::kStandard);
   model_->DecreaseTextSize();
@@ -181,7 +195,9 @@ TEST_F(ReadAnythingModelTest, MinimumFontScaleIsEnforced) {
 
 TEST_F(ReadAnythingModelTest, MaximumFontScaleIsEnforced) {
   std::string font_name;
-  model_->Init(font_name, 4.5, read_anything::mojom::Colors::kDefaultValue,
+  std::string language;
+  model_->Init(language, font_name, 4.5,
+               read_anything::mojom::Colors::kDefaultValue,
                read_anything::mojom::LineSpacing::kLoose,
                read_anything::mojom::LetterSpacing::kStandard);
   model_->IncreaseTextSize();
@@ -189,30 +205,50 @@ TEST_F(ReadAnythingModelTest, MaximumFontScaleIsEnforced) {
 }
 
 TEST_F(ReadAnythingModelTest, FontModelIsValidFontName) {
-  EXPECT_TRUE(GetFontModel()->IsValidFontName("Standard font"));
+  InitModel();
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("Poppins"));
   EXPECT_TRUE(GetFontModel()->IsValidFontName("Sans-serif"));
   EXPECT_TRUE(GetFontModel()->IsValidFontName("Serif"));
-  EXPECT_TRUE(GetFontModel()->IsValidFontName("Arial"));
-  EXPECT_TRUE(GetFontModel()->IsValidFontName("Comic Sans MS"));
-  EXPECT_TRUE(GetFontModel()->IsValidFontName("Times New Roman"));
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("Comic Neue"));
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("Lexend Deca"));
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("EB Garamond"));
+  EXPECT_TRUE(GetFontModel()->IsValidFontName("STIX Two Text"));
   EXPECT_FALSE(GetFontModel()->IsValidFontName("xxyyzz"));
 }
 
-TEST_F(ReadAnythingModelTest, FontModelGetCurrentFontName) {
-  EXPECT_EQ("Standard font", GetFontModel()->GetFontNameAt(0));
+TEST_F(ReadAnythingModelTest, FontModelGetFontNameEnglishOptions) {
+  InitModel();
+  EXPECT_EQ("Poppins", GetFontModel()->GetFontNameAt(0));
   EXPECT_EQ("Sans-serif", GetFontModel()->GetFontNameAt(1));
   EXPECT_EQ("Serif", GetFontModel()->GetFontNameAt(2));
-  EXPECT_EQ("Arial", GetFontModel()->GetFontNameAt(3));
-  EXPECT_EQ("Comic Sans MS", GetFontModel()->GetFontNameAt(4));
-  EXPECT_EQ("Times New Roman", GetFontModel()->GetFontNameAt(5));
+  EXPECT_EQ("Comic Neue", GetFontModel()->GetFontNameAt(3));
+  EXPECT_EQ("Lexend Deca", GetFontModel()->GetFontNameAt(4));
+  EXPECT_EQ("EB Garamond", GetFontModel()->GetFontNameAt(5));
+  EXPECT_EQ("STIX Two Text", GetFontModel()->GetFontNameAt(6));
+}
+
+TEST_F(ReadAnythingModelTest, FontModelGetFontNameChineseOptions) {
+  InitModel("zh");
+  EXPECT_EQ("Sans-serif", GetFontModel()->GetFontNameAt(0));
+  EXPECT_EQ("Serif", GetFontModel()->GetFontNameAt(1));
+}
+
+TEST_F(ReadAnythingModelTest, FontModelGetFontNameVietnameseOptions) {
+  InitModel("vi");
+  EXPECT_EQ("Sans-serif", GetFontModel()->GetFontNameAt(0));
+  EXPECT_EQ("Serif", GetFontModel()->GetFontNameAt(1));
+  EXPECT_EQ("Lexend Deca", GetFontModel()->GetFontNameAt(2));
+  EXPECT_EQ("EB Garamond", GetFontModel()->GetFontNameAt(3));
+  EXPECT_EQ("STIX Two Text", GetFontModel()->GetFontNameAt(4));
 }
 
 TEST_F(ReadAnythingModelTest, LabelFontListModelGetsCurrentFontList) {
+  InitModel();
   std::string default_font = string_constants::kReadAnythingDefaultFontName;
 
   const std::vector<std::string> expected_fonts = {
-      "Standard font", "Sans-serif",    "Serif",
-      "Arial",         "Comic Sans MS", "Times New Roman"};
+      "Poppins",     "Sans-serif",  "Serif",        "Comic Neue",
+      "Lexend Deca", "EB Garamond", "STIX Two Text"};
 
   for (size_t i = 0; i < expected_fonts.size(); i++) {
     auto retrieved_fonts = GetFontModel()->GetLabelFontNameAt(i);
@@ -222,6 +258,7 @@ TEST_F(ReadAnythingModelTest, LabelFontListModelGetsCurrentFontList) {
 }
 
 TEST_F(ReadAnythingModelTest, DefaultIndexSetOnSetSelectedFontByIndex) {
+  InitModel();
   size_t testIndex = 2;
   model_->SetSelectedFontByIndex(testIndex);
   EXPECT_EQ(testIndex, GetFontModel()->GetDefaultIndexForTesting().value());

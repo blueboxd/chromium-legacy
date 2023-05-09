@@ -651,16 +651,6 @@ void PageContentAnnotationsService::GetMetadataForEntityId(
 #endif
 }
 
-void PageContentAnnotationsService::GetMetadataForEntityIds(
-    const base::flat_set<std::string>& entity_ids,
-    BatchEntityMetadataRetrievedCallback callback) {
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-  model_manager_->GetMetadataForEntityIds(entity_ids, std::move(callback));
-#else
-  std::move(callback).Run({});
-#endif
-}
-
 void PageContentAnnotationsService::OnURLVisited(
     history::HistoryService* history_service,
     const history::URLRow& url_row,
@@ -671,10 +661,7 @@ void PageContentAnnotationsService::OnURLVisited(
   HistoryVisit history_visit(visit_row.visit_id);
   history_visit.text_to_annotate = base::UTF16ToUTF8(url_row.title());
 
-  if (template_url_service_ &&
-      (optimization_guide::features::
-           ShouldPersistSearchMetadataForNonGoogleSearches() ||
-       google_util::IsGoogleSearchUrl(url_row.url()))) {
+  if (template_url_service_) {
     auto search_metadata =
         template_url_service_->ExtractSearchMetadata(url_row.url());
     if (search_metadata) {

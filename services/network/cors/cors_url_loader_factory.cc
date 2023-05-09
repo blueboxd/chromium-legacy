@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
+#include "net/extras/shared_dictionary/shared_dictionary_storage_isolation_key.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "services/network/cors/cors_url_loader.h"
@@ -25,12 +26,10 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/trust_token_operation_authorization.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/shared_dictionary/shared_dictionary_manager.h"
 #include "services/network/shared_dictionary/shared_dictionary_storage.h"
-#include "services/network/shared_dictionary/shared_dictionary_storage_isolation_key.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_loader_factory.h"
 #include "services/network/web_bundle/web_bundle_url_loader_factory.h"
@@ -44,13 +43,14 @@ namespace {
 // functioning renderer:
 // - Trust Tokens should be enabled
 // - the request should come from a trustworthy context
-// - if the request is for redemption or signing, it should be from a context
-// where these operations are permitted (as specified by
-// URLLoaderFactoryParams::trust_token_redemption_policy).
+// - It should be from a context where the underlying operations are permitted
+// (as specified by URLLoaderFactoryParams::trust_token_redemption_policy and
+// URLLoaderFactoryParams::trust_token_issuance_policy).
 bool VerifyTrustTokenParamsIntegrityIfPresent(
     const ResourceRequest& resource_request,
     const NetworkContext* context,
-    mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy) {
+    mojom::TrustTokenOperationPolicyVerdict trust_token_issuance_policy,
+    mojom::TrustTokenOperationPolicyVerdict trust_token_redemption_policy) {
   if (!resource_request.trust_token_params)
     return true;
 
@@ -69,15 +69,28 @@ bool VerifyTrustTokenParamsIntegrityIfPresent(
   // browser-side view of whether a request "came from" a secure context, so we
   // don't implement a check for the second criterion in the function comment.
 
-  if (trust_token_redemption_policy ==
-          mojom::TrustTokenRedemptionPolicy::kForbid &&
-      DoesTrustTokenOperationRequirePermissionsPolicy(
-          resource_request.trust_token_params->operation)) {
-    // Got a request configured for Trust Tokens redemption or signing from
-    // a context in which this operation is prohibited.
-    mojo::ReportBadMessage(
-        "TrustTokenParamsIntegrity: RequestFromContextLackingPermission");
-    return false;
+  switch (resource_request.trust_token_params->operation) {
+    case network::mojom::TrustTokenOperationType::kRedemption:
+    case network::mojom::TrustTokenOperationType::kSigning:
+      if (trust_token_redemption_policy ==
+          mojom::TrustTokenOperationPolicyVerdict::kForbid) {
+        // Got a request configured for Trust Tokens redemption or signing from
+        // a context in which this operation is prohibited.
+        mojo::ReportBadMessage(
+            "TrustTokenParamsIntegrity: RequestFromContextLackingPermission");
+        return false;
+      }
+      break;
+    case network::mojom::TrustTokenOperationType::kIssuance:
+      if (trust_token_issuance_policy ==
+          mojom::TrustTokenOperationPolicyVerdict::kForbid) {
+        // Got a request configured for Trust Tokens issuance from
+        // a context in which this operation is prohibited.
+        mojo::ReportBadMessage(
+            "TrustTokenParamsIntegrity: RequestFromContextLackingPermission");
+        return false;
+      }
+      break;
   }
 
   return true;
@@ -177,6 +190,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
       process_id_(params->process_id),
       request_initiator_origin_lock_(params->request_initiator_origin_lock),
       ignore_isolated_world_origin_(params->ignore_isolated_world_origin),
+      trust_token_issuance_policy_(params->trust_token_issuance_policy),
       trust_token_redemption_policy_(params->trust_token_redemption_policy),
       isolation_info_(params->isolation_info),
       automatically_assign_isolation_info_(
@@ -201,12 +215,10 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     DCHECK_EQ(mojom::kBrowserProcessId, process_id_);
   }
 
-  if (context_->GetSharedDictionaryManager() &&
-      params->isolation_info.frame_origin()) {
-    absl::optional<SharedDictionaryStorageIsolationKey> isolation_key =
-        SharedDictionaryStorageIsolationKey::MaybeCreate(
-            *params->isolation_info.frame_origin(),
-            params->isolation_info.network_isolation_key());
+  if (context_->GetSharedDictionaryManager()) {
+    absl::optional<net::SharedDictionaryStorageIsolationKey> isolation_key =
+        net::SharedDictionaryStorageIsolationKey::MaybeCreate(
+            params->isolation_info);
     if (isolation_key) {
       shared_dictionary_storage_ =
           context_->GetSharedDictionaryManager()->GetStorage(*isolation_key);
@@ -581,7 +593,8 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
   }
 
   if (!VerifyTrustTokenParamsIntegrityIfPresent(
-          request, context_, trust_token_redemption_policy_)) {
+          request, context_, trust_token_issuance_policy_,
+          trust_token_redemption_policy_)) {
     // VerifyTrustTokenParamsIntegrityIfPresent will report an appropriate bad
     // message.
     return false;

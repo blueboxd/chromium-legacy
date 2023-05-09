@@ -67,7 +67,7 @@ CaptureModeController* StartCaptureSession(CaptureModeSource source,
   controller->SetSource(source);
   controller->SetType(type);
   controller->Start(CaptureModeEntryType::kQuickSettings);
-  DCHECK(controller->IsActive());
+  CHECK(controller->IsActive());
   return controller;
 }
 
@@ -176,6 +176,12 @@ CaptureModeBarView* GetCaptureModeBarView() {
   auto* session = CaptureModeController::Get()->capture_mode_session();
   DCHECK(session);
   return CaptureModeSessionTestApi(session).GetCaptureModeBarView();
+}
+
+IconButton* GetSettingsButton() {
+  auto* controller = CaptureModeController::Get();
+  DCHECK(controller->IsActive());
+  return GetCaptureModeBarView()->settings_button();
 }
 
 IconButton* GetFullscreenToggleButton() {

@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -176,11 +175,7 @@ void WaitUntilCondition(const base::RepeatingCallback<bool()>& condition,
 // Evaluates a boolean script expression in the signin frame.
 bool EvaluateBooleanScriptInSigninFrame(content::WebContents* web_contents,
                                         const std::string& script) {
-  bool result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetSigninFrame(web_contents),
-      "window.domAutomationController.send(" + script + ");", &result));
-  return result;
+  return content::EvalJs(GetSigninFrame(web_contents), script).ExtractBool();
 }
 
 // Returns whether an element with id |element_id| exists in the signin page.
@@ -218,9 +213,7 @@ std::string GetButtonIdForSyncConfirmationDialogAction(
     case SyncConfirmationDialogAction::kConfirm:
       return "confirmButton";
     case SyncConfirmationDialogAction::kCancel:
-      return base::FeatureList::IsEnabled(switches::kTangibleSync)
-                 ? "notNowButton"
-                 : "cancelButton";
+      return "notNowButton";
   }
 }
 

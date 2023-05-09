@@ -20,6 +20,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -155,13 +156,14 @@ class ScrollableShelfView::ScrollableShelfArrowView
 class ScrollableShelfView::ScopedActiveInkDropCountImpl
     : public ScrollableShelfView::ScopedActiveInkDropCount {
  public:
-  explicit ScopedActiveInkDropCountImpl(ScrollableShelfView* owner)
-      : owner_(owner) {
-    owner_->OnActiveInkDropChange(/*increase=*/true);
+  explicit ScopedActiveInkDropCountImpl(
+      base::RepeatingCallback<void(bool)> callback)
+      : on_active_ink_drop_change_callback_(callback) {
+    on_active_ink_drop_change_callback_.Run(/*increase=*/true);
   }
 
   ~ScopedActiveInkDropCountImpl() override {
-    owner_->OnActiveInkDropChange(/*increase=*/false);
+    on_active_ink_drop_change_callback_.Run(/*increase=*/false);
   }
 
   ScopedActiveInkDropCountImpl(const ScopedActiveInkDropCountImpl& rhs) =
@@ -170,7 +172,7 @@ class ScrollableShelfView::ScopedActiveInkDropCountImpl
       const ScopedActiveInkDropCountImpl& rhs) = delete;
 
  private:
-  raw_ptr<ScrollableShelfView, ExperimentalAsh> owner_ = nullptr;
+  base::RepeatingCallback<void(bool)> on_active_ink_drop_change_callback_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -230,6 +232,9 @@ void ScrollableShelfContainerView::Layout() {
     shelf_view_bounds.set_y(ShelfConfig::Get()->GetAppIconEndPadding());
 
   shelf_view_->SetBoundsRect(shelf_view_bounds);
+  shelf_view_->shelf()
+      ->shelf_layout_manager()
+      ->HandleScrollableShelfContainerBoundsChange();
 }
 
 bool ScrollableShelfContainerView::DoesIntersectRect(
@@ -1042,7 +1047,9 @@ ScrollableShelfView::CreateScopedActiveInkDropCount(const ShelfButton* sender) {
   if (!ShouldCountActivatedInkDrop(sender))
     return nullptr;
 
-  return std::make_unique<ScopedActiveInkDropCountImpl>(this);
+  return std::make_unique<ScopedActiveInkDropCountImpl>(
+      base::BindRepeating(&ScrollableShelfView::OnActiveInkDropChange,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ScrollableShelfView::ShowContextMenuForViewImpl(

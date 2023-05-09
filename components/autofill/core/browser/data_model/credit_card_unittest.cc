@@ -138,7 +138,7 @@ TEST(CreditCardTest, LabelSummary) {
   test::SetCreditCardInfo(&credit_card2, "John Dillinger",
                           "5105 1051 0510 5100", "", "2010", "1");
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4) +
                         ", John Dillinger"),
             credit_card2.Label());
 
@@ -148,7 +148,7 @@ TEST(CreditCardTest, LabelSummary) {
   test::SetCreditCardInfo(&credit_card3, "John Dillinger",
                           "5105 1051 0510 5100", "01", "", "1");
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4) +
                         ", John Dillinger"),
             credit_card3.Label());
 
@@ -158,7 +158,7 @@ TEST(CreditCardTest, LabelSummary) {
   test::SetCreditCardInfo(&credit_card4, "John Dillinger",
                           "5105 1051 0510 5100", "01", "2010", "1");
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4) +
                         ", John Dillinger"),
             credit_card4.Label());
 
@@ -170,7 +170,7 @@ TEST(CreditCardTest, LabelSummary) {
       "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010",
       "1");
   EXPECT_EQ(UTF8ToUTF16(std::string("Card  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4) +
                         ", John Dillinger"),
             credit_card5.Label());
 
@@ -182,7 +182,7 @@ TEST(CreditCardTest, LabelSummary) {
   credit_card6.SetNickname(valid_nickname);
   EXPECT_EQ(
       valid_nickname + UTF8ToUTF16(std::string("  ") +
-                                   test::ObfuscatedCardDigitsAsUTF8("5100") +
+                                   test::ObfuscatedCardDigitsAsUTF8("5100", 4) +
                                    ", John Dillinger"),
       credit_card6.Label());
 }
@@ -226,7 +226,7 @@ TEST(CreditCardTest, NetworkAndLastFourDigits) {
   test::SetCreditCardInfo(&credit_card2, "John Dillinger",
                           "5105 1051 0510 5100", "", "2010", "1");
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
             credit_card2.NetworkAndLastFourDigits());
 
   // Case 3: No year.
@@ -235,7 +235,7 @@ TEST(CreditCardTest, NetworkAndLastFourDigits) {
   test::SetCreditCardInfo(&credit_card3, "John Dillinger",
                           "5105 1051 0510 5100", "01", "", "1");
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
             credit_card3.NetworkAndLastFourDigits());
 
   // Case 4: Have everything except nickname.
@@ -244,7 +244,7 @@ TEST(CreditCardTest, NetworkAndLastFourDigits) {
   test::SetCreditCardInfo(&credit_card4, "John Dillinger",
                           "5105 1051 0510 5100", "01", "2010", "1");
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
             credit_card4.NetworkAndLastFourDigits());
 
   // Case 5: Very long credit card
@@ -255,7 +255,7 @@ TEST(CreditCardTest, NetworkAndLastFourDigits) {
       "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010",
       "1");
   EXPECT_EQ(UTF8ToUTF16(std::string("Card  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
             credit_card5.NetworkAndLastFourDigits());
 
   // Case 6: Have everything including nickname.
@@ -265,7 +265,7 @@ TEST(CreditCardTest, NetworkAndLastFourDigits) {
                           "5105 1051 0510 5100", "01", "2010", "1");
   credit_card6.SetNickname(valid_nickname);
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
             credit_card6.NetworkAndLastFourDigits());
 }
 
@@ -288,7 +288,7 @@ TEST(CreditCardTest, NicknameAndLastFourDigitsStrings) {
   credit_card2.SetNickname(valid_nickname);
   EXPECT_EQ(
       valid_nickname + UTF8ToUTF16(std::string("  ") +
-                                   test::ObfuscatedCardDigitsAsUTF8("5100")),
+                                   test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
       credit_card2.NicknameAndLastFourDigitsForTesting());
 }
 
@@ -307,8 +307,8 @@ TEST(CreditCardTest,
                           "1");
   EXPECT_FALSE(credit_card.HasNonEmptyValidNickname());
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100")),
-            credit_card.CardIdentifierStringForAutofillDisplay());
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
+            credit_card.CardNameAndLastFourDigits());
 }
 
 // Test that card identifier string falls back to issuer network when nickname
@@ -328,8 +328,8 @@ TEST(
   credit_card.SetNickname(u"Nickname length exceeds 25 characters");
   EXPECT_FALSE(credit_card.HasNonEmptyValidNickname());
   EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
-                        test::ObfuscatedCardDigitsAsUTF8("5100")),
-            credit_card.CardIdentifierStringForAutofillDisplay());
+                        test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
+            credit_card.CardNameAndLastFourDigits());
 }
 
 // Test that card identifier string falls back to product description when
@@ -351,8 +351,8 @@ TEST(CreditCardTest,
   EXPECT_FALSE(credit_card.HasNonEmptyValidNickname());
   EXPECT_EQ(product_description +
                 UTF8ToUTF16(std::string("  ") +
-                            test::ObfuscatedCardDigitsAsUTF8("5100")),
-            credit_card.CardIdentifierStringForAutofillDisplay());
+                            test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
+            credit_card.CardNameAndLastFourDigits());
 }
 
 // Test that card identifier string falls back to product description when
@@ -376,8 +376,8 @@ TEST(
   EXPECT_FALSE(credit_card.HasNonEmptyValidNickname());
   EXPECT_EQ(product_description +
                 UTF8ToUTF16(std::string("  ") +
-                            test::ObfuscatedCardDigitsAsUTF8("5100")),
-            credit_card.CardIdentifierStringForAutofillDisplay());
+                            test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
+            credit_card.CardNameAndLastFourDigits());
 }
 
 // Test that card identifier string shows nickname when it is valid.
@@ -399,8 +399,8 @@ TEST(CreditCardTest,
   EXPECT_TRUE(credit_card.HasNonEmptyValidNickname());
   EXPECT_EQ(
       valid_nickname + UTF8ToUTF16(std::string("  ") +
-                                   test::ObfuscatedCardDigitsAsUTF8("5100")),
-      credit_card.CardIdentifierStringForAutofillDisplay());
+                                   test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
+      credit_card.CardNameAndLastFourDigits());
 }
 
 // Test that customized nickname takes precedence over credit card's nickname.
@@ -420,11 +420,10 @@ TEST(CreditCardTest,
   credit_card.SetNickname(u"My Visa Card");
   credit_card.set_product_description(u"ABC bank XYZ card");
   EXPECT_TRUE(credit_card.HasNonEmptyValidNickname());
-  EXPECT_EQ(
-      customized_nickname +
-          UTF8ToUTF16(std::string("  ") +
-                      test::ObfuscatedCardDigitsAsUTF8("5100")),
-      credit_card.CardIdentifierStringForAutofillDisplay(customized_nickname));
+  EXPECT_EQ(customized_nickname +
+                UTF8ToUTF16(std::string("  ") +
+                            test::ObfuscatedCardDigitsAsUTF8("5100", 4)),
+            credit_card.CardNameAndLastFourDigits(customized_nickname));
 }
 
 // Test that the card number is formatted as per the obfuscation length.
@@ -444,8 +443,7 @@ TEST(CreditCardTest,
   EXPECT_EQ(
       UTF8ToUTF16(std::string("Mastercard  ") +
                   test::ObfuscatedCardDigitsAsUTF8("5100", obfuscation_length)),
-      credit_card.CardIdentifierStringForAutofillDisplay(u"",
-                                                         obfuscation_length));
+      credit_card.CardNameAndLastFourDigits(u"", obfuscation_length));
 }
 
 TEST(CreditCardTest, AssignmentOperator) {
@@ -574,6 +572,37 @@ TEST(CreditCardTest, SetMetadata_NotMatchingId) {
   EXPECT_NE(full_metadata.billing_address_id, full_card.billing_address_id());
   EXPECT_NE(full_metadata.use_count, full_card.use_count());
   EXPECT_NE(full_metadata.use_date, full_card.use_date());
+}
+
+// Test that if one of the two compared cards is masked server card,
+// `HasSameNumberAs` returns true if the last four are the same. For all the
+// other comparing card types (none of them is masked server card),
+// `HasSameNumberAs` returns true if the full card number are the same.
+TEST(CreditCardTest, HasSameNumberAs) {
+  // Creates three types (local card, masked server card and full server card)
+  // of credit cards with the same number.
+  CreditCard local_card = test::GetCreditCard();
+  CreditCard masked_server_card = test::GetMaskedServerCardVisa();
+  CreditCard full_server_card = test::GetFullServerCard();
+
+  // Verify that card number is the same for all combinations of card type.
+  EXPECT_TRUE(local_card.HasSameNumberAs(local_card));
+  EXPECT_TRUE(local_card.HasSameNumberAs(masked_server_card));
+  EXPECT_TRUE(local_card.HasSameNumberAs(full_server_card));
+  EXPECT_TRUE(masked_server_card.HasSameNumberAs(masked_server_card));
+  EXPECT_TRUE(masked_server_card.HasSameNumberAs(full_server_card));
+  EXPECT_TRUE(full_server_card.HasSameNumberAs(full_server_card));
+
+  // Update the local card and full server card number to a different number but
+  // all the three credit cards are with same last four.
+  local_card.SetRawInfo(CREDIT_CARD_NUMBER, u"4111 1111 0006 1111");
+  full_server_card.SetRawInfo(CREDIT_CARD_NUMBER, u"4111 1111 2226 1111");
+
+  // Verify that only last 4 is compared if one of the compared cards is a
+  // masked server card; for all other types, full card number is compared.
+  EXPECT_TRUE(local_card.HasSameNumberAs(masked_server_card));
+  EXPECT_FALSE(local_card.HasSameNumberAs(full_server_card));
+  EXPECT_TRUE(masked_server_card.HasSameNumberAs(full_server_card));
 }
 
 struct SetExpirationYearFromStringTestCase {

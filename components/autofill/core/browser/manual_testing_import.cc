@@ -184,9 +184,10 @@ void SetData(
     absl::optional<AutofillProfilesAndCreditCards> profiles_or_credit_cards) {
   // This check intentionally crashes when the data is malformed, to prevent
   // testing with incorrect data.
-  CHECK(profiles_or_credit_cards.has_value() &&
-        profiles_or_credit_cards->profiles.has_value() &&
-        profiles_or_credit_cards->credit_cards.has_value());
+  LOG_IF(FATAL, !profiles_or_credit_cards.has_value() ||
+                    !profiles_or_credit_cards->profiles.has_value() ||
+                    !profiles_or_credit_cards->credit_cards.has_value())
+      << "Intentional crash, the provided JSON import data is incorrect.";
   if (pdm == nullptr) {
     return;
   }
@@ -209,7 +210,7 @@ absl::optional<std::vector<T>> DataModelsFromJSON(
                                               const FieldTypeLookupTable&)>
         to_data_model) {
   if (!json_array) {
-    return {};
+    return std::vector<T>{};
   }
   const auto lookup_table = MakeFieldTypeLookupTable();
   std::vector<T> data_models;
@@ -225,7 +226,8 @@ absl::optional<std::vector<T>> DataModelsFromJSON(
     }
     data_models.push_back(std::move(*data_model));
   }
-  return data_models;
+  // Move due to implicit type conversion.
+  return std::move(data_models);
 }
 
 // Parses AutofillProfiles from the JSON `content` string.

@@ -733,6 +733,7 @@
           '12-x64-emulator',
           'emulator-8-cores',
           'has_native_resultdb_integration',
+          'isolate_profile_data',
           'linux-jammy',
           'x86-64',
         ],
@@ -783,7 +784,6 @@
         'test_suites': {
           'gtest_tests': 'android_marshmallow_gtests',
           'junit_tests': 'chromium_junit_tests_no_swarming',
-          'isolated_scripts': 'monochrome_public_apk_checker_isolated_script',
         },
         'os_type': 'android',
       },
@@ -1442,6 +1442,7 @@
         'browser_config': 'cros-chrome',
         'mixins': [
           'chromeos-amd64-generic',
+          'linux-jammy',
         ],
         'os_type': 'chromeos',
         'test_suites': {
@@ -1571,7 +1572,7 @@
       'linux-chromeos-rel': {
         'mixins': [
           'isolate_profile_data',
-          'linux-bionic',
+          'linux-jammy',
         ],
         'additional_compile_targets': [
           'all',
@@ -1592,7 +1593,7 @@
       'linux-lacros-tester-rel': {
         'mixins': [
           'isolate_profile_data',
-          'linux-bionic',
+          'linux-jammy',
         ],
         'additional_compile_targets': [
           'chrome',
@@ -3066,17 +3067,7 @@
           'isolated_scripts': 'vulkan_swiftshader_isolated_scripts',
         },
       },
-      # TODO(crbug.com/1260232): remove this after the migration.
       'Mac Builder (reclient compare)': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'scripts': 'chromium_mac_scripts',
-        }
-      },
-      # TODO(crbug.com/1244441): remove this after the migration.
-      'Mac Builder (reclient)': {
         'additional_compile_targets': [
           'all',
         ],
@@ -3554,6 +3545,16 @@
           'scripts': 'test_traffic_annotation_auditor_script'
         },
       },
+      'linux-cr23-rel': {
+        'mixins': [
+          'linux-bionic',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'cr23_gtests'
+        },
+        'os_type': 'linux',
+      },
       'linux-fieldtrial-rel': {
         'mixins': [
           'linux-bionic',
@@ -3727,6 +3728,15 @@
           '--enable-features=PartitionAllocBackupRefPtr:enabled-processes/non-renderer',
         ],
       },
+      'mac-cr23-rel': {
+        'test_suites': {
+          'gtest_tests': 'cr23_gtests',
+        },
+        'mixins': [
+          'mac_x64',
+        ],
+        'os_type': 'mac',
+      },
       'mac-fieldtrial-tester': {
         'mixins': [
           'finch-chromium-swarming-pool',
@@ -3735,11 +3745,6 @@
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
         },
-      },
-      'mac-hermetic-upgrade-rel': {
-        'additional_compile_targets': [
-          'all',
-        ],
       },
       'mac-osxbeta-rel': {
         'mixins': [
@@ -3861,6 +3866,16 @@
         'gtest_args': [
           '--enable-features=PartitionAllocBackupRefPtr:enabled-processes/non-renderer',
         ],
+      },
+      'win-cr23-rel': {
+        'test_suites': {
+          'gtest_tests': 'cr23_gtests',
+        },
+        'mixins': [
+          'win10-any',
+          'x86-64',
+        ],
+        'os_type': 'win',
       },
       'win-fieldtrial-rel': {
         'mixins': [
@@ -4645,7 +4660,8 @@
         # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
         # should have the same test_suites as 'Mac FYI Release (Apple M1)'.
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
       },
       'Mac FYI Experimental Release (Intel)': {
@@ -4659,7 +4675,8 @@
         # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
         # should have the same test_suites as 'Mac FYI Release (Intel)'.
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_mac_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
       },
       'Mac FYI Experimental Retina Release (AMD)': {
@@ -5216,7 +5233,7 @@
     'machines': {
       'Linux ASan LSan Tests (1)': {
         'mixins': [
-          'linux-bionic',
+          'linux-jammy',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',
@@ -6618,6 +6635,16 @@
     'name': 'internal.chrome.fyi',
     'mixins': ['chrome-tester-service-account'],
     'machines': {
+      'android-nougat-x86-finch-smoke-chrome': {
+        'mixins': [
+          'chrome-finch-swarming-pool',
+          'linux-bionic',
+          'nougat-x86-emulator',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'android_finch_smoke_tests',
+        },
+      },
       'chromeos-arm-generic-cfi-thin-lto-chrome-reclient': {
         'additional_compile_targets': [
           'chromiumos_preflight',

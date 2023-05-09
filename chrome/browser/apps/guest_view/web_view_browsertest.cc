@@ -3712,14 +3712,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToComponentExtensionFromGuest) {
   // Retrive the guestProcessId and guestRenderFrameRoutingId from the
   // extension.
   int guest_process_id =
-      content::ExecuteScriptAndGetValue(
-          embedder_web_contents->GetPrimaryMainFrame(), "window.guestProcessId")
-          .GetInt();
+      content::EvalJs(embedder_web_contents->GetPrimaryMainFrame(),
+                      "window.guestProcessId")
+          .ExtractInt();
   int guest_render_frame_routing_id =
-      content::ExecuteScriptAndGetValue(
-          embedder_web_contents->GetPrimaryMainFrame(),
-          "window.guestRenderFrameRoutingId")
-          .GetInt();
+      content::EvalJs(embedder_web_contents->GetPrimaryMainFrame(),
+                      "window.guestRenderFrameRoutingId")
+          .ExtractInt();
 
   auto* guest_rfh = content::RenderFrameHost::FromID(
       guest_process_id, guest_render_frame_routing_id);
@@ -4506,7 +4505,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 
   // Finally, try accessing a privileged API, which shouldn't be available to
   // the embedded resource.
-  std::string app_window_result;
   static constexpr char kCallAppWindowCreate[] =
       R"(var message;
          if (chrome.app && chrome.app.window) {
@@ -4514,10 +4512,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
          } else {
            message = 'success';
          }
-         domAutomationController.send(message);)";
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_view_frame, kCallAppWindowCreate, &app_window_result));
-  EXPECT_EQ("success", app_window_result);
+         message;)";
+  EXPECT_EQ("success", content::EvalJs(web_view_frame, kCallAppWindowCreate));
 }
 
 // Tests that a WebView can navigate an iframe to a blob URL that it creates
@@ -5279,13 +5275,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
   // Check that accessing a foo.com cookie from the WebView doesn't result in a
   // renderer kill. This might happen if we erroneously applied an isolated.com
   // origin lock to the WebView process when committing isolated.com.
-  bool cookie_is_correct = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      guest->GetGuestMainFrame(),
-      "document.cookie = 'foo=bar';\n"
-      "window.domAutomationController.send(document.cookie == 'foo=bar');\n",
-      &cookie_is_correct));
-  EXPECT_TRUE(cookie_is_correct);
+  EXPECT_EQ(true, EvalJs(guest->GetGuestMainFrame(),
+                         "document.cookie = 'foo=bar';\n"
+                         "document.cookie == 'foo=bar';\n"));
 }
 
 // This test is similar to IsolatedOriginInWebview above, but loads an isolated
@@ -5344,13 +5336,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest,
   // Check that accessing a foo.com cookie from the WebView doesn't result in a
   // renderer kill. This might happen if we erroneously applied an isolated.com
   // origin lock to the WebView process when committing isolated.com.
-  bool cookie_is_correct = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      guest->GetGuestMainFrame(),
-      "document.cookie = 'foo=bar';\n"
-      "window.domAutomationController.send(document.cookie == 'foo=bar');\n",
-      &cookie_is_correct));
-  EXPECT_TRUE(cookie_is_correct);
+  EXPECT_EQ(true, EvalJs(guest->GetGuestMainFrame(),
+                         "document.cookie = 'foo=bar';\n"
+                         "document.cookie == 'foo=bar';\n"));
 }
 
 // Sends an auto-resize message to the RenderWidgetHost and ensures that the

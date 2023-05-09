@@ -74,6 +74,7 @@ namespace blink {
 class ComputedStyleBuilder;
 class CounterStyle;
 class CounterStyleMap;
+class StyleContainmentScopeTree;
 class CSSFontSelector;
 class CSSPropertyValueSet;
 class CSSStyleSheet;
@@ -344,6 +345,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
     return *resolver_;
   }
 
+  StyleContainmentScopeTree& EnsureStyleContainmentScopeTree();
+  StyleContainmentScopeTree* GetStyleContainmentScopeTree() const {
+    return style_containment_scope_tree_;
+  }
+
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
 
   Font ComputeFont(Element& element,
@@ -436,7 +442,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void CollectFeaturesTo(RuleFeatureSet& features);
 
   void EnsureUAStyleForFullscreen();
-  void EnsureUAStyleForXrOverlay();
   void EnsureUAStyleForElement(const Element&);
   void EnsureUAStyleForPseudoElement(PseudoId);
   void EnsureUAStyleForForcedColors();
@@ -656,7 +661,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   RuleSet* DefaultViewTransitionStyle() const;
   void InvalidateUAViewTransitionStyle();
 
-  const ActiveStyleSheetVector& ActiveUserStyleSheetsForDebug() const {
+  const ActiveStyleSheetVector& ActiveUserStyleSheets() const {
     return active_user_style_sheets_;
   }
 
@@ -821,6 +826,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool AllowSkipStyleRecalcForScope() const;
 
   Member<Document> document_;
+
+  // Tree of style containment scopes. Is in charge of the document's quotes.
+  Member<StyleContainmentScopeTree> style_containment_scope_tree_;
 
   // Tracks the number of currently loading top-level stylesheets. Sheets loaded
   // using the @import directive are not included in this count. We use this

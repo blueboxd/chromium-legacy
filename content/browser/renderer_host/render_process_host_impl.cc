@@ -790,6 +790,7 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
 
   void FindRenderProcessesForSiteInstance(
       SiteInstanceImpl* site_instance,
+      absl::optional<size_t> main_frame_threshold,
       std::set<RenderProcessHost*>* foreground_processes,
       std::set<RenderProcessHost*>* background_processes) {
     auto result = map_.find(site_instance->GetSiteInfo());
@@ -814,6 +815,24 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
       // not allow such hosts to be reused.  See https://crbug.com/780661.
       if (!RenderProcessHostImpl::MayReuseAndIsSuitable(host, site_instance))
         continue;
+
+      // If a threshold is specified, don't reuse `host` if it already hosts
+      // more main frames (including BFCached and prerendered) than the
+      // threshold.
+      if (main_frame_threshold) {
+        size_t main_frame_count = 0;
+        host->ForEachRenderFrameHost(base::BindRepeating(
+            [](size_t& main_frame_count, RenderFrameHost* render_frame_host) {
+              if (static_cast<RenderFrameHostImpl*>(render_frame_host)
+                      ->IsOutermostMainFrame()) {
+                ++main_frame_count;
+              }
+            },
+            std::ref(main_frame_count)));
+        if (main_frame_count >= *main_frame_threshold) {
+          continue;
+        }
+      }
 
       if (host->VisibleClientCount())
         foreground_processes->insert(host);
@@ -2032,11 +2051,7 @@ void RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker(
   // overrides for a service worker.
   storage_partition_impl_->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::SCRIPT, storage_key.origin(),
-      net::IsolationInfo::Create(
-          net::IsolationInfo::RequestType::kOther,
-          url::Origin::Create(storage_key.top_level_site().GetURL()),
-          storage_key.origin(), storage_key.ToNetSiteForCookies(),
-          /*party_context=*/absl::nullopt, storage_key.nonce()),
+      storage_key.ToPartialNetIsolationInfo(),
       /*is_service_worker=*/true, GetID(), MSG_ROUTING_NONE,
       net::CookieSettingOverrides(), std::move(receiver),
       storage_partition_impl_->CreateCookieAccessObserverForServiceWorker());
@@ -2143,11 +2158,7 @@ void RenderProcessHostImpl::CreateWebSocketConnector(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebSocketConnectorImpl>(
           GetID(), MSG_ROUTING_NONE, storage_key.origin(),
-          net::IsolationInfo::Create(
-              net::IsolationInfo::RequestType::kOther,
-              url::Origin::Create(storage_key.top_level_site().GetURL()),
-              storage_key.origin(), storage_key.ToNetSiteForCookies(),
-              /*party_context=*/absl::nullopt, storage_key.nonce())),
+          storage_key.ToPartialNetIsolationInfo()),
       std::move(receiver));
 }
 
@@ -3151,6 +3162,15 @@ bool RenderProcessHostImpl::IsSpareProcessForCrashReporting(
                                     .spare_render_process_host();
 }
 
+// static
+void RenderProcessHostImpl::ClearAllResourceCaches() {
+  for (iterator iter(AllHostsIterator()); !iter.IsAtEnd(); iter.Advance()) {
+    mojom::Renderer* renderer_interface =
+        iter.GetCurrentValue()->GetRendererInterface();
+    renderer_interface->PurgeResourceCache(base::DoNothing());
+  }
+}
+
 bool RenderProcessHostImpl::HostHasNotBeenUsed() {
   return IsUnused() && listeners_.IsEmpty() && AreAllRefCountsZero() &&
          pending_views_ == 0;
@@ -3405,7 +3425,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceGpuMemAvailableMb,
     switches::kForceHighContrast,
     switches::kForceRasterColorProfile,
-    switches::kForceSkiaAnalyticAntialiasing,
     switches::kForceVideoOverlays,
     switches::kFullMemoryCrashReport,
     switches::kGaiaUrl,
@@ -4625,6 +4644,20 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
       }
       break;
     }
+    case SiteInstanceImpl::ProcessReusePolicy::
+        REUSE_PENDING_OR_COMMITTED_SITE_WITH_MAIN_FRAME_THRESHOLD: {
+      CHECK(base::FeatureList::IsEnabled(
+          features::kProcessPerSiteUpToMainFrameThreshold));
+      size_t main_frame_threshold = base::checked_cast<size_t>(
+          features::kProcessPerSiteMainFrameThreshold.Get());
+      render_process_host = FindReusableProcessHostForSiteInstance(
+          site_instance, main_frame_threshold);
+      if (render_process_host) {
+        is_unmatched_service_worker = false;
+        render_process_host->StopTrackingProcessForShutdownDelay();
+      }
+      break;
+    }
     default: {
       break;
     }
@@ -5252,7 +5285,8 @@ void RenderProcessHostImpl::OnProcessLaunchFailed(int error_code) {
 // static
 RenderProcessHost*
 RenderProcessHostImpl::FindReusableProcessHostForSiteInstance(
-    SiteInstanceImpl* site_instance) {
+    SiteInstanceImpl* site_instance,
+    absl::optional<size_t> main_frame_threshold) {
   BrowserContext* browser_context = site_instance->GetBrowserContext();
   if (!ShouldFindReusableProcessHostForSite(site_instance->GetSiteInfo()))
     return nullptr;
@@ -5267,7 +5301,8 @@ RenderProcessHostImpl::FindReusableProcessHostForSiteInstance(
           browser_context->GetUserData(kPendingSiteProcessCountTrackerKey));
   if (pending_tracker) {
     pending_tracker->FindRenderProcessesForSiteInstance(
-        site_instance, &eligible_foreground_hosts, &eligible_background_hosts);
+        site_instance, main_frame_threshold, &eligible_foreground_hosts,
+        &eligible_background_hosts);
   }
 
   if (eligible_foreground_hosts.empty()) {
@@ -5278,7 +5313,7 @@ RenderProcessHostImpl::FindReusableProcessHostForSiteInstance(
             browser_context->GetUserData(kCommittedSiteProcessCountTrackerKey));
     if (committed_tracker) {
       committed_tracker->FindRenderProcessesForSiteInstance(
-          site_instance, &eligible_foreground_hosts,
+          site_instance, main_frame_threshold, &eligible_foreground_hosts,
           &eligible_background_hosts);
     }
   }
@@ -5293,7 +5328,7 @@ RenderProcessHostImpl::FindReusableProcessHostForSiteInstance(
             kDelayedShutdownSiteProcessCountTrackerKey));
     if (delayed_shutdown_tracker) {
       delayed_shutdown_tracker->FindRenderProcessesForSiteInstance(
-          site_instance, &eligible_foreground_hosts,
+          site_instance, main_frame_threshold, &eligible_foreground_hosts,
           &eligible_background_hosts);
     }
   }
@@ -5476,16 +5511,16 @@ void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
           std::move(allocator)));
 }
 
+void RenderProcessHostImpl::SetAttributionReportingSupport(
+    network::mojom::AttributionSupport attribution_support) {
+  GetRendererInterface()->SetAttributionReportingSupport(attribution_support);
+}
+
 #if BUILDFLAG(IS_ANDROID)
 
 void RenderProcessHostImpl::NotifyMemoryPressureToRenderer(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   child_process_->OnMemoryPressure(level);
-}
-
-void RenderProcessHostImpl::SetAttributionReportingSupport(
-    network::mojom::AttributionSupport attribution_support) {
-  GetRendererInterface()->SetAttributionReportingSupport(attribution_support);
 }
 
 #endif

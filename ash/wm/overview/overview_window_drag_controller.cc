@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/wm/overview/overview_window_drag_controller.h"
-#include "base/memory/raw_ptr.h"
 
 #include <algorithm>
-#include <memory>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
@@ -157,7 +155,7 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewGrid* overview_grid,
   }
 
   // Add the margins overview mode adds around the window's contents.
-  scaled_size.Enlarge(2 * kWindowMargin, 2 * kWindowMargin + kHeaderHeightDp);
+  scaled_size.Enlarge(kDraggingEnlargeDp, kDraggingEnlargeDp + kHeaderHeightDp);
   return scaled_size;
 }
 
@@ -384,8 +382,8 @@ void OverviewWindowDragController::StartNormalDragMode(
     // bottom-edge of the desks bar (may be different edges if we are dragging
     // from different directions).
     gfx::SizeF item_no_header_size = original_scaled_size_;
-    item_no_header_size.Enlarge(float{-kWindowMargin * 2},
-                                float{-kWindowMargin * 2 - kHeaderHeightDp});
+    item_no_header_size.Enlarge(float{-kDraggingEnlargeDp},
+                                float{-kDraggingEnlargeDp - kHeaderHeightDp});
 
     // We must update the desks bar widget bounds before we cache its bounds
     // below, in case it needs to be pushed down due to splitview indicators.
@@ -612,7 +610,7 @@ void OverviewWindowDragController::ContinueNormalDrag(
       // target bounds, and offset up the centerpoint by half that amount, so
       // that the transformed bounds of the window contents move up to be
       // centered around the cursor.
-      centerpoint.Offset(0, (-kWindowMargin - kHeaderHeightDp) / 2);
+      centerpoint.Offset(0, -kHeaderHeightDp / 2);
     }
 
     const auto iter = per_grid_desks_bar_data_.find(overview_grid);
@@ -738,10 +736,10 @@ OverviewWindowDragController::CompleteNormalDrag(
     // passed parameters |snap_position_| and |location_in_screen| won't be used
     // in this function for this case, but they are passed in as placeholders.
     aura::Window* window = item_->GetWindow();
-    WindowState::Get(window)->set_snap_action_source(
-        WindowSnapActionSource::kDragOrSelectOverviewWindowToSnap);
     SplitViewController::Get(Shell::GetPrimaryRootWindow())
-        ->OnWindowDragEnded(window, snap_position_, rounded_screen_point);
+        ->OnWindowDragEnded(
+            window, snap_position_, rounded_screen_point,
+            WindowSnapActionSource::kDragOrSelectOverviewWindowToSnap);
 
     // Update window grid bounds and |snap_position_| in case the screen
     // orientation was changed.
@@ -926,8 +924,6 @@ void OverviewWindowDragController::SnapWindow(
   DCHECK(!SplitViewController::Get(Shell::GetPrimaryRootWindow())
               ->IsDividerAnimating());
   aura::Window* window = item_->GetWindow();
-  WindowState::Get(window)->set_snap_action_source(
-      WindowSnapActionSource::kDragOrSelectOverviewWindowToSnap);
 
   // If `window` is currently fullscreen, snapping it will trigger a work area
   // change, which triggers `OverviewSession::OnDisplayMetricsChanged`. Display
@@ -936,8 +932,10 @@ void OverviewWindowDragController::SnapWindow(
   // See crbug.com/1330042 for more details. `item_` will be deleted after
   // SplitViewController::SnapWindow().
   item_ = nullptr;
-  split_view_controller->SnapWindow(window, snap_position,
-                                    /*activate_window=*/true);
+  split_view_controller->SnapWindow(
+      window, snap_position,
+      WindowSnapActionSource::kDragOrSelectOverviewWindowToSnap,
+      /*activate_window=*/true);
 }
 
 OverviewGrid* OverviewWindowDragController::GetCurrentGrid() const {

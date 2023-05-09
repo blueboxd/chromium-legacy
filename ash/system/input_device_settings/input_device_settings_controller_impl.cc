@@ -32,12 +32,14 @@
 #include "components/prefs/pref_service.h"
 #include "ui/events/ash/keyboard_capability.h"
 #include "ui/events/devices/input_device.h"
+#include "ui/events/devices/keyboard_device.h"
+#include "ui/events/devices/touchpad_device.h"
 
 namespace ash {
 
 namespace {
 
-mojom::MetaKey GetMetaKeyForKeyboard(const ui::InputDevice& keyboard) {
+mojom::MetaKey GetMetaKeyForKeyboard(const ui::KeyboardDevice& keyboard) {
   const auto device_type =
       Shell::Get()->keyboard_capability()->GetDeviceType(keyboard);
   switch (device_type) {
@@ -57,7 +59,7 @@ mojom::MetaKey GetMetaKeyForKeyboard(const ui::InputDevice& keyboard) {
   };
 }
 
-mojom::KeyboardPtr BuildMojomKeyboard(const ui::InputDevice& keyboard) {
+mojom::KeyboardPtr BuildMojomKeyboard(const ui::KeyboardDevice& keyboard) {
   mojom::KeyboardPtr mojom_keyboard = mojom::Keyboard::New();
   mojom_keyboard->id = keyboard.id;
   mojom_keyboard->name = keyboard.name;
@@ -88,7 +90,7 @@ mojom::MousePtr BuildMojomMouse(const ui::InputDevice& mouse) {
   return mojom_mouse;
 }
 
-mojom::TouchpadPtr BuildMojomTouchpad(const ui::InputDevice& touchpad) {
+mojom::TouchpadPtr BuildMojomTouchpad(const ui::TouchpadDevice& touchpad) {
   mojom::TouchpadPtr mojom_touchpad = mojom::Touchpad::New();
   mojom_touchpad->id = touchpad.id;
   mojom_touchpad->name = touchpad.name;
@@ -97,6 +99,7 @@ mojom::TouchpadPtr BuildMojomTouchpad(const ui::InputDevice& touchpad) {
           touchpad);
   mojom_touchpad->is_external =
       touchpad.type != ui::InputDeviceType::INPUT_DEVICE_INTERNAL;
+  mojom_touchpad->is_haptic = touchpad.is_haptic;
   return mojom_touchpad;
 }
 
@@ -192,28 +195,29 @@ InputDeviceSettingsControllerImpl::InputDeviceSettingsControllerImpl(
 void InputDeviceSettingsControllerImpl::Init() {
   Shell::Get()->session_controller()->AddObserver(this);
   InitializePolicyHandler();
-  keyboard_notifier_ =
-      std::make_unique<InputDeviceNotifier<mojom::KeyboardPtr>>(
-          &keyboards_,
-          base::BindRepeating(
-              &InputDeviceSettingsControllerImpl::OnKeyboardListUpdated,
-              base::Unretained(this)));
-  mouse_notifier_ = std::make_unique<InputDeviceNotifier<mojom::MousePtr>>(
-      &mice_, base::BindRepeating(
-                  &InputDeviceSettingsControllerImpl::OnMouseListUpdated,
-                  base::Unretained(this)));
-  touchpad_notifier_ =
-      std::make_unique<InputDeviceNotifier<mojom::TouchpadPtr>>(
-          &touchpads_,
-          base::BindRepeating(
-              &InputDeviceSettingsControllerImpl::OnTouchpadListUpdated,
-              base::Unretained(this)));
-  pointing_stick_notifier_ =
-      std::make_unique<InputDeviceNotifier<mojom::PointingStickPtr>>(
-          &pointing_sticks_,
-          base::BindRepeating(
-              &InputDeviceSettingsControllerImpl::OnPointingStickListUpdated,
-              base::Unretained(this)));
+  keyboard_notifier_ = std::make_unique<
+      InputDeviceNotifier<mojom::KeyboardPtr, ui::KeyboardDevice>>(
+      &keyboards_,
+      base::BindRepeating(
+          &InputDeviceSettingsControllerImpl::OnKeyboardListUpdated,
+          base::Unretained(this)));
+  mouse_notifier_ =
+      std::make_unique<InputDeviceNotifier<mojom::MousePtr, ui::InputDevice>>(
+          &mice_, base::BindRepeating(
+                      &InputDeviceSettingsControllerImpl::OnMouseListUpdated,
+                      base::Unretained(this)));
+  touchpad_notifier_ = std::make_unique<
+      InputDeviceNotifier<mojom::TouchpadPtr, ui::TouchpadDevice>>(
+      &touchpads_,
+      base::BindRepeating(
+          &InputDeviceSettingsControllerImpl::OnTouchpadListUpdated,
+          base::Unretained(this)));
+  pointing_stick_notifier_ = std::make_unique<
+      InputDeviceNotifier<mojom::PointingStickPtr, ui::InputDevice>>(
+      &pointing_sticks_,
+      base::BindRepeating(
+          &InputDeviceSettingsControllerImpl::OnPointingStickListUpdated,
+          base::Unretained(this)));
   metrics_manager_ = std::make_unique<InputDeviceSettingsMetricsManager>();
 }
 
@@ -225,10 +229,10 @@ void InputDeviceSettingsControllerImpl::InitializePolicyHandler() {
       base::BindRepeating(
           &InputDeviceSettingsControllerImpl::OnMousePoliciesChanged,
           base::Unretained(this)));
-
-  // Only initialize the policy handler when in an active user session.
-  if (active_pref_service_) {
-    policy_handler_->Initialize(active_pref_service_);
+  // Only initialize if we have either local state or pref service.
+  // `local_state` can be null in tests.
+  if (local_state_ || active_pref_service_) {
+    policy_handler_->Initialize(local_state_, active_pref_service_);
   }
 }
 
@@ -831,7 +835,7 @@ void InputDeviceSettingsControllerImpl::DispatchPointingStickSettingsChanged(
 }
 
 void InputDeviceSettingsControllerImpl::OnKeyboardListUpdated(
-    std::vector<ui::InputDevice> keyboards_to_add,
+    std::vector<ui::KeyboardDevice> keyboards_to_add,
     std::vector<DeviceId> keyboard_ids_to_remove) {
   for (const auto& keyboard : keyboards_to_add) {
     // Get initial settings from the pref manager and generate our local
@@ -850,7 +854,7 @@ void InputDeviceSettingsControllerImpl::OnKeyboardListUpdated(
 }
 
 void InputDeviceSettingsControllerImpl::OnTouchpadListUpdated(
-    std::vector<ui::InputDevice> touchpads_to_add,
+    std::vector<ui::TouchpadDevice> touchpads_to_add,
     std::vector<DeviceId> touchpad_ids_to_remove) {
   for (const auto& touchpad : touchpads_to_add) {
     auto mojom_touchpad = BuildMojomTouchpad(touchpad);

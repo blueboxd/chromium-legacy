@@ -46,10 +46,6 @@ constexpr int kBetweenButtonSpacing = 12;
 constexpr int kCornerRadius = 8;
 constexpr gfx::Insets kInsideBorderInsets(16);
 
-// The distance from the bottom of the multitask menu to the cue.
-// TODO(b/277972192): Update this value to match spec.
-constexpr int kCueOffset = 4;
-
 // Menu animation values.
 constexpr base::TimeDelta kPositionAnimationDurationMs =
     base::Milliseconds(250);
@@ -250,12 +246,12 @@ void TabletModeMultitaskMenu::Animate(bool show) {
                                       kVerticalPosition),
                     gfx::Tween::ACCEL_20_DECEL_100);
   ui::Layer* cue_layer = event_handler_->multitask_cue()->cue_layer();
-  if (cue_layer && !cue_layer->GetAnimator()->is_animating()) {
+  if (cue_layer) {
     animation_builder.GetCurrentSequence().SetTransform(
         cue_layer,
         show ? gfx::Transform::MakeTranslation(
-                   0, menu_view_->GetPreferredSize().height() +
-                          kVerticalPosition + kCueOffset)
+                   0,
+                   menu_view_->GetPreferredSize().height() + kVerticalPosition)
              : gfx::Transform(),
         gfx::Tween::ACCEL_20_DECEL_100);
   }
@@ -289,10 +285,8 @@ void TabletModeMultitaskMenu::BeginDrag(float initial_y, bool down) {
     initial_y_ = menu_view_->bounds().bottom();
     menu_view_->layer()->SetTransform(
         gfx::Transform::MakeTranslation(0, translation_y));
-
     if (ui::Layer* cue_layer = event_handler_->multitask_cue()->cue_layer()) {
-      cue_layer->SetTransform(
-          gfx::Transform::MakeTranslation(0, initial_y + kCueOffset));
+      cue_layer->SetTransform(gfx::Transform::MakeTranslation(0, initial_y));
     }
   } else {
     // Drag up can start from anywhere in the menu; simply save `initial_y` to
@@ -313,7 +307,7 @@ void TabletModeMultitaskMenu::UpdateDrag(float current_y, bool down) {
   if (ui::Layer* cue_layer = event_handler_->multitask_cue()->cue_layer()) {
     cue_layer->SetTransform(gfx::Transform::MakeTranslation(
         0, menu_view_->GetPreferredSize().height() + kVerticalPosition +
-               kCueOffset + translation_y));
+               translation_y));
   }
 }
 
@@ -335,6 +329,14 @@ void TabletModeMultitaskMenu::Reset() {
 
 void TabletModeMultitaskMenu::OnNativeFocusChanged(
     gfx::NativeView focused_now) {
+  ui::Layer* view_layer = menu_view_->layer();
+  // Prevent fade out while we are animating to show. This can happen if the
+  // drag goes out of bounds while the menu is animating.
+  if (view_layer->GetAnimator()->is_animating() &&
+      view_layer->GetTargetOpacity() == 1.0f) {
+    return;
+  }
+
   if (widget_->GetNativeView() != focused_now) {
     // Destroys `this` at the end of animation.
     AnimateFadeOut();

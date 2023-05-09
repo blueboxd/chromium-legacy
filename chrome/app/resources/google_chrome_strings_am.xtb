@@ -117,6 +117,7 @@
 <translation id="2929907241665500097">Chrome አልተዘመነም፣ የሆነ ስክህተት ተከስቷል። <ph name="BEGIN_LINK" />የChrome ዝማኔ ችግሮችን እና ያልተሳኩ ዝማኔዎችን ያስተካክሉ።<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - በአውታረ መረብ ወደ መለያ መግባት - Chrome</translation>
 <translation id="3019382870990049182">&amp;ChromeOS Flexን ለማዘመን እንደገና ያስጀምሩ</translation>
+<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{የGoogle Chrome ቅጥያዎች ኤችአይዲ መሣሪያዎችን እየደረሱ ነበር}=1{የGoogle Chrome ቅጥያዎች ኤችአይዲ መሣሪያን እየደረሱ ነው}one{የGoogle Chrome ቅጥያዎች # ኤችአይዲ መሣሪያን እየደረሱ ነው}other{የGoogle Chrome ቅጥያዎች # ኤችአይዲ መሣሪያዎችን እየደረሱ ነው}}</translation>
 <translation id="303514781271618814">Chrome ጣቢያዎች ያነሰ ውሂብዎን ተጠቅመው ተመሳሳይ የአሰሳ ተሞክሮ እንዲያቀርቡ የሚያስችሏቸውን አዳዲስ ባህሪያትን እያሰሰ ነው።</translation>
 <translation id="3037838751736561277">Google Chrome በጀርባ ሁኔታ ላይ ነው።</translation>
 <translation id="3038232873781883849">ለመጫን በመጠበቅ ላይ...</translation>
@@ -210,6 +211,7 @@
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">ይህ ፋይል አደገኛ ሊሆን ስለሚችል Chrome አግዶታል።</translation>
 <translation id="479167709087336770">ይህ በ Google ፍለጋ ውስጥ ጥቅም ላይ ጋር ተመሳሳይ የፊደል አራሚ ይጠቀማል። በአሳሽ ውስጥ የሚተይቡት ጽሁፍ ወደ Google ይላካል። ይህን ባህሪ ሁልጊዜ በቅንብሮች ውስጥ መለወጥ ይችላሉ።</translation>
+<translation id="4828579605166583682">Google Chrome ነባር ይለፍ ቃሎችን ለመተካት እየሞከረ ነው። ይህን ለመፍቀድ የWindows የይለፍ ቃልዎን ይተይቡ።</translation>
 <translation id="4842397268809523050">ስምረት ለጎራዎ ስለማይገኝ ChromeOS Flex ውሂብዎን ማስመር አልቻለም።</translation>
 <translation id="4873783916118289636">በChrome ውስጥ ቁልፍ የግላዊነት እና የደህንነት ቁጥጥሮችን ይገምግሙ</translation>
 <translation id="4891791193823137474">Google Chrome በጀርባ ውስጥ ይሂድ</translation>
@@ -221,6 +223,7 @@
 <translation id="4970880042055371251">የChromeOS ስሪት</translation>
 <translation id="4970947549776831107">እንደዚህ ዓይነት ፋይል አደገኛ ስለሆነ Chrome ይህን ፋይል አግዶታል።</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
+<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{የGoogle Chrome ቅጥያ ኤችአይዲ መሣሪያዎችን እየደረሰ ነበር}=1{የGoogle Chrome ቅጥያ 1 ኤችአይዲ መሣሪያን እየደረሰ ነው}one{የGoogle Chrome ቅጥያ # ኤችአይዲ መሣሪያን እየደረሰ ነው}other{የGoogle Chrome ቅጥያ # ኤችአይዲ መሣሪያዎችን እየደረሰ ነው}}</translation>
 <translation id="5064155331105009416">{COUNT,plural, =1{አስተዳዳሪዎ Chrome ለ1 ደቂቃ ጥቅም ላይ ሳይውል ሲቀር በራስ-ሰር ይዘጉታል። የአሰሳ ውሂብ ተሰርዟል። ይህ ታሪክን፣ ራስ-ሙላን እና ውርዶችን ሊያካትት ይችላል።}one{አስተዳዳሪዎ Chrome ለ# ደቂቃ ጥቅም ላይ ሳይውል ሲቀር በራስ-ሰር ይዘጉታል። የአሰሳ ውሂብ ተሰርዟል። ይህ ታሪክን፣ ራስ-ሙላን እና ውርዶችን ሊያካትት ይችላል።}other{አስተዳዳሪዎ Chrome ለ# ደቂቃዎች ጥቅም ላይ ሳይውል ሲቀር በራስ-ሰር ይዘጉታል። የአሰሳ ውሂብ ተሰርዟል። ይህ ታሪክን፣ ራስ-ሙላን እና ውርዶችን ሊያካትት ይችላል።}}</translation>
 <translation id="5098668839038261629">ሲበራ ከChrome ዘግተው እንዲወጡም ይደረጋሉ</translation>
 <translation id="5132929315877954718">ለGoogle Chrome ምርጥ መተግበሪያዎችን፣ ጨዋታዎችን፣ ቅጥያዎችን እና ገጽታዎችን ያግኙ።</translation>

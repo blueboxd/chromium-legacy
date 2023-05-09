@@ -310,6 +310,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="GPU.ANGLE.MetalShader.CacheHitCount" units="count"
+    expires_after="2023-12-17">
+  <owner>sky@chromium.org</owner>
+  <owner>angle-team@google.com</owner>
+  <summary>
+    An integer that is logged shortly after the gpu process starts up. The value
+    is the number of shaders that were needed and were available in the shader
+    cache.
+  </summary>
+</histogram>
+
+<histogram name="GPU.ANGLE.MetalShader.CacheMissCount" units="count"
+    expires_after="2023-12-17">
+  <owner>sky@chromium.org</owner>
+  <owner>angle-team@google.com</owner>
+  <summary>
+    An integer that is logged shortly after the gpu process starts up. The value
+    is the number of shaders that were needed and were not in the shader cache.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ANGLE.MetalShaderInBlobCache" enum="Boolean"
     expires_after="2023-12-17">
   <owner>sky@chromium.org</owner>
@@ -829,16 +850,19 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GPUProcessTerminationOrigin" enum="GpuTerminationOrigin"
-    expires_after="2023-05-29">
-  <owner>kbr@chromium.org</owner>
+    expires_after="never">
+<!-- expires-never: For monitoring unexpected shifts in GPU process exit statuses. -->
+
   <owner>rjkroege@chromium.org</owner>
   <owner>msisov@igalia.com</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     The reason a GPU process is terminated. It works only when
     TERMINATION_STATUS_PROCESS_WAS_KILLED TerminationStatus is set. The goal of
     this histogram is to get spikes of the above mentioned case when
     Ozone/Wayland terminates the GPU process due to invalid data it received if
-    any. NOTE: this metric was expired from 2019-08-14 to crrev.com/c/4040947.
+    any. NOTE: this metric was expired from 2019-08-14 to 2022-11-30 and was
+    brought back by crrev.com/c/4040947.
   </summary>
 </histogram>
 

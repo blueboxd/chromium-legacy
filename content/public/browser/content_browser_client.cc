@@ -35,6 +35,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/prefetch_service_delegate.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/responsiveness_calculator_delegate.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/browser/speculation_host_delegate.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -78,6 +79,22 @@
 #endif
 
 namespace content {
+
+ClipboardPasteData::ClipboardPasteData(std::string text,
+                                       std::string image,
+                                       std::vector<std::string> file_paths)
+    : text(std::move(text)),
+      image(std::move(image)),
+      file_paths(std::move(file_paths)) {}
+ClipboardPasteData::ClipboardPasteData() = default;
+ClipboardPasteData::ClipboardPasteData(const ClipboardPasteData&) = default;
+ClipboardPasteData::ClipboardPasteData(ClipboardPasteData&&) = default;
+ClipboardPasteData& ClipboardPasteData::operator=(ClipboardPasteData&&) =
+    default;
+bool ClipboardPasteData::isEmpty() {
+  return text.empty() && image.empty() && file_paths.empty();
+}
+ClipboardPasteData::~ClipboardPasteData() = default;
 
 std::unique_ptr<BrowserMainParts> ContentBrowserClient::CreateBrowserMainParts(
     bool /* is_integration_test */) {
@@ -517,11 +534,9 @@ bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
   return true;
 }
 
-#if BUILDFLAG(IS_ANDROID)
 bool ContentBrowserClient::IsWebAttributionReportingAllowed() {
   return true;
 }
-#endif
 
 bool ContentBrowserClient::IsSharedStorageAllowed(
     content::BrowserContext* browser_context,
@@ -1279,9 +1294,9 @@ void ContentBrowserClient::IsClipboardPasteContentAllowed(
     content::WebContents* web_contents,
     const GURL& url,
     const ui::ClipboardFormatType& data_type,
-    const std::string& data,
+    ClipboardPasteData clipboard_paste_data,
     IsClipboardPasteContentAllowedCallback callback) {
-  std::move(callback).Run(data);
+  std::move(callback).Run(std::move(clipboard_paste_data));
 }
 
 bool ContentBrowserClient::IsClipboardCopyAllowed(
@@ -1462,6 +1477,11 @@ bool ContentBrowserClient::
 bool ContentBrowserClient::ShouldUseFirstPartyStorageKey(
     const url::Origin& origin) {
   return false;
+}
+
+std::unique_ptr<ResponsivenessCalculatorDelegate>
+ContentBrowserClient::CreateResponsivenessCalculatorDelegate() {
+  return nullptr;
 }
 
 }  // namespace content

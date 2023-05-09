@@ -16,11 +16,10 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
-#include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/externally_managed_app_manager_impl.h"
+#include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
@@ -40,7 +39,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/test/fake_app_instance.h"
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/publishers/standalone_browser_extension_apps.h"
@@ -304,7 +302,7 @@ class PublisherTest : public extensions::ExtensionServiceTestBase {
     url_loader_ = url_loader.get();
 
     auto externally_managed_app_manager =
-        std::make_unique<web_app::ExternallyManagedAppManagerImpl>(profile());
+        std::make_unique<web_app::ExternallyManagedAppManager>(profile());
     externally_managed_app_manager->SetUrlLoaderForTesting(
         std::move(url_loader));
 
@@ -1383,33 +1381,5 @@ TEST_F(PublisherTest, WebAppsOnApps) {
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-TEST_F(PublisherTest, ArcPublishPromiseApps) {
-  scoped_feature_list_.Reset();
-  scoped_feature_list_.InitAndEnableFeature(ash::features::kPromiseIcons);
-
-  ArcAppTest arc_test;
-  arc_test.SetUp(profile());
-
-  AppServiceProxy* proxy = AppServiceProxyFactory::GetForProfile(profile());
-  proxy->ReinitializeForTesting(profile());
-  PromiseAppRegistryCache* cache = proxy->PromiseAppRegistryCache();
-
-  std::string package_name = "test.package.name";
-  PackageId package_id = PackageId(AppType::kArc, package_name);
-
-  // Confirm that there isn't a promise app yet.
-  ASSERT_FALSE(cache->GetPromiseAppForTesting(package_id));
-
-  // Notify the publisher about a started installation.
-  arc_test.app_instance()->SendInstallationStarted(package_name);
-
-  // Verify the ARC promise app is added to PromiseAppRegistryCache.
-  const PromiseApp* promise_app = cache->GetPromiseAppForTesting(package_id);
-  ASSERT_TRUE(promise_app);
-  ASSERT_EQ(promise_app->package_id, package_id);
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace apps

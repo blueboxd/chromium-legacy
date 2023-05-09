@@ -900,7 +900,7 @@
       valid_for_marker: true,
       is_animation_property: true,
       valid_for_keyframe: false,
-      runtime_flag: "CSSScrollTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "animation-range-end",
@@ -913,7 +913,7 @@
       valid_for_marker: true,
       is_animation_property: true,
       valid_for_keyframe: false,
-      runtime_flag: "CSSScrollTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "animation-timeline",
@@ -926,7 +926,7 @@
       typedom_types: ["Keyword"],
       separator: ",",
       valid_for_marker: true,
-      runtime_flag: "CSSScrollTimeline",
+      runtime_flag: "ScrollTimeline",
       is_animation_property: true,
     },
     {
@@ -2798,7 +2798,7 @@
     },
     {
       name: "flex-direction",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
+      property_methods: ["CSSValueFromComputedStyleInternal", "InitialValue"],
       field_group: "*",
       field_template: "keyword",
       typedom_types: ["Keyword"],
@@ -2827,7 +2827,7 @@
     },
     {
       name: "flex-wrap",
-      property_methods: ["CSSValueFromComputedStyleInternal"],
+      property_methods: ["CSSValueFromComputedStyleInternal", "InitialValue"],
       field_group: "*",
       field_template: "keyword",
       typedom_types: ["Keyword"],
@@ -3041,6 +3041,32 @@
       runtime_flag: "CSSHyphenateLimitChars",
     },
     {
+      name: "popover-show-delay",
+      runtime_flag: "HTMLPopoverHint",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      field_group: "*",
+      field_template: "primitive",
+      type_name: "float",
+      interpolable: true,
+      typedom_types: ["Time"],
+      converter: "ConvertTimeValue",
+      default_value: "0.5",
+      supports_incremental_style: true,
+    },
+    {
+      name: "popover-hide-delay",
+      runtime_flag: "HTMLPopoverHint",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      field_group: "*",
+      field_template: "primitive",
+      type_name: "float",
+      interpolable: true,
+      typedom_types: ["Time"],
+      converter: "ConvertTimeValue",
+      default_value: "HUGE_VALF",
+      supports_incremental_style: true,
+    },
+    {
       name: "hyphens",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
@@ -3086,7 +3112,6 @@
       inherited: false,
       keywords: ["drop", "normal", "raise"],
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSInitialLetter",
       type_name: "StyleInitialLetter",
       valid_for_first_letter: true,
     },
@@ -4415,7 +4440,7 @@
       type_name: "Vector<TimelineAttachment>",
       converter: "ConvertViewTimelineAttachment",
       separator: ",",
-      runtime_flag: "CSSScrollTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "scroll-timeline-axis",
@@ -4426,7 +4451,7 @@
       type_name: "Vector<TimelineAxis>",
       converter: "ConvertViewTimelineAxis",
       separator: ",",
-      runtime_flag: "CSSScrollTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "scroll-timeline-name",
@@ -4438,7 +4463,7 @@
       wrapper_pointer_name: "Persistent",
       converter: "ConvertViewTimelineName",
       separator: ",",
-      runtime_flag: "CSSScrollTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "shape-image-threshold",
@@ -4922,6 +4947,7 @@
       computable: false,
       valid_for_formatted_text: true,
       valid_for_formatted_text_run: true,
+      valid_for_highlight: true,
     },
     {
       name: "text-underline-position",
@@ -5186,7 +5212,7 @@
       type_name: "Vector<TimelineAttachment>",
       converter: "ConvertViewTimelineAttachment",
       separator: ",",
-      runtime_flag: "CSSViewTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "view-timeline-axis",
@@ -5197,7 +5223,7 @@
       type_name: "Vector<TimelineAxis>",
       converter: "ConvertViewTimelineAxis",
       separator: ",",
-      runtime_flag: "CSSViewTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "view-timeline-inset",
@@ -5209,7 +5235,7 @@
       type_name: "Vector<TimelineInset>",
       converter: "ConvertViewTimelineInset",
       separator: ",",
-      runtime_flag: "CSSViewTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "view-timeline-name",
@@ -5221,7 +5247,7 @@
       wrapper_pointer_name: "Persistent",
       converter: "ConvertViewTimelineName",
       separator: ",",
-      runtime_flag: "CSSViewTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "view-transition-name",
@@ -5971,7 +5997,7 @@
       inherited: true,
       field_template: "primitive",
       field_size: 2,  // Ensure this is in sync with `kTextWrapBits`.
-      keywords: ["wrap", "nowrap", "balance"],
+      keywords: ["wrap", "nowrap", "balance", "pretty"],
       type_name: "TextWrap",
       default_value: "TextWrap::kWrap",
       include_paths: ["third_party/blink/renderer/core/css/white_space.h"],
@@ -6664,7 +6690,7 @@
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       valid_for_keyframe: false,
-      runtime_flag: 'CSSScrollTimeline',
+      runtime_flag: 'ScrollTimeline',
     },
     {
       // Variant of the "animation" shorthand which includes the
@@ -6689,7 +6715,7 @@
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       valid_for_keyframe: false,
-      runtime_flag: 'CSSScrollTimeline',
+      runtime_flag: 'ScrollTimeline',
     },
     {
       name: "background",
@@ -7189,7 +7215,7 @@
       name: "scroll-timeline",
       longhands: ["scroll-timeline-name", "scroll-timeline-axis", "scroll-timeline-attachment"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSScrollTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "text-decoration",
@@ -7215,7 +7241,7 @@
       name: "view-timeline",
       longhands: ["view-timeline-name", "view-timeline-axis", "view-timeline-attachment"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSViewTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "-webkit-border-after",
@@ -7803,7 +7829,7 @@
       name: "-webkit-alternative-animation-with-timeline",
       alias_for: "-alternative-animation-with-timeline",
       alternative_of: "-webkit-animation",
-      runtime_flag: "CSSScrollTimeline",
+      runtime_flag: "ScrollTimeline",
     },
     {
       name: "-webkit-alternative-animation-with-delay-start-end",

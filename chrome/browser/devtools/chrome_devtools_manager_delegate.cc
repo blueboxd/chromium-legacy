@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -249,8 +250,19 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
     case Availability::kAllowed:
       return true;
     case Availability::kDisallowedForForceInstalledExtensions:
-      return !extension ||
-             !extensions::Manifest::IsPolicyLocation(extension->location());
+      if (!extension) {
+        return true;
+      }
+      if (extensions::Manifest::IsPolicyLocation(extension->location())) {
+        return false;
+      }
+      // We also disallow inspecting component extensions, but only for managed
+      // profiles.
+      if (extensions::Manifest::IsComponentLocation(extension->location()) &&
+          profile->GetProfilePolicyConnector()->IsManaged()) {
+        return false;
+      }
+      return true;
     default:
       NOTREACHED() << "Unknown developer tools policy";
       return true;

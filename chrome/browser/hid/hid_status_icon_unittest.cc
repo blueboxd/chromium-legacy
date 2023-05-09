@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/hid/hid_status_icon.h"
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/hid/hid_system_tray_icon_unittest.h"
 
@@ -21,6 +23,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
@@ -135,6 +138,7 @@ class HidStatusIconTest : public HidSystemTrayIconTestBase {
     auto sorted_profile_connection_counts = profile_connection_counts;
     base::ranges::sort(sorted_profile_connection_counts);
     size_t total_connection_count = 0;
+    size_t total_origin_count = 0;
     auto* menu_item = status_icon->menu_item();
     // The system tray icon title (i.e menu_idx == 0) will be checked at the end
     // when |total_connection_count| is calculated.
@@ -144,6 +148,7 @@ class HidStatusIconTest : public HidSystemTrayIconTestBase {
                            expected_command_id++, /*click=*/false);
     for (const auto& [profile, origin_items] :
          sorted_profile_connection_counts) {
+      total_origin_count += origin_items.size();
       auto sorted_origin_items = origin_items;
       // Sort the |origin_items| by origin. This is necessary because the origin
       // items for each profile in the menu are created by iterating through a
@@ -168,7 +173,11 @@ class HidStatusIconTest : public HidSystemTrayIconTestBase {
         total_connection_count += connection_count;
       }
     }
-    CheckMenuItemLabel(menu_item, 0, GetExpectedTitle(total_connection_count));
+    CheckMenuItemLabel(
+        menu_item, 0,
+        GetExpectedTitle(total_origin_count,
+                         override_title_total_connection_count_.value_or(
+                             total_connection_count)));
     EXPECT_LE(expected_command_id, IDC_DEVICE_SYSTEM_TRAY_ICON_LAST + 1);
   }
 
@@ -178,6 +187,13 @@ class HidStatusIconTest : public HidSystemTrayIconTestBase {
     ASSERT_TRUE(status_tray);
     EXPECT_TRUE(status_tray->GetStatusIconsForTest().empty());
   }
+
+ protected:
+  // This is specifically used in the test case of
+  // NumCommandIdOverLimitExtensionOrigin, where the input parameter
+  // profile_connection_counts may not capture all of the origins because the
+  // limit is exceeded.
+  absl::optional<int> override_title_total_connection_count_;
 };
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -248,11 +264,73 @@ TEST_F(HidStatusIconTest, NumCommandIdOverLimitExtensionOrigin) {
         {profile, {{extension->origin(), 1, extension->name()}}});
     base::ranges::sort(profile_connection_counts);
     profile_connection_counts.back().second.clear();
+    // The total connection count in the title still captures all of the origins
+    override_title_total_connection_count_ = 20;
     CheckIcon(profile_connection_counts);
   }
 }
 
 TEST_F(HidStatusIconTest, ExtensionRemoval) {
   TestExtensionRemoval();
+}
+
+TEST_F(HidStatusIconTest, ProfileUserName) {
+  std::vector<HidSystemTrayIconTestBase::ProfileItem> profile_connection_counts;
+  std::vector<std::string> profile_names;
+  std::vector<std::string> new_profile_names;
+  std::vector<base::FilePath> profile_paths;
+  for (size_t idx = 0; idx < 2; idx++) {
+    profile_names.push_back(base::StringPrintf("user%zu", idx));
+    new_profile_names.push_back(base::StringPrintf("user%zu-newname", idx));
+    auto* profile = CreateTestingProfile(profile_names.back());
+    auto extension = CreateExtensionWithName("Test Extension");
+    AddExtensionToProfile(profile, extension.get());
+    auto* connection_tracker =
+        HidConnectionTrackerFactory::GetForProfile(profile,
+                                                   /*create=*/true);
+    connection_tracker->IncrementConnectionCount(extension->origin());
+    profile_connection_counts.push_back(
+        {profile, {{extension->origin(), 1, extension->name()}}});
+    profile_paths.push_back(profile->GetPath());
+  }
+  CheckIcon(profile_connection_counts);
+
+  const auto* status_tray = static_cast<MockStatusTray*>(
+      TestingBrowserProcess::GetGlobal()->status_tray());
+  ASSERT_TRUE(status_tray);
+  EXPECT_EQ(status_tray->GetStatusIconsForTest().size(), 1u);
+  const auto* status_icon = static_cast<MockStatusIcon*>(
+      status_tray->GetStatusIconsForTest().back().get());
+
+  // Check the current profile names.
+  {
+    auto* menu_item = status_icon->menu_item();
+    CheckMenuItemLabel(menu_item, 3, base::UTF8ToUTF16(profile_names[0]));
+    CheckMenuItemLabel(menu_item, 7, base::UTF8ToUTF16(profile_names[1]));
+  }
+
+  // Change the first profile name.
+  {
+    profile_manager()
+        ->profile_attributes_storage()
+        ->GetProfileAttributesWithPath(profile_paths[0])
+        ->SetLocalProfileName(base::UTF8ToUTF16(new_profile_names[0]),
+                              /*is_default_name*/ false);
+    auto* menu_item = status_icon->menu_item();
+    CheckMenuItemLabel(menu_item, 3, base::UTF8ToUTF16(new_profile_names[0]));
+    CheckMenuItemLabel(menu_item, 7, base::UTF8ToUTF16(profile_names[1]));
+  }
+
+  // Change the second profile name.
+  {
+    profile_manager()
+        ->profile_attributes_storage()
+        ->GetProfileAttributesWithPath(profile_paths[1])
+        ->SetLocalProfileName(base::UTF8ToUTF16(new_profile_names[1]),
+                              /*is_default_name*/ false);
+    auto* menu_item = status_icon->menu_item();
+    CheckMenuItemLabel(menu_item, 3, base::UTF8ToUTF16(new_profile_names[0]));
+    CheckMenuItemLabel(menu_item, 7, base::UTF8ToUTF16(new_profile_names[1]));
+  }
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

@@ -18,7 +18,7 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.preference.TwoStatePreference;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 
 import org.junit.Assert;
@@ -121,7 +121,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
 
         @Override
         public Promise<PendingIntent> createKeyRetrievalIntent(CoreAccountInfo accountInfo) {
-            Context context = InstrumentationRegistry.getContext();
+            Context context = ApplicationProvider.getApplicationContext();
             Intent intent = new Intent(context, DummyKeyRetrievalActivity.class);
             return Promise.fulfilled(PendingIntent.getActivity(context, 0 /* requestCode */, intent,
                     IntentUtils.getPendingIntentMutabilityFlag(false)));
@@ -146,7 +146,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
         @Override
         public Promise<PendingIntent> createRecoverabilityDegradedIntent(
                 CoreAccountInfo accountInfo) {
-            Context context = InstrumentationRegistry.getContext();
+            Context context = ApplicationProvider.getApplicationContext();
             Intent intent = new Intent(context, DummyRecoverabilityDegradedFixActivity.class);
             return Promise.fulfilled(PendingIntent.getActivity(context, 0 /* requestCode */, intent,
                     IntentUtils.getPendingIntentMutabilityFlag(false)));
@@ -362,7 +362,7 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
                     }
                     mSyncService = SyncService.get();
 
-                    mContext = InstrumentationRegistry.getTargetContext();
+                    mContext = ApplicationProvider.getApplicationContext();
                     mFakeServerHelper = FakeServerHelper.createInstanceAndGet();
                 });
 

@@ -221,6 +221,7 @@
 <translation id="1961239773406905488">カメラ プレビューが非表示になっています</translation>
 <translation id="1961832440516943645"><ph name="DATE" />、<ph name="TIME" /></translation>
 <translation id="1962969542251276847">画面をロック</translation>
+<translation id="1962972976741217487">1 台のデバイスが <ph name="DEVICE_NAME" /> のアクセス ポイントに接続されています</translation>
 <translation id="1967970931040389207">アクセス ポイントをオンにする</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="1972950159383891558"><ph name="USERNAME" /> さん、こんにちは</translation>
@@ -301,7 +302,6 @@
 <translation id="2367972762794486313">アプリを表示</translation>
 <translation id="2369165858548251131">中国語で「こんにちは」ってどう言うの</translation>
 <translation id="2386292613071805067">ページ上のすべてを選択する</translation>
-<translation id="2390318262976603432">言語 / 地域設定</translation>
 <translation id="2397416548179033562">Chrome メニューを表示</translation>
 <translation id="240006516586367791">メディア コントロール</translation>
 <translation id="2402411679569069051">Chromebook のロックを解除するには、指紋認証を使用するか、スマートフォンのロックを解除します</translation>
@@ -382,6 +382,7 @@
 <translation id="2791421900609674576">前回中断したところから再開できるように、おすすめが表示されます。おすすめは長押しで削除できます。</translation>
 <translation id="2792498699870441125">Alt+ 検索</translation>
 <translation id="2797741504905337289">シェルフ グループ</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />、選択済み</translation>
 <translation id="2805756323405976993">アプリ</translation>
 <translation id="2814448776515246190">画面の一部のキャプチャ</translation>
 <translation id="2819276065543622893">ログアウトします。</translation>
@@ -600,6 +601,7 @@
 <translation id="3735740477244556633">並べ替え</translation>
 <translation id="3738664582935948253">画面の録画でクリックとキーボード ショートカットを表示できるようになりました</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
+<translation id="3756485814916578707">画面をキャストしています</translation>
 <translation id="3765841986579723851">今日編集したファイル</translation>
 <translation id="3773700760453577392"><ph name="USER_EMAIL" /> へのマルチログインは、管理者によって禁止されています。続行するには、すべてのユーザーがログアウトする必要があります。</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> を接続しています</translation>
@@ -821,6 +823,7 @@
 <translation id="4777825441726637019">Play ストア</translation>
 <translation id="4778095205580009397">Google アシスタントは、デモセッションではご利用いただけません。</translation>
 <translation id="4789348252524569426">音声ファイルをインストールできません。デバイスを更新する必要があります。デバイスを再起動してもう一度お試しください。</translation>
+<translation id="478959186716341421">キャスト中</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
 <translation id="4814539958450445987">ログイン画面</translation>
@@ -928,6 +931,7 @@
 <translation id="5297704307811127955">オフ</translation>
 <translation id="5300589172476337783">表示</translation>
 <translation id="5302048478445481009">言語</translation>
+<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> 台のデバイスが <ph name="DEVICE_NAME" /> のアクセス ポイントに接続されています</translation>
 <translation id="5308380583665731573">接続</translation>
 <translation id="5313326810920013265">Bluetooth 設定</translation>
 <translation id="5314219114274263156">画面を録画しました</translation>
@@ -996,7 +1000,6 @@
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
 <translation id="5600837773213129531">音声フィードバックを無効にするには Ctrl+Alt+Z を押してください。</translation>
 <translation id="5601503069213153581">PIN</translation>
-<translation id="5601571553788043181">Chrome ブラウザでファイルを開く</translation>
 <translation id="5618148318840095371">より安全なネットワークに切り替えました</translation>
 <translation id="5619862035903135339">管理者が設定したポリシーにより、スクリーン キャプチャは無効になっています</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1117,6 +1120,7 @@
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> の削除ダイアログを開きます</translation>
 <translation id="6141988275892716286">ダウンロードの確認</translation>
 <translation id="6154006699632741460">サポートされていない周辺機器です</translation>
+<translation id="6156960295318603523">言語設定</translation>
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6165508094623778733">詳細</translation>
 <translation id="6166852626429024716">デバイス、アプリ、設定、ウェブを検索...</translation>
@@ -1335,6 +1339,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
 <translation id="7180611975245234373">更新</translation>
+<translation id="7187711731540696127"><ph name="DEVICE_NAME" /> のアクセス ポイントはオンです。デバイスが接続されていません</translation>
 <translation id="7188494361780961876">メニューは画面左上に移動しました。</translation>
 <translation id="7189412385142492784">金星までの距離は</translation>
 <translation id="7198435252016571249">カメラは右下にスナップされています。システムのサーフェスと競合しています。</translation>
@@ -1393,6 +1398,7 @@
 <translation id="7497767806359279797">言語とキーボードを選択</translation>
 <translation id="7508690557411636492">過去 1 か月以内に開いたファイル</translation>
 <translation id="7509246181739783082">本人確認</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />、未選択</translation>
 <translation id="7513622367902644023">スクリーンショット モードを選択しました</translation>
 <translation id="7513922695575567867">カレンダー、<ph name="DATE" /> の週、現在 <ph name="SELECTED_DATE" /> が選択されています。</translation>
 <translation id="7514365320538308">ダウンロード</translation>
@@ -1414,7 +1420,6 @@
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7573585051776738856">アクティブなウィンドウを右側に固定しました。</translation>
 <translation id="7579778809502851308">スクリーン キャプチャ</translation>
-<translation id="7590883480672980941">入力設定</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7600875258240007829">通知をすべて表示</translation>
 <translation id="7607002721634913082">一時停止中</translation>
@@ -1556,6 +1561,7 @@
 <translation id="8185090165691050712">ロックモードのサイズ変更メニューのオンとオフを切り替えます</translation>
 <translation id="8192202700944119416">通知は非表示になっています。</translation>
 <translation id="8196787716797768628">タブレット モードで、ジェスチャーを使用してアプリを切り替えたり、Chromebook を操作したりできます。</translation>
+<translation id="8198456017687137612">タブをキャスト中</translation>
 <translation id="8200772114523450471">再開</translation>
 <translation id="8203795194971602413">右クリック</translation>
 <translation id="8209010265547628927">リセット</translation>

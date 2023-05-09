@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
@@ -182,13 +181,11 @@ std::u16string FilesPolicyDialog::GetMessage() {
       message_id = IDS_POLICY_DLP_FILES_UPLOAD_WARN_MESSAGE;
       break;
     case DlpFilesController::FileAction::kCopy:
-      // TODO(b/273521961): Handle urls.
-      destination_str = GetDestinationComponent(destination_);
+      destination_str = GetDestination(destination_);
       message_id = IDS_POLICY_DLP_FILES_COPY_WARN_MESSAGE;
       break;
     case DlpFilesController::FileAction::kMove:
-      // TODO(b/273521961): Handle urls.
-      destination_str = GetDestinationComponent(destination_);
+      destination_str = GetDestination(destination_);
       message_id = IDS_POLICY_DLP_FILES_MOVE_WARN_MESSAGE;
       break;
     case DlpFilesController::FileAction::kOpen:

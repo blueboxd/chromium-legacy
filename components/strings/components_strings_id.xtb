@@ -191,6 +191,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="1396259464226642517">Apakah hasil ini tidak diharapkan? <ph name="BEGIN_LINK" />Kirim masukan<ph name="END_LINK" /></translation>
 <translation id="1405567553485452995">Hijau Muda</translation>
 <translation id="1406500794671479665">Memverifikasi...</translation>
+<translation id="1406812885827747674">Izinkan kali ini</translation>
 <translation id="1407135791313364759">Buka semua</translation>
 <translation id="1408787208417187241">Tiga jepretan di atas</translation>
 <translation id="1410941016594047814">Envelope Invite</translation>
@@ -315,6 +316,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="1689333818294560261">Nama panggilan</translation>
 <translation id="1697430960030447570"><ph name="BEGIN_BOLD" />Cara untuk mengelola data Anda:<ph name="END_BOLD" /> Chrome otomatis menghapus topik yang tersimpan lebih dari 4 minggu. Saat Anda menjelajah, suatu topik mungkin muncul kembali di daftar. Anda juga dapat memblokir topik dari Chrome yang tidak ingin Anda bagikan ke situs dan menonaktifkan topik iklan kapan saja di setelan Chrome.</translation>
 <translation id="1697532407822776718">Anda sudah siap!</translation>
+<translation id="1699651774646344471">Anda sekarang dapat menggunakan alamat dari Akun Google Anda</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706625117072057435">Tingkat perbesar/perkecil</translation>
@@ -469,6 +471,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2079545284768500474">Urungkan</translation>
 <translation id="20817612488360358">Setelan proxy sistem disetel untuk digunakan namun konfigurasi proxy eksplisit juga ditentukan.</translation>
 <translation id="2082238445998314030">Hasil <ph name="RESULT_NUMBER" /> dari <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2083256696566019397">Izinkan pada setiap kunjungan</translation>
 <translation id="2085876078937250610">Simpan…</translation>
 <translation id="2088086323192747268">Tombol Kelola sinkronisasi, tekan Enter untuk mengelola info apa saja yang Anda sinkronkan di setelan Chrome</translation>
 <translation id="2091887806945687916">Suara</translation>
@@ -491,7 +494,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2119867082804433120">Lubang di kanan bawah</translation>
 <translation id="2122719317867821810">Kebijakan ini berfungsi sebagaimana mestinya, tetapi nilai yang bertentangan disetel di sumber lain dan digantikan oleh kebijakan ini.</translation>
 <translation id="2126374524350484896">Pembuat PDF:</translation>
-<translation id="2128262927290305126">Di Akun Google Anda <ph name="ACCOUNT" /></translation>
 <translation id="2130448033692577677">Template yang telah Anda tentukan mungkin tidak diterapkan karena kebijakan DnsOverHttpsMode tidak ditetapkan.</translation>
 <translation id="2130699163006053678">A3x7</translation>
 <translation id="2135799067377889518">Pakaian pria</translation>
@@ -538,6 +540,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2224337661447660594">Tidak ada internet</translation>
 <translation id="2225927550500503913">Kartu virtual diaktifkan</translation>
 <translation id="2226636330183131181"><ph name="BEGIN_LINK" />Login<ph name="END_LINK" /> ke jaringan Wi-Fi</translation>
+<translation id="2228057197024893428">Alamat ini disimpan ke Chrome untuk saat ini. Untuk menggunakannya di seluruh produk Google, simpan di Akun Google Anda, <ph name="ACCOUNT" />.</translation>
 <translation id="2239100178324503013">Kirim sekarang</translation>
 <translation id="2241693394036365668">File didownload</translation>
 <translation id="2246264294482514010">10 x 12 inci (25 x 30 cm)</translation>
@@ -657,6 +660,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="2547466893236767989">Desain &amp; pengembangan web</translation>
 <translation id="254947805923345898">Nilai kebijakan tidak valid.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> mengirimkan tanggapan yang tidak valid.</translation>
+<translation id="2551608178605132291">Alamat: <ph name="ADDRESS" /></translation>
 <translation id="2552246211866555379">Hagaki</translation>
 <translation id="2552295903035773204">Mulai sekarang, gunakan kunci layar untuk mengonfirmasi kartu</translation>
 <translation id="2553853292994445426">Periksa setelan DNS aman Anda. Anda mungkin telah mengonfigurasi server DNS aman yang koneksinya gagal.</translation>
@@ -836,7 +840,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3029752078111257850">Berita dunia</translation>
 <translation id="3037177537145227281">Memantau harga</translation>
 <translation id="3037605927509011580">Yah!</translation>
-<translation id="3041450980936463495">Anda dapat menggunakan alamat tersimpan di seluruh produk Google. Alamat ini disimpan di Akun Google Anda (<ph name="ACCOUNT" />).</translation>
 <translation id="3041612393474885105">Informasi Sertifikat</translation>
 <translation id="305162504811187366">Histori Chrome Desktop Jarak Jauh, termasuk stempel waktu, host, dan ID sesi klien</translation>
 <translation id="3052964831964880138">Diskon <ph name="PRICE_DROP" /> untuk <ph name="PRODUCT_NAME" /></translation>
@@ -855,6 +858,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />Memeriksa konfigurasi DNS aman<ph name="END_LINK" /></translation>
 <translation id="3108943290502734357">Baki Tengah</translation>
 <translation id="3109728660330352905">Anda tidak memiliki otorisasi untuk melihat halaman ini.</translation>
+<translation id="3112892588078695695">Nomor telepon: <ph name="PHONE" /></translation>
 <translation id="3113284927548439113">Shift ketiga</translation>
 <translation id="3114040155724590991">Mengupdate Sistem Android
     Memulai aplikasi Anda mungkin memerlukan waktu lebih lama dari biasanya.</translation>
@@ -1055,6 +1059,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3587738293690942763">Tengah</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{Anda dapat mereset grup kapan saja. Perlu waktu sekitar 1 hari untuk bergabung ke grup baru.}=1{Anda dapat mereset grup kapan saja. Perlu waktu sekitar 1 hari untuk bergabung ke grup baru.}other{Anda dapat mereset grup kapan saja. Perlu waktu sekitar {NUM_DAYS} hari untuk bergabung ke grup baru.}}</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="360335678635752619">Chrome otomatis menghapus situs (yang menyarankan iklan) dan topik setelah situs dan topik itu tersimpan lebih dari 30 hari. Atau, Anda dapat memblokir topik dan situs tertentu yang tidak Anda sukai.</translation>
 <translation id="3603507503523709">Aplikasi diblokir oleh administrator Anda</translation>
 <translation id="3605899229568538311">5 x 5 inci (12 x 12 cm)</translation>
 <translation id="3608932978122581043">Feed orientasi</translation>
@@ -1184,6 +1189,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3911401144270344103">Anda dapat mengubahnya kapan saja di setelan Chrome</translation>
+<translation id="3919748199683685809"><ph name="BEGIN_BOLD" />Cara Anda dapat mengelola data Anda:<ph name="END_BOLD" /> Chrome otomatis menghapus situs yang tersimpan lebih dari 30 hari. Situs yang Anda buka lagi dapat kembali muncul di daftar. Anda juga dapat memblokir situs agar tidak menyarankan iklan dan menonaktifkan iklan yang disarankan situs kapan saja di setelan Chrome.</translation>
 <translation id="3921869355029467742">Masukkan kode keamanan</translation>
 <translation id="3927932062596804919">Tolak</translation>
 <translation id="393316646445601645">Internet &amp; telekomunikasi</translation>
@@ -1226,7 +1232,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4031179711345676612">Mikrofon diizinkan</translation>
 <translation id="4040350669425716613">Perguruan tinggi &amp; universitas</translation>
 <translation id="4047351652147966654">18 x 24 inci (45 x 60 cm)</translation>
-<translation id="4047620889508350431">Anda sekarang dapat menggunakan alamat dari Akun Google Anda.</translation>
+<translation id="4050392779074832022">Anda akan dapat menggunakannya di seluruh produk Google</translation>
 <translation id="405399507749852140">Dapatkan notifikasi jika ada diskon di situs mana pun</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4063063121357725926">Izinkan Google membantu Anda menemukan diskon untuk keranjang Anda</translation>
@@ -1349,6 +1355,8 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kartu ini telah disimpan di Akun Google Anda}other{Kartu-kartu ini telah disimpan di Akun Google Anda}}</translation>
 <translation id="4287495839370498922">Privasi iklan yang lebih baik di Chrome</translation>
 <translation id="4287885627794386150">Memenuhi syarat untuk uji coba tetapi tidak aktif</translation>
+<translation id="4290920330097335010">Jangan pernah izinkan</translation>
+<translation id="4296207570293932800">Fitur privasi iklan baru kini tersedia</translation>
 <translation id="4297502707443874121">Thumbnail untuk halaman <ph name="THUMBNAIL_PAGE" /></translation>
 <translation id="4298000214066716287">Investasi</translation>
 <translation id="42981349822642051">Luaskan</translation>
@@ -1417,7 +1425,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4451135742916150903">Dapat meminta untuk terhubung ke perangkat HID</translation>
 <translation id="4451684391620232683">Teks yang ditampilkan kepada pengguna:</translation>
 <translation id="4452328064229197696">Sandi yang baru saja Anda gunakan terekspos dalam pelanggaran data. Untuk mengamankan akun Anda, Pengelola Sandi Google merekomendasikan untuk memeriksa sandi tersimpan Anda.</translation>
-<translation id="4460315069258617173">Diizinkan sampai Anda menutup tab untuk situs ini</translation>
 <translation id="4464826014807964867">Situs dengan info dari organisasi Anda</translation>
 <translation id="447665707681730621"><ph name="BUBBLE_MESSAGE" />. <ph name="LEARN_MORE_TEXT" /></translation>
 <translation id="4476953670630786061">Formulir ini tidak aman. Isi otomatis telah dinonaktifkan.</translation>
@@ -1621,6 +1628,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="495170559598752135">Tindakan</translation>
 <translation id="4953689047182316270">Merespons Acara Aksesibilitas</translation>
 <translation id="4958444002117714549">Luaskan daftar</translation>
+<translation id="4960068118612257147">Anda dapat membuat perubahan pada setelan privasi iklan Chrome</translation>
 <translation id="4964505745997821360">Asuransi kesehatan</translation>
 <translation id="4968522289500246572">Aplikasi ini didesain untuk perangkat seluler dan perubahan ukurannya mungkin tidak sesuai. Perangkat dapat mengalami masalah atau dimulai ulang.</translation>
 <translation id="4968665849807487749">Dapat meminta untuk mengelola jendela di semua layar</translation>
@@ -1796,7 +1804,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5344579389779391559">Halaman ini mungkin mencoba menagih Anda</translation>
 <translation id="5347645913823149105">Tombol Sesuaikan font di Chrome, tekan Enter untuk menyesuaikan ukuran font dan rupa huruf di Chrome</translation>
 <translation id="5355557959165512791">Anda tidak dapat membuka <ph name="SITE" /> sekarang karena sertifikatnya telah dicabut. Error jaringan dan serangan biasanya bersifat sementara, sehingga halaman ini mungkin akan berfungsi nanti.</translation>
-<translation id="5356345925629253198">Anda dapat menggunakan alamat tersimpan di seluruh produk Google. Alamat ini akan disimpan di Akun Google Anda (<ph name="ACCOUNT" />).</translation>
 <translation id="5357848622083956825">Seni &amp; desain visual</translation>
 <translation id="536296301121032821">Gagal menyimpan setelan kebijakan</translation>
 <translation id="5363309033720083897">Port serial yang diizinkan oleh administrator Anda</translation>
@@ -1887,7 +1894,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5596939519753369075">2 x 3,5 inci (5 x 8 cm)</translation>
 <translation id="560412284261940334">Pengelolaan tidak didukung</translation>
 <translation id="5605670050355397069">Ledger</translation>
-<translation id="5606444889871204172"><ph name="BEGIN_BOLD" />Cara Anda dapat mengelola data Anda:<ph name="END_BOLD" /> Chrome otomatis menghapus situs yang tersimpan lebih dari 4 minggu. Situs yang Anda buka lagi mungkin akan muncul kembali di daftar. Anda juga dapat memblokir situs agar tidak menyarankan iklan dan menonaktifkan iklan yang disarankan situs kapan saja di setelan Chrome.</translation>
 <translation id="5610142619324316209">Periksa sambungan</translation>
 <translation id="5610807607761827392">Anda dapat mengelola kartu dan alamat di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="5611398002774823980">Simpan di akun</translation>
@@ -1975,6 +1981,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5830698870816298009">penggunaan &amp; gerakan kamera</translation>
 <translation id="583281660410589416">Tidak dikenal</translation>
 <translation id="5838278095973806738">Jangan masukkan informasi sensitif apa pun di situs ini (misalnya, sandi atau kartu kredit), karena penyerang dapat mencurinya.</translation>
+<translation id="5840318881868981258">Di Akun Google Anda, <ph name="ACCOUNT" /></translation>
 <translation id="5841338463993781099">Simpan di akun?</translation>
 <translation id="5851548754964597211">Daftar tab</translation>
 <translation id="5852909432155870672">RA4</translation>
@@ -2022,7 +2029,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="5967592137238574583">Edit Info Kontak</translation>
 <translation id="5967867314010545767">Hapus dari histori</translation>
 <translation id="5968022600320704045">Tidak ada hasil penelusuran</translation>
-<translation id="5968793460449681917">Di setiap kunjungan</translation>
 <translation id="5974052231147553524">Rol Keenam</translation>
 <translation id="5975083100439434680">Perkecil</translation>
 <translation id="5979084224081478209">Periksa sandi</translation>
@@ -2390,7 +2396,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6897140037006041989">Agen Pengguna</translation>
 <translation id="6898699227549475383">Organisasi (O)</translation>
 <translation id="6899000063526916106">Masukkan kode <ph name="NUMBER_OF_DIGITS" /> digit</translation>
-<translation id="6907293445143367439">Izinkan <ph name="SITE_NAME" /> untuk:</translation>
 <translation id="6907458757809079309">Kebugaran</translation>
 <translation id="6910240653697687763"><ph name="URL" /> ingin mengontrol penuh perangkat MIDI Anda</translation>
 <translation id="691024665142758461">Mendownload beberapa file</translation>
@@ -2467,6 +2472,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7083258188081898530">Baki 9</translation>
 <translation id="7086090958708083563">Upload yang diminta oleh pengguna</translation>
 <translation id="7095139009144195559"><ph name="MANAGE_SITE_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk mengelola izin dan data yang disimpan di seluruh situs di setelan Chrome</translation>
+<translation id="7096341143397839437">Email: <ph name="EMAIL" />.</translation>
 <translation id="7096937462164235847">Identitas situs ini tidak terverifikasi.</translation>
 <translation id="7101893872976785596">Film horor</translation>
 <translation id="7102079138917191645">Konstruksi &amp; pemeliharaan</translation>
@@ -2543,6 +2549,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7256634549594854023">Baki Belakang</translation>
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
 <translation id="7260504762447901703">Cabut akses</translation>
+<translation id="7265608370113700582">Alamat hanya tersedia di perangkat ini</translation>
 <translation id="7275334191706090484">Bookmark Terkelola</translation>
 <translation id="7277998515889183784">Tata rias &amp; kosmetik</translation>
 <translation id="7285654172857511148"><ph name="CHANGE_GOOGLE_PASSWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, tekan Tab lalu Enter untuk mengubah sandi Akun Google Anda</translation>
@@ -2567,7 +2574,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="733923710415886693">Sertifikat server tidak diungkapkan melalui Transparansi Sertifikat.</translation>
 <translation id="7341357280245177602">Kendaraan bekas</translation>
 <translation id="7346048084945669753">Berafiliasi:</translation>
-<translation id="7349921148288539306">Diizinkan sampai Anda menutup tab ini</translation>
 <translation id="7352651011704765696">Ada yang tidak beres</translation>
 <translation id="7353601530677266744">Baris Perintah</translation>
 <translation id="7354880545102894991">Perjalanan murah &amp; mendadak</translation>
@@ -2966,6 +2972,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8245703462678310750">Tekan dan tahan |<ph name="ACCELERATOR" />| untuk keluar dari layar penuh dan melihat download.</translation>
 <translation id="8249296373107784235">Batalkan</translation>
 <translation id="8249463483885748674">Ujian terstandardisasi &amp; ujian masuk</translation>
+<translation id="8250094606476360498">Alamat ini disimpan ke perangkat ini untuk saat ini. Untuk menggunakannya di seluruh produk Google, simpan di Akun Google Anda, <ph name="ACCOUNT" />.</translation>
 <translation id="8252991034201168845">Tombol Kelola setelan aksesibilitas, Enter untuk mempersonalisasi alat aksesibilitas Anda di setelan ChromeOS</translation>
 <translation id="8253091569723639551">Perlu alamat penagihan</translation>
 <translation id="8257387598443225809">Aplikasi ini didesain untuk perangkat seluler</translation>
@@ -3041,7 +3048,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8433057134996913067">Tindakan ini akan mengeluarkan Anda dari sebagian besar situs web.</translation>
 <translation id="8434840396568290395">Hewan peliharaan</translation>
 <translation id="8437238597147034694">&amp;Urungkan pemindahan</translation>
-<translation id="8438476240229491014">Ingat setelan ini</translation>
 <translation id="8438786541497918448">Gunakan kamera &amp; mikrofon?</translation>
 <translation id="8438923942245957911">Situs ini ditandai oleh organisasi Anda</translation>
 <translation id="8443613539889492016">Musik rap &amp; hip-hop</translation>
@@ -3209,7 +3215,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8876033571432926051">Game kasual</translation>
 <translation id="8877780815363510165">Memancing</translation>
 <translation id="8884537526797090108">Tidak dapat merekam konten rahasia</translation>
-<translation id="8890798179125483517">Chrome otomatis menghapus topik dan situs yang menyarankan iklan, yang tersimpan lebih dari 4 minggu. Atau, Anda dapat memblokir topik dan situs tertentu yang tidak Anda sukai.</translation>
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
 <translation id="8894794286471754040">Tepi panjang lebih dulu</translation>
 <translation id="8897428486789851669">Renang</translation>

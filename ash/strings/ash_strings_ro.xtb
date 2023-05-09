@@ -56,6 +56,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="121097972571826261">Înainte cu un cuvânt</translation>
 <translation id="1217633719248931900">Accesează aplicația</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, aplicație din Magazinul Play</translation>
+<translation id="1219309685806246869">Revino la <ph name="APP_TITLE" />.</translation>
 <translation id="1225748608451425081">Chromebookul este blocat din cauza unei probleme cunoscute. Vei putea să te conectezi după <ph name="TIME_LEFT" />.</translation>
 <translation id="1229194443904279055">Nu mai selecta</translation>
 <translation id="1235458158152011030">Rețele cunoscute</translation>
@@ -221,6 +222,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1961239773406905488">Previzualizarea camerei este ascunsă</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">Ecran de blocare</translation>
+<translation id="1962972976741217487">Un dispozitiv conectat la hotspotul <ph name="DEVICE_NAME" /></translation>
 <translation id="1967970931040389207">Activează hotspotul</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Bună ziua, <ph name="USERNAME" /></translation>
@@ -301,7 +303,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="2367972762794486313">Afișați aplicații</translation>
 <translation id="2369165858548251131">„Bună” în chineză</translation>
 <translation id="2386292613071805067">Selectează tot conținutul paginii</translation>
-<translation id="2390318262976603432">Setări de limbă</translation>
 <translation id="2397416548179033562">Afișează meniul Chrome</translation>
 <translation id="240006516586367791">Comenzi media</translation>
 <translation id="2402411679569069051">Pentru a debloca Chromebookul, folosește amprenta sau deblochează telefonul</translation>
@@ -382,6 +383,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="2791421900609674576">Vei vedea recomandări ca să poți continua de unde ai rămas. Poți să atingi lung ca să elimini recomandările.</translation>
 <translation id="2792498699870441125">Alt+Căutare</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, selectat</translation>
 <translation id="2805756323405976993">Aplicații</translation>
 <translation id="2814448776515246190">Captură parțială</translation>
 <translation id="2819276065543622893">Veți fi deconectat(ă) acum.</translation>
@@ -600,6 +602,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="3735740477244556633">Sortează după</translation>
 <translation id="3738664582935948253">Acum poți afișa clicurile și comenzile rapide de la tastatură în înregistrările ecranului</translation>
 <translation id="3742055079367172538">Captură de ecran efectuată</translation>
+<translation id="3756485814916578707">Se proiectează ecranul</translation>
 <translation id="3765841986579723851">Editat astăzi</translation>
 <translation id="3773700760453577392">Un administrator a interzis conectarea multiplă pentru <ph name="USER_EMAIL" />. Toți utilizatorii trebuie să se deconecteze pentru a continua.</translation>
 <translation id="3779139509281456663">Se conectează <ph name="NAME" /></translation>
@@ -821,6 +824,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="4777825441726637019">Magazin Play</translation>
 <translation id="4778095205580009397">Asistentul Google nu este disponibil într-o sesiune demonstrativă.</translation>
 <translation id="4789348252524569426">Nu se pot instala fișierele pentru recunoaștere vocală. Dispozitivul trebuie actualizat. Repornește dispozitivul și încearcă din nou.</translation>
+<translation id="478959186716341421">Se proiectează</translation>
 <translation id="479989351350248267">căutați</translation>
 <translation id="4804818685124855865">Deconectează-te</translation>
 <translation id="4814539958450445987">Ecranul de conectare</translation>
@@ -928,6 +932,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="5297704307811127955">Dezactivată</translation>
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5302048478445481009">Limbă</translation>
+<translation id="5303783651764314393"><ph name="DEVICECOUNT" /> dispozitive conectate la hotspotul <ph name="DEVICE_NAME" /></translation>
 <translation id="5308380583665731573">Conectează-te</translation>
 <translation id="5313326810920013265">Setări Bluetooth</translation>
 <translation id="5314219114274263156">S-a înregistrat ecranul</translation>
@@ -996,7 +1001,6 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Apasă Ctrl + Alt + Z ca să dezactivezi feedbackul rostit.</translation>
 <translation id="5601503069213153581">Cod PIN</translation>
-<translation id="5601571553788043181">Deschide fișierul în browserul Chrome</translation>
 <translation id="5618148318840095371">Te-am transferat într-o rețea mai bună</translation>
 <translation id="5619862035903135339">Politica implementată de administrator dezactivează capturarea ecranului</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1056,6 +1060,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="5881540930187678962">Configurează mai târziu Phone Hub</translation>
 <translation id="5881663018261910378">Dezactivat</translation>
 <translation id="5887954372087850114">Fereastra <ph name="WINDOW_TITLE" /> a fost atribuită către <ph name="DESK_TITLE" /> și s-a anulat atribuirea către toate celelalte desktopuri</translation>
+<translation id="588817334757907802">Deschide fișierul în browserul Chrome</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
 <translation id="589817443623831496">Scanare punctuală</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>
@@ -1117,6 +1122,7 @@ Conectează dispozitivul la o sursă de alimentare.</translation>
 <translation id="6137566720514957455">Deschide fereastra de dialog Elimină pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="6141988275892716286">Confirmă descărcarea</translation>
 <translation id="6154006699632741460">Dispozitivul periferic nu este acceptat</translation>
+<translation id="6156960295318603523">Setări de limbă</translation>
 <translation id="615957422585914272">Afișați tastatura pe ecran</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6166852626429024716">Caută pe dispozitiv, în aplicații, în setări și pe web...</translation>
@@ -1335,6 +1341,7 @@ Instalare nouă</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Actualizați</translation>
+<translation id="7187711731540696127">Hotspotul <ph name="DEVICE_NAME" /> este activat. Nu s-a conectat niciun dispozitiv.</translation>
 <translation id="7188494361780961876">Meniul a fost mutat în colțul din stânga sus al ecranului.</translation>
 <translation id="7189412385142492784">Cât de departe este Venus</translation>
 <translation id="7198435252016571249">Camera foto este aliniată cu colțul din dreapta jos. Conflict cu platforma de sistem.</translation>
@@ -1392,6 +1399,7 @@ Instalare nouă</translation>
 <translation id="7497767806359279797">Alege limba și tastatura</translation>
 <translation id="7508690557411636492">Deschis în ultima lună</translation>
 <translation id="7509246181739783082">Confirmă-ți identitatea</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, neselectat</translation>
 <translation id="7513622367902644023">Modul Captură de ecran selectat</translation>
 <translation id="7513922695575567867">Calendar, săptămâna <ph name="DATE" />, data de <ph name="SELECTED_DATE" /> momentan selectată.</translation>
 <translation id="7514365320538308">Descarcă</translation>
@@ -1413,7 +1421,6 @@ Pentru a închide dispozitivul, apasă lung pe butonul de pornire al dispozitivu
 <translation id="7569509451529460200">Braille și ChromeVox sunt activate</translation>
 <translation id="7573585051776738856">Fereastra activă a fost fixată în dreapta.</translation>
 <translation id="7579778809502851308">Captură de ecran</translation>
-<translation id="7590883480672980941">Setări de introducere a textului</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
 <translation id="7600875258240007829">Vezi toate notificările</translation>
 <translation id="7607002721634913082">Întreruptă</translation>
@@ -1555,6 +1562,7 @@ Pentru a închide dispozitivul, apasă lung pe butonul de pornire al dispozitivu
 <translation id="8185090165691050712">Activează / dezactivează meniul pentru a redimensiona modul de blocare</translation>
 <translation id="8192202700944119416">Notificările sunt ascunse.</translation>
 <translation id="8196787716797768628">Folosește gesturile pentru a comuta rapid între aplicații și a interacționa cu Chromebookul în modul tabletă.</translation>
+<translation id="8198456017687137612">Se proiectează fila</translation>
 <translation id="8200772114523450471">Reia</translation>
 <translation id="8203795194971602413">Clic dreapta</translation>
 <translation id="8209010265547628927">Resetează</translation>
@@ -1583,6 +1591,7 @@ Pentru a închide dispozitivul, apasă lung pe butonul de pornire al dispozitivu
 <translation id="8349964124165471584">Deschide linkul într-o fereastră nouă</translation>
 <translation id="8351131234907093545">Creează o notă</translation>
 <translation id="8364673525741149932">Activează / dezactivează Shelf Party. <ph name="STATE_TEXT" /></translation>
+<translation id="8367948981300340152"><ph name="CAPTURE_MEDIUM" /> în uz.</translation>
 <translation id="8369166482916924789">Desktop salvat, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">Înainte cu o literă</translation>
 <translation id="8371991222807690464">Performanța dispozitivelor periferice poate fi limitată în modul pentru invitați</translation>

@@ -7,6 +7,7 @@
 #include "base/containers/contains.h"
 #include "services/network/public/mojom/no_vary_search.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -83,7 +84,7 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     }
     if (RuntimeEnabledFeatures::SpeculationRulesNoVarySearchHintEnabled(
             context)) {
-      conditional_known_keys.push_back("no_vary_search_expected");
+      conditional_known_keys.push_back("expects_no_vary_search");
     }
     return conditional_known_keys;
   }();
@@ -294,7 +295,7 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     }
   }
 
-  absl::optional<mojom::blink::SpeculationEagerness> eagerness;
+  mojom::blink::SpeculationEagerness eagerness;
   if (JSONValue* eagerness_value = input->Get("eagerness")) {
     // Feature gated due to known keys check above.
     DCHECK(speculation_rules::EagernessEnabled(context));
@@ -318,28 +319,37 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
     }
 
     UseCounter::Count(context, WebFeature::kSpeculationRulesExplicitEagerness);
+  } else {
+    eagerness = source == "list"
+                    ? mojom::blink::SpeculationEagerness::kEager
+                    : mojom::blink::SpeculationEagerness::kConservative;
   }
 
   network::mojom::blink::NoVarySearchPtr no_vary_search = nullptr;
-  if (JSONValue* no_vary_search_value = input->Get("no_vary_search_expected")) {
+  if (JSONValue* no_vary_search_value = input->Get("expects_no_vary_search")) {
     CHECK(RuntimeEnabledFeatures::SpeculationRulesNoVarySearchHintEnabled(
         context));
     String no_vary_search_str;
     if (!no_vary_search_value->AsString(&no_vary_search_str)) {
       SetParseErrorMessage(out_error,
-                           "no_vary_search_expected's value must be a string.");
+                           "expects_no_vary_search's value must be a string.");
       return nullptr;
     }
     // Parse No-Vary-Search hint value.
-    auto no_vary_search_expected = blink::ParseNoVarySearch(no_vary_search_str);
-    CHECK(no_vary_search_expected);
-    if (no_vary_search_expected->is_parse_error()) {
-      SetParseErrorMessage(out_error,
-                           GetNoVarySearchHintConsoleMessage(
-                               no_vary_search_expected->get_parse_error()));
-      return nullptr;
+    auto no_vary_search_hint = blink::ParseNoVarySearch(no_vary_search_str);
+    CHECK(no_vary_search_hint);
+    if (no_vary_search_hint->is_parse_error()) {
+      const auto& parse_error = no_vary_search_hint->get_parse_error();
+      CHECK_NE(parse_error, network::mojom::NoVarySearchParseError::kOk);
+      if (parse_error !=
+          network::mojom::NoVarySearchParseError::kDefaultValue) {
+        SetParseErrorMessage(out_error,
+                             GetNoVarySearchHintConsoleMessage(parse_error));
+        return nullptr;
+      }
+    } else {
+      no_vary_search = std::move(no_vary_search_hint->get_no_vary_search());
     }
-    no_vary_search = std::move(no_vary_search_expected->get_no_vary_search());
   }
 
   const mojom::blink::SpeculationInjectionWorld world =
@@ -360,17 +370,38 @@ SpeculationRule* ParseSpeculationRule(JSONObject* input,
 // ---- SpeculationRuleSet::Source implementation ----
 
 SpeculationRuleSet::Source::Source(const String& source_text,
-                                   Document& document)
+                                   Document& document,
+                                   DOMNodeId node_id)
     : source_text_(source_text),
+      document_(document),
+      node_id_(node_id),
       base_url_(absl::nullopt),
-      document_(document) {}
+      request_id_(absl::nullopt) {}
 
 SpeculationRuleSet::Source::Source(const String& source_text,
-                                   const KURL& base_url)
-    : source_text_(source_text), base_url_(base_url), document_(nullptr) {}
+                                   const KURL& base_url,
+                                   uint64_t request_id)
+    : source_text_(source_text),
+      document_(nullptr),
+      node_id_(absl::nullopt),
+      base_url_(base_url),
+      request_id_(request_id) {}
 
 const String& SpeculationRuleSet::Source::GetSourceText() const {
   return source_text_;
+}
+
+const absl::optional<DOMNodeId>& SpeculationRuleSet::Source::GetNodeId() const {
+  return node_id_;
+}
+
+const absl::optional<KURL>& SpeculationRuleSet::Source::GetSourceURL() const {
+  return base_url_;
+}
+
+const absl::optional<uint64_t>& SpeculationRuleSet::Source::GetRequestId()
+    const {
+  return request_id_;
 }
 
 KURL SpeculationRuleSet::Source::GetBaseURL() const {
@@ -487,6 +518,10 @@ SpeculationRuleSet* SpeculationRuleSet::Parse(Source* source,
           if (rule->predicate()) {
             result->has_document_rule_ = true;
             result->selectors_.AppendVector(rule->predicate()->GetStyleRules());
+          }
+
+          if (rule->eagerness() != mojom::blink::SpeculationEagerness::kEager) {
+            result->requires_unfiltered_input_ = true;
           }
 
           // Append rule to result's prefetch/prerender rules.

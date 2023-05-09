@@ -522,13 +522,12 @@ void AppendGzippedResource(const base::RefCountedMemory& encoded,
 // no-video-input-devices otherwise.
 const char kHasVideoInputDeviceOnSystem[] = R"(
     (function() {
-      navigator.mediaDevices.enumerateDevices()
+      return navigator.mediaDevices.enumerateDevices()
       .then(function(devices) {
         if (devices.some((device) => device.kind == 'videoinput')) {
-          window.domAutomationController.send('has-video-input-device');
-        } else {
-          window.domAutomationController.send('no-video-input-devices');
+          return 'has-video-input-device';
         }
+        return 'no-video-input-devices';
       });
     })()
 )";
@@ -718,7 +717,11 @@ bool NavigateToURLFromRendererWithoutUserGesture(
 
 bool BeginNavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
                                     const GURL& url) {
-  return ExecJs(adapter, JsReplace("location = $1", url));
+  ExecuteScriptAsync(adapter, JsReplace("location = $1", url));
+  DidStartNavigationObserver observer(
+      WebContents::FromRenderFrameHost(adapter.render_frame_host()));
+  observer.Wait();
+  return observer.observed();
 }
 
 bool NavigateIframeToURL(WebContents* web_contents,
@@ -738,7 +741,7 @@ bool BeginNavigateIframeToURL(WebContents* web_contents,
       "var iframes = document.getElementById('%s');iframes.src='%s';"
       "\",0)",
       iframe_id.c_str(), url.spec().c_str());
-  return ExecuteScriptWithoutUserGesture(web_contents, script);
+  return ExecJs(web_contents, script, EXECUTE_SCRIPT_NO_USER_GESTURE);
 }
 
 void NavigateToURLBlockUntilNavigationsComplete(
@@ -1424,10 +1427,8 @@ void ScopedSimulateModifierKeyPress::KeyPressWithoutChar(
 }
 
 bool IsWebcamAvailableOnSystem(WebContents* web_contents) {
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents, kHasVideoInputDeviceOnSystem, &result));
-  return result == kHasVideoInputDevice;
+  return EvalJs(web_contents, kHasVideoInputDeviceOnSystem).ExtractString() ==
+         kHasVideoInputDevice;
 }
 
 RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents) {
@@ -1447,12 +1448,6 @@ bool ExecuteScript(const ToRenderFrameHost& adapter,
                                              script, user_gesture);
 }
 
-bool ExecuteScriptWithoutUserGesture(const ToRenderFrameHost& adapter,
-                                     const std::string& script) {
-  return ExecuteScriptWithUserGestureControl(adapter.render_frame_host(),
-                                             script, false);
-}
-
 void ExecuteScriptAsync(const ToRenderFrameHost& adapter,
                         const std::string& script) {
   // Prerendering pages will never have user gesture.
@@ -1469,41 +1464,6 @@ void ExecuteScriptAsyncWithoutUserGesture(const ToRenderFrameHost& adapter,
                                           const std::string& script) {
   adapter.render_frame_host()->ExecuteJavaScriptForTests(
       base::UTF8ToUTF16(script), base::NullCallback());
-}
-
-bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
-                                 const std::string& script, bool* result) {
-  DCHECK(result);
-  std::unique_ptr<base::Value> value;
-  // Prerendering pages will never have user gesture.
-  bool user_gesture = adapter.render_frame_host()->GetLifecycleState() !=
-                      RenderFrameHost::LifecycleState::kPrerendering;
-  if (ExecuteScriptHelper(adapter.render_frame_host(), script, user_gesture,
-                          ISOLATED_WORLD_ID_GLOBAL, &value) &&
-      value && value->is_bool()) {
-    *result = value->GetBool();
-    return true;
-  }
-  return false;
-}
-
-bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
-                                   const std::string& script,
-                                   std::string* result) {
-  DCHECK(result);
-  std::unique_ptr<base::Value> value;
-  // Prerendering pages will never have user gesture.
-  bool user_gesture = adapter.render_frame_host()->GetLifecycleState() !=
-                      RenderFrameHost::LifecycleState::kPrerendering;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, user_gesture,
-                           ISOLATED_WORLD_ID_GLOBAL, &value)) {
-    return false;
-  }
-  if (value && value->is_string()) {
-    *result = value->GetString();
-    return true;
-  }
-  return false;
 }
 
 // EvalJsResult methods.

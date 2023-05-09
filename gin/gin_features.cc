@@ -17,11 +17,6 @@ BASE_FEATURE(kV8CompactWithStack,
              "V8CompactWithStack",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Crashes on evacuation failures in a full GC instead of aborting evacuation.
-BASE_FEATURE(kV8CrashOnEvacuationFailure,
-             "V8CrashOnEvacuationFailure",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables optimization of JavaScript in V8.
 BASE_FEATURE(kV8OptimizeJavascript,
              "V8OptimizeJavascript",
@@ -87,6 +82,9 @@ BASE_FEATURE(kV8Turbofan, "V8Turbofan", base::FEATURE_ENABLED_BY_DEFAULT);
 // Enables experimental Maglev compiler.
 BASE_FEATURE(kV8Maglev, "V8Maglev", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables MinorMC young generation garbage collector.
+BASE_FEATURE(kV8MinorMC, "V8MinorMC", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables Sparkplug compiler. Note that this only sets the V8 flag when
 // manually overridden; otherwise it defers to whatever the V8 default is.
 BASE_FEATURE(kV8Sparkplug, "V8Sparkplug", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -118,6 +116,11 @@ BASE_FEATURE(kV8TurboFastApiCalls,
 
 // Enables faster DOM methods for megamorphic ICs
 BASE_FEATURE(kV8MegaDomIC, "V8MegaDomIC", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Schedules a single MemoryReducer GC.
+BASE_FEATURE(kV8MemoryReducerSingleGC,
+             "V8MemoryReducerSingleGC",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables slow histograms that provide detailed information at increased
 // runtime overheads.

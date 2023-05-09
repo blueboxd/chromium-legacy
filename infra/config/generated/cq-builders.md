@@ -43,8 +43,6 @@ These builders must pass before a CL may land that affects files outside of
 
 * [chromium_presubmit](https://ci.chromium.org/p/chromium/builders/try/chromium_presubmit) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""chromium_presubmit""))
 
-* [fuchsia-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-arm64-rel""))
-
 * [fuchsia-binary-size](https://ci.chromium.org/p/chromium/builders/try/fuchsia-binary-size) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-binary-size""))
 
 * [fuchsia-x64-cast-receiver-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-x64-cast-receiver-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-x64-cast-receiver-rel""))
@@ -80,6 +78,8 @@ These builders must pass before a CL may land that affects files outside of
 * [mac_chromium_compile_dbg_ng](https://ci.chromium.org/p/chromium/builders/try/mac_chromium_compile_dbg_ng) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac_chromium_compile_dbg_ng""))
 
 * [win-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/try/win-libfuzzer-asan-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-libfuzzer-asan-rel""))
+
+* [win-presubmit](https://ci.chromium.org/p/chromium/builders/try/win-presubmit) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-presubmit""))
 
 * [win-rel](https://ci.chromium.org/p/chromium/builders/try/win-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-rel""))
 
@@ -284,6 +284,13 @@ builder.
 
   Location filters:
   * [`//chromecast/.+`](https://cs.chromium.org/chromium/src/chromecast/)
+
+* [fuchsia-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/fuchsia-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-arm64-rel""))
+
+  Location filters:
+  * [`//.*fuchsia.*`](https://cs.chromium.org/search?q=+file:.*fuchsia.*)
+  * [`//media/.+`](https://cs.chromium.org/chromium/src/media/)
+  * [`//components/viz/viz.gni`](https://cs.chromium.org/search?q=+file:components/viz/viz.gni)
 
 * [fuchsia-compile-x64-dbg](https://ci.chromium.org/p/chromium/builders/try/fuchsia-compile-x64-dbg) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""fuchsia-compile-x64-dbg""))
 
@@ -550,6 +557,10 @@ as required builders.
 * [mac12-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/mac12-arm64-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""mac12-arm64-rel""))
   * Experiment percentage: 100.0
 
-* [win-presubmit](https://ci.chromium.org/p/chromium/builders/try/win-presubmit) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win-presubmit""))
-  * Experiment percentage: 100.0
+* [win11-x64-fyi-rel](https://ci.chromium.org/p/chromium/builders/try/win11-x64-fyi-rel) ([definition](https://cs.chromium.org/search?q=+file:/try/.*\.star$+""win11-x64-fyi-rel""))
+  * Experiment percentage: 10.0
+
+  Location filters:
+  * [`//sandbox/win/.+`](https://cs.chromium.org/chromium/src/sandbox/win/)
+  * [`//sandbox/policy/win/.+`](https://cs.chromium.org/chromium/src/sandbox/policy/win/)
 

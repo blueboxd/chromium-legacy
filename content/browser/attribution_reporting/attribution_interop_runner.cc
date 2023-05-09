@@ -41,6 +41,7 @@
 #include "content/browser/attribution_reporting/attribution_interop_parser.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
+#include "content/browser/attribution_reporting/attribution_os_level_manager.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_report_sender.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
@@ -265,8 +266,8 @@ class AttributionEventHandler : public AttributionObserver {
                       manager_->HandleSource(std::move(source),
                                              GlobalRenderFrameHostId());
                     },
-                    [&](AttributionTriggerAndTime trigger) {
-                      manager_->HandleTrigger(std::move(trigger.trigger),
+                    [&](AttributionTrigger trigger) {
+                      manager_->HandleTrigger(std::move(trigger),
                                               GlobalRenderFrameHostId());
                     },
                 },
@@ -352,7 +353,7 @@ class AttributionEventHandler : public AttributionObserver {
   }
 
   const std::unique_ptr<AttributionManagerImpl> manager_;
-  const base::raw_ptr<FakeCookieChecker> fake_cookie_checker_;
+  const raw_ptr<FakeCookieChecker> fake_cookie_checker_;
 
   const AttributionReportJsonConverter json_converter_;
 
@@ -385,12 +386,13 @@ base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
     return base::Value::Dict();
   }
 
-  DCHECK(base::ranges::is_sorted(*events, /*comp=*/{}, &GetEventTime));
-  DCHECK(base::ranges::adjacent_find(*events, /*pred=*/{}, &GetEventTime) ==
-         events->end());
+  DCHECK(base::ranges::is_sorted(*events));
+  DCHECK(base::ranges::adjacent_find(
+             *events, /*pred=*/{},
+             [](const auto& event) { return event.time; }) == events->end());
 
-  const base::Time min_event_time = GetEventTime(events->front());
-  const base::Time max_event_time = GetEventTime(events->back());
+  const base::Time min_event_time = events->front().time;
+  const base::Time max_event_time = events->back().time;
 
   task_environment.FastForwardBy(min_event_time - time_origin);
 
@@ -408,7 +410,7 @@ base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
       AttributionStorageDelegateImpl::CreateForTesting(
           AttributionNoiseMode::kNone, AttributionDelayMode::kDefault, config),
       std::move(fake_cookie_checker), std::make_unique<FakeReportSender>(),
-      storage_partition,
+      std::make_unique<NoOpAttributionOsLevelManager>(), storage_partition,
       base::ThreadPool::CreateUpdateableSequencedTaskRunner(
           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
@@ -426,7 +428,7 @@ base::expected<base::Value::Dict, std::string> RunAttributionInteropSimulation(
                        /*expiry_time=*/base::Time::Max()));
 
   for (auto& event : *events) {
-    base::Time event_time = GetEventTime(event);
+    base::Time event_time = event.time;
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AttributionEventHandler::Handle,

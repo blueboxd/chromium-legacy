@@ -24,6 +24,10 @@ enum class State {
   // Task has started, but some initial scanning is performed.
   kScanning,
 
+  // Task is waiting on user's feedback to a Data Leak Prevention (DLP) or
+  // Enterprise Connectors warning.
+  kWarning,
+
   // Task is currently running.
   kInProgress,
 
@@ -61,6 +65,18 @@ enum class OperationType {
   kRestoreToDestination,
   kTrash,
   kZip,
+};
+
+// The type of security policy error that occurred.
+enum class SecurityErrorType {
+  // Error caused by Data Leak Prevention block policy.
+  kDlp,
+
+  // Error caused by Enterprise Connectors block policy.
+  kEnterpriseConnectors,
+
+  // Error caused by Data Leak Prevention warning timing out.
+  kDlpWarningTimeout,
 };
 
 // Unique identifier for any type of task.
@@ -107,6 +123,11 @@ struct EntryStatus {
   // May be empty if the entry has not been fully processed yet.
   absl::optional<base::File::Error> error;
 
+  // Type of security error that occurred, if any. Empty otherwise.
+  // Can be set only if Data Leak Prevention or Enterprise Connectors policies
+  // apply.
+  absl::optional<SecurityErrorType> security_error;
+
   // True if entry is a directory when its metadata is processed.
   bool is_directory = false;
 };
@@ -130,6 +151,13 @@ class ProgressStatus {
   // True if the task is in a terminal state and won't receive further updates.
   bool IsCompleted() const;
 
+  // True if the task is paused due to a data protection policy warning.
+  bool HasWarning() const;
+
+  // True if the task completed with security errors due to Data Leak Prevention
+  // or Enterprise Connectors policies.
+  bool HasSecurityError() const;
+
   // Returns a default method for obtaining the source name.
   std::string GetSourceName(Profile* profile) const;
 
@@ -145,6 +173,11 @@ class ProgressStatus {
 
   // Task state.
   State state;
+
+  // Type of security error that occurred, if any. Empty otherwise.
+  // Can be set only if Data Leak Prevention or Enterprise Connectors policies
+  // apply.
+  absl::optional<SecurityErrorType> security_error;
 
   // I/O Operation type (e.g. copy, move).
   OperationType type;

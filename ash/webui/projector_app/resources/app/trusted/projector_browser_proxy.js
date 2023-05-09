@@ -60,40 +60,6 @@ export class ProjectorBrowserProxy {
       accountEmail) {}
 
   /**
-   * Gets the list of pending screencasts that are uploading to drive.
-   * @return {Promise<Array<projectorApp.PendingScreencast>>}
-   */
-  // TODO(b/204372280): return
-  // "Promise<!Array<!projectorApp.PendingScreencast>>"
-  getPendingScreencasts() {}
-
-  /**
-   * Returns the value associated with the user preference if it is supported;
-   * If the `userPref` is not supported the returned promise will be rejected.
-   * @param {string} userPref
-   * @return {!Promise<Object>}
-   */
-  getUserPref(userPref) {}
-
-  /**
-   * Sets the user preference  if the preference is supported and the value is
-   * valid. If the `userPref` is not supported or the `value` is not the correct
-   * type, the returned promise will be rejected.
-   * @param {string} userPref
-   * @param {Object} value A preference can store multiple types (dictionaries,
-   *     lists, Boolean, etc..); therefore, accept a generic Object value.
-   * @return {!Promise} Promise resolved when the request was handled.
-   */
-  setUserPref(userPref, value) {}
-
-  /**
-   * Opens the Chrome feedback dialog. The returned promise will be rejected if
-   * the dialog open is not successful.
-   * @return {!Promise}
-   */
-  openFeedbackDialog() {}
-
-  /**
    * Gets information about the specified video from DriveFS.
    * @param {string} videoFileId The Drive item id of the video file.
    * @param {string|undefined} resourceKey The Drive item resource key.
@@ -156,25 +122,6 @@ export class ProjectorBrowserProxyImpl {
     ]);
   }
 
-  /** @override */
-  getPendingScreencasts() {
-    return sendWithPromise('getPendingScreencasts');
-  }
-
-  /** @override */
-  getUserPref(userPref) {
-    return sendWithPromise('getUserPref', [userPref]);
-  }
-
-  /** @override */
-  setUserPref(userPref, value) {
-    return sendWithPromise('setUserPref', [userPref, value]);
-  }
-
-  /** @override */
-  openFeedbackDialog() {
-    return sendWithPromise('openFeedbackDialog');
-  }
   /** @override */
   getVideo(videoFileId, resourceKey) {
     return sendWithPromise('getVideo', [videoFileId, resourceKey]);

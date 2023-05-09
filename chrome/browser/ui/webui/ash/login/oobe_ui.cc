@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/family_link_notice_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/fingerprint_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/gaia_info_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_password_changed_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gesture_navigation_screen_handler.h"
@@ -111,7 +112,6 @@
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/wrong_hwid_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/user_image_source.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/test_files_request_filter.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -202,10 +202,6 @@ void AddProjectSimonResources(content::WebUIDataSource* source) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath(kFirstAnimation, IDR_CROS_OOBE_FIRST_ANIMATION);
   source->AddResourcePath(kWelcomeBackdrop, IDR_CROS_OOBE_WELCOME_BACKDROP);
-  auto product_name =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_CROS_OOBE_PRODUCT_NAME);
-  source->AddString("kProjectSimonProductName", std::string{product_name});
 #endif
 }
 
@@ -290,6 +286,8 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
   source->AddBoolean("isOobeJellyEnabled", features::IsOobeJellyEnabled());
   // TODO (b/269117729) Cleanup OobeSimon
   source->AddBoolean("isOobeSimonEnabled", features::IsOobeSimonEnabled());
+  source->AddBoolean("isOobeGaiaInfoScreenEnabled",
+                     features::IsOobeGaiaInfoScreenEnabled());
   source->AddBoolean("isChoobeEnabled", features::IsOobeChoobeEnabled());
   source->AddBoolean(
       "isArcVmDataMigrationEnabled",
@@ -311,7 +309,9 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
 
   // Configure shared resources
   AddProductLogoResources(source);
-  AddProjectSimonResources(source);
+  if (ash::features::IsOobeSimonEnabled()) {
+    AddProjectSimonResources(source);
+  }
 
   quick_unlock::AddFingerprintResources(source);
   AddSyncConsentResources(source);
@@ -444,6 +444,10 @@ void OobeUI::ConfigureOobeDisplay() {
   auto password_change_handler =
       std::make_unique<ActiveDirectoryPasswordChangeScreenHandler>();
 
+  if (features::IsOobeGaiaInfoScreenEnabled()) {
+    AddScreenHandler(std::make_unique<GaiaInfoScreenHandler>());
+  }
+
   AddScreenHandler(std::make_unique<GaiaScreenHandler>(network_state_informer_,
                                                        error_screen));
 
@@ -526,9 +530,6 @@ void OobeUI::ConfigureOobeDisplay() {
   content::URLDataSource::Add(
       profile,
       std::make_unique<AboutUIHTMLSource>(chrome::kChromeUITermsHost, profile));
-
-  // Set up the chrome://userimage/ source.
-  content::URLDataSource::Add(profile, std::make_unique<UserImageSource>());
 
   // TabHelper is required for OOBE webui to make webview working on it.
   content::WebContents* contents = web_ui()->GetWebContents();

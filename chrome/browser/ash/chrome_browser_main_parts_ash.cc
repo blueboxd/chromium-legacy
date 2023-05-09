@@ -142,7 +142,6 @@
 #include "chrome/browser/ash/power/ml/adaptive_screen_brightness_manager.h"
 #include "chrome/browser/ash/power/power_data_collector.h"
 #include "chrome/browser/ash/power/power_metrics_reporter.h"
-#include "chrome/browser/ash/power/process_data_collector.h"
 #include "chrome/browser/ash/power/renderer_freezer.h"
 #include "chrome/browser/ash/power/smart_charging/smart_charging_manager.h"
 #include "chrome/browser/ash/printing/bulk_printers_calculator_factory.h"
@@ -213,7 +212,7 @@
 #include "chromeos/ash/components/fwupd/firmware_update_manager.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
-#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
+#include "chromeos/ash/components/login/auth/auth_events_recorder.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/ash/components/network/fast_transition_observer.h"
@@ -243,7 +242,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/quirks/quirks_manager.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/services/screen_ai/public/cpp/screen_ai_chromeos_installer.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync/base/command_line_switches.h"
 #include "components/user_manager/known_user.h"
@@ -525,7 +523,6 @@ class DBusServices {
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();
-    ProcessDataCollector::Initialize();
 
     LoginState::Initialize();
     TPMTokenLoader::Initialize();
@@ -589,7 +586,6 @@ class DBusServices {
     lock_to_single_user_service_.reset();
     fusebox_service_.reset();
     mojo_connection_service_.reset();
-    ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
     chromeos::PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
@@ -842,8 +838,8 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   debugd_notification_handler_ =
       std::make_unique<DebugdNotificationHandler>(DebugDaemonClient::Get());
 
-  auth_metrics_recorder_ =
-      base::WrapUnique<AuthMetricsRecorder>(new AuthMetricsRecorder());
+  auth_events_recorder_ =
+      base::WrapUnique<AuthEventsRecorder>(new AuthEventsRecorder());
 
   auth_parts_ = AuthParts::Create();
 
@@ -1267,9 +1263,6 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     login_screen_extensions_storage_cleaner_ =
         std::make_unique<LoginScreenExtensionsStorageCleaner>();
 
-    screen_ai::chrome_os_installer::ManageInstallation(
-        g_browser_process->local_state());
-
     ash::ShillManagerClient::Get()->SetProperty(
         shill::kEnableRFC8925Property,
         base::Value(base::FeatureList::IsEnabled(features::kEnableRFC8925)),
@@ -1510,7 +1503,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   if (features::IsTrafficCountersEnabled())
     traffic_counters_handler_.reset();
   bluetooth_pref_state_observer_.reset();
-  auth_metrics_recorder_.reset();
+  auth_events_recorder_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();

@@ -99,6 +99,7 @@ SkiaOutputDeviceDComp::SkiaOutputDeviceDComp(
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : SkiaOutputDevice(context_state->gr_context(),
+                       context_state->graphite_context(),
                        memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
       shared_image_representation_factory_(shared_image_representation_factory),
@@ -205,8 +206,8 @@ void SkiaOutputDeviceDComp::ScheduleOverlays(
     params->protected_video_type = dc_layer.protected_video_type;
     params->color_space = dc_layer.color_space;
     params->hdr_metadata = dc_layer.hdr_metadata.value_or(gfx::HDRMetadata());
-    params->maybe_video_fullscreen_letterboxing =
-        dc_layer.maybe_video_fullscreen_letterboxing;
+    params->possible_video_fullscreen_letterboxing =
+        dc_layer.possible_video_fullscreen_letterboxing;
 
     // Schedule DC layer overlay to be presented at next SwapBuffers().
     if (!ScheduleDCLayer(std::move(params))) {

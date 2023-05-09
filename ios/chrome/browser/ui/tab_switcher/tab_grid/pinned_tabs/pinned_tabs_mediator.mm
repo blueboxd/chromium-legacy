@@ -11,21 +11,21 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/scoped_multi_source_observation.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
-#import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/main/browser_list.h"
-#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_util.h"
+#import "ios/chrome/browser/shared/model/browser/browser.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list.h"
+#import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_web_state_tab_switcher_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -49,8 +49,8 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
     DCHECK(web_state_list->IsWebStatePinnedAt(i));
 
     web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    [items
-        addObject:[[WebStateTabSwitcherItem alloc] initWithWebState:web_state]];
+    [items addObject:[[PinnedWebStateTabSwitcherItem alloc]
+                         initWithWebState:web_state]];
   }
   return items;
 }
@@ -146,7 +146,7 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
   }
 
   TabSwitcherItem* item =
-      [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
+      [[PinnedWebStateTabSwitcherItem alloc] initWithWebState:webState];
   [self.consumer
           insertItem:item
              atIndex:index
@@ -191,7 +191,7 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
   }
 
   TabSwitcherItem* newItem =
-      [[WebStateTabSwitcherItem alloc] initWithWebState:newWebState];
+      [[PinnedWebStateTabSwitcherItem alloc] initWithWebState:newWebState];
   [self.consumer replaceItemID:oldWebState->GetStableIdentifier()
                       withItem:newItem];
 
@@ -269,7 +269,7 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
 
   if (webStateList->IsWebStatePinnedAt(index)) {
     TabSwitcherItem* item =
-        [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
+        [[PinnedWebStateTabSwitcherItem alloc] initWithWebState:webState];
     [self.consumer insertItem:item
                       atIndex:index
                selectedItemID:GetActiveWebStateIdentifier(
@@ -321,7 +321,7 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
 
 - (void)updateConsumerItemForWebState:(web::WebState*)webState {
   TabSwitcherItem* item =
-      [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
+      [[PinnedWebStateTabSwitcherItem alloc] initWithWebState:webState];
   [self.consumer replaceItemID:webState->GetStableIdentifier() withItem:item];
 }
 

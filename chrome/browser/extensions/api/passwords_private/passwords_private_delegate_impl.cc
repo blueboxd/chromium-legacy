@@ -63,7 +63,7 @@
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/device_reauth/chrome_device_authenticator_factory.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #endif
@@ -78,7 +78,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils_chromeos.h"
-#include "chrome/browser/password_manager/password_manager_util_chromeos.h"
 #endif
 
 namespace {
@@ -203,16 +202,18 @@ extensions::api::passwords_private::ImportResults ConvertImportResults(
   return private_results;
 }
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-
-using password_manager::prefs::kBiometricAuthenticationBeforeFilling;
-
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
 scoped_refptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator(
     content::WebContents* web_contents) {
   auto* client = ChromePasswordManagerClient::FromWebContents(web_contents);
   DCHECK(client);
   return client->GetDeviceAuthenticator();
 }
+#endif
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+
+using password_manager::prefs::kBiometricAuthenticationBeforeFilling;
 
 void ChangeBiometricAuthenticationBeforeFillingSetting(PrefService* prefs,
                                                        bool success) {
@@ -311,10 +312,11 @@ PasswordsPrivateDelegateImpl::~PasswordsPrivateDelegateImpl() {
 
 void PasswordsPrivateDelegateImpl::GetSavedPasswordsList(
     UiEntriesCallback callback) {
-  if (current_entries_initialized_)
+  if (current_entries_initialized_) {
     std::move(callback).Run(current_entries_);
-  else
+  } else {
     get_saved_passwords_list_callbacks_.push_back(std::move(callback));
+  }
 }
 
 PasswordsPrivateDelegate::CredentialsGroups
@@ -342,10 +344,11 @@ PasswordsPrivateDelegateImpl::GetCredentialGroups() {
 
 void PasswordsPrivateDelegateImpl::GetPasswordExceptionsList(
     ExceptionEntriesCallback callback) {
-  if (current_entries_initialized_)
+  if (current_entries_initialized_) {
     std::move(callback).Run(current_exceptions_);
-  else
+  } else {
     get_password_exception_list_callbacks_.push_back(std::move(callback));
+  }
 }
 
 absl::optional<api::passwords_private::UrlCollection>
@@ -406,8 +409,9 @@ absl::optional<int> PasswordsPrivateDelegateImpl::ChangeSavedPassword(
     const api::passwords_private::ChangeSavedPasswordParams& params) {
   const CredentialUIEntry* original_credential =
       credential_id_generator_.TryGetKey(id);
-  if (!original_credential)
+  if (!original_credential) {
     return absl::nullopt;
+  }
 
   CredentialUIEntry updated_credential = *original_credential;
   updated_credential.username = base::UTF8ToUTF16(params.username);
@@ -522,22 +526,8 @@ void PasswordsPrivateDelegateImpl::OsReauthCall(
 #elif BUILDFLAG(IS_MAC)
   AuthenticateUser(password_manager_util_mac::GetMessageForLoginPrompt(purpose),
                    std::move(callback));
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::features::IsPasswordManagerSystemAuthenticationEnabled()) {
-    password_manager_util_chromeos::AuthenticateUser(purpose,
-                                                     std::move(callback));
-  } else {
-    bool result =
-        IsOsReauthAllowedAsh(profile_, GetAuthTokenLifetimeForPurpose(purpose));
-    std::move(callback).Run(result);
-  }
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (chromeos::features::IsPasswordManagerSystemAuthenticationEnabled()) {
-    password_manager_util_chromeos::AuthenticateUser(purpose,
-                                                     std::move(callback));
-  } else {
-    IsOsReauthAllowedLacrosAsync(purpose, std::move(callback));
-  }
+#elif BUILDFLAG(IS_CHROMEOS)
+  AuthenticateUser(std::u16string(), std::move(callback));
 #else
   std::move(callback).Run(true);
 #endif
@@ -547,8 +537,9 @@ void PasswordsPrivateDelegateImpl::OsReauthTimeoutCall() {
 #if !BUILDFLAG(IS_LINUX)
   PasswordsPrivateEventRouter* router =
       PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
-  if (router)
+  if (router) {
     router->OnPasswordManagerAuthTimeout();
+  }
 #endif
 }
 
@@ -600,11 +591,13 @@ void PasswordsPrivateDelegateImpl::SetCredentials(
   current_entries_initialized_ = true;
   InitializeIfNecessary();
 
-  for (auto& callback : get_saved_passwords_list_callbacks_)
+  for (auto& callback : get_saved_passwords_list_callbacks_) {
     std::move(callback).Run(current_entries_);
+  }
   get_saved_passwords_list_callbacks_.clear();
-  for (auto& callback : get_password_exception_list_callbacks_)
+  for (auto& callback : get_password_exception_list_callbacks_) {
     std::move(callback).Run(current_exceptions_);
+  }
   get_password_exception_list_callbacks_.clear();
 }
 
@@ -954,7 +947,8 @@ void PasswordsPrivateDelegateImpl::ExecuteFunction(base::OnceClosure callback) {
   pre_initialization_callbacks_.emplace_back(std::move(callback));
 }
 
-void PasswordsPrivateDelegateImpl::OnSavedPasswordsChanged() {
+void PasswordsPrivateDelegateImpl::OnSavedPasswordsChanged(
+    const password_manager::PasswordStoreChangeList& changes) {
   SetCredentials(saved_passwords_presenter_.GetSavedCredentials());
 }
 
@@ -979,13 +973,15 @@ void PasswordsPrivateDelegateImpl::OnWebAppInstallManagerDestroyed() {
 }
 
 void PasswordsPrivateDelegateImpl::InitializeIfNecessary() {
-  if (is_initialized_ || !current_entries_initialized_)
+  if (is_initialized_ || !current_entries_initialized_) {
     return;
+  }
 
   is_initialized_ = true;
 
-  for (base::OnceClosure& callback : pre_initialization_callbacks_)
+  for (base::OnceClosure& callback : pre_initialization_callbacks_) {
     std::move(callback).Run();
+  }
   pre_initialization_callbacks_.clear();
 }
 
@@ -1013,7 +1009,7 @@ void PasswordsPrivateDelegateImpl::AuthenticateUser(
     const std::u16string& message,
     password_manager::PasswordAccessAuthenticator::AuthResultCallback
         callback) {
-#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS)
   NOTIMPLEMENTED();
 #else
   // Cancel any ongoing authentication attempt.

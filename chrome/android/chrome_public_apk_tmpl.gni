@@ -170,8 +170,7 @@ template("chrome_common_apk_or_module_tmpl") {
   } else if (_is_monochrome) {
     _version_code = MONOCHROME_VERSION_MAP["${android_64bit_target_cpu}_${_is_64_bit_browser}_${_include_64_bit_webview}_${_include_32_bit_webview}"]
   } else {
-    # TODO(agrieve): Merge chrome_modern_version_code with chrome_version_code.
-    _version_code = chrome_modern_version_code
+    _version_code = chrome_version_code
   }
 
   if (defined(invoker.manifest_package)) {
@@ -466,7 +465,6 @@ template("chrome_common_apk_or_module_tmpl") {
       } else if (!_is_trichrome) {
         deps += [
           "//chrome/android:chrome_public_apk_base_module_resources",
-          "//chrome/android:chrome_public_base_module_java",
           "//chrome/android:chrome_public_non_pak_assets",
           "//components/browser_ui/styles/android:chrome_public_apk_resources",
         ]
@@ -478,7 +476,10 @@ template("chrome_common_apk_or_module_tmpl") {
           "//components/language/android:ulp_delegate_public_java",
         ]
       } else {
-        deps += [ "//chrome/android:delegate_public_impl_java" ]
+        deps += [
+          "//chrome/android:chrome_all_java",
+          "//chrome/android:delegate_public_impl_java",
+        ]
       }
       if (_is_test) {
         deps += [ "//chrome/android:chrome_public_base_module_java_for_test" ]

@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabListDelegate;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherLayout.PerfListener;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface.TabSwitcherViewObserver;
@@ -116,11 +117,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     private boolean mAndroidViewFinishedShowing;
 
     private Animator mBackgroundTabAnimation;
-
-    interface PerfListener {
-        void onAnimationDone(
-                int frameRendered, long elapsedMs, long maxFrameInterval, int dirtySpan);
-    }
 
     private PerfListener mPerfListenerForTesting;
 
@@ -294,12 +290,12 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
 
             if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(getContext())
                     && GTS_ACCESSIBILITY_SUPPORT.getValue()
-                    && ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
-                // Intentionally disable the shrinking animation when accessibility is enabled.
-                // During the shrinking animation, since the ComponsitorViewHolder is not focusable.
-                // Chrome is in a temporary no "valid" focus target state, so the focus shifts
-                // to the omnibox and triggers visual jank and accessibility announcement of the
-                // URL. Disable the animation and run immediately to avoid this temporary state.
+                    && ChromeAccessibilityUtil.get().isTouchExplorationEnabled()) {
+                // Intentionally disable the shrinking animation when touch exploration is enabled.
+                // During the shrinking animation, since the ComponsitorViewHolder is not focusable,
+                // Chrome is in a temporary no "valid" focus target state. This result in focus
+                // shifting to the omnibox and triggers visual jank and accessibility announcement
+                // of the URL. Disable the animation and run immediately to avoid this state.
                 showOverviewWithTabShrink(false, () -> null, isShowingStartSurfaceHomepage, true);
             } else {
                 // Ensure the SceneLayer image for the GTS is in the correct position by deferring
@@ -786,7 +782,7 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     }
 
     @VisibleForTesting
-    void setPerfListenerForTesting(PerfListener perfListener) {
+    public void setPerfListenerForTesting(PerfListener perfListener) {
         mPerfListenerForTesting = perfListener;
     }
 

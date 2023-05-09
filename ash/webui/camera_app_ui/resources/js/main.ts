@@ -48,7 +48,6 @@ import * as util from './util.js';
 import {Camera} from './views/camera.js';
 import * as timertick from './views/camera/timertick.js';
 import {CameraIntent} from './views/camera_intent.js';
-import {Dialog} from './views/dialog.js';
 import {View} from './views/view.js';
 import {Warning, WarningType} from './views/warning.js';
 import {WaitableEvent} from './waitable_event.js';
@@ -131,7 +130,6 @@ export class App {
     nav.setup([
       this.cameraView,
       new Warning(),
-      new Dialog(ViewName.MESSAGE_DIALOG),
       new View(ViewName.SPLASH),
     ]);
 
@@ -424,8 +422,8 @@ async function setupDynamicColor(): Promise<void> {
     });
   }
   if (loadTimeData.getChromeFlag(Flag.JELLY)) {
-    await loadCSS('chrome://theme/colors.css?sets=sys');
     startColorChangeUpdater();
+    await loadCSS('chrome://theme/colors.css?sets=ref,sys');
   } else {
     await loadCSS('/css/colors_default.css');
   }

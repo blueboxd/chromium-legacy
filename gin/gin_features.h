@@ -19,7 +19,6 @@ GIN_EXPORT extern const base::FeatureParam<int>
     kV8ConcurrentSparkplugMaxThreads;
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8CodeMemoryWriteProtection);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8ConcurrentSparkplugHighPriorityThreads);
-GIN_EXPORT BASE_DECLARE_FEATURE(kV8CrashOnEvacuationFailure);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8DelayMemoryReducer);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8ExperimentalRegexpEngine);
 GIN_EXPORT extern const base::FeatureParam<int> kV8FlushBytecodeOldAge;
@@ -28,7 +27,9 @@ GIN_EXPORT BASE_DECLARE_FEATURE(kV8FlushBytecode);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8FlushEmbeddedBlobICache);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8LazyFeedbackAllocation);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8Maglev);
+GIN_EXPORT BASE_DECLARE_FEATURE(kV8MinorMC);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8MegaDomIC);
+GIN_EXPORT BASE_DECLARE_FEATURE(kV8MemoryReducerSingleGC);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8NoReclaimUnmodifiedWrappers);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8OffThreadFinalization);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8OptimizeJavascript);

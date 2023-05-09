@@ -51,6 +51,7 @@ constexpr bool IsWallpaperTypeSyncable(WallpaperType type) {
     case WallpaperType::kThirdParty:
     case WallpaperType::kDevice:
     case WallpaperType::kOneShot:
+    case WallpaperType::kOobe:
     case WallpaperType::kCount:
       return false;
   }
@@ -274,7 +275,7 @@ class WallpaperProfileHelperImpl : public WallpaperProfileHelper {
   }
 
  private:
-  base::raw_ptr<WallpaperControllerClient> wallpaper_controller_client_ =
+  raw_ptr<WallpaperControllerClient> wallpaper_controller_client_ =
       nullptr;  // not owned
 };
 
@@ -524,6 +525,8 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
         profile_helper_->GetUserPrefServiceSyncable(account_id);
     if (!pref_service)
       return false;
+
+    DCHECK(IsWallpaperTypeSyncable(info.type));
 
     return SetWallpaperInfo(account_id, info, pref_service,
                             prefs::kSyncableWallpaperInfo);

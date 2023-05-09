@@ -13,6 +13,7 @@
 #import "components/password_manager/core/common/password_manager_constants.h"
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/sync/base/features.h"
+#import "ios/chrome/browser/passwords/password_checkup_metrics.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -34,6 +35,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_menu_item.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_metrics_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller+private.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
@@ -50,15 +52,16 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
 using base::UmaHistogramEnumeration;
+using password_manager::GetWarningTypeForDetailsContext;
 using password_manager::constants::kMaxPasswordNoteLength;
+using password_manager::features::IsPasswordCheckupEnabled;
 using password_manager::metrics_util::LogPasswordNoteActionInSettings;
 using password_manager::metrics_util::LogPasswordSettingsReauthResult;
-using password_manager::metrics_util::PasswordCheckInteraction;
 using password_manager::metrics_util::PasswordNoteAction;
 using password_manager::metrics_util::ReauthResult;
+
+namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierPassword = kSectionIdentifierEnumZero,
@@ -101,7 +104,7 @@ bool ShouldAllowToDismissWarning(DetailsContext context) {
   switch (context) {
     case DetailsContext::kGeneral:
     case DetailsContext::kCompromisedIssues:
-      return password_manager::features::IsPasswordCheckupEnabled();
+      return IsPasswordCheckupEnabled();
     case DetailsContext::kDismissedWarnings:
     case DetailsContext::kReusedIssues:
     case DetailsContext::kWeakIssues:
@@ -111,7 +114,7 @@ bool ShouldAllowToDismissWarning(DetailsContext context) {
 
 // Returns true if the "Restore Warning" button should be shown.
 bool ShouldAllowToRestoreWarning(DetailsContext context) {
-  return password_manager::features::IsPasswordCheckupEnabled() &&
+  return IsPasswordCheckupEnabled() &&
          context == DetailsContext::kDismissedWarnings;
 }
 
@@ -257,10 +260,9 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
   }
 
   if (self.tableView.editing) {
-    // If site, password or username value was changed show confirmation dialog
-    // before saving password. Editing mode will be exited only if user confirm
-    // saving.
-    if ([self fieldsDidChange]) {
+    // If password value was changed show confirmation dialog before saving.
+    // Editing mode will be exited only if user confirms saving.
+    if ([self passwordsDidChange]) {
       DCHECK(self.handler);
       // TODO(crbug.com/1401035): Show Password Edit Dialog when Password
       // Grouping is enabled.
@@ -545,12 +547,17 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
       if (!self.tableView.editing) {
         int passwordIndex = GetPasswordIndex(indexPath.section);
         DCHECK(self.applicationCommandsHandler);
-        DCHECK(self.passwords[passwordIndex].changePasswordURL.has_value());
+        PasswordDetails* passwordDetails = self.passwords[passwordIndex];
+        DCHECK(passwordDetails.changePasswordURL.has_value());
+
+        CHECK(password_manager::ShouldRecordPasswordCheckUserAction(
+            passwordDetails.context, passwordDetails.compromised));
+
+        password_manager::LogChangePasswordOnWebsite(
+            GetWarningTypeForDetailsContext(passwordDetails.context));
+
         OpenNewTabCommand* command = [OpenNewTabCommand
-            commandWithURLFromChrome:self.passwords[passwordIndex]
-                                         .changePasswordURL.value()];
-        UmaHistogramEnumeration("PasswordManager.BulkCheck.UserAction",
-                                PasswordCheckInteraction::kChangePassword);
+            commandWithURLFromChrome:passwordDetails.changePasswordURL.value()];
         [self.applicationCommandsHandler closeSettingsUIAndOpenURL:command];
       }
       break;
@@ -940,7 +947,7 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
 // Reveals password to the user.
 - (void)showPasswordFor:(ReauthenticationReason)reason {
   switch (reason) {
-    case ReauthenticationReasonShow:
+    case ReauthenticationReasonShow: {
       self.passwordShown = YES;
       self.passwordDetailsInfoItems[_passwordIndexToReveal]
           .passwordTextItem.textFieldValue =
@@ -954,11 +961,18 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
       [self reconfigureCellsForItems:@[
         self.passwordDetailsInfoItems[_passwordIndexToReveal].passwordTextItem
       ]];
-      if (self.passwords[_passwordIndexToReveal].compromised) {
-        UmaHistogramEnumeration("PasswordManager.BulkCheck.UserAction",
-                                PasswordCheckInteraction::kShowPassword);
+
+      PasswordDetails* passwordDetails = self.passwords[_passwordIndexToReveal];
+      DetailsContext detailsContext = passwordDetails.context;
+      // When details was opened from the Password Manager, only log password
+      // check actions if the password is compromised.
+      if (password_manager::ShouldRecordPasswordCheckUserAction(
+              detailsContext, passwordDetails.compromised)) {
+        password_manager::LogRevealPassword(
+            GetWarningTypeForDetailsContext(detailsContext));
       }
       break;
+    }
     case ReauthenticationReasonCopy: {
       NSString* copiedString =
           self.passwords[IsPasswordGroupingEnabled()
@@ -1014,27 +1028,6 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
     [self.tableView
         deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow]
                       animated:YES];
-  }
-}
-
-- (BOOL)isItemAtIndexPathTextEditCell:(NSIndexPath*)cellPath {
-  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:cellPath];
-  switch (static_cast<PasswordDetailsItemType>(itemType)) {
-    case PasswordDetailsItemTypeUsername:
-    case PasswordDetailsItemTypePassword:
-    case PasswordDetailsItemTypeNote:
-      return YES;
-    case PasswordDetailsItemTypeWebsite:
-    case PasswordDetailsItemTypeFederation:
-    case PasswordDetailsItemTypeChangePasswordButton:
-    case PasswordDetailsItemTypeChangePasswordRecommendation:
-    case PasswordDetailsItemTypeDismissWarningButton:
-    case PasswordDetailsItemTypeRestoreWarningButton:
-    case PasswordDetailsItemTypeDeleteButton:
-    case PasswordDetailsItemTypeMoveToAccountButton:
-    case PasswordDetailsItemTypeMoveToAccountRecommendation:
-    case PasswordDetailsItemTypeNoteFooter:
-      return NO;
   }
 }
 
@@ -1126,20 +1119,13 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
   return NO;
 }
 
-- (BOOL)fieldsDidChange {
+- (BOOL)passwordsDidChange {
   DCHECK(self.passwords.count == self.passwordDetailsInfoItems.count);
 
   for (NSUInteger i = 0; i < self.passwordDetailsInfoItems.count; i++) {
     if (![self.passwords[i].password
             isEqualToString:self.passwordDetailsInfoItems[i]
-                                .passwordTextItem.textFieldValue] ||
-        ![self.passwords[i].username
-            isEqualToString:self.passwordDetailsInfoItems[i]
-                                .usernameTextItem.textFieldValue] ||
-        (IsPasswordNotesWithBackupEnabled() &&
-         ![self.passwords[i].note
-             isEqualToString:self.passwordDetailsInfoItems[i]
-                                 .passwordNoteItem.text])) {
+                                .passwordTextItem.textFieldValue]) {
       return YES;
     }
   }
@@ -1330,6 +1316,29 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
                              repeats:NO];
 }
 
+#pragma mark - AutofillEditTableViewController
+
+- (BOOL)isItemAtIndexPathTextEditCell:(NSIndexPath*)cellPath {
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:cellPath];
+  switch (static_cast<PasswordDetailsItemType>(itemType)) {
+    case PasswordDetailsItemTypeUsername:
+    case PasswordDetailsItemTypePassword:
+      return YES;
+    case PasswordDetailsItemTypeWebsite:
+    case PasswordDetailsItemTypeFederation:
+    case PasswordDetailsItemTypeChangePasswordButton:
+    case PasswordDetailsItemTypeChangePasswordRecommendation:
+    case PasswordDetailsItemTypeDismissWarningButton:
+    case PasswordDetailsItemTypeRestoreWarningButton:
+    case PasswordDetailsItemTypeDeleteButton:
+    case PasswordDetailsItemTypeMoveToAccountButton:
+    case PasswordDetailsItemTypeMoveToAccountRecommendation:
+    case PasswordDetailsItemTypeNoteFooter:
+    case PasswordDetailsItemTypeNote:
+      return NO;
+  }
+}
+
 #pragma mark - Actions
 
 // Called when the user tapped on the show/hide button near password.
@@ -1478,12 +1487,18 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
 - (void)didTapDismissWarningButtonAtPasswordIndex:(NSUInteger)passwordIndex {
   CHECK(passwordIndex >= 0 && passwordIndex < self.passwords.count);
   CHECK(self.delegate);
+
+  password_manager::LogMuteCompromisedWarning();
+
   [self.delegate dismissWarningForPassword:self.passwords[passwordIndex]];
 }
 
 - (void)didTapRestoreWarningButtonAtPasswordIndex:(NSUInteger)passwordIndex {
   CHECK(passwordIndex >= 0 && passwordIndex < self.passwords.count);
   CHECK(self.delegate);
+
+  password_manager::LogUnmuteCompromisedWarning();
+
   [self.delegate restoreWarningForCurrentPassword];
 }
 
@@ -1616,26 +1631,34 @@ bool ShouldAllowToRestoreWarning(DetailsContext context) {
 - (void)passwordEditingConfirmed {
   DCHECK(self.passwords.count == self.passwordDetailsInfoItems.count);
   for (NSUInteger i = 0; i < self.passwordDetailsInfoItems.count; i++) {
-    NSString* oldUsername = self.passwords[i].username;
-    NSString* oldPassword = self.passwords[i].password;
-    NSString* oldNote = self.passwords[i].note;
-    self.passwords[i].username =
-        self.passwordDetailsInfoItems[i].usernameTextItem.textFieldValue;
-    self.passwords[i].password =
-        self.passwordDetailsInfoItems[i].passwordTextItem.textFieldValue;
+    PasswordDetails* password = self.passwords[i];
+    NSString* oldUsername = password.username;
+    NSString* oldPassword = password.password;
+    NSString* oldNote = password.note;
+
+    PasswordDetailsInfoItem* passwordDetailsInfoItem =
+        self.passwordDetailsInfoItems[i];
+    password.username = passwordDetailsInfoItem.usernameTextItem.textFieldValue;
+    password.password = passwordDetailsInfoItem.passwordTextItem.textFieldValue;
     if (IsPasswordNotesWithBackupEnabled()) {
-      self.passwords[i].note =
-          self.passwordDetailsInfoItems[i].passwordNoteItem.text;
-      [self logChangeBetweenOldNote:oldNote currentNote:self.passwords[i].note];
+      password.note = passwordDetailsInfoItem.passwordNoteItem.text;
+      [self logChangeBetweenOldNote:oldNote currentNote:password.note];
     }
     [self.delegate passwordDetailsViewController:self
-                          didEditPasswordDetails:self.passwords[i]
+                          didEditPasswordDetails:password
                                  withOldUsername:oldUsername
                                      oldPassword:oldPassword
                                          oldNote:oldNote];
-    if (self.passwords[i].compromised) {
-      UmaHistogramEnumeration("PasswordManager.BulkCheck.UserAction",
-                              PasswordCheckInteraction::kEditPassword);
+
+    if (oldUsername != password.username || oldPassword != password.password) {
+      DetailsContext detailsContext = password.context;
+      // When details was opened from the Password Manager, only log password
+      // check actions if the password is compromised.
+      if (password_manager::ShouldRecordPasswordCheckUserAction(
+              detailsContext, password.compromised)) {
+        password_manager::LogEditPassword(
+            GetWarningTypeForDetailsContext(detailsContext));
+      }
     }
   }
   [self.delegate didFinishEditingPasswordDetails];

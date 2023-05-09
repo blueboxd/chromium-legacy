@@ -91,6 +91,7 @@
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
 #include "chrome/browser/ui/side_panel/companion/companion_tab_helper.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
+#include "chrome/browser/ui/side_panel/read_anything/read_anything_side_panel_controller_utils.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -754,6 +755,8 @@ RenderViewContextMenu::RenderViewContextMenu(
                        this,
                        &menu_model_,
                        base::BindRepeating(MenuItemMatchesParams, params_)),
+      current_url_(render_frame_host.GetLastCommittedURL()),
+      main_frame_url_(render_frame_host.GetMainFrame()->GetLastCommittedURL()),
       profile_link_submenu_model_(this),
       multiple_profiles_open_(false),
       protocol_handler_submenu_model_(this),
@@ -766,7 +769,8 @@ RenderViewContextMenu::RenderViewContextMenu(
               GetProfile()->GetOriginalProfile()),
           this,
           &menu_model_,
-          GetBrowser()) {
+          GetBrowser(),
+          std::make_unique<ScopedNewBadgeTracker>(GetProfile())) {
   if (!g_custom_id_ranges_initialized) {
     g_custom_id_ranges_initialized = true;
     SetContentCustomCommandIdRange(IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
@@ -969,6 +973,7 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
   ui::ScopedClipboardWriter scw(
       ui::ClipboardBuffer::kCopyPaste,
       CreateDataEndpoint(/*notify_if_restricted=*/true));
+  scw.SetDataSourceURL(main_frame_url_, current_url_);
   scw.WriteText(FormatURLForClipboard(url));
 }
 
@@ -1098,11 +1103,14 @@ void RenderViewContextMenu::InitMenu() {
     AppendPlatformEditableItems();
   }
 
-  // Show Read Anything option if text is selected.
+  // Show Read Anything option if text is selected and if it's not already open
+  // in the side panel.
   if (features::IsReadAnythingEnabled()) {
-    if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY) ||
-        content_type_->SupportsGroup(
-            ContextMenuContentType::ITEM_GROUP_EDITABLE)) {
+    if (GetBrowser() && !IsReadAnythingEntryShowing(GetBrowser()) &&
+        (content_type_->SupportsGroup(
+             ContextMenuContentType::ITEM_GROUP_COPY) ||
+         content_type_->SupportsGroup(
+             ContextMenuContentType::ITEM_GROUP_EDITABLE))) {
       AppendReadAnythingItem();
     }
   }
@@ -2587,7 +2595,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CLIPBOARD_HISTORY_MENU:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      return ash::ClipboardHistoryController::Get()->CanShowMenu();
+      return ash::ClipboardHistoryController::Get()->HasAvailableHistoryItems();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
     {
       auto* service = chromeos::LacrosService::Get();
@@ -2837,17 +2845,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     // back/forward entries. Session history may have changed while the context
     // menu was open. So we need to check `CanGoBack`/`CanGoForward` again.
     case IDC_BACK:
-      if (auto& controller = embedder_web_contents_->GetController();
-          controller.CanGoBack()) {
-        controller.GoBack();
-      }
+      chrome::GoBack(embedder_web_contents_);
       break;
 
     case IDC_FORWARD:
-      if (auto& controller = embedder_web_contents_->GetController();
-          controller.CanGoForward()) {
-        controller.GoForward();
-      }
+      chrome::GoForward(embedder_web_contents_);
       break;
 
     case IDC_SAVE_PAGE:
@@ -3621,6 +3623,14 @@ void RenderViewContextMenu::ExecOpenLinkInProfile(int profile_index) {
       base::BindRepeating(OnBrowserCreated, params_.link_url));
 }
 
+void RenderViewContextMenu::ExecOpenInReadAnything() {
+  Browser* browser = GetBrowser();
+  if (!browser) {
+    return;
+  }
+  ShowReadAnythingSidePanel(browser);
+}
+
 void RenderViewContextMenu::ExecInspectElement() {
   base::RecordAction(UserMetricsAction("DevTools_InspectElement"));
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
@@ -3727,6 +3737,7 @@ void RenderViewContextMenu::ExecCopyLinkText() {
   ui::ScopedClipboardWriter scw(
       ui::ClipboardBuffer::kCopyPaste,
       CreateDataEndpoint(/*notify_if_restricted=*/true));
+  scw.SetDataSourceURL(main_frame_url_, current_url_);
   scw.WriteText(params_.link_text);
 }
 
@@ -3936,7 +3947,10 @@ void RenderViewContextMenu::ExecPrint() {
   }
 
   printing::StartPrint(
-      source_web_contents_, mojo::NullAssociatedRemote(),
+      source_web_contents_,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      mojo::NullAssociatedRemote(),
+#endif
       GetPrefs(browser_context_)->GetBoolean(prefs::kPrintPreviewDisabled),
       !params_.selection_text.empty());
 #endif  // BUILDFLAG(ENABLE_PRINTING)

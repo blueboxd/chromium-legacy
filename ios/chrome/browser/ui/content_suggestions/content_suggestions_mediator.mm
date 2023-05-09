@@ -15,6 +15,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #import "components/feed/core/v2/public/ios/pref_names.h"
+#import "components/history/core/browser/features.h"
 #import "components/ntp_tiles/features.h"
 #import "components/ntp_tiles/metrics.h"
 #import "components/ntp_tiles/most_visited_sites.h"
@@ -26,8 +27,6 @@
 #import "components/search_engines/template_url.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
-#import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ntp/features.h"
@@ -37,6 +36,9 @@
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
@@ -67,7 +69,6 @@
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
@@ -450,6 +451,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   if (mostVisited.size() && !self.recordedPageImpression) {
     self.recordedPageImpression = YES;
+    [self recordMostVisitedTilesDisplayed];
     [self.faviconMediator setMostVisitedDataForLogging:mostVisited];
     ntp_tiles::metrics::RecordPageImpression(mostVisited.size());
   }
@@ -470,6 +472,22 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 #pragma mark - Private
+
+// Updates `prefs::kIosSyncSegmentsNewTabPageDisplayCount` with the number of
+// remaining New Tab Page displays that include synced history in the Most
+// Visited Tiles.
+- (void)recordMostVisitedTilesDisplayed {
+  PrefService* local_state = GetApplicationContext()->GetLocalState();
+
+  CHECK(local_state != nullptr);
+
+  const int displayCount =
+      local_state->GetInteger(prefs::kIosSyncSegmentsNewTabPageDisplayCount) +
+      1;
+
+  local_state->SetInteger(prefs::kIosSyncSegmentsNewTabPageDisplayCount,
+                          displayCount);
+}
 
 // Replaces the Most Visited items currently displayed by the most recent ones.
 - (void)useFreshMostVisited {

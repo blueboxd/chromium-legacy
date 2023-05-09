@@ -9,8 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -170,7 +171,7 @@ public class ChromeSmokeTest {
 
     @Test
     public void testHello() throws Exception {
-        Context context = InstrumentationRegistry.getContext();
+        Context context = ApplicationProvider.getApplicationContext();
         String url = sEmbeddedTestServerRule.getServer().getURL(TEST_PAGE);
         final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.addCategory(Intent.CATEGORY_BROWSABLE);

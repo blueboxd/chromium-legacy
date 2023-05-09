@@ -116,6 +116,7 @@
 <translation id="2929907241665500097">Đã xảy ra lỗi nên Chrome chưa cập nhật được. <ph name="BEGIN_LINK" />Hãy khắc phục các vấn đề cập nhật và các bản cập nhật không thành công của Chrome.<ph name="END_LINK" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Đăng nhập vào mạng – Chrome</translation>
 <translation id="3019382870990049182">Chạy lại để cập nhật &amp;ChromeOS Flex</translation>
+<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{Các tiện ích của Google Chrome từng truy cập vào các thiết bị HID}=1{Các tiện ích của Google Chrome đang truy cập vào các thiết bị HID}other{Các tiện ích của Google Chrome đang truy cập vào # thiết bị HID}}</translation>
 <translation id="303514781271618814">Chrome đang khám phá các tính năng mới cho phép các trang web mang lại trải nghiệm duyệt web như nhau nhưng tiêu tốn ít dữ liệu hơn</translation>
 <translation id="3037838751736561277">Google Chrome đang chạy trong nền.</translation>
 <translation id="3038232873781883849">Đang chờ cài đặt...</translation>
@@ -209,6 +210,7 @@
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Tệp này có thể nguy hiểm, do đó Chrome đã chặn tệp.</translation>
 <translation id="479167709087336770">Dịch vụ này sử dụng cùng một trình kiểm tra chính tả dùng trong Google Tìm kiếm. Thông tin bạn nhập vào trình duyệt sẽ được gửi tới Google. Bạn luôn có thể thay đổi hành động này trong phần cài đặt.</translation>
+<translation id="4828579605166583682">Google Chrome đang cố gắng thay thế các mật khẩu hiện tại. Nhập mật khẩu Windows của bạn để cho phép việc này.</translation>
 <translation id="4842397268809523050">ChromeOS Flex không đồng bộ hoá được dữ liệu của bạn vì miền của bạn không dùng được tính năng đồng bộ hoá.</translation>
 <translation id="4873783916118289636">Xem các chế độ kiểm soát quan trọng đối với quyền riêng tư và tính bảo mật trong Chrome</translation>
 <translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
@@ -220,6 +222,7 @@
 <translation id="4970880042055371251">Phiên bản ChromeOS</translation>
 <translation id="4970947549776831107">Chrome đã chặn tệp này vì đây loại tệp nguy hiểm</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
+<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Một tiện ích của Google Chrome từng truy cập vào các thiết bị HID}=1{Một tiện ích của Google Chrome đang truy cập vào 1 thiết bị HID}other{Một tiện ích của Google Chrome đang truy cập vào # thiết bị HID}}</translation>
 <translation id="5064155331105009416">{COUNT,plural, =1{Quản trị viên sẽ tự động đóng Chrome sau 1 phút bạn không dùng đến. Dữ liệu duyệt web sẽ bị xoá. Dữ liệu này có thể bao gồm nhật ký, nội dung tự động điền và tệp đã tải xuống.}other{Quản trị viên sẽ tự động đóng Chrome sau # phút bạn không dùng đến. Dữ liệu duyệt web sẽ bị xoá. Dữ liệu này có thể bao gồm nhật ký, nội dung tự động điền và tệp đã tải xuống.}}</translation>
 <translation id="5098668839038261629">Khi bật, bạn cũng sẽ đăng xuất khỏi Chrome</translation>
 <translation id="5132929315877954718">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Google Chrome.</translation>

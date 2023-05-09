@@ -176,6 +176,8 @@ blink::FencedFrame::RedactedFencedFrameConfig FencedFrameConfig::RedactFor(
   // was called to generate the config, rather than any cross-site data.
   redacted_config.mode_ = mode_;
 
+  redacted_config.required_permissions_to_load_ = required_permissions_to_load;
+
   return redacted_config;
 }
 
@@ -206,7 +208,8 @@ FencedFrameProperties::FencedFrameProperties(const FencedFrameConfig& config)
                        VisibilityToEmbedder::kOpaque,
                        VisibilityToContent::kOpaque),
       mode_(config.mode_),
-      is_ad_component_(config.is_ad_component_) {
+      is_ad_component_(config.is_ad_component_),
+      required_permissions_to_load(config.required_permissions_to_load) {
   if (config.shared_storage_budget_metadata_) {
     shared_storage_budget_metadata_.emplace(
         &config.shared_storage_budget_metadata_->GetValueIgnoringVisibility(),
@@ -287,6 +290,9 @@ FencedFrameProperties::RedactFor(FencedFrameEntity entity) const {
   // was called to generate the config, rather than any cross-site data.
   redacted_properties.mode_ = mode_;
 
+  redacted_properties.required_permissions_to_load_ =
+      required_permissions_to_load;
+
   return redacted_properties;
 }
 
@@ -297,10 +303,10 @@ void FencedFrameProperties::UpdateMappedURL(GURL url) {
 
 void FencedFrameProperties::UpdateAutomaticBeaconData(
     const std::string& event_data,
-    const std::vector<blink::FencedFrame::ReportingDestination>& destination) {
+    const std::vector<blink::FencedFrame::ReportingDestination>& destinations) {
   // For an ad component, the event data from its automatic beacon is ignored.
   automatic_beacon_info_.emplace(is_ad_component_ ? std::string{} : event_data,
-                                 destination);
+                                 destinations);
 }
 
 }  // namespace content

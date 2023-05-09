@@ -103,7 +103,6 @@ void MountDlc::RunInternal(BorealisContext* context) {
   // otherwise we will silently download borealis here.
   installation_ = std::make_unique<guest_os::GuestOsDlcInstallation>(
       kBorealisDlcName,
-      /*retry=*/true,
       base::BindOnce(&MountDlc::OnMountDlc, weak_factory_.GetWeakPtr(),
                      context),
       base::DoNothing());
@@ -367,12 +366,12 @@ void SyncBorealisDisk::RunInternal(BorealisContext* context) {
 
 void SyncBorealisDisk::OnSyncBorealisDisk(
     BorealisContext* context,
-    Expected<BorealisSyncDiskSizeResult, Described<BorealisSyncDiskSizeResult>>
-        result) {
+    base::expected<BorealisSyncDiskSizeResult,
+                   Described<BorealisSyncDiskSizeResult>> result) {
   // This step should not block startup, so just log the error and declare
   // success.
-  if (!result) {
-    LOG(ERROR) << "Failed to sync disk: " << result.Error().description();
+  if (!result.has_value()) {
+    LOG(ERROR) << "Failed to sync disk: " << result.error().description();
   }
   Complete(BorealisStartupResult::kSuccess, "");
 }

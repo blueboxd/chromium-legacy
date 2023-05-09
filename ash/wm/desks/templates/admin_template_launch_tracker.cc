@@ -17,6 +17,7 @@
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
@@ -55,8 +56,8 @@ void UpdateAdminTemplateActivationIndices(DeskTemplate& saved_desk) {
 }
 
 // This function updates the window bounds of the windows identified by `rwids`
-// in `saved_desk` such that none of them exactly overlap
-// `existing_bounds`.
+// in `saved_desk` such that none of them exactly overlap the window bounds in
+// `existing_bounds`. Note that the existing bounds are in screen coordinates.
 void UpdateWindowBounds(DeskTemplate& saved_desk,
                         const gfx::Rect& work_area,
                         std::vector<gfx::Rect> existing_bounds,
@@ -68,12 +69,16 @@ void UpdateWindowBounds(DeskTemplate& saved_desk,
     for (auto& [window_id, app_restore_data] : base::Reversed(launch_list)) {
       CHECK(app_restore_data->current_bounds.has_value());
 
-      AdjustAdminTemplateWindowBounds(work_area, existing_bounds,
-                                      *app_restore_data->current_bounds);
+      // The bounds as found in the template are in display-local
+      // coordinates. We must first translate them into screen coordinates.
+      gfx::Rect& bounds = *app_restore_data->current_bounds;
+      bounds.Offset(work_area.origin().x(), work_area.origin().y());
+
+      AdjustAdminTemplateWindowBounds(work_area, existing_bounds, bounds);
 
       // Append to existing bounds so that a later window doesn't end up exactly
       // matching.
-      existing_bounds.push_back(*app_restore_data->current_bounds);
+      existing_bounds.push_back(bounds);
     }
   }
 }
@@ -205,6 +210,27 @@ app_restore::AppRestoreData* GetAppRestoreData(DeskTemplate& admin_template,
   return nullptr;
 }
 
+// Returns true if all windows have bounds.
+bool DoesAllWindowsHaveBounds(const DeskTemplate& admin_template) {
+  const auto& app_id_to_launch_list =
+      admin_template.desk_restore_data()->app_id_to_launch_list();
+  for (auto& [app_id, launch_list] : app_id_to_launch_list) {
+    for (auto& [window_id, app_restore_data] : launch_list) {
+      if (!app_restore_data->current_bounds.has_value()) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+struct BoundsCoeff {
+  float x;
+  float y;
+  float w;
+  float h;
+};
+
 }  // namespace
 
 bool MergeAdminTemplateWindowUpdate(DeskTemplate& admin_template,
@@ -245,11 +271,72 @@ void AdjustAdminTemplateWindowBounds(
   }
 }
 
+std::vector<gfx::Rect> GetInitialWindowLayout(const gfx::Size& work_area_size,
+                                              const int window_count) {
+  if (window_count == 0) {
+    return std::vector<gfx::Rect>();
+  }
+
+  std::vector<gfx::Rect> all_bounds;
+  std::vector<BoundsCoeff> coeff;
+
+  // The bounds are generated as follows:
+  if (window_count == 1) {
+    // For a single window, we make one that occupies 80% of the work area.
+    coeff.push_back({0.1, 0.1, 0.8, 0.8});
+  } else if (window_count == 2) {
+    // For any other count, the entire work area will be used. For two windows:
+    //  ┌───┬───┐
+    //  │   │   │
+    //  │ 0 │ 1 │
+    //  │   │   │
+    //  └───┴───┘
+    coeff.push_back({0, 0, 0.5, 1});
+    coeff.push_back({0.5, 0, 0.5, 1});
+  } else if (window_count == 3) {
+    // For three windows:
+    //  ┌───┬───┐
+    //  │   │ 1 │
+    //  │ 0 ├───┤
+    //  │   │ 2 │
+    //  └───┴───┘
+    coeff.push_back({0, 0, 0.5, 1});
+    coeff.push_back({0.5, 0, 0.5, 0.5});
+    coeff.push_back({0.5, 0.5, 0.5, 0.5});
+  } else {
+    // For four (and more) windows:
+    //  ┌───┬───┐
+    //  │ 0 │ 1 │
+    //  ├───┼───┤
+    //  │ 2 │ 3 │
+    //  └───┴───┘
+    std::vector<BoundsCoeff> tmp = {{0, 0, 0.5, 0.5},
+                                    {0.5, 0, 0.5, 0.5},
+                                    {0, 0.5, 0.5, 0.5},
+                                    {0.5, 0.5, 0.5, 0.5}};
+    // The fifth window and beyond will re-use prior slots.
+    for (int i = 0; i < window_count; ++i) {
+      coeff.push_back(tmp[i % 4]);
+    }
+  }
+
+  const int width = work_area_size.width();
+  const int height = work_area_size.height();
+  for (int i = 0; i < window_count; ++i) {
+    all_bounds.emplace_back(width * coeff[i].x, height * coeff[i].y,
+                            width * coeff[i].w, height * coeff[i].h);
+  }
+
+  return all_bounds;
+}
+
 AdminTemplateLaunchTracker::AdminTemplateLaunchTracker(
     std::unique_ptr<DeskTemplate> admin_template,
-    base::RepeatingCallback<void(const DeskTemplate&)> template_update_cb)
+    base::RepeatingCallback<void(const DeskTemplate&)> template_update_cb,
+    base::TimeDelta update_delay)
     : admin_template_(std::move(admin_template)),
-      template_update_cb_(template_update_cb) {}
+      template_update_cb_(template_update_cb),
+      update_delay_(update_delay) {}
 
 AdminTemplateLaunchTracker::~AdminTemplateLaunchTracker() = default;
 
@@ -286,23 +373,50 @@ void AdminTemplateLaunchTracker::LaunchTemplate(SavedDeskDelegate* delegate,
   // Maps root windows to a list of restore window IDs for the display.
   base::flat_map<aura::Window*, std::vector<WindowIdPair>> root_to_rwids;
 
-  auto& app_id_to_launch_list = admin_template->mutable_desk_restore_data()
-                                    ->mutable_app_id_to_launch_list();
-  for (auto& [app_id, launch_list] : app_id_to_launch_list) {
-    for (auto& [window_id, app_restore_data] : launch_list) {
-      int64_t display_id =
-          app_restore_data->display_id.value_or(default_display_id);
+  // If all windows in the template have bounds, then we will use those when
+  // launching. If that's not the case, we will auto-generate a placement for
+  // the windows.
+  if (DoesAllWindowsHaveBounds(*admin_template)) {
+    auto& app_id_to_launch_list = admin_template->mutable_desk_restore_data()
+                                      ->mutable_app_id_to_launch_list();
+    for (auto& [app_id, launch_list] : app_id_to_launch_list) {
+      for (auto& [window_id, app_restore_data] : launch_list) {
+        int64_t display_id =
+            app_restore_data->display_id.value_or(default_display_id);
 
-      // If the display doesn't exist, fall back.
-      aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
-      if (!root) {
-        display_id = default_display_id;
-        root = default_root;
+        // If the display doesn't exist, fall back.
+        aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
+        if (!root) {
+          display_id = default_display_id;
+          root = default_root;
+        }
+
+        app_restore_data->display_id = display_id;
+        root_to_rwids[root].push_back(
+            {.template_rwid = mapping[window_id], .unique_rwid = window_id});
       }
+    }
+  } else {
+    auto& app_id_to_launch_list = admin_template->mutable_desk_restore_data()
+                                      ->mutable_app_id_to_launch_list();
+    int window_count = 0;
+    for (auto& [app_id, launch_list] : app_id_to_launch_list) {
+      window_count += launch_list.size();
+    }
+    // The generated bounds (as well as bounds stored in the template) are in
+    // coordinates relative to the display they are to be launched on. In other
+    // words: 0,0 is the top-left corner of the display.
+    const std::vector<gfx::Rect> all_bounds = GetInitialWindowLayout(
+        WorkAreaInsets::ForWindow(default_root)->user_work_area_bounds().size(),
+        window_count);
 
-      app_restore_data->display_id = display_id;
-      root_to_rwids[root].push_back(
-          {.template_rwid = mapping[window_id], .unique_rwid = window_id});
+    for (auto& [app_id, launch_list] : app_id_to_launch_list) {
+      for (auto& [window_id, app_restore_data] : launch_list) {
+        app_restore_data->current_bounds = all_bounds[--window_count];
+        app_restore_data->display_id = default_display_id;
+        root_to_rwids[default_root].push_back(
+            {.template_rwid = mapping[window_id], .unique_rwid = window_id});
+      }
     }
   }
 
@@ -324,7 +438,7 @@ void AdminTemplateLaunchTracker::LaunchTemplate(SavedDeskDelegate* delegate,
     for (aura::Window* child : container->children()) {
       // This window has been launched from a template.
       if (child->GetProperty(app_restore::kRestoreWindowIdKey) < -1) {
-        existing_window_bounds.push_back(child->bounds());
+        existing_window_bounds.push_back(child->GetBoundsInScreen());
       }
     }
 
@@ -333,6 +447,9 @@ void AdminTemplateLaunchTracker::LaunchTemplate(SavedDeskDelegate* delegate,
       unique_rwids.push_back(pair.unique_rwid);
     }
 
+    // Update the bounds in the template from display local to screen
+    // coordinates. We will also ensure that they do not exactly overlap
+    // existing template windows.
     WorkAreaInsets* work_area_insets = WorkAreaInsets::ForWindow(root);
     UpdateWindowBounds(*admin_template,
                        work_area_insets->user_work_area_bounds(),
@@ -359,11 +476,26 @@ void AdminTemplateLaunchTracker::OnObserverDone(
 
 void AdminTemplateLaunchTracker::OnUpdate(
     const AdminTemplateWindowUpdate& update) {
-  // TODO(dandersson): Implement throttling of updates so that we don't issue a
-  // ton of updates as a window is dragged around.
   if (MergeAdminTemplateWindowUpdate(*admin_template_, update)) {
-    template_update_cb_.Run(*admin_template_);
+    // If the delay is set to zero, we call the callback synchronously.
+    if (update_delay_.is_zero()) {
+      template_update_cb_.Run(*admin_template_);
+      return;
+    }
+
+    if (update_delay_timer_.IsRunning()) {
+      return;
+    }
+
+    update_delay_timer_.Start(
+        FROM_HERE, update_delay_,
+        base::BindOnce(&AdminTemplateLaunchTracker::OnTimer,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void AdminTemplateLaunchTracker::OnTimer() {
+  template_update_cb_.Run(*admin_template_);
 }
 
 }  // namespace ash

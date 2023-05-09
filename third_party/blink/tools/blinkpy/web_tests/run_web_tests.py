@@ -615,27 +615,6 @@ def parse_args(args):
                  'Default is 1 second, can be overriden for specific use cases.'
                  )),
             optparse.make_option(
-                '--git-revision',
-                help=(
-                    'The Chromium git revision being tested. This is only used '
-                    'for an experimental Skia Gold dryrun.')),
-            optparse.make_option(
-                '--gerrit-issue',
-                help=(
-                    'The Gerrit issue/CL number being tested, if applicable. '
-                    'This is only used for an experimental Skia Gold dryrun.'
-                )),
-            optparse.make_option(
-                '--gerrit-patchset',
-                help=(
-                    'The Gerrit patchset being tested, if applicable. This is '
-                    'only used for an experimental Skia Gold dryrun.')),
-            optparse.make_option(
-                '--buildbucket-id',
-                help=(
-                    'The Buildbucket ID of the bot running the test. This is '
-                    'only used for an experimental Skia Gold dryrun.')),
-            optparse.make_option(
                 '--ignore-testharness-expected-txt',
                 action='store_true',
                 help=('Ignore *-expected.txt for all testharness tests. All '
@@ -662,16 +641,6 @@ def parse_args(args):
                 default='',
                 help='The name of the builder shown on the waterfall running '
                 'this script, e.g. "Mac10.13 Tests".'),
-            # TODO(qyearsley): This is not actually a Buildbot master since
-            # Buildbot is gone; all instances of the term "master" in this
-            # code-base should be removed after test-results.appspot.com is
-            # removed.
-            optparse.make_option('--master-name'),
-            optparse.make_option(
-                '--test-results-server',
-                default='',
-                help='If specified, upload results JSON files to this '
-                'App Engine server.'),
         ]))
 
     option_parser = optparse.OptionParser(

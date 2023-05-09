@@ -10,8 +10,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import static org.chromium.net.CronetTestRule.SERVER_CERT_PEM;
-import static org.chromium.net.CronetTestRule.SERVER_KEY_PKCS8_PEM;
 import static org.chromium.net.CronetTestRule.assertContains;
 import static org.chromium.net.CronetTestRule.getContext;
 import static org.chromium.net.CronetTestRule.getTestStorage;
@@ -79,8 +77,7 @@ public class ExperimentalOptionsTest {
         mHangingUrlLatch = new CountDownLatch(1);
         CronetTestUtil.setMockCertVerifierForTesting(
                 mBuilder, QuicTestServer.createMockCertVerifier());
-        assertTrue(Http2TestServer.startHttp2TestServer(
-                getContext(), SERVER_CERT_PEM, SERVER_KEY_PKCS8_PEM, mHangingUrlLatch));
+        assertTrue(Http2TestServer.startHttp2TestServer(getContext(), mHangingUrlLatch));
     }
 
     @After
@@ -271,7 +268,6 @@ public class ExperimentalOptionsTest {
     @Test
     @MediumTest
     @OnlyRunNativeCronet
-    @DisabledTest(message = "https://crbug.com/1404719")
     // Experimental options should be specified through a JSON compliant string. When that is not
     // the case building a Cronet engine should fail.
     public void testWrongJsonExperimentalOptions() throws Exception {

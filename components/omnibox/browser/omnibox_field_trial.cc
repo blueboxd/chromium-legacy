@@ -607,10 +607,6 @@ const base::FeatureParam<int>
         "FuzzyUrlSuggestionsPenaltyTaperLength",
         0);
 
-bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
-}
-
 bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForIncognito() {
   return base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProviderIncognito);
 }
@@ -689,9 +685,11 @@ const base::FeatureParam<int> OmniboxFieldTrial::kRichSuggestionVerticalMargin(
     4);
 
 bool OmniboxFieldTrial::IsChromeRefreshIconsEnabled() {
-  return features::GetChromeRefresh2023Level() ==
-             features::ChromeRefresh2023Level::kLevel2 ||
-         base::FeatureList::IsEnabled(omnibox::kOmniboxCR23SteadyStateIcons);
+  static bool enabled =
+      features::GetChromeRefresh2023Level() ==
+          features::ChromeRefresh2023Level::kLevel2 ||
+      base::FeatureList::IsEnabled(omnibox::kOmniboxCR23SteadyStateIcons);
+  return enabled;
 }
 
 bool OmniboxFieldTrial::IsGM3TextStyleEnabled() {
@@ -726,7 +724,15 @@ const base::FeatureParam<int> OmniboxFieldTrial::kFontSizeTouchUI(
 const base::FeatureParam<int> OmniboxFieldTrial::kFontSizeNonTouchUI(
     &omnibox::kOmniboxSteadyStateTextStyle,
     "OmniboxFontSizeNonTouchUI",
-    12);
+    13);
+
+bool OmniboxFieldTrial::IsCr23LayoutEnabled() {
+  static const bool enabled =
+      features::GetChromeRefresh2023Level() ==
+          features::ChromeRefresh2023Level::kLevel2 ||
+      base::FeatureList::IsEnabled(omnibox::kExpandedLayout);
+  return enabled;
+}
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
@@ -808,31 +814,6 @@ namespace OmniboxFieldTrial {
 // Autocomplete stability.
 
 const base::FeatureParam<bool>
-    kAutocompleteStabilityPreserveDefaultExcludeKeywordInputs(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreserveDefaultExcludeKeywordInputs",
-        true);
-const base::FeatureParam<bool>
-    kAutocompleteStabilityPreserveDefaultAfterTransfer(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreserveDefaultAfterTransfer",
-        true);
-const base::FeatureParam<int>
-    kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength",
-        3);
-const base::FeatureParam<bool>
-    kAutocompleteStabilityPreserveDefaultForAsyncUpdates(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreserveDefaultForAsyncUpdates",
-        true);
-const base::FeatureParam<bool>
-    kAutocompleteStabilityPreventDefaultPreviousMatches(
-        &omnibox::kPreserveDefault,
-        "AutocompleteStabilityPreventDefaultPreviousMatches",
-        true);
-const base::FeatureParam<bool>
     kAutocompleteStabilityUpdateResultDebounceFromLastRun(
         &omnibox::kUpdateResultDebounce,
         "AutocompleteStabilityUpdateResultDebounceFromLastRun",
@@ -878,60 +859,6 @@ bool IsZeroSuggestPrefetchingEnabledInContext(
     default:
       return false;
   }
-}
-
-// Short bookmarks.
-
-bool IsShortBookmarkSuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kShortBookmarkSuggestions);
-}
-
-bool IsShortBookmarkSuggestionsByTotalInputLengthEnabled() {
-  return base::FeatureList::IsEnabled(
-             omnibox::kShortBookmarkSuggestionsByTotalInputLength) ||
-         (IsRichAutocompletionEnabled() &&
-          (kRichAutocompletionAutocompleteTitles.Get() ||
-           kRichAutocompletionAutocompleteNonPrefixAll.Get()));
-}
-
-size_t ShortBookmarkSuggestionsByTotalInputLengthThreshold() {
-  // The rich autocompletion feature requires this feature to be enabled. If
-  // short bookmarks is enabled transitively; i.e. rich autocompletion is
-  // enabled, but short bookmarks isn't explicitly enabled, then use the rich
-  // autocompletion min char limit.
-  if (!base::FeatureList::IsEnabled(
-          omnibox::kShortBookmarkSuggestionsByTotalInputLength) &&
-      IsRichAutocompletionEnabled()) {
-    if (kRichAutocompletionAutocompleteTitles.Get() &&
-        kRichAutocompletionAutocompleteNonPrefixAll.Get()) {
-      return std::min(kRichAutocompletionAutocompleteTitlesMinChar.Get(),
-                      kRichAutocompletionAutocompleteNonPrefixMinChar.Get());
-    } else if (kRichAutocompletionAutocompleteTitles.Get()) {
-      return kRichAutocompletionAutocompleteTitlesMinChar.Get();
-    } else if (kRichAutocompletionAutocompleteNonPrefixAll.Get()) {
-      return kRichAutocompletionAutocompleteNonPrefixMinChar.Get();
-    }
-  }
-
-  return kShortBookmarkSuggestionsByTotalInputLengthThreshold.Get();
-}
-
-const base::FeatureParam<bool>
-    kShortBookmarkSuggestionsByTotalInputLengthCounterfactual(
-        &omnibox::kShortBookmarkSuggestionsByTotalInputLength,
-        "ShortBookmarkSuggestionsByTotalInputLengthCounterfactual",
-        false);
-
-const base::FeatureParam<int>
-    kShortBookmarkSuggestionsByTotalInputLengthThreshold(
-        &omnibox::kShortBookmarkSuggestionsByTotalInputLength,
-        "ShortBookmarkSuggestionsByTotalInputLengthThreshold",
-        3);
-
-// Shortcut Expanding
-
-bool IsShortcutExpandingEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kShortcutExpanding);
 }
 
 // Shortcut boost
@@ -1028,15 +955,6 @@ const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore(
     "SiteSearchStarterPackRelevanceScore",
     1350);
 
-// Rather than have a special default value of -1 to signify no limit, simply
-// set it to a large value that'll never be reached in practice.
-// TODO(manukh): Launched (set to 1) 3/2/23 m113. Clean up feature code 5/2 when
-//   m113 reaches stable.
-const base::FeatureParam<int> kDocumentProviderMaxLowQualitySuggestions(
-    &omnibox::kDocumentProvider,
-    "DocumentProviderMaxLowQualitySuggestions",
-    1);
-
 const base::FeatureParam<bool> kDomainSuggestionsCounterfactual(
     &omnibox::kDomainSuggestions,
     "DomainSuggestionsCounterfactual",
@@ -1111,6 +1029,24 @@ const base::FeatureParam<bool> kMlUrlScoringIncreaseNumCandidates(
     "MlUrlScoringIncreaseNumCandidates",
     false);
 
+// If true, the ML model only re-scores and re-ranks the final set of matches
+// that would be shown in the legacy scoring system. The full legacy system
+// including the final call to `SortAndCull()` is completed before the ML model
+// is invoked.
+const base::FeatureParam<bool> kMlUrlscoringRerankFinalMatchesOnly(
+    &omnibox::kMlUrlScoring,
+    "MlUrlScoringRerankFinalMatchesOnly",
+    false);
+
+// If true, the would-be default match from the legacy system is determined
+// before ML scoring is invoked, and preserved even after re-scoring and
+// re-ranking with the new scores. This also means only the final set of matches
+// from the legacy system will be re-scored and re-ranked.
+const base::FeatureParam<bool> kMlUrlScoringPreserveDefault(
+    &omnibox::kMlUrlScoring,
+    "MlUrlScoringPreserveDefault",
+    false);
+
 MLConfig::MLConfig() {
   log_url_scoring_signals =
       base::FeatureList::IsEnabled(omnibox::kLogUrlScoringSignals);
@@ -1119,6 +1055,9 @@ MLConfig::MLConfig() {
   ml_url_scoring_counterfactual = kMlUrlScoringCounterfactual.Get();
   ml_url_scoring_increase_num_candidates =
       kMlUrlScoringIncreaseNumCandidates.Get();
+  ml_url_scoring_preserve_default = kMlUrlScoringPreserveDefault.Get();
+  ml_url_scoring_rerank_final_matches_only =
+      kMlUrlscoringRerankFinalMatchesOnly.Get();
   url_scoring_model = base::FeatureList::IsEnabled(omnibox::kUrlScoringModel);
 }
 
@@ -1199,6 +1138,13 @@ const base::FeatureParam<bool> kActionsInSuggestPromoteEntitySuggestion(
     "PromoteEntitySuggestion",
     false);
 // <- Actions In Suggest
+// ---------------------------------------------------------
+// Android UI Revamp ->
+const base::FeatureParam<bool> kOmniboxModernizeVisualUpdateMergeClipboardOnNTP(
+    &omnibox::kOmniboxModernizeVisualUpdate,
+    "modernize_visual_update_merge_clipboard_on_ntp",
+    false);
+// <- Android UI Revamp
 // ---------------------------------------------------------
 
 }  // namespace OmniboxFieldTrial

@@ -104,6 +104,7 @@ static_library("content_shell_app") {
     ]
   }
   if (is_apple) {
+    configs += [ "//build/config/compiler:enable_arc" ]
     sources += [
       "app/paths_mac.h",
       "app/paths_mac.mm",
@@ -120,7 +121,6 @@ static_library("content_shell_app") {
       "app/ios/shell_application_ios.h",
       "app/ios/shell_application_ios.mm",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
   defines = [
     "CONTENT_SHELL_VERSION=\"$content_shell_version\"",
@@ -208,6 +208,7 @@ static_library("content_shell_lib") {
       "browser/shell_platform_delegate_mac.mm",
       "browser/shell_web_contents_view_delegate_mac.mm",
     ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_ios) {
@@ -286,7 +287,6 @@ static_library("content_shell_lib") {
     "//components/variations/service",
     "//components/web_cache/renderer",
     "//content:content_resources",
-    "//content:dev_ui_content_resources",
     "//content/common:main_frame_counter",
     "//content/public/common",
     "//content/test:content_test_mojo_bindings",
@@ -477,10 +477,11 @@ repack("pak") {
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
-    "$root_gen_dir/content/dev_ui_content_resources.pak",
     "$root_gen_dir/content/gpu_resources.pak",
     "$root_gen_dir/content/histograms_resources.pak",
+    "$root_gen_dir/content/process_resources.pak",
     "$root_gen_dir/content/quota_internals_resources.pak",
+    "$root_gen_dir/content/service_worker_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
     "$root_gen_dir/content/test/web_ui_mojo_test_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
@@ -501,7 +502,6 @@ repack("pak") {
     ":resources",
     "//base/tracing/protos:chrome_track_event_resources",
     "//content:content_resources",
-    "//content:dev_ui_content_resources",
     "//content/browser/resources:resources",
     "//content/browser/resources/media:resources",
     "//content/browser/webrtc/resources",

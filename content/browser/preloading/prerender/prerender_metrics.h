@@ -53,13 +53,15 @@ enum class PrerenderCrossOriginRedirectionMismatch {
 class PrerenderCancellationReason {
  public:
   using DetailedReasonVariant =
-      absl::variant<absl::monostate, uint64_t, std::string>;
+      absl::variant<absl::monostate, int32_t, uint64_t, std::string>;
 
   static PrerenderCancellationReason BuildForDisallowActivationState(
       uint64_t disallow_activation_reason);
 
   static PrerenderCancellationReason BuildForMojoBinderPolicy(
       const std::string& interface_name);
+
+  static PrerenderCancellationReason BuildForLoadingError(int32_t error_code);
 
   explicit PrerenderCancellationReason(PrerenderFinalStatus final_status);
   ~PrerenderCancellationReason();
@@ -146,6 +148,13 @@ void RecordPrerenderRedirectionProtocolChange(
 void CONTENT_EXPORT AnalyzePrerenderActivationHeader(
     net::HttpRequestHeaders potential_activation_headers,
     net::HttpRequestHeaders prerender_headers,
+    PrerenderTriggerType trigger_type,
+    const std::string& embedder_histogram_suffix);
+
+// Records ui::PageTransition of prerender activation navigation when transition
+// mismatch happens on prerender activation.
+void RecordPrerenderActivationTransition(
+    int32_t potential_activation_transition,
     PrerenderTriggerType trigger_type,
     const std::string& embedder_histogram_suffix);
 

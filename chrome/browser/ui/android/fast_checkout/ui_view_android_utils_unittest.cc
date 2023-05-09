@@ -15,7 +15,7 @@
 TEST(FastCheckoutUIViewAndroidUtils, CreateFastCheckoutAutofillProfile) {
   autofill::CountryNames::SetLocaleString("en-US");
   JNIEnv* env = base::android::AttachCurrentThread();
-  autofill::AutofillProfile profile = autofill::test::GetVerifiedProfile();
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
 
   base::android::ScopedJavaLocalRef<jobject> scoped_profile =
       CreateFastCheckoutAutofillProfile(env, profile, "en-US");
@@ -26,7 +26,6 @@ TEST(FastCheckoutUIViewAndroidUtils, CreateFastCheckoutAutofillProfile) {
       CreateFastCheckoutAutofillProfileFromJava(env, java_profile, "en-US");
 
   EXPECT_EQ(profile.guid(), parsed_profile->guid());
-  EXPECT_EQ(profile.origin(), parsed_profile->origin());
   EXPECT_EQ(profile.language_code(), parsed_profile->language_code());
 
   const autofill::ServerFieldType types[] = {

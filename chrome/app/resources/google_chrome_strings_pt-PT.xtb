@@ -83,6 +83,7 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="2467438592969358367">O Google Chrome pretende exportar as suas palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2534507159460261402">Google Pay (copiado para o Chrome)</translation>
+<translation id="2556847002339236023">A sua organização fecha o Chrome quando este não é usado durante <ph name="TIMEOUT_DURATION" />. Os dados de navegação foram eliminados. Estes dados podem incluir o histórico, o preenchimento automático e as transferências.</translation>
 <translation id="2559253115192232574">Posteriormente, um site que visitar pode pedir ao Chrome para ver os seus interesses para personalizar os anúncios que vê. O Chrome pode partilhar até 3 interesses.</translation>
 <translation id="2563121210305478421">Reiniciar o Chrome?</translation>
 <translation id="2574930892358684005"><ph name="EXISTING_USER" /> já tem sessão iniciada neste perfil do Chrome. Para manter a sua navegação separada, o Chrome pode criar-lhe o seu próprio perfil.</translation>
@@ -114,6 +115,7 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="2929907241665500097">O Chrome não foi atualizado. Ocorreu um erro. <ph name="BEGIN_LINK" />Corrija problemas de atualização do Chrome e falhas nas atualizações<ph name="END_LINK" />.</translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> – Início de sessão na rede – Chrome</translation>
 <translation id="3019382870990049182">Reiniciar para atualizar o &amp;ChromeOS Flex</translation>
+<translation id="3033660625209020231">{NUM_DEVICES,plural, =0{As extensões do Google Chrome estavam a aceder a dispositivos HID}=1{As extensões do Google Chrome estão a aceder a dispositivos HID}other{As extensões do Google Chrome estão a aceder a # dispositivos HID}}</translation>
 <translation id="303514781271618814">O Chrome está a explorar novas funcionalidades que permitem que os sites forneçam a mesma experiência de navegação com uma menor utilização dos seus dados</translation>
 <translation id="3037838751736561277">O Google Chrome está no modo em segundo plano.</translation>
 <translation id="3038232873781883849">A aguardar a instalação…</translation>
@@ -207,6 +209,7 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
 <translation id="4771048833395599659">Este ficheiro pode ser perigoso. Como tal, o Chrome bloqueou-o.</translation>
 <translation id="479167709087336770">Utiliza o mesmo corretor ortográfico utilizado na Pesquisa Google. O texto que introduzir no navegador é enviado à Google. Pode alterar este comportamento nas definições.</translation>
+<translation id="4828579605166583682">O Google Chrome está a tentar substituir as palavras-passe existentes. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
 <translation id="4842397268809523050">O ChromeOS Flex não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>
 <translation id="4873783916118289636">Reveja os principais controlos de privacidade e segurança no Chrome</translation>
 <translation id="4891791193823137474">Permitir que o Google Chrome seja executado em segundo plano</translation>
@@ -218,6 +221,7 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="4970880042055371251">Versão do ChromeOS</translation>
 <translation id="4970947549776831107">O Chrome bloqueou este ficheiro porque este tipo de ficheiro é perigoso</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
+<translation id="5005958605836556244">{NUM_DEVICES,plural, =0{Uma extensão do Google Chrome estava a aceder a dispositivos HID}=1{Uma extensão do Google Chrome está a aceder a 1 dispositivo HID}other{Uma extensão do Google Chrome está a aceder a # dispositivos HID}}</translation>
 <translation id="5064155331105009416">{COUNT,plural, =1{O administrador fecha automaticamente o Chrome quando não é usado durante 1 minuto. Os dados de navegação são eliminados. Estas informações podem incluir o histórico, o preenchimento automático e as transferências.}other{O administrador fecha automaticamente o Chrome quando não é usado durante # minutos. Os dados de navegação são eliminados. Estas informações podem incluir o histórico, o preenchimento automático e as transferências.}}</translation>
 <translation id="5098668839038261629">Quando está ativado, a sua sessão também é terminada no Chrome</translation>
 <translation id="5132929315877954718">Descubra fantásticas aplicações, jogos, extensões e temas para o Google Chrome.</translation>
@@ -264,6 +268,7 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="6113794647360055231">O Chrome está ainda melhor</translation>
 <translation id="6145313976051292476">Abrir PDFs no Chrome</translation>
 <translation id="6155960517327665396">A Poupança de memória tornou o Chrome mais rápido</translation>
+<translation id="6157638032135951407">A sua organização elimina os dados do Chrome quando este não é usado durante <ph name="TIMEOUT_DURATION" />. Estes dados podem incluir o histórico, o preenchimento automático e as transferências.</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="6173637689840186878"><ph name="PAGE_TITLE" /> – Google Chrome Beta</translation>
 <translation id="6235018212288296708">Regra de importação para o Google Chrome permitir o tráfego mDNS.</translation>
@@ -279,6 +284,7 @@ a sincronização. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LI
 <translation id="6418662306461808273">Mudar para o perfil do Chrome existente?</translation>
 <translation id="648319183876919572">A Navegação segura melhorada faz mais para proteger contra transferências e Websites perigosos</translation>
 <translation id="6493527311031785448">O Google Chrome está a tentar <ph name="AUTHENTICATION_PURPOSE" /></translation>
+<translation id="6497147134301593682">O Chrome foi fechado automaticamente</translation>
 <translation id="6506909944137591434">O Chrome necessita da autorização da câmara para criar um mapa 3D do ambiente à sua volta</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
 <translation id="659498884637196217">No Gestor de palavras-passe da Google neste dispositivo</translation>
@@ -315,6 +321,7 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="7155997830309522122">Em caso afirmativo, edite a sua palavra-passe guardada no Chrome para que corresponda à nova palavra-passe.</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="7177959540995930968">Pode saber mais sobre estas funcionalidades nas definições do Chrome.</translation>
+<translation id="7193885263065350793">A sua organização fecha o Chrome quando este não é usado durante <ph name="TIMEOUT_DURATION" />.</translation>
 <translation id="7242029209006116544">Está a iniciar sessão com uma conta gerida e a permitir que o gestor controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chrome em separado. <ph name="LEARN_MORE" /></translation>
 <translation id="7295052994004373688">Este idioma é utilizado para apresentar a IU do Google Chrome</translation>
 <translation id="7296210096911315575">Informações de utilização e segurança importantes</translation>
@@ -411,7 +418,6 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="9054037008353851982">Reiniciar para atualizar: os separadores vão ser reabertos</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
 <translation id="9138603949443464873">Para aplicar as alterações, reinicie o Chrome.</translation>
-<translation id="9190003950176692491">{NUM_DEVICES,plural, =0{O Google Chrome estava a aceder a um dispositivo HID}=1{O Google Chrome está a aceder a um dispositivo HID}other{O Google Chrome está a aceder a dispositivos HID}}</translation>
 <translation id="9195993889682885387">O Chrome pode estimar os seus interesses com base no seu histórico de navegação das últimas semanas. Estas informações ficam no seu dispositivo.</translation>
 <translation id="919706545465235479">Atualize o Chrome para iniciar a sincronização</translation>
 <translation id="922152298093051471">Personalizar o Chrome</translation>

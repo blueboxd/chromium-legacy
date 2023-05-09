@@ -30,7 +30,6 @@
 <translation id="1145536944570833626">Видалити наявні дані.</translation>
 <translation id="1149401351239820326">Місяць закінчення терміну дії</translation>
 <translation id="1150263420752757504">Додаток <ph name="APP_NAME" /> відкриється в Chrome. Продовжуючи, ви приймаєте <ph name="BEGIN_LINK1" />Загальні положення та умови Google<ph name="END_LINK1" /> і <ph name="BEGIN_LINK2" />Додаткові умови використання Google Chrome та ОС Chrome<ph name="END_LINK2" />.</translation>
-<translation id="1154704303112745282">Сторінка недоступна в режимі офлайн: <ph name="VIOLATED_URL" /></translation>
 <translation id="1173894706177603556">Перейменувати</translation>
 <translation id="1177863135347784049">Спеціальне</translation>
 <translation id="1181037720776840403">Видалити</translation>
@@ -120,6 +119,7 @@
 <translation id="1571304935088121812">Копіювати ім’я користувача</translation>
 <translation id="1592864538817356322">Стандартний захист:</translation>
 <translation id="1594635596540195766">У списку нижче запропоновано стільки пропозицій: <ph name="SUGGESTIONS_COUNT" />.</translation>
+<translation id="1598163867407640634">Використовуйте сайт <ph name="SITE_ETLD_PLUS_ONE" />, увійшовши в обліковий запис <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Як ви можете керувати своїми даними.<ph name="END_BOLD" /> З міркувань конфіденційності ми автоматично видаляємо ваші інтереси через 4 тижні. Якщо ви й надалі переглядатимете веб-сторінки, відповідний інтерес може знову з’явитися в списку. Щоб Chrome не враховував певні інтереси, їх можна вилучити.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Вилучити 1 вибраний елемент}one{Вилучити # вибраний елемент}few{Вилучити # вибрані елементи}many{Вилучити # вибраних елементів}other{Вилучити # вибраного елемента}}</translation>
 <translation id="1633659023549081553">Переглядайте новий контент на головній сторінці Chrome</translation>
@@ -150,6 +150,7 @@
 <translation id="1810845389119482123">Початкове налаштування синхронізації не завершено</translation>
 <translation id="1829244130665387512">Знайти на сторінці</translation>
 <translation id="1832459821645506983">Гаразд</translation>
+<translation id="185383612275551373">Увімкніть синхронізацію, щоб отримувати найактуальніший контент від Google</translation>
 <translation id="1854311313115643875">Якщо пробні версії функцій увімкнено, відвідувані вами сайти можуть запитувати в Chrome інформацію, яка допомагає їм вимірювати ефективність реклами. Функція оцінки ефективності реклами обмежує міжсайтове відстеження, передаючи між сайтами мінімум даних.
 
 Коли ви видаляєте історію веб-перегляду (повністю або для певного сайту), також вилучається інформація для вимірювання ефективності. Перегляньте <ph name="BEGIN_LINK" />історію веб-перегляду<ph name="END_LINK" />.</translation>
@@ -241,7 +242,6 @@
 <translation id="2386938421315164605">Ховайте й показуйте теми</translation>
 <translation id="2390510615457643724">Завантажити файл "<ph name="FILE_NAME" />" (<ph name="FILE_SIZE" />) знову?</translation>
 <translation id="2394602618534698961">Завантажені файли з’являться тут</translation>
-<translation id="2407481962792080328">Ця функція вмикається, коли ви входите в обліковий запис Google</translation>
 <translation id="2410754283952462441">Виберіть обліковий запис</translation>
 <translation id="2414886740292270097">Темна</translation>
 <translation id="2426805022920575512">Вибрати інший обліковий запис</translation>
@@ -298,6 +298,7 @@
 <translation id="265156376773362237">Звичайне попереднє завантаження</translation>
 <translation id="2656405586795711023">Веб-додатки</translation>
 <translation id="2669454659051515572">Усі користувачі цього пристрою можуть бачити завантажені файли</translation>
+<translation id="2688382350024736268">Тепер веб-переглядач Chrome надає сайтам і додаткам доступ лише до певних типів даних (наприклад, інформацію про те, коли вам показувалось оголошення), на основі яких вимірюється ефективність реклами.</translation>
 <translation id="2702516483241149200">Новинка! Діліться посиланням, яке прокручує сторінку до цього тексту</translation>
 <translation id="2707726405694321444">Оновити сторінку</translation>
 <translation id="271033894570825754">Новий</translation>
@@ -386,7 +387,6 @@
 <translation id="3091010850649238832">Показати вміст буфера обміну</translation>
 <translation id="3098745985164956033">Деякі зображення надсилаються на сервери Google, що дає змогу покращувати їх описи</translation>
 <translation id="3114507951000454849">Читайте сьогоднішні новини <ph name="NEWS_ICON" /></translation>
-<translation id="311958134571892113">зв’язано з</translation>
 <translation id="3123734510202723619">Оголошення</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Головна сторінка Chrome</translation>
@@ -546,6 +546,7 @@
 <translation id="4034817413553209278">{HOURS,plural, =1{# год}one{# год}few{# год}many{# год}other{# год}}</translation>
 <translation id="4035877632587724847">Не дозволяти</translation>
 <translation id="4036177530563778041">Продовжуйте роботу з місця, де ви зупинилися</translation>
+<translation id="4042941173059740150">Продовжте використовувати обліковий запис <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> на сайті <ph name="SITE_ETLD_PLUS_ONE" /></translation>
 <translation id="4045764304651014138">Дані про використання</translation>
 <translation id="405399507749852140">Отримувати сповіщення, коли на якомусь сайті знизиться ціна</translation>
 <translation id="4056223980640387499">Сепія</translation>
@@ -692,7 +693,6 @@
 Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте параметри синхронізації<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Ім'я на картці</translation>
 <translation id="481574578487123132">Зв’язані пристрої</translation>
-<translation id="4818017973810341238">Не вдалося підтвердити Digital Asset Links на сторінці <ph name="VIOLATED_URL" /></translation>
 <translation id="4826163340425232009">Нижній екран для входу.</translation>
 <translation id="4831037795716408498">Як завантажити контент</translation>
 <translation id="4834007576107377210">Перегляньте вказівки пошукової системи щодо того, як видалити історію пошуку (якщо вона є)</translation>
@@ -785,7 +785,6 @@
 <translation id="5235196193381275927">Під час входу сталася помилка</translation>
 <translation id="5246093389635966745">Змінити кнопку на панелі інструментів</translation>
 <translation id="5271967389191913893">Вміст, який ви хочете завантажити, не можна відкрити на цьому пристрої.</translation>
-<translation id="5274286919938458946">Зв’язано з карткою <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Кому надіслати:</translation>
 <translation id="5300426565656326054">Персоналізація реклами на основі дій у веб-переглядачі</translation>
 <translation id="5304593522240415983">Це поле не може бути порожнім</translation>
@@ -847,6 +846,7 @@
 <translation id="562289928968387744">Керувати реакціями</translation>
 <translation id="5626134646977739690">Ім'я:</translation>
 <translation id="5628604359369369630">Непрочитано: доступно в режимі офлайн</translation>
+<translation id="5635091213277904818">Chrome автоматично видаляє сайти через 30 днів. Якщо ви повторно відвідаєте видалений сайт, він може знову з’явитися в списку. Ви також можете заборонити сайту пропонувати вам оголошення.</translation>
 <translation id="5639724618331995626">Дозволити всі сайти</translation>
 <translation id="5641456720590409793"><ph name="BEGIN_LINK1" />Історія пошуку<ph name="END_LINK1" /> й <ph name="BEGIN_LINK2" />дані про інші дії<ph name="END_LINK2" /> можуть зберігатися в обліковому записі Google</translation>
 <translation id="564667659802381754">Посібник із конфіденційності <ph name="BEGIN_NEW" />Новинка<ph name="END_NEW" /></translation>
@@ -888,7 +888,6 @@
 <translation id="5833984609253377421">Поділитися посиланням</translation>
 <translation id="5834764604050996579">Щоб зісканувати QR-код, надайте Chrome доступ до камери</translation>
 <translation id="5839058148541733625">Chrome Dino</translation>
-<translation id="5842437907245493289">Впорядковуйте відстежувані товари в закладках через значок папки</translation>
 <translation id="5853623416121554550">призупинено</translation>
 <translation id="5854512288214985237">Компанія Google не отримуватиме статистику та звіти про аварійне завершення роботи</translation>
 <translation id="5855546874025048181">Уточнити: <ph name="REFINE_TEXT" /></translation>
@@ -990,7 +989,6 @@
 <translation id="6395288395575013217">ПОСИЛАННЯ</translation>
 <translation id="6397616442223433927">З'єднання відновлено</translation>
 <translation id="6401458660421980302">Щоб надіслати цю вкладку на інший пристрій, увійдіть на ньому в Chrome</translation>
-<translation id="6402652558933147609">Помилка <ph name="ERROR_CODE" /> на сторінці <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Редагувати закладку</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="6407224748847589805">Не вдається підключитися до комп'ютера. Виберіть інший варіант підтвердження.</translation>
@@ -1173,6 +1171,7 @@
 <translation id="7291910923717764901">Додано описи зображень для цієї сторінки</translation>
 <translation id="7293429513719260019">Вибрати мову</translation>
 <translation id="729975465115245577">На пристрої немає додатка для зберігання файлу з паролями.</translation>
+<translation id="7304072650267745798">На вашому пристрої Android може бути схоже налаштування. Якщо це налаштування ввімкнено в Chrome і на пристрої Android, компанії можуть визначати ефективність своїх оголошень на відвіданих вами веб-сайтах і в додатках, якими ви користуєтеся.</translation>
 <translation id="7304873321153398381">Офлайн. Chrome не може перевірити паролі.</translation>
 <translation id="7313188324932846546">Натисніть, щоб налаштувати синхронізацію</translation>
 <translation id="7332075081379534664">Вхід виконано</translation>
@@ -1212,6 +1211,7 @@
 <translation id="7482656565088326534">Вкладка "Попередній перегляд"</translation>
 <translation id="7484997419527351112">Рекомендації вимкнено</translation>
 <translation id="7485033510383818941">Щоб оновити контент фіду, потягніть сторінку</translation>
+<translation id="7486953194485875763">Дані за останні 15 хвилин, які наведено нижче, буде видалено.</translation>
 <translation id="749294055653435199">Google Об’єктив недоступний на цьому пристрої</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (оновлено: <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7497755084107113646">Тему повторно додано до списку потенційних</translation>
@@ -1254,6 +1254,7 @@
 <translation id="7682724950699840886">Порада. Переконайтеся, що на пристрої достатньо вільного місця та спробуйте експортувати дані знову.</translation>
 <translation id="7686086654630106285">Докладніше про рекламу, пропоновану сайтами</translation>
 <translation id="768618399695552958">Деякі сторінки, які ви відвідуєте, попередньо завантажені. Сторінки можуть попередньо завантажуватися через сервери Google, коли вони зв’язані через сайт Google.</translation>
+<translation id="7690596512217303514">Не вдалося відкрити Chrome на цьому пристрої. Щоб усунути проблему, завантажте останню версію Chrome із магазину додатків.</translation>
 <translation id="7691043218961417207">Ознайомтеся з контентом, на який можна підписатися</translation>
 <translation id="7697383401610880082">Маркер переміщення</translation>
 <translation id="7698359219371678927">Створити електронну адресу в додатку <ph name="APP_NAME" /></translation>
@@ -1262,6 +1263,7 @@
 <translation id="7709918231054955894">Переглядайте всі свої вкладки</translation>
 <translation id="772434085369393266">Увесь трафік переходить на HTTPS, а ви отримуєте сповіщення перед завантаженням сайтів, які не підтримують цей протокол. Ви не можете змінити це налаштування, оскільки ввімкнули Додатковий захист.</translation>
 <translation id="7725024127233776428">Сторінки, для яких ви робите закладки, з'являються тут</translation>
+<translation id="7733878270780732638">На пристрої недостатньо місця.</translation>
 <translation id="7757787379047923882">Текст, надісланий із пристрою <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Карта SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Додати адресу</translation>
@@ -1364,6 +1366,7 @@
 <translation id="8209050860603202033">Відкрити зображення</translation>
 <translation id="8216351761227087153">Дивитися</translation>
 <translation id="8218622182176210845">Керувати обліковим записом</translation>
+<translation id="8221401890884589479">Ви можете блокувати непотрібні вам сайти. Chrome також автоматично видаляє їх зі списку через 30 днів. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="8223642481677794647">Меню картки зі стрічки</translation>
 <translation id="8236097722223016103">Додати до закладок</translation>
 <translation id="8250920743982581267">Документи</translation>
@@ -1455,6 +1458,7 @@
 <translation id="8664215986015753476">Налаштуйте Chrome на свій смак</translation>
 <translation id="8664979001105139458">Файл із такою назвою вже існує</translation>
 <translation id="8666759526542103597">Про персоналізацію реклами на основі даних веб-переглядача</translation>
+<translation id="8676276370198826499">Зареєструйтеся на сайті <ph name="SITE_ETLD_PLUS_ONE" />, використовуючи обліковий запис <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="8676789164135894283">Підтвердження входу</translation>
 <translation id="8683039184091909753">зображення</translation>
 <translation id="869891660844655955">Діє до</translation>
@@ -1548,7 +1552,6 @@
 <translation id="9158770349521403363">Поділитися лише контентом</translation>
 <translation id="9159716826369098114">Відновити групу вкладок (<ph name="TAB_COUNT" />) як нову фонову групу вкладок.</translation>
 <translation id="9169507124922466868">Історію навігації відкрито на половину висоти</translation>
-<translation id="9183331776983279456">Chrome автоматично видаляє сайти через 4 тижні. Якщо ви знову відвідаєте видалений сайт, він може повторно з’явитися в списку. Ви також можете заборонити сайту пропонувати вам оголошення.</translation>
 <translation id="9190276265094487094">Історія зберігатиметься на всіх синхронізованих пристроях, щоб ви могли продовжувати робити те, на чому зупинилися</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Перевірено 1 хвилину тому}one{Перевірено # хвилину тому}few{Перевірено # хвилини тому}many{Перевірено # хвилин тому}other{Перевірено # хвилини тому}}</translation>
 <translation id="9204836675896933765">Залишився 1 файл</translation>
@@ -1570,7 +1573,6 @@
 <translation id="96681097142096641">Переглянути спрощену сторінку?</translation>
 <translation id="968900484120156207">Відвідані сторінки з'являються тут</translation>
 <translation id="970715775301869095">Залишилося <ph name="MINUTES" /> хв</translation>
-<translation id="978317418833355355">Ви можете блокувати непотрібні вам сайти. Chrome також автоматично видаляє їх зі списку через 4 тижні. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="983192555821071799">Закрити всі вкладки</translation>
 <translation id="987264212798334818">Загальне</translation>

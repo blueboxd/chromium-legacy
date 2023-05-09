@@ -43,10 +43,10 @@
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/nigori/cryptographer_impl.h"
-#include "components/sync/test/fake_security_domains_server.h"
 #include "components/sync/test/fake_server_nigori_helper.h"
 #include "components/sync/test/nigori_test_utils.h"
 #include "components/trusted_vault/securebox.h"
+#include "components/trusted_vault/test/fake_security_domains_server.h"
 #include "components/trusted_vault/trusted_vault_connection.h"
 #include "components/trusted_vault/trusted_vault_server_constants.h"
 #include "content/public/test/browser_test.h"
@@ -1274,7 +1274,18 @@ IN_PROC_BROWSER_TEST_F(
       GetFakeServer());
 
   base::HistogramTester histogram_tester;
+
+  // The manual sequence below, instead of invoking SetupSync() manually,
+  // reproduces a more realistic case of the first-time turn-sync-on experience,
+  // with a temporary stage where the user is signed in without sync-the-feature
+  // being enabled. Except on Ash where the two steps happen at once.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_TRUE(SetupSync());
+
   ASSERT_TRUE(GetSyncService(0)
                   ->GetUserSettings()
                   ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
@@ -1300,7 +1311,7 @@ IN_PROC_BROWSER_TEST_F(
       "Sync.TrustedVaultErrorShownOnStartup.MigratedLastDay",
       /*count=*/0);
   histogram_tester.ExpectUniqueSample(
-      "Sync.TrustedVaultErrorShownOnFirstTimeSync",
+      "Sync.TrustedVaultErrorShownOnFirstTimeSync2",
       /*sample=*/true,
       /*expected_bucket_count=*/1);
 }

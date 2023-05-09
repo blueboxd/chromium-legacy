@@ -28,7 +28,6 @@
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "components/webapps/browser/features.h"
-#include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/webapps_client.h"
@@ -170,19 +169,10 @@ void AppBannerManagerAndroid::PerformInstallableWebAppCheck() {
   AppBannerManager::PerformInstallableWebAppCheck();
 }
 
-void AppBannerManagerAndroid::PerformWorkerCheckForAmbientBadge() {
-  manager()->GetData(
-      ParamsToPerformWorkerCheck(),
-      base::BindOnce(
-          &AppBannerManagerAndroid::OnDidPerformWorkerCheckForAmbientBadge,
-          weak_factory_.GetWeakPtr()));
-}
-
-void AppBannerManagerAndroid::OnDidPerformWorkerCheckForAmbientBadge(
-    const InstallableData& data) {
-  if (ambient_badge_manager_) {
-    ambient_badge_manager_->OnWorkerCheckResult(data);
-  }
+void AppBannerManagerAndroid::PerformWorkerCheckForAmbientBadge(
+    InstallableParams params,
+    InstallableCallback callback) {
+  manager()->GetData(params, std::move(callback));
 }
 
 void AppBannerManagerAndroid::ResetCurrentPageData() {
@@ -528,17 +518,6 @@ void AppBannerManagerAndroid::Install(
                                     std::move(a2hs_event_callback));
 }
 
-void AppBannerManagerAndroid::MaybeShowAmbientBadge() {
-  ambient_badge_manager_ = std::make_unique<AmbientBadgeManager>(
-      web_contents(), GetAndroidWeakPtr());
-  ambient_badge_manager_->MaybeShow(
-      validated_url_, GetAppName(),
-      CreateAddToHomescreenParams(InstallableMetrics::GetInstallSource(
-          web_contents(), InstallTrigger::AMBIENT_BADGE)),
-      base::BindOnce(&AppBannerManagerAndroid::ShowBannerFromBadge,
-                     AppBannerManagerAndroid::GetAndroidWeakPtr()));
-}
-
 bool AppBannerManagerAndroid::IsSupportedNonWebAppPlatform(
     const std::u16string& platform) const {
   return base::EqualsASCII(platform, kPlatformPlay);
@@ -562,8 +541,8 @@ bool AppBannerManagerAndroid::IsWebAppConsideredInstalled() const {
   // one is in flight for the current site.
   return WebappsUtils::IsWebApkInstalled(web_contents()->GetBrowserContext(),
                                          manifest().start_url) ||
-         WebappsClient::Get()->IsInstallationInProgress(
-             web_contents(), manifest_url_, manifest_id_);
+         WebappsClient::Get()->IsInstallationInProgress(web_contents(),
+                                                        manifest_id_);
 }
 
 void AppBannerManagerAndroid::RecordExtraMetricsForInstallEvent(

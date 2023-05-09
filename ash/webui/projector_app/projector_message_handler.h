@@ -8,9 +8,7 @@
 #include <memory>
 
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
-#include "ash/webui/projector_app/projector_app_client.h"
 #include "ash/webui/projector_app/projector_oauth_token_fetcher.h"
-#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -19,8 +17,6 @@
 namespace signin {
 struct AccessTokenInfo;
 }  // namespace signin
-
-class PrefService;
 
 namespace ash {
 
@@ -35,10 +31,9 @@ enum class ProjectorError {
 };
 
 // Handles messages from the Projector WebUIs (i.e. chrome://projector).
-class ProjectorMessageHandler : public content::WebUIMessageHandler,
-                                public ProjectorAppClient::Observer {
+class ProjectorMessageHandler : public content::WebUIMessageHandler {
  public:
-  explicit ProjectorMessageHandler(PrefService* pref_service);
+  ProjectorMessageHandler();
   ProjectorMessageHandler(const ProjectorMessageHandler&) = delete;
   ProjectorMessageHandler& operator=(const ProjectorMessageHandler&) = delete;
   ~ProjectorMessageHandler() override;
@@ -48,12 +43,6 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler:
   // TODO(b/237337607): chrome.send() is banned on ash. Migrate to Mojo instead.
   void RegisterMessages() override;
-
-  // ProjectorAppClient::Observer:
-  // Notifies the Projector SWA the pending screencasts' state change and
-  // updates the pending list in Projector SWA.
-  void OnScreencastsPendingStatusChanged(
-      const PendingScreencastSet& pending_screencast) override;
 
   void set_web_ui_for_test(content::WebUI* web_ui) { set_web_ui(web_ui); }
 
@@ -85,15 +74,6 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
   // Called by the Projector SWA when an error occurred.
   void OnError(const base::Value::List& args);
 
-  // Requested by the Projector SWA to get access to a particular user pref.
-  void GetUserPref(const base::Value::List& args);
-
-  // Requested by the Projector SWA to set the value of a user pref.
-  void SetUserPref(const base::Value::List& args);
-
-  // Requested by the Projector SWA to open the Chrome feedback dialog.
-  void OpenFeedbackDialog(const base::Value::List& args);
-
   // Called when OAuth token fetch request is completed by
   // ProjectorOAuthTokenFetcher. Resolves the javascript promise created by
   // ProjectorBrowserProxy.getOAuthTokenForAccount by calling the
@@ -102,10 +82,6 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
                                      const std::string& email,
                                      GoogleServiceAuthError error,
                                      const signin::AccessTokenInfo& info);
-
-  // Requested by the Projector SWA to fetch a list of screencasts pending to
-  // upload or failed to upload.
-  void GetPendingScreencasts(const base::Value::List& args);
 
   // Requested by the Projector SWA to fetch a single video from DriveFS with
   // the Drive item id specified by `args`.
@@ -120,9 +96,6 @@ class ProjectorMessageHandler : public content::WebUIMessageHandler,
 
   ProjectorOAuthTokenFetcher oauth_token_fetcher_;
   std::unique_ptr<ProjectorXhrSender> xhr_sender_;
-
-  // Primary user pref service.
-  const raw_ptr<PrefService, ExperimentalAsh> pref_service_;
 
   base::WeakPtrFactory<ProjectorMessageHandler> weak_ptr_factory_{this};
 };

@@ -11,7 +11,6 @@
 
 #include "ash/ambient/ambient_access_token_controller.h"
 #include "ash/ambient/ambient_controller.h"
-#include "ash/ambient/test/test_ambient_client.h"
 #include "ash/ambient/ui/ambient_animation_view.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_info_view.h"
@@ -23,7 +22,7 @@
 #include "ash/test/test_ash_web_view_factory.h"
 #include "base/functional/callback.h"
 #include "base/time/time.h"
-#include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
+#include "chromeos/ash/components/login/auth/auth_events_recorder.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -41,6 +40,15 @@ class AmbientPhotoController;
 class AmbientUiSettings;
 class FakeAmbientBackendControllerImpl;
 class MediaStringView;
+class ScreensaverImagesPolicyHandler;
+
+namespace {
+
+// The default factor to multiply ambient timeouts by. Slightly greater than 1
+// to reduce flakiness by making sure the timeouts have expired.
+inline constexpr float kDefaultFastForwardFactor = 1.001;
+
+}  // namespace
 
 // The base class to test the Ambient Mode in Ash.
 class AmbientAshTestBase : public AshTestBase {
@@ -74,7 +82,7 @@ class AmbientAshTestBase : public AshTestBase {
   void DisableJitter();
 
   // Creates ambient screen in its own widget.
-  void ShowAmbientScreen();
+  void SetAmbientShownAndWaitForWidgets();
 
   // Hides ambient screen. Can only be called after |ShowAmbientScreen| has been
   // called.
@@ -135,22 +143,26 @@ class AmbientAshTestBase : public AshTestBase {
   void SetPhotoTopicType(::ambient::TopicType topic_type);
 
   // Advance the task environment timer to expire the lock screen inactivity
-  // timer.
-  void FastForwardToLockScreenTimeout();
+  // timer, scaled by `factor`.
+  void FastForwardByLockScreenInactivityTimeout(
+      float factor = kDefaultFastForwardFactor);
 
-  // Advance the task environment timer to load the next photo.
-  void FastForwardToNextImage();
+  // Advance the task environment timer to load the next photo, scaled by
+  // `factor`.
+  void FastForwardByPhotoRefreshInterval(
+      float factor = kDefaultFastForwardFactor);
 
   // Advance the task environment timer a tiny amount. This is intended to
   // trigger any pending async operations.
   void FastForwardTiny();
 
   // Advance the task environment timer to load the weather info.
-  void FastForwardToRefreshWeather();
+  void FastForwardByWeatherRefreshInterval();
 
-  // Advance the task environment timer to ambient mode lock screen delay.
-  void FastForwardToBackgroundLockScreenTimeout();
-  void FastForwardHalfLockScreenDelay();
+  // Advance the task environment timer to ambient mode lock screen delay,
+  // scaled by `factor`.
+  void FastForwardByBackgroundLockScreenTimeout(
+      float factor = kDefaultFastForwardFactor);
 
   void SetPowerStateCharging();
   void SetPowerStateDischarging();
@@ -193,6 +205,8 @@ class AmbientAshTestBase : public AshTestBase {
 
   AmbientManagedPhotoController* managed_photo_controller();
 
+  ScreensaverImagesPolicyHandler* managed_policy_handler();
+
   AmbientPhotoCache* photo_cache();
 
   AmbientWeatherController* weather_controller();
@@ -232,7 +246,7 @@ class AmbientAshTestBase : public AshTestBase {
 
   void SetScreenSaverDuration(int minutes);
 
-  absl::optional<int> GetScreenSaverDuration();
+  int GetScreenSaverDuration();
 
  private:
   void SpinWaitForAmbientViewAvailable(
@@ -242,7 +256,7 @@ class AmbientAshTestBase : public AshTestBase {
   std::unique_ptr<views::Widget> widget_;
   power_manager::PowerSupplyProperties proto_;
   TestImageDownloader image_downloader_;
-  std::unique_ptr<ash::AuthMetricsRecorder> recorder_;
+  std::unique_ptr<ash::AuthEventsRecorder> recorder_;
 };
 
 }  // namespace ash

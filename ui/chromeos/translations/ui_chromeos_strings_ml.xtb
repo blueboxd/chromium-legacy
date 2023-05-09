@@ -34,7 +34,7 @@
 <translation id="1272293450992660632">പിൻ മൂല്യങ്ങൾ പൊരുത്തപ്പെടുന്നില്ല.</translation>
 <translation id="1280820357415527819">മൊബൈൽ നെറ്റ്‌വർക്കുകൾ തിരയുന്നു</translation>
 <translation id="1293556467332435079">Files</translation>
-<translation id="1297922636971898492">Google ഡ്രൈവ് ഇപ്പോൾ ലഭ്യമല്ല. ലഭ്യമായിക്കഴിഞ്ഞാൽ, അപ്‌ലോഡ് ചെയ്യുന്നത് സ്വമേധയാ പുനരാരംഭിക്കും.</translation>
+<translation id="1297922636971898492">Google ഡ്രൈവ് ഇപ്പോൾ ലഭ്യമല്ല. ലഭ്യമായിക്കഴിഞ്ഞാൽ, അപ്‌ലോഡ് ചെയ്യുന്നത് സ്വയമേവ പുനരാരംഭിക്കും.</translation>
 <translation id="1307931752636661898">Linux ഫയലുകൾ കാണാനാവുന്നില്ല</translation>
 <translation id="1313405956111467313">സ്വയമേവയുള്ള പ്രോക്സി ക്രമീകരണം</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
@@ -791,6 +791,7 @@
 <translation id="7252604552361840748">മുകളിലുള്ള വിപുലീകരണം കണ്ടെത്തുക</translation>
 <translation id="7256405249507348194">തിരിച്ചറിയാനാകാത്ത പിശക്: <ph name="DESC" /></translation>
 <translation id="7268659760406822741">ലഭ്യമായ സേവനങ്ങൾ</translation>
+<translation id="7291818353625820805">കീകൾ ആവർത്തിക്കണോ? കീബോർഡ് ക്രമീകരണത്തിൽ പോയി ആക്‌സന്റ് അടയാളങ്ങൾ ഓഫാക്കുക</translation>
 <translation id="7292816689782057017">അഡ്‌മിൻ നയം കാരണം, ചില ലൊക്കേഷനുകളിൽ സംരക്ഷിക്കുന്നത് നിയന്ത്രിച്ചിരിക്കുന്നു.</translation>
 <translation id="7294063083760278948">തെലുങ്ക് ലിപ്യന്തരണം</translation>
 <translation id="7295662345261934369">മറ്റുള്ളവരുമായി പങ്കിടുക</translation>
@@ -809,7 +810,7 @@
 <translation id="7419668828140929293">"<ph name="FILENAME" />" പുനഃസ്ഥാപിക്കുന്നു</translation>
 <translation id="7458955835361612701">അടുത്തിടെയുള്ള ചിത്രങ്ങളൊന്നുമില്ല</translation>
 <translation id="7460898608667578234">ഉക്രേനിയന്‍</translation>
-<translation id="7469894403370665791">ഈ നെറ്റ്‍വര്‍ക്കിലേക്ക് സ്വപ്രേരിതമായി ബന്ധിപ്പിക്കുന്നു</translation>
+<translation id="7469894403370665791">ഈ നെറ്റ്‍വര്‍ക്കിലേക്ക് സ്വയമേവ ബന്ധിപ്പിക്കുന്നു</translation>
 <translation id="7486315294984620427">Parallels Desktop-ലേക്ക് ഫയലുകൾ ചേർക്കാൻ അവയെ Windows ഫയലുകൾ എന്ന ഫോൾഡറിലേക്ക് പകർത്തണം.</translation>
 <translation id="749452993132003881">ഹിരാഗാന</translation>
 <translation id="7495372004724182530">മലയാള ഉച്ചാരണശബ്‌ദം</translation>

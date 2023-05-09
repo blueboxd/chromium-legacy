@@ -1537,8 +1537,7 @@ export class DirectoryModel extends EventTarget {
         return new ContentScanner();
       };
     }
-    if (util.isTrashEnabled() &&
-        entry.rootType == VolumeManagerCommon.RootType.TRASH) {
+    if (entry.rootType == VolumeManagerCommon.RootType.TRASH) {
       return () => {
         return new TrashContentScanner(this.volumeManager_);
       };
@@ -1686,8 +1685,7 @@ export class DirectoryModel extends EventTarget {
         onSearchRescan(...args);
 
         // Notify the store-aware parts.
-        this.store_.dispatch(
-            updateSearch({query: query, status: PropStatus.SUCCESS}));
+        this.store_.dispatch(updateSearch({status: PropStatus.SUCCESS}));
       };
       this.addEventListener('scan-completed', this.onSearchCompleted_);
       this.clearAndScan_(newDirContents, callback);

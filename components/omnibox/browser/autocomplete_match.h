@@ -16,6 +16,7 @@
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/ranges/ranges.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/actions/omnibox_action_concepts.h"
@@ -581,17 +582,21 @@ struct AutocompleteMatch {
   // Serialise this object into a trace.
   void WriteIntoTrace(perfetto::TracedValue context) const;
 
-  // Matches with actions usually have just one. Even with more, one of them
-  // is usually first and most significant; an action that takes over the
-  // whole match, for example. This method returns the foremost action, if it
-  // exists, and nullptr otherwise.
-  OmniboxAction* GetPrimaryAction() const;
+  // Returns the action at `index`, or nullptr if `index` is out of bounds.
+  OmniboxAction* GetActionAt(size_t index) const;
 
-  // Finds first action where predicate returns true. This is a special use
+  // Returns if `predicate` returns true for the match or one of its duplicates.
+  template <typename UnaryPredicate>
+  bool MatchOrDuplicateMeets(UnaryPredicate predicate) const {
+    return predicate(*this) ||
+           base::ranges::any_of(duplicate_matches, std::move(predicate));
+  }
+
+  // Finds first action where `predicate` returns true. This is a special use
   // utility method for situations where actions with certain constraints
   // need to be selected. If no such action is found, returns nullptr.
-  template <typename Predicate>
-  OmniboxAction* GetActionWhere(Predicate predicate) const {
+  template <typename UnaryPredicate>
+  OmniboxAction* GetActionWhere(UnaryPredicate predicate) const {
     auto it = base::ranges::find_if(actions, std::move(predicate));
     return it != actions.end() ? it->get() : nullptr;
   }
@@ -777,8 +782,13 @@ struct AutocompleteMatch {
   // Set in matches originating from keyword results.
   bool from_keyword = false;
 
-  // Contains one or more actions relevant to this match.
+  // The visible actions relevant to this match.
   std::vector<scoped_refptr<OmniboxAction>> actions;
+
+  // An optional invisible action that takes over the match navigation. That is:
+  // if provided, when the user selects the match, the navigation is ignored and
+  // this action is executed instead.
+  scoped_refptr<OmniboxAction> takeover_action;
 
   // True if this match is from a previous result.
   bool from_previous = false;

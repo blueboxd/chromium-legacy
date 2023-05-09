@@ -111,7 +111,7 @@ class GLTextureIOSurfaceRepresentation
   GLenum mode_ = 0;
 };
 
-// Skia representation for both GLTextureImageBackingHelper.
+// Skia Ganesh representation for both GLTextureImageBackingHelper.
 class SkiaIOSurfaceRepresentation : public SkiaGaneshImageRepresentation {
  public:
   SkiaIOSurfaceRepresentation(
@@ -127,7 +127,7 @@ class SkiaIOSurfaceRepresentation : public SkiaGaneshImageRepresentation {
       base::RepeatingClosure begin_read_access_callback);
 
  private:
-  // SkiaImageRepresentation:
+  // SkiaGaneshImageRepresentation:
   std::vector<sk_sp<SkSurface>> BeginWriteAccess(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
@@ -258,6 +258,8 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   std::vector<std::unique_ptr<SharedEventAndSignalValue>> TakeSharedEvents();
 
  private:
+  class SkiaGraphiteIOSurfaceRepresentation;
+
   // SharedImageBacking:
   base::trace_event::MemoryAllocatorDump* OnMemoryDump(
       const std::string& dump_name,
@@ -286,6 +288,10 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
+  std::unique_ptr<SkiaGraphiteImageRepresentation> ProduceSkiaGraphite(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
   void SetPurgeable(bool purgeable) override;
   bool IsPurgeable() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
@@ -300,6 +306,12 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   void IOSurfaceBackingEGLStateBeingDestroyed(
       IOSurfaceBackingEGLState* egl_state,
       bool have_context) override;
+
+  // Updates the read and write accesses tracker variables on BeginAccess and
+  // waits on `release_fence_` if fence is not null.
+  void HandleBeginAccessSync(bool readonly);
+  // Updates the read and write accesses tracker variables on EndAccess.
+  void HandleEndAccessSync(bool readonly);
 
   bool IsPassthrough() const { return true; }
 

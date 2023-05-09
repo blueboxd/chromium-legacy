@@ -23,13 +23,10 @@ class CONTENT_EXPORT PrerendererImpl : public Prerenderer, WebContentsObserver {
   void PrimaryPageChanged(Page& page) override;
 
   void ProcessCandidatesForPrerender(
-      const base::UnguessableToken& initiator_devtools_navigation_token,
       const std::vector<blink::mojom::SpeculationCandidatePtr>& candidates)
       override;
 
   bool MaybePrerender(
-      const absl::optional<base::UnguessableToken>&
-          initiator_devtools_navigation_token,
       const blink::mojom::SpeculationCandidatePtr& candidate) override;
 
   bool ShouldWaitForPrerenderResult(const GURL& url) override;
@@ -37,8 +34,6 @@ class CONTENT_EXPORT PrerendererImpl : public Prerenderer, WebContentsObserver {
  private:
   void CancelStartedPrerenders();
 
-  // TODO(https://crbug.com/1197133): Cancel started prerenders when candidates
-  // are updated.
   // This is kept sorted by URL.
   struct PrerenderInfo;
   std::vector<PrerenderInfo> started_prerenders_;

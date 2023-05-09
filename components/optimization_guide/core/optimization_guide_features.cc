@@ -143,12 +143,6 @@ BASE_FEATURE(kPageEntitiesModelResetOnShutdown,
              "PageEntitiesModelResetOnShutdown",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// This feature flag enables batch entities to only be fetched via one thread
-// hop.
-BASE_FEATURE(kPageEntitiesModelBatchEntityMetadataSimplification,
-             "PageEntitiesModelBatchEntityMetadataSimplification",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables push notification of hints.
 BASE_FEATURE(kPushNotifications,
              "OptimizationGuidePushNotifications",
@@ -165,9 +159,6 @@ BASE_FEATURE(kOptimizationGuideMetadataValidation,
              "OptimizationGuideMetadataValidation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPageTopicsBatchAnnotations,
-             "PageTopicsBatchAnnotations",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kPageVisibilityBatchAnnotations,
              "PageVisibilityBatchAnnotations",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -493,12 +484,6 @@ bool IsPageContentAnnotationEnabled() {
   return base::FeatureList::IsEnabled(kPageContentAnnotations);
 }
 
-bool ShouldPersistSearchMetadataForNonGoogleSearches() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kPageContentAnnotations,
-      "persist_search_metadata_for_non_google_searches", true);
-}
-
 bool ShouldWriteContentAnnotationsToHistoryService() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kPageContentAnnotations, "write_to_history_service", true);
@@ -520,11 +505,6 @@ bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale) {
   return base::FeatureList::IsEnabled(kPageEntitiesPageContentAnnotations) &&
          IsSupportedLocaleForFeature(locale,
                                      kPageEntitiesPageContentAnnotations);
-}
-
-bool ShouldUseBatchEntityMetadataSimplication() {
-  return base::FeatureList::IsEnabled(
-      kPageEntitiesModelBatchEntityMetadataSimplification);
 }
 
 bool ShouldExecutePageVisibilityModelOnPageContent(const std::string& locale) {
@@ -580,10 +560,6 @@ bool ShouldDeferStartupActiveTabsHintsFetch() {
   );
 }
 
-bool PageTopicsBatchAnnotationsEnabled() {
-  return base::FeatureList::IsEnabled(kPageTopicsBatchAnnotations);
-}
-
 bool PageVisibilityBatchAnnotationsEnabled() {
   return base::FeatureList::IsEnabled(kPageVisibilityBatchAnnotations);
 }
@@ -605,9 +581,6 @@ bool PageContentAnnotationValidationEnabledForType(AnnotationType type) {
 
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   switch (type) {
-    case AnnotationType::kPageTopics:
-      return cmd->HasSwitch(
-          switches::kPageContentAnnotationsValidationPageTopics);
     case AnnotationType::kPageEntities:
       return cmd->HasSwitch(
           switches::kPageContentAnnotationsValidationPageEntities);

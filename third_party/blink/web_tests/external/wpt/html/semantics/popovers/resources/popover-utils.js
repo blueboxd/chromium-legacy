@@ -1,6 +1,11 @@
 function waitForRender() {
   return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
+
+function waitForTick() {
+  return new Promise(resolve => step_timeout(resolve, 0));
+}
+
 async function clickOn(element) {
   const actions = new test_driver.Actions();
   await waitForRender();
@@ -13,7 +18,7 @@ async function clickOn(element) {
 async function sendTab() {
   await waitForRender();
   const kTab = '\uE004';
-  await new test_driver.send_keys(document.body,kTab);
+  await new test_driver.send_keys(document.documentElement,kTab);
   await waitForRender();
 }
 // Waiting for crbug.com/893480:
@@ -31,12 +36,12 @@ async function sendTab() {
 // }
 async function sendEscape() {
   await waitForRender();
-  await new test_driver.send_keys(document.body,'\uE00C'); // Escape
+  await new test_driver.send_keys(document.documentElement,'\uE00C'); // Escape
   await waitForRender();
 }
 async function sendEnter() {
   await waitForRender();
-  await new test_driver.send_keys(document.body,'\uE007'); // Enter
+  await new test_driver.send_keys(document.documentElement,'\uE007'); // Enter
   await waitForRender();
 }
 function isElementVisible(el) {

@@ -28,11 +28,11 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/command_line.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/value_builder.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 namespace {
@@ -72,23 +72,23 @@ void HidSystemTrayIconTestBase::TearDown() {
   BrowserWithTestWindowTest::TearDown();
 }
 
-std::u16string HidSystemTrayIconTestBase::GetExpectedButtonTitleForProfile(
-    Profile* profile) {
-  const std::string profile_name = profile->GetProfileUserName();
-  if (profile_name.empty()) {
-    return u"Manage HID devices";
-  }
-  return base::UTF8ToUTF16(
-      base::StringPrintf("Manage HID devices for %s", profile_name.c_str()));
-}
-
 std::u16string HidSystemTrayIconTestBase::GetExpectedTitle(
+    size_t num_origins,
     size_t num_connections) {
-  // It might be either ""Chromium is accessing a HID device" or "Google Chrome
-  // is accessing a HID device" depending is_chrome_branded in the build config
-  // file, hence using l10n_util to get the expected string.
-  return l10n_util::GetPluralStringFUTF16(IDS_WEBHID_SYSTEM_TRAY_ICON_TITLE,
-                                          static_cast<int>(num_connections));
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // The text might use "Google Chrome" or "Chromium" depending
+  // is_chrome_branded in the build config file, hence using l10n_util to get
+  // the expected string.
+  if (num_origins == 1) {
+    return l10n_util::GetPluralStringFUTF16(
+        IDS_WEBHID_SYSTEM_TRAY_ICON_TITLE_SINGLE_EXTENSION,
+        static_cast<int>(num_connections));
+  }
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_WEBHID_SYSTEM_TRAY_ICON_TITLE_MULTIPLE_EXTENSIONS,
+      static_cast<int>(num_connections));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+  NOTREACHED_NORETURN();
 }
 
 BrowserContextKeyedServiceFactory::TestingFactory
@@ -124,16 +124,16 @@ Profile* HidSystemTrayIconTestBase::CreateTestingProfile(
 scoped_refptr<const extensions::Extension>
 HidSystemTrayIconTestBase::CreateExtensionWithName(
     const std::string& extension_name) {
-  extensions::DictionaryBuilder manifest;
-  manifest.Set("name", extension_name)
-      .Set("description", "For testing.")
-      .Set("version", "0.1")
-      .Set("manifest_version", 2)
-      .Set("web_accessible_resources",
-           extensions::ListBuilder().Append("index.html").Build());
+  auto manifest = base::Value::Dict()
+                      .Set("name", extension_name)
+                      .Set("description", "For testing.")
+                      .Set("version", "0.1")
+                      .Set("manifest_version", 2)
+                      .Set("web_accessible_resources",
+                           base::Value::List().Append("index.html"));
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder(/*name=*/extension_name)
-          .MergeManifest(manifest.Build())
+          .MergeManifest(std::move(manifest))
           .Build();
   DCHECK(extension);
   return extension;

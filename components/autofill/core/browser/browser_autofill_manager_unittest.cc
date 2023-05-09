@@ -1003,6 +1003,22 @@ class BrowserAutofillManagerTest : public testing::Test {
     return ElementsAreArray(matchers);
   }
 
+  virtual int ObfuscationLength() {
+#if BUILDFLAG(IS_ANDROID)
+    return IsKeyboardAccessoryEnabled() ? 2 : 4;
+#else
+    return 4;
+#endif
+  }
+
+  // If keyboard accessory is enabled, always show only the `last_four` digits
+  // of a credit card number. Otherwise,  show "Nickname  ****7777".
+  std::string MakeCardLabel(const std::string& nickname,
+                            const std::string& last_four) {
+    return nickname + "  " +
+           test::ObfuscatedCardDigitsAsUTF8(last_four, ObfuscationLength());
+  }
+
  protected:
   TestPersonalDataManager& personal_data() {
     return *autofill_client_.GetPersonalDataManager();
@@ -1178,7 +1194,7 @@ class CreditCardSuggestionTest : public BrowserAutofillManagerTest,
                                  features::kAutofillEnableCardProductName});
   }
 
-  int ObfuscationLength() {
+  int ObfuscationLength() override {
 #if BUILDFLAG(IS_ANDROID)
     return is_keyboard_accessory_enabled_ ? 2 : 4;
 #else
@@ -2312,12 +2328,7 @@ TEST_F(BrowserAutofillManagerTest,
   {
     GetAutofillSuggestions(form, form.fields[0]);
 
-#if BUILDFLAG(IS_ANDROID)
-    const std::string mastercard_label =
-        std::string("Mastercard  ") + test::ObfuscatedCardDigitsAsUTF8("5100");
-    const std::string visa_label =
-        std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456");
-#elif BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     const std::string mastercard_label =
         test::ObfuscatedCardDigitsAsUTF8("5100");
     const std::string visa_label = test::ObfuscatedCardDigitsAsUTF8("3456");
@@ -2344,10 +2355,7 @@ TEST_F(BrowserAutofillManagerTest,
     field.value = u"B";
     GetAutofillSuggestions(form, field);
 
-#if BUILDFLAG(IS_ANDROID)
-    const std::string mastercard_label =
-        std::string("Mastercard  ") + test::ObfuscatedCardDigitsAsUTF8("5100");
-#elif BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     const std::string mastercard_label =
         test::ObfuscatedCardDigitsAsUTF8("5100");
 #else
@@ -2368,10 +2376,7 @@ TEST_F(BrowserAutofillManagerTest,
     field.value = u"Cl";
     GetAutofillSuggestions(form, field);
 
-#if BUILDFLAG(IS_ANDROID)
-    const std::string visa_label =
-        std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456");
-#elif BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     const std::string visa_label = test::ObfuscatedCardDigitsAsUTF8("3456");
 #else
     const std::string visa_label = std::string("Visa  ") +
@@ -2391,10 +2396,7 @@ TEST_F(BrowserAutofillManagerTest,
     field.value = u"Jo";
     GetAutofillSuggestions(form, field);
 
-#if BUILDFLAG(IS_ANDROID)
-    const std::string amex_label =
-        std::string("Amex  ") + test::ObfuscatedCardDigitsAsUTF8("0005");
-#elif BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     const std::string amex_label = test::ObfuscatedCardDigitsAsUTF8("0005");
 #else
     const std::string amex_label = std::string("Amex  ") +
@@ -2460,10 +2462,7 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_NumberMissing) {
   // Query by cardholder name field.
   GetAutofillSuggestions(form, form.fields[0]);
 
-#if BUILDFLAG(IS_ANDROID)
-  const std::string amex_card_label =
-      std::string("Amex  ") + test::ObfuscatedCardDigitsAsUTF8("0005");
-#elif BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   const std::string amex_card_label = test::ObfuscatedCardDigitsAsUTF8("0005");
 #else
   const std::string amex_card_label = std::string("Amex  ") +
@@ -2533,6 +2532,7 @@ TEST_P(SuggestionMatchingTest, GetAddressAndCreditCardSuggestions) {
       label1 = "123 Apple St.";
       label2 = "3734 Elvis Presley Blvd.";
   }
+
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(form.fields[0].global_id(),
                    Suggestion("Charles", label1, kAddressEntryIcon, 1),
@@ -2553,13 +2553,10 @@ TEST_P(SuggestionMatchingTest, GetAddressAndCreditCardSuggestions) {
   // Test that we sent the credit card suggestions to the external delegate.
   CheckSuggestions(
       field.global_id(),
-      Suggestion(
-          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
-          visa_label, kVisaCard,
-          browser_autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard  ") +
-                     test::ObfuscatedCardDigitsAsUTF8("8765"),
-                 master_card_label, kMasterCard,
+      Suggestion(MakeCardLabel("Visa", "3456"), visa_label, kVisaCard,
+                 browser_autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(MakeCardLabel("Mastercard", "8765"), master_card_label,
+                 kMasterCard,
                  browser_autofill_manager_->GetPackedCreditCardID(5)));
 }
 
@@ -3196,6 +3193,15 @@ TEST_F(BrowserAutofillManagerTest,
 // Test that we do not return duplicate values drawn from multiple profiles when
 // filling an already filled field.
 TEST_P(SuggestionMatchingTest, GetFieldSuggestionsWithDuplicateValues) {
+  // TODO(crbug/1000039): Make this test non-Android or allow refilling.
+  // The method `suggestion_selection::GetPrefixMatchedSuggestions` prevents
+  // that Android users see values that would override already filled fields
+  // due to the narrow surface and a missing preview.
+#if BUILDFLAG(IS_ANDROID)
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(features::kAutofillKeyboardAccessory);
+#endif
+
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -4115,51 +4121,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::ValuesIn(kAutofillSimpleFormCases),
     [](const ::testing::TestParamInfo<AutofillSimpleFormTest::ParamType>&
            info) { return info.param.test_name; });
-
-// Test that if a company is of a format of a birthyear and the relevant feature
-// is enabled, we would not fill it.
-TEST_F(BrowserAutofillManagerTest, FillAddressForm_CompanyBirthyear) {
-  // Set up our form data.
-  FormData address_form;
-  address_form.name = u"MyForm";
-  address_form.url = GURL("https://myform.com/form.html");
-  address_form.action = GURL("https://myform.com/submit.html");
-
-  FormFieldData field;
-  test::CreateTestFormField("First name", "firstname", "", "text", &field);
-  address_form.fields.push_back(field);
-  test::CreateTestFormField("Middle name", "middle", "", "text", &field);
-  address_form.fields.push_back(field);
-  test::CreateTestFormField("Last name", "lastname", "", "text", &field);
-  address_form.fields.push_back(field);
-  test::CreateTestFormField("Company", "company", "", "text", &field);
-  address_form.fields.push_back(field);
-
-  FormsSeen({address_form});
-
-  AutofillProfile profile;
-  const char guid[] = "00000000-0000-0000-0000-000000000123";
-  test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
-                       "theking@gmail.com", "1987", "3734 Elvis Presley Blvd.",
-                       "Apt. 10", "Memphis", "Tennessee", "38116", "US",
-                       "12345678901");
-  profile.set_guid(guid);
-  personal_data().AddProfile(profile);
-
-  FormData response_data;
-  FillAutofillFormDataAndSaveResults(address_form, *address_form.fields.begin(),
-                                     MakeFrontendId({.profile_id = guid}),
-                                     &response_data);
-
-  // All the fields should be filled except the company.
-  ExpectFilledField("First name", "firstname", "Elvis", "text",
-                    response_data.fields[0]);
-  ExpectFilledField("Middle name", "middle", "Aaron", "text",
-                    response_data.fields[1]);
-  ExpectFilledField("Last name", "lastname", "Presley", "text",
-                    response_data.fields[2]);
-  ExpectFilledField("Company", "company", "", "text", response_data.fields[3]);
-}
 
 // Test that credit card fields are filled even if they have the autocomplete
 // attribute set to off.
@@ -8692,9 +8653,7 @@ TEST_F(BrowserAutofillManagerTest, GetCreditCardSuggestions_VirtualCard) {
   // Non card number field (cardholder name field).
   GetAutofillSuggestions(form, form.fields[0]);
 
-#if BUILDFLAG(IS_ANDROID)
-  label = std::string("nickname  ") + test::ObfuscatedCardDigitsAsUTF8("3456");
-#elif BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   label = test::ObfuscatedCardDigitsAsUTF8("3456");
 #else
   label = std::string("nickname  ") + test::ObfuscatedCardDigitsAsUTF8("3456") +
@@ -11023,15 +10982,8 @@ TEST_F(BrowserAutofillManagerClearFieldTest, NoLoggingAfterDelay) {
               base::BucketsInclude(base::Bucket(kEvent, 0)));
 }
 
-class BrowserAutofillManagerVotingTest
-    : public BrowserAutofillManagerTest,
-      public testing::WithParamInterface<bool> {
+class BrowserAutofillManagerVotingTest : public BrowserAutofillManagerTest {
  public:
-  BrowserAutofillManagerVotingTest() {
-    features_.InitWithFeatureState(features::kAutofillDelayBlurVotes,
-                                   GetParam());
-  }
-
   void SetUp() override {
     BrowserAutofillManagerTest::SetUp();
 
@@ -11059,16 +11011,11 @@ class BrowserAutofillManagerVotingTest
   }
 
  protected:
-  base::test::ScopedFeatureList features_;
   FormData form_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         BrowserAutofillManagerVotingTest,
-                         testing::Bool());
-
 // Ensure that a vote is submitted after a regular form submission.
-TEST_P(BrowserAutofillManagerVotingTest, Submission) {
+TEST_F(BrowserAutofillManagerVotingTest, Submission) {
   SimulateTypingFirstNameIntoFirstField();
 
   std::map<std::u16string, ServerFieldTypeSet> expected_vote_types = {
@@ -11089,29 +11036,12 @@ TEST_P(BrowserAutofillManagerVotingTest, Submission) {
 
 // Test that when modifying the form, a blur vote can be sent for the early
 // version and a submission vote can be sent for the final version.
-TEST_P(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
+TEST_F(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
   // 1. Simulate typing.
   SimulateTypingFirstNameIntoFirstField();
 
   // 2. Simulate removing focus from the form, which triggers a blur vote.
   FormSignature first_form_signature = CalculateFormSignature(form_);
-  if (!base::FeatureList::IsEnabled(features::kAutofillDelayBlurVotes)) {
-    // Only if kAutofillDelayBlurVotes is disabled, we expect a blur vote being
-    // sent. If kAutofillDelayBlurVotes is enabled, the next two operations
-    // will override this vote.
-    std::map<std::u16string, ServerFieldTypeSet> expected_vote_types = {
-        {u"firstname",
-         {ServerFieldType::NAME_FIRST,
-          ServerFieldType::CREDIT_CARD_NAME_FIRST}},
-        {u"lastname", {ServerFieldType::EMPTY_TYPE}},
-    };
-    EXPECT_CALL(
-        *download_manager_,
-        StartUploadRequest(AllOf(SignatureIs(first_form_signature),
-                                 UploadedAutofillTypesAre(expected_vote_types)),
-                           _, _, _, /*observed_submission=*/false, _, _))
-        .Times(1);
-  }
   browser_autofill_manager_->OnFocusNoLongerOnForm(true);
 
   // 3. Simulate typing into second field
@@ -11166,7 +11096,7 @@ TEST_P(BrowserAutofillManagerVotingTest, DynamicFormSubmission) {
 }
 
 // Ensure that a blur votes is sent after a navigation.
-TEST_P(BrowserAutofillManagerVotingTest, BlurVoteOnNavigation) {
+TEST_F(BrowserAutofillManagerVotingTest, BlurVoteOnNavigation) {
   SimulateTypingFirstNameIntoFirstField();
 
   // Simulate removing focus from form, which triggers a blur vote.
@@ -11183,14 +11113,13 @@ TEST_P(BrowserAutofillManagerVotingTest, BlurVoteOnNavigation) {
       .Times(1);
   browser_autofill_manager_->OnFocusNoLongerOnForm(true);
 
-  // Simulate a navigation. If kAutofillDelayBlurVotes is enabled, this is when
-  // the vote is sent.
+  // Simulate a navigation. This is when the vote is sent.
   browser_autofill_manager_->Reset();
 }
 
 // Ensure that a submission vote blocks sending a blur vote for the same form
 // signature.
-TEST_P(BrowserAutofillManagerVotingTest, NoBlurVoteOnSubmission) {
+TEST_F(BrowserAutofillManagerVotingTest, NoBlurVoteOnSubmission) {
   SimulateTypingFirstNameIntoFirstField();
 
   std::map<std::u16string, ServerFieldTypeSet> expected_vote_types = {
@@ -11199,20 +11128,8 @@ TEST_P(BrowserAutofillManagerVotingTest, NoBlurVoteOnSubmission) {
       {u"lastname", {ServerFieldType::EMPTY_TYPE}},
   };
 
-  // Simulate removing focus from form, which enqueues a blur vote.
-  if (!base::FeatureList::IsEnabled(features::kAutofillDelayBlurVotes)) {
-    // If AutofillDelayBlurVotes is disabled, the blur vote is actually sent.
-    // Otherwise, it is overridden by the form submission vote.
-    EXPECT_CALL(
-        *download_manager_,
-        StartUploadRequest(AllOf(SignatureIs(CalculateFormSignature(form_)),
-                                 UploadedAutofillTypesAre(expected_vote_types)),
-                           _, _, _, /*observed_submission=*/false, _, _))
-        .Times(1);
-  } else {
-    // If kAutofillDelayBlurVotes is enabled, the blur vote will be ignored and
-    // only the submission will be sent.
-  }
+  // Simulate removing focus from form, which enqueues a blur vote. The blur
+  // vote will be ignored and only the submission will be sent.
   browser_autofill_manager_->OnFocusNoLongerOnForm(true);
 
   EXPECT_CALL(

@@ -10,9 +10,21 @@
  * #include=cr-shared-style cros-color-overrides
  * #css_wrapper_metadata_end */
 
+:host-context(body.jelly-enabled) .main-container {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+:host-context(body.jelly-enabled) .margin-border {
+  margin-inline: 16px;
+}
+
 :host-context(body.jelly-enabled) .data-container {
   background-color: var(--cros-sys-app_base);
-  border-radius: 8px;
+  border-radius: 16px 16px 0 0;
+  flex: 1 1 auto;
+  margin-top: 16px;
 }
 
 :host-context(body.jelly-enabled) .file-icon-blue {
@@ -40,7 +52,12 @@
 }
 
 :host-context(body.jelly-enabled) #headerContainer {
+  align-items: center;
   border-bottom: none;
+  display: flex;
+  flex: 0 1 auto;
+  height: 64px;
+  padding: 0;
 }
 
 .flex-center {
@@ -122,15 +139,11 @@
 
 @media (min-width: 600px) and (max-width: 767px) {
   :host-context(body.jelly-enabled) #headerContainer {
-    margin: 0 20px;
+    margin-inline: 20px;
   }
 
   :host-context(body.jelly-enabled) .data-container {
     padding: 0 20px;
-  }
-
-  :host-context(body.jelly-enabled) .margin-border {
-    margin: 0 20px;
   }
 
   .date-column {
@@ -145,8 +158,8 @@
     width: 224px;
   }
 
-  .margin-border {
-    margin: 0px 40px 0px 40px;
+  :host-context(body:not(.jelly-enabled)) .margin-border {
+    margin-inline: 40px;
   }
 
   .padded-left {
@@ -164,21 +177,17 @@
   #activeStatusContainer:hover {
     border-radius: 16px;
     margin-inline-start: 16px;
-    padding-left: 16px;
+    padding-inline-start: 16px;
   }
 }
 
 @media (min-width: 768px) and (max-width: 959px) {
   :host-context(body.jelly-enabled) #headerContainer {
-    margin: 0 20px;
+    margin-inline: 20px;
   }
 
   :host-context(body.jelly-enabled) .data-container {
     padding: 0 20px;
-  }
-
-  :host-context(body.jelly-enabled) .margin-border {
-    margin: 0 20px;
   }
 
   .date-column {
@@ -193,8 +202,8 @@
     width: 264px;
   }
 
-  .margin-border {
-    margin: 0px 40px 0px 40px;
+  :host-context(body:not(.jelly-enabled)) .margin-border {
+    margin-inline: 40px;
   }
 
   .padded-left {
@@ -212,21 +221,17 @@
   #activeStatusContainer:hover {
     border-radius: 16px;
     margin-inline-start: 16px;
-    padding-left: 16px;
+    padding-inline-start: 16px;
   }
 }
 
 @media (min-width: 960px) and (max-width: 1279px) {
   :host-context(body.jelly-enabled) #headerContainer {
-    margin: 0 32px;
+    margin-inline: 32px;
   }
 
   :host-context(body.jelly-enabled) .data-container {
     padding: 0 32px;
-  }
-
-  :host-context(body.jelly-enabled) .margin-border {
-    margin: 0 32px;
   }
 
   .date-column {
@@ -242,7 +247,7 @@
   }
 
   .margin-border {
-    margin: 0px 64px 0px 64px;
+    margin-inline: 64px;
   }
 
   .padded-left {
@@ -260,21 +265,17 @@
   #activeStatusContainer:hover {
     border-radius: 16px;
     margin-inline-start: 16px;
-    padding-left: 16px;
+    padding-inline-start: 16px;
   }
 }
 
 @media (min-width: 1280px) {
   :host-context(body.jelly-enabled) #headerContainer {
-    margin: 0 72px;
+    margin-inline: 72px;
   }
 
   :host-context(body.jelly-enabled) .data-container {
     padding: 0 72px;
-  }
-
-  :host-context(body.jelly-enabled) .margin-border {
-    margin: 0 72px;
   }
 
   .date-column {
@@ -289,8 +290,8 @@
     width: 356px;
   }
 
-  .margin-border {
-    margin: 0px 144px 0px 144px;
+  :host-context(body:not(.jelly-enabled)) .margin-border {
+    margin-inline: 144px;
   }
 
   .padded-left {
@@ -308,6 +309,6 @@
   #activeStatusContainer:hover {
     border-radius: 16px;
     margin-inline-start: 16px;
-    padding-left: 16px;
+    padding-inline-start: 16px;
   }
 }

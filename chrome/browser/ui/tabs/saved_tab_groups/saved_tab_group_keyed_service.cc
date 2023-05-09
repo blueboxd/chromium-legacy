@@ -6,12 +6,16 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/bookmarks/url_and_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_model_listener.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_utils.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
@@ -29,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 
 namespace {
+constexpr base::TimeDelta kDelayBeforeMetricsLogged = base::Hours(1);
 
 std::unique_ptr<syncer::ClientTagBasedModelTypeProcessor>
 CreateChangeProcessor() {
@@ -46,11 +51,10 @@ SavedTabGroupKeyedService::SavedTabGroupKeyedService(Profile* profile)
       bridge_(model(), GetStoreFactory(), CreateChangeProcessor()) {
   model()->AddObserver(this);
 
-  // Perform the necessary setup, if the model is already loaded before we start
-  // observing it. Otherwise, the model will notify us when it has loaded.
-  if (model()->is_loaded()) {
-    SavedTabGroupModelLoaded();
-  }
+  metrics_timer_.Start(
+      FROM_HERE, kDelayBeforeMetricsLogged,
+      base::BindRepeating(&SavedTabGroupKeyedService::RecordMetrics,
+                          base::Unretained(this)));
 }
 
 SavedTabGroupKeyedService::~SavedTabGroupKeyedService() {
@@ -66,9 +70,22 @@ syncer::OnceModelTypeStoreFactory SavedTabGroupKeyedService::GetStoreFactory() {
 void SavedTabGroupKeyedService::StoreLocalToSavedId(
     const base::Uuid& saved_guid,
     const tab_groups::TabGroupId local_group_id) {
-  CHECK(!model()->is_loaded());
-  saved_guid_to_local_group_id_mapping_.emplace_back(saved_guid,
-                                                     local_group_id);
+  // Avoid linking SavedTabGroups that are already open.
+  const SavedTabGroup* const group = model()->Get(saved_guid);
+  if (group && group->local_group_id().has_value()) {
+    return;
+  }
+
+  // The model could already be loaded when restoring groups from a previously
+  // crashed session / window. This means we will have to manually trigger the
+  // local to saved group linking.
+  if (model()->is_loaded()) {
+    model_.OnGroupOpenedInTabStrip(saved_guid, local_group_id);
+    ConnectLocalTabGroup(local_group_id, saved_guid);
+  } else {
+    saved_guid_to_local_group_id_mapping_.emplace_back(saved_guid,
+                                                       local_group_id);
+  }
 }
 
 void SavedTabGroupKeyedService::OpenSavedTabGroupInBrowser(
@@ -290,15 +307,12 @@ void SavedTabGroupKeyedService::SavedTabGroupModelLoaded() {
     ConnectLocalTabGroup(local_group_id, saved_guid);
   }
 
-  // Clear `saved_guid_to_local_group_id_mapping_` expecting that this observer
-  // function will only be called once on startup freeing unsued space.
+  // Clear `saved_guid_to_local_group_id_mapping_` to save space when finished.
   //
   // TODO(dljames): Investigate using a single use callback to connect local and
   // saved groups together. There are crashes that occur when restarting the
-  // browser before the browser process completely shuts down. This triggers the
-  // CHECK in StoreLocalToSavedId because the SavedTabGroupModel has already
-  // loaded. The callback will also remove the need of
-  // `saved_guid_to_local_group_id_mapping_`.
+  // browser before the browser process completely shuts down. The callback will
+  // also remove the need of `saved_guid_to_local_group_id_mapping_`.
   saved_guid_to_local_group_id_mapping_.clear();
   CHECK(saved_guid_to_local_group_id_mapping_.empty());
 }
@@ -314,16 +328,21 @@ void SavedTabGroupKeyedService::SavedTabGroupUpdatedFromSync(
     return;
   }
 
-  if (tab_guid.has_value()) {
-    // TODO(dljames): Update tabs in the tabstrip if the respective group is
-    // open with the updated tab metadata. Figure out if the tab should be
-    // added, removed, or updated based on the data in saved_group.
-    NOTIMPLEMENTED();
-  } else {
-    // Update the visual data of the saved group if it exists and is open in
-    // the tabstrip.
-    UpdateGroupVisualData(group_guid, saved_group->local_group_id().value());
+  // Update the local group's metadata to match the saved group's.
+  UpdateGroupVisualData(group_guid, saved_group->local_group_id().value());
+  // Update the local group's contents to match the saved group's.
+  listener_.UpdateLocalGroupFromSync(saved_group->local_group_id().value());
+}
+
+void SavedTabGroupKeyedService::SavedTabGroupRemovedFromSync(
+    const SavedTabGroup* removed_group) {
+  // Do nothing if `removed_group` is not open in the tabstrip.
+  if (!removed_group->local_group_id().has_value()) {
+    return;
   }
+
+  // Update the local group's contents to match the saved group's.
+  listener_.RemoveLocalGroupFromSync(removed_group->local_group_id().value());
 }
 
 const TabStripModel* SavedTabGroupKeyedService::GetTabStripModelWithTabGroupId(
@@ -347,4 +366,56 @@ void SavedTabGroupKeyedService::UpdateGroupVisualData(
                                              saved_group->color(),
                                              /*is_collapsed=*/false);
   tab_group->SetVisualData(visual_data, /*is_customized=*/true);
+}
+
+void SavedTabGroupKeyedService::RecordMetrics() {
+  RecordSavedTabGroupMetrics();
+  RecordTabGroupMetrics();
+  metrics_timer_.Reset();
+}
+
+void SavedTabGroupKeyedService::RecordSavedTabGroupMetrics() {
+  base::UmaHistogramCounts10000("TabGroups.SavedTabGroupCount",
+                                model()->Count());
+
+  for (const SavedTabGroup& group : model()->saved_tab_groups()) {
+    base::UmaHistogramCounts10000("TabGroups.SavedTabGroupTabCount",
+                                  group.saved_tabs().size());
+  }
+}
+
+void SavedTabGroupKeyedService::RecordTabGroupMetrics() {
+  int total_unsaved_groups = 0;
+
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (profile_ != browser->profile()) {
+      continue;
+    }
+
+    const TabStripModel* const tab_strip_model = browser->tab_strip_model();
+    if (!tab_strip_model->SupportsTabGroups()) {
+      return;
+    }
+
+    const TabGroupModel* group_model = tab_strip_model->group_model();
+    CHECK(group_model);
+
+    std::vector<tab_groups::TabGroupId> group_ids =
+        group_model->ListTabGroups();
+
+    for (tab_groups::TabGroupId group_id : group_ids) {
+      if (model()->Contains(group_id)) {
+        continue;
+      }
+
+      const TabGroup* const group = group_model->GetTabGroup(group_id);
+      base::UmaHistogramCounts10000("TabGroups.UnsavedTabGroupTabCount",
+                                    group->tab_count());
+      ++total_unsaved_groups;
+    }
+  }
+
+  // Record total number of non-saved tab groups in all browsers.
+  base::UmaHistogramCounts10000("TabGroups.UnsavedTabGroupCount",
+                                total_unsaved_groups);
 }

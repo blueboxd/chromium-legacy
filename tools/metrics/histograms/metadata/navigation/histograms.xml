@@ -515,6 +515,34 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram
+    name="Navigation.BackForward.TimeFromOpenBackNavigationMenuToActivateItem"
+    units="ms" expires_after="2023-10-20">
+  <owner>leimy@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    The time spent between the back navigation menu model's opening and the
+    activation of a menu item. This is recorded when the back navigation menu
+    model receives signal that indicates the item from the menu is activated.
+    See `BackForwardMenuModel::MenuWillShow()` and
+    `BackForwardMenuModel::ActivatedAt()` for more details.
+  </summary>
+</histogram>
+
+<histogram
+    name="Navigation.BackForward.TimeFromOpenBackNavigationMenuToCloseMenu"
+    units="ms" expires_after="2023-10-20">
+  <owner>leimy@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    The time spent between the back navigation menu model's opening and the
+    closing. There might or might not be a menu item activation in between. This
+    is recorded when the back navigation menu model receives signal that
+    indicates it will be closed. See `BackForwardMenuModel::MenuWillShow()` and
+    `BackForwardMenuModel::MenuWillClose()` for details.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.BackForward.WasCached"
     enum="NavigationWasServedFromCache" expires_after="M85">
   <owner>clamy@chromium.org</owner>
@@ -577,6 +605,17 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     <variant name="Resource"/>
     <variant name="Subframe"/>
   </token>
+</histogram>
+
+<histogram name="Navigation.DidCommitSameDocumentNavigation.Duration"
+    units="ms" expires_after="2023-10-15">
+  <owner>peilinwang@google.com</owner>
+  <owner>woa-performance-bugs+jank@google.com</owner>
+  <summary>
+    Measures the amount of time it takes to call
+    RenderFrameHostImpl::DidCommitSameDocumentNavigation(). Logged once per call
+    to RenderFrameHostImpl::DidCommitSameDocumentNavigation().
+  </summary>
 </histogram>
 
 <histogram name="Navigation.DownloadPolicy.LogArbitraryPolicyPerDownload"
@@ -740,18 +779,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     Whether the navigation commits in a process that is locked to an origin.
     Logged at ready-to-commit time for every navigation that commits with a HTTP
     or HTTPS URL scheme, excluding same-document navigations and errors.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.IsNavigationSameSite.Duration" units="ms"
-    expires_after="2023-10-15">
-  <owner>peilinwang@google.com</owner>
-  <owner>woa-performance-bugs+jank@google.com</owner>
-  <summary>
-    Measures the amount of time it takes to call
-    RenderFrameHostImpl::IsNavigationSameSite(). Logged once per call to
-    RenderFrameHostImpl::IsNavigationSameSite(), potentially numerous times per
-    navigation.
   </summary>
 </histogram>
 
@@ -1588,6 +1615,23 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram
+    name="Prerender.Experimental.ActivationTransitionMismatch{PrerenderTriggerType}"
+    enum="PrerenderActivationTransitionMismatchType" expires_after="2023-10-26">
+  <owner>nhiroki@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Breakdown metric for PrerenderActivationNavigationParamsMatch::kTransition.
+
+    When we are attempting to activate a prerendered page, we compare the
+    prerendered page's NavigationRequest's ui::PageTransition with the incoming
+    NavigationRequest's (called activation navigation). If they mismatch, this
+    metric records the transition of the activation navigation in
+    RecordPrerenderActivationTransition().
+  </summary>
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
     name="Prerender.Experimental.BookmarkBar.EnterToPressDuration{ButtonType}"
     units="ms" expires_after="2023-09-24">
   <owner>robertlin@chromium.org</owner>
@@ -1763,6 +1807,23 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>
     Final status for a prerendering attempt. Recorded by PrerenderHost or
     PrerenderHostRegistry in the browser process when the attempt finishes.
+  </summary>
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.PrerenderLoadingFailureError{PrerenderTriggerType}"
+    enum="NetErrorCodes" expires_after="2023-08-27">
+  <owner>lingqi@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Net error code is recorded by PrerenderCancellationReason when a prerender
+    host is canceled due to kDidFailLoad.
+
+    This metric is used to monitor whether preload cache intercepting logic
+    causes extra page loading errors. Similar to
+    PageLoad.Internal.Prerender2.ActivatedPageLoaderStatus{PrerenderTriggerType},
+    but used to track the loading status of not activated prerendered pages.
   </summary>
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
 </histogram>

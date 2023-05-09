@@ -237,7 +237,13 @@ TEST_F(CocoaImmersiveModeControllerTest, TitlebarObserver) {
     [titlebar_container_view
         setFrame:NSMakeRect(0, kOverlayViewHeight + 1, kOverlayViewWidth,
                             kOverlayViewHeight)];
-    EXPECT_EQ(overlay().frame.origin.y, -kOverlayViewHeight);
+    if (@available(macOS 12.0, *)) {
+      EXPECT_EQ(overlay().frame.origin.y,
+                browser().screen.frame.size.height +
+                    browser().screen.safeAreaInsets.top);
+    } else {
+      EXPECT_EQ(overlay().frame.origin.y, browser().screen.frame.size.height);
+    }
 
     // Remove the clip and make sure the overlay window moves back.
     [titlebar_container_view
@@ -365,6 +371,28 @@ TEST_F(CocoaImmersiveModeControllerTest, TabbedChildWindow) {
   // decrementing.
   [popup close];
   EXPECT_EQ(immersive_mode_controller->reveal_lock_count(), 0);
+}
+
+// Test ImmersiveModeTabbedController z-order test.
+TEST_F(CocoaImmersiveModeControllerTest, TabbedChildWindowZOrder) {
+  // Controller under test.
+  auto immersive_mode_controller =
+      std::make_unique<ImmersiveModeTabbedController>(
+          browser(), overlay(), tab_overlay(), base::DoNothing());
+  immersive_mode_controller->Enable();
+  immersive_mode_controller->FullscreenTransitionCompleted();
+
+  // Create a popup.
+  CocoaTestHelperWindow* popup = [[CocoaTestHelperWindow alloc] init];
+  EXPECT_EQ(immersive_mode_controller->reveal_lock_count(), 0);
+
+  // Add the popup as a child of overlay.
+  [overlay() addChildWindow:popup ordered:NSWindowAbove];
+
+  // Make sure the tab overlay window stays on z-order top.
+  EXPECT_EQ(overlay().childWindows.lastObject, tab_overlay());
+
+  [popup close];
 }
 
 }  // namespace remote_cocoa

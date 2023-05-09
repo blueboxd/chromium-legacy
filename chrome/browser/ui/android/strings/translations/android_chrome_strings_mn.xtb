@@ -30,7 +30,6 @@
 <translation id="1145536944570833626">Одоо байгаа өгөгдлийг устгана уу.</translation>
 <translation id="1149401351239820326">Хугацаа дуусах сар</translation>
 <translation id="1150263420752757504"><ph name="APP_NAME" />-г Chrome-д нээнэ. Үргэлжлүүлснээр та <ph name="BEGIN_LINK1" />Google-н үйлчилгээний нөхцөл<ph name="END_LINK1" /> болон <ph name="BEGIN_LINK2" />Google Chrome, ChromeOS-н үйлчилгээний нэмэлт нөхцөлийг<ph name="END_LINK2" /> зөвшөөрч байна.</translation>
-<translation id="1154704303112745282">Хуудас офлайн үед боломжгүй: <ph name="VIOLATED_URL" /></translation>
 <translation id="1173894706177603556">Нэр солих</translation>
 <translation id="1177863135347784049">Хэвийн</translation>
 <translation id="1181037720776840403">Хасах</translation>
@@ -120,6 +119,7 @@
 <translation id="1571304935088121812">Хэрэглэгчийн нэрийг хуулах</translation>
 <translation id="1592864538817356322">Стандарт хамгаалалт:</translation>
 <translation id="1594635596540195766">Доорх жагсаалтад санал болгосон <ph name="SUGGESTIONS_COUNT" /> зүйл байна.</translation>
+<translation id="1598163867407640634"><ph name="SITE_ETLD_PLUS_ONE" />-г <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />-р ашиглаарай</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Та өгөгдлөө хэрхэн удирдах боломжтой вэ?:<ph name="END_BOLD" /> Таны нууцлалыг хамгаалахын тулд бид таны 4 долоо хоногоос дээш хугацаатай сонирхлыг автоматаар устгадаг. Таныг үргэлжлүүлэн үзэх үед сонирхол нь жагсаалтад дахин харагдаж магадгүй. Эсвэл та Chrome-г харгалзан үзэхгүй байхыг хүсэж буй сонирхлоо хасах боломжтой.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Сонгосон 1 зүйлийг устгах}other{Сонгосон # зүйлийг устгах}}</translation>
 <translation id="1633659023549081553">Chrome-н нүүр хуудаснаас шинэ контенттой танилцаарай</translation>
@@ -150,6 +150,7 @@
 <translation id="1810845389119482123">Синк хийх эхний тохируулга дуусаагүй байна</translation>
 <translation id="1829244130665387512">Хуудаснаас хайх</translation>
 <translation id="1832459821645506983">Тийм, би зөвшөөрч байна</translation>
+<translation id="185383612275551373">Google-с хамгийн хамааралтай контент авахын тулд синк хийнэ үү</translation>
 <translation id="1854311313115643875">Туршилтын хугацаанд байх үед Зарын хэмжилт нь таны зочилсон сайтуудад зарынхаа гүйцэтгэлийг хэмжихэд туслах мэдээллийг Chrome-с хүсэх боломжийг олгоно. Зарын хэмжилт нь сайт хооронд аль болох бага мэдээлэл шилжүүлснээр сайт хоорондын хяналтыг хязгаарлана.
 
 Та бүх эсвэл тодорхой сайтын — хөтчийн түүхээ устгах үед — холбоотой хэмжилтийн мэдээллийг мөн устгана. <ph name="BEGIN_LINK" />Хөтчийн түүхээ<ph name="END_LINK" /> харна уу.</translation>
@@ -241,7 +242,6 @@
 <translation id="2386938421315164605">Сэдвүүдийг нуух болон ил болгох</translation>
 <translation id="2390510615457643724">Та <ph name="FILE_NAME" /><ph name="FILE_SIZE" />-г дахин татахыг хүсэж байна уу?</translation>
 <translation id="2394602618534698961">Таны татсан файлууд энд харагддаг</translation>
-<translation id="2407481962792080328">Таныг Google Бүртгэлдээ нэвтрэхэд энэ онцлог асна</translation>
 <translation id="2410754283952462441">Бүртгэл сонгох</translation>
 <translation id="2414886740292270097">Хар</translation>
 <translation id="2426805022920575512">Өөр бүртгэл сонгох</translation>
@@ -298,6 +298,7 @@
 <translation id="265156376773362237">Стандарт урьдчилан ачаалал</translation>
 <translation id="2656405586795711023">Веб программууд</translation>
 <translation id="2669454659051515572">Энэ төхөөрөмжийг ашиглаж байгаа дурын хүн татсан файлуудыг харах боломжтой</translation>
+<translation id="2688382350024736268">Chrome одоо сайтуудад зарын гүйцэтгэлийг хэмжихэд туслахын тулд зарыг танд хэзээ харуулсан зэрэг зөвхөн маш хязгаарлагдмал мэдээллийг сайт болон аппуудтай хуваалцана.</translation>
 <translation id="2702516483241149200">Шинэ: энэ текст рүү гүйлгэж очих холбоосыг хуваалцаарай</translation>
 <translation id="2707726405694321444">Хуудсыг дахин шинэчлэх</translation>
 <translation id="271033894570825754">Шинэ</translation>
@@ -386,7 +387,6 @@
 <translation id="3091010850649238832">Түр санах ойн контентыг харуулах</translation>
 <translation id="3098745985164956033">Танд зориулан тайлбарыг сайжруулахын тулд зарим зургийг Google-д илгээдэг.</translation>
 <translation id="3114507951000454849">Өнөөдрийн мэдээг уншаарай <ph name="NEWS_ICON" /></translation>
-<translation id="311958134571892113">дараахтай холбогдсон</translation>
 <translation id="3123734510202723619">Зарлал</translation>
 <translation id="3134784203083076891">”</translation>
 <translation id="314939179385989105">Chrome-н нүүр хуудас</translation>
@@ -546,6 +546,7 @@
 <translation id="4034817413553209278">{HOURS,plural, =1{# цаг}other{# цаг}}</translation>
 <translation id="4035877632587724847">Бүү зөвшөөр</translation>
 <translation id="4036177530563778041">Та орхисон газраасаа хялбархан үргэлжлүүлнэ үү</translation>
+<translation id="4042941173059740150"><ph name="SITE_ETLD_PLUS_ONE" /> руу <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />-р үргэлжлүүлэх</translation>
 <translation id="4045764304651014138">Ашиглалтын өгөгдөл</translation>
 <translation id="405399507749852140">Аль нэг сайт дээр үнэ буурсан тохиолдолд сэрэмжлүүлэг аваарай</translation>
 <translation id="4056223980640387499">Сепиа</translation>
@@ -691,7 +692,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 Энэ тохиргоог өөрчлөхийн тулд <ph name="BEGIN_LINK" />синкийг шинэчилнэ үү<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Картан дээрх нэр</translation>
 <translation id="481574578487123132">Холбосон төхөөрөмжүүд</translation>
-<translation id="4818017973810341238">Дижитал өмчийн холбоосыг <ph name="VIOLATED_URL" /> дээр баталгаажуулж чадсангүй</translation>
 <translation id="4826163340425232009">Нэвтрэх доод хүснэгт.</translation>
 <translation id="4831037795716408498">Контентыг татаж авах</translation>
 <translation id="4834007576107377210">Хэрэв боломжтой бол хайлтын түүхээ устгахын тулд хайлтын системийн зааварчилгаагаа харна уу</translation>
@@ -784,7 +784,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5235196193381275927">Нэвтрэх үед алдаа гарлаа</translation>
 <translation id="5246093389635966745">Засах самбарын товчлол</translation>
 <translation id="5271967389191913893">Татах гэж буй агуулгыг төхөөрөмж нээж чадахгүй байна.</translation>
-<translation id="5274286919938458946"><ph name="CARD_DETAIL" />-тай холбогдсон</translation>
 <translation id="5292796745632149097">Илгээх</translation>
 <translation id="5300426565656326054">Хөтчид тулгуурласан сонирхсон зарын тохируулга</translation>
 <translation id="5304593522240415983">Энэ талбар хоосон орхиж болохгүй</translation>
@@ -846,8 +845,10 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="562289928968387744">Хариу үйлдлийг удирдах</translation>
 <translation id="5626134646977739690">Нэр:</translation>
 <translation id="5628604359369369630">Уншаагүй - Офлайнаар боломжтой</translation>
+<translation id="5635091213277904818">Chrome 30 хоногоос дээш удсан сайтуудыг автоматаар устгадаг. Таны дахин зочилсон сайт жагсаалтад дахин гарч ирж магадгүй. Эсвэл та сайтыг танд зар санал болгохыг блоклож болно.</translation>
 <translation id="5639724618331995626">Бүх сайтыг зөвшөөрөх</translation>
 <translation id="5641456720590409793"><ph name="BEGIN_LINK1" />Хайлтын түүх<ph name="END_LINK1" /> болон <ph name="BEGIN_LINK2" />бусад төрлийн үйл ажиллагааг<ph name="END_LINK2" /> Google Бүртгэлд тань хадгалж магадгүй</translation>
+<translation id="564667659802381754">Нууцлалын хөтөч <ph name="BEGIN_NEW" />Шинэ<ph name="END_NEW" /></translation>
 <translation id="5648166631817621825">Сүүлийн 7 хоног</translation>
 <translation id="5655963694829536461">Татаж авсан файлаа хайх</translation>
 <translation id="5659593005791499971">И-мэйл хаяг</translation>
@@ -886,7 +887,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5833984609253377421">Холбоосыг хуваалцах</translation>
 <translation id="5834764604050996579">QR кодыг скан хийхийн тулд Chrome-д таны камерыг ашиглахыг зөвшөөрнө үү</translation>
 <translation id="5839058148541733625">Chrome-н Дино</translation>
-<translation id="5842437907245493289">Хянаж буй бүтээгдэхүүнүүдээ Хавчуургад фолдерын дүрс тэмдгээс цэгцлээрэй</translation>
 <translation id="5853623416121554550">түр зогсоосон</translation>
 <translation id="5854512288214985237">Google-д илгээсэн статистик эсвэл гэмтлийн тайлан алга</translation>
 <translation id="5855546874025048181">Боловсронгуй болгох: <ph name="REFINE_TEXT" /></translation>
@@ -988,7 +988,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="6395288395575013217">ХОЛБООС</translation>
 <translation id="6397616442223433927">Буцаад онлайн боллоо</translation>
 <translation id="6401458660421980302">Энэ табыг өөр төхөөрөмж рүү илгээхийн тулд тэндээс Chrome-д нэвтэрнэ үү</translation>
-<translation id="6402652558933147609"><ph name="VIOLATED_URL" /> дээрх <ph name="ERROR_CODE" /></translation>
 <translation id="6404511346730675251">Хадгалагдсан хуудсыг засах</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6407224748847589805">Таны компьютертой холбогдож чадсангүй. Баталгаажуулалтын өөр сонголтыг туршиж үзнэ үү.</translation>
@@ -1171,6 +1170,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="7291910923717764901">Энэ хуудсанд нэмсэн зургийн тайлбар</translation>
 <translation id="7293429513719260019">Хэл сонгох</translation>
 <translation id="729975465115245577">Таны төхөөрөмжид нууц үгийн файлыг хадгалах апп байхгүй байна.</translation>
+<translation id="7304072650267745798">Таны Android төхөөрөмж төстэй тохиргоог агуулж болно. Хэрэв энэ тохиргоог Chrome-д болон таны Android төхөөрөмжид асаасан бол компани таны зочилсон вебсайт, ашигласан аппууд дээрх зарын үр ашигтай байдлыг хэмжих боломжтой байж магадгүй.</translation>
 <translation id="7304873321153398381">Офлайн. Chrome таны нууц үгийг шалгах боломжгүй байна.</translation>
 <translation id="7313188324932846546">Синкийг тохируулахын тулд товшино уу</translation>
 <translation id="7332075081379534664">Нэвтрэлт амжилттай</translation>
@@ -1210,6 +1210,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="7482656565088326534">Урьдчилан үзэх таб</translation>
 <translation id="7484997419527351112">Discover - унтраасан</translation>
 <translation id="7485033510383818941">Хангамжийн контентыг сэргээхийн тулд хуудсыг доош татна уу</translation>
+<translation id="7486953194485875763">Сүүлийн 15 минутын дараах өгөгдлийг устгана:</translation>
 <translation id="749294055653435199">Энэ төхөөрөмж дээр Google Lens боломжгүй</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Шинэчилсэн <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7497755084107113646">Сэдвийг боломжит сэдвүүдэд буцааж нэмсэн</translation>
@@ -1252,6 +1253,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="7682724950699840886">Дараах зөвлөмжийг хэрэгжүүлж үзнэ үү: төхөөрөмж дээрээ хангалттай сул зай гаргаад дахин экспорт хийж үзнэ үү.</translation>
 <translation id="7686086654630106285">Сайтаас санал болгож буй зарын талаарх илүү дэлгэрэнгүй</translation>
 <translation id="768618399695552958">Таны зочилдог зарим хуудсыг урьдчилан ачаална. Google-н сайтаас холбосон үед хуудаснуудыг Google-н серверүүдээр урьдчилан ачаалж магадгүй.</translation>
+<translation id="7690596512217303514">Таны төхөөрөмж Chrome-г нээж чадсангүй. Уг асуудлыг засахын тулд апп дэлгүүрээсээ Chrome-н хамгийн сүүлийн үеийн шинэчлэлтийг татна уу.</translation>
 <translation id="7691043218961417207">Дагах контент судлах</translation>
 <translation id="7697383401610880082">Чирэх бариул</translation>
 <translation id="7698359219371678927"><ph name="APP_NAME" />-д имэйл үүсгэнэ үү</translation>
@@ -1260,6 +1262,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="7709918231054955894">Бүх табаа аваарай</translation>
 <translation id="772434085369393266">Навигацыг HTTPS руу сайжруулж, үүнийг дэмждэггүй сайтыг ачаалахаас өмнө танд сануулна. Та Дэвшилтэт хамгаалалтыг идэвхжүүлсэн тул энэ тохиргоог өөрчлөх боломжгүй.</translation>
 <translation id="7725024127233776428">Таны хавчуурга хийсэн хуудас энд харагдана</translation>
+<translation id="7733878270780732638">Төхөөрөмжид хангалттай зай байхгүй байна.</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" />-с текстийг хуваалцсан</translation>
 <translation id="7762668264895820836">SD Карт <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Хаяг нэмэх</translation>
@@ -1362,6 +1365,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8209050860603202033">Зургийг нээх</translation>
 <translation id="8216351761227087153">Үзэх</translation>
 <translation id="8218622182176210845">Бүртгэлээ удирдах</translation>
+<translation id="8221401890884589479">Та хүсээгүй сайтуудаа блоклох боломжтой. Chrome мөн жагсаалтаас 30 хоногоос дээш удсан сайтуудыг автоматаар устгадаг. <ph name="BEGIN_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
 <translation id="8223642481677794647">Сувгийн картын цэс</translation>
 <translation id="8236097722223016103">Хавчуургуудад нэмэх</translation>
 <translation id="8250920743982581267">Документ</translation>
@@ -1453,6 +1457,7 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="8664215986015753476">Chrome-г өөрийнхөөрөө ашиглах</translation>
 <translation id="8664979001105139458">Файлын нэр ашиглалтад байна</translation>
 <translation id="8666759526542103597">Хөтчид тулгуурласан сонирхсон зарын тохируулгын тухай</translation>
+<translation id="8676276370198826499"><ph name="SITE_ETLD_PLUS_ONE" />-д <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" />-р бүртгүүлээрэй</translation>
 <translation id="8676789164135894283">Нэвтрэх баталгаажуулалт</translation>
 <translation id="8683039184091909753">зураг</translation>
 <translation id="869891660844655955">Дуусах хугацаа</translation>
@@ -1546,7 +1551,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="9158770349521403363">Зөвхөн контент хуваалцана уу</translation>
 <translation id="9159716826369098114"><ph name="TAB_COUNT" /> табтай табын бүлгийг шинэ дэвсгэр табын бүлгээр сэргээнэ үү.</translation>
 <translation id="9169507124922466868">Навигацын түүхийг хагас нээлээ</translation>
-<translation id="9183331776983279456">Chrome нь 4 долоо хоногоос дээш удсан сайтуудыг автоматаар устгадаг. Таны дахин зочилсон сайт жагсаалтад дахин гарч ирж магадгүй. Эсвэл та сайтыг танд зар санал болгохыг блоклож болно.</translation>
 <translation id="9190276265094487094">Таны синк хийсэн бүх төхөөрөмж дээр таны түүхийг хадгална. Ингэснээр та хийж байсан зүйлээ үргэлжлүүлэх боломжтой</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{1 минутын өмнө шалгасан}other{# минутын өмнө шалгасан}}</translation>
 <translation id="9204836675896933765">1 файл үлдсэн</translation>
@@ -1568,7 +1572,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="96681097142096641">Хялбарчилсан хуудсыг үзэх үү?</translation>
 <translation id="968900484120156207">Таны зочилдог хуудас энд харагдана</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> минут үлдсэн</translation>
-<translation id="978317418833355355">Та хүсээгүй сайтаа блоклож болно. Chrome нь мөн жагсаалтад 4 долоо хоногоос дээш удсан сайтуудыг автоматаар устгадаг. <ph name="BEGIN_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Бүх табыг хаах</translation>
 <translation id="987264212798334818">Ерөнхий</translation>

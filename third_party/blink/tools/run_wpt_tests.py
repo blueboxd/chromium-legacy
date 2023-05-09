@@ -240,11 +240,6 @@ class WPTAdapter:
         parser.add_argument('--isolated-script-test-perf-output',
                             help=argparse.SUPPRESS)
         parser.add_argument('--script-type', help=argparse.SUPPRESS)
-        # `Port.setup_test_run` will always start Xvfb on Linux.
-        parser.add_argument('--xvfb',
-                            action='store_true',
-                            default=True,
-                            help=argparse.SUPPRESS)
         parser.add_argument(
             '-j',
             '--processes',
@@ -279,11 +274,11 @@ class WPTAdapter:
 
     def _check_and_update_options(self, options):
         """Postprocess options, some of which can depend on each other."""
+        self._check_and_update_sharding_options(options)
         # Set up logging as early as possible.
         self._check_and_update_output_options(options)
         self._check_and_update_upstream_options(options)
         self._check_and_update_config_options(options)
-        self._check_and_update_sharding_options(options)
         # TODO(crbug/1316055): Enable tombstone with '--stackwalk-binary' and
         # '--symbols-path'.
         options.exclude = options.exclude or []
@@ -316,11 +311,8 @@ class WPTAdapter:
         if options.log_chromium == '' or options.show_results:
             options.log_chromium = self.fs.join(output_dir, 'results.json')
         if options.log_wptreport == '':
-            if self._shard_index is None:
-                filename = 'wpt_reports_%s.json' % options.product
-            else:
-                filename = 'wpt_reports_%s_%02d.json' % (options.product,
-                                                         self._shard_index)
+            filename = 'wpt_reports_%s_%02d.json' % (options.product,
+                                                     options.this_chunk)
             options.log_wptreport = self.fs.join(output_dir, filename)
         for log_type in ('chromium', 'wptreport'):
             dest = 'log_%s' % log_type
@@ -350,15 +342,10 @@ class WPTAdapter:
             '--force-fieldtrial-params='
             'DownloadServiceStudy.Enabled:start_up_delay_ms/0',
         ])
-        if options.retry_unexpected is None:
-            if _has_explicit_tests(options):
-                options.retry_unexpected = 0
-                logger.warning('Tests explicitly specified; disabling retries')
-            else:
-                options.retry_unexpected = 3
-                logger.warning(
-                    'Tests not explicitly specified; '
-                    'using %d retries', options.retry_unexpected)
+        if options.sanitizer_enabled and (options.timeout_multiplier or 1) < 2:
+            options.timeout_multiplier = 2
+            logger.info('Defaulting to 2x timeout multiplier because '
+                        'sanitizer is enabled')
         if not options.mojojs_path:
             options.mojojs_path = self.path_from_output_dir(
                 options.target, 'gen')
@@ -434,13 +421,12 @@ class WPTAdapter:
             options.run_by_dir = 0
 
     def _check_and_update_sharding_options(self, options):
-        if self._shard_index is not None:
+        # Command line arguments take priority over environment variables
+        if (options.total_chunks == 1 and self._shard_index is not None
+                and self._total_shards is not None):
             # wptrunner uses a 1-based index, whereas LUCI uses 0-based.
             options.this_chunk = self._shard_index + 1
-        if self._total_shards is not None:
             options.total_chunks = self._total_shards
-        logger.info('Selecting tests for shard %d/%d', options.this_chunk,
-                    options.total_chunks)
         # The default sharding strategy is to shard by directory. But
         # we want to hash each test to determine which shard runs it.
         # This allows running individual directories that have few
@@ -511,7 +497,7 @@ class WPTAdapter:
             'debug': self.port.get_option('configuration') == 'Debug',
             'flag_specific': options.flag_specific or '',
             'used_upstream': options.use_upstream_wpt,
-            'sanitizer_enabled': options.enable_sanitizer,
+            'sanitizer_enabled': options.sanitizer_enabled,
         }
         if options.use_upstream_wpt:
             # `run_wpt_tests` does not run in the upstream checkout's git
@@ -602,21 +588,15 @@ class WPTAdapter:
             '--isolated-script-test-launcher-retry-limit',
             metavar='RETRIES',
             type=lambda value: max(0, int(value)),
-            default=None,
-            help=(
-                'Maximum number of times to rerun unexpectedly failed tests. '
-                'Defaults to 3 unless given an explicit list of tests to run.'
-            ))
+            default=3,
+            help=('Maximum number of times to rerun unexpectedly failed '
+                  'tests. Defaults to 3.'))
         group.add_argument('--no-show-results',
                            dest='show_results',
                            action='store_false',
                            default=self.host.platform.interactive,
                            help=("Don't launch a browser with results after"
                                  "the tests are done"))
-        group.add_argument(
-            '--enable-sanitizer',
-            action='store_true',
-            help='Only report sanitizer-related errors and crashes.')
         group.add_argument('--enable-leak-detection',
                            action='append_const',
                            dest='binary_args',
@@ -696,6 +676,8 @@ class WPTAdapter:
     def add_output_arguments(self, parser):
         group = parser.add_argument_group(
             'Output Logging', 'Options for controlling logging behavior.')
+        group.add_argument('--results-directory',
+                           help='Location of test results'),
         # For the overridden '--log-*' options, the value will be `None` if no
         # report should be logged, or the empty string if a default filename
         # should be derived.
@@ -1295,6 +1277,8 @@ def main() -> int:
     try:
         adapter = WPTAdapter()
         options = adapter.parse_arguments()
+        logger.info('Selecting tests for shard %d/%d', options.this_chunk,
+                    options.total_chunks)
         return adapter.run_tests(options)
     except KeyboardInterrupt:
         logger.critical("Harness exited after signal interrupt")

@@ -43,7 +43,7 @@ constexpr int kLabelFontSize = 13;
 
 // If the menu was opened as a result of hovering over the frame size button,
 // moving the mouse outside the menu or size button will result in closing it
-// after 3 seconds have elapsed.
+// after 250 ms have elapsed.
 constexpr base::TimeDelta kMouseExitMenuTimeout = base::Milliseconds(250);
 
 // Creates multitask button with label.
@@ -67,7 +67,7 @@ std::unique_ptr<views::View> CreateButtonContainer(
 
 // -----------------------------------------------------------------------------
 // MultitaskMenuView::MenuPreTargetHandler:
-
+// Auto-closes the multitask menu on click outside or after timeout.
 class MultitaskMenuView::MenuPreTargetHandler : public ui::EventHandler {
  public:
   MenuPreTargetHandler(views::Widget* menu_widget,
@@ -86,6 +86,10 @@ class MultitaskMenuView::MenuPreTargetHandler : public ui::EventHandler {
   }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
+    if (!menu_widget_ || menu_widget_->IsClosed()) {
+      return;
+    }
+
     if (event->type() == ui::ET_MOUSE_PRESSED) {
       ProcessPressedEvent(*event);
     }
@@ -100,7 +104,7 @@ class MultitaskMenuView::MenuPreTargetHandler : public ui::EventHandler {
         exit_timer_.Stop();
       } else if (g_skip_mouse_out_delay_for_testing) {
         OnExitTimerFinished();
-      } else {
+      } else if (!exit_timer_.IsRunning()) {
         exit_timer_.Start(FROM_HERE, kMouseExitMenuTimeout, this,
                           &MenuPreTargetHandler::OnExitTimerFinished);
       }
@@ -108,6 +112,10 @@ class MultitaskMenuView::MenuPreTargetHandler : public ui::EventHandler {
   }
 
   void OnTouchEvent(ui::TouchEvent* event) override {
+    if (!menu_widget_ || menu_widget_->IsClosed()) {
+      return;
+    }
+
     if (event->type() == ui::ET_TOUCH_PRESSED) {
       ProcessPressedEvent(*event);
     }
@@ -257,16 +265,19 @@ void MultitaskMenuView::SetSkipMouseOutDelayForTesting(bool val) {
 }
 
 void MultitaskMenuView::SplitButtonPressed(SnapDirection direction) {
-  SnapController::Get()->CommitSnap(window_, direction, kDefaultSnapRatio);
+  SnapController::Get()->CommitSnap(
+      window_, direction, kDefaultSnapRatio,
+      SnapController::SnapRequestSource::kWindowLayoutMenu);
   close_callback_.Run();
   RecordMultitaskMenuActionType(MultitaskMenuActionType::kHalfSplitButton);
 }
 
 void MultitaskMenuView::PartialButtonPressed(SnapDirection direction) {
-  SnapController::Get()->CommitSnap(window_, direction,
-                                    direction == SnapDirection::kPrimary
-                                        ? kTwoThirdSnapRatio
-                                        : kOneThirdSnapRatio);
+  SnapController::Get()->CommitSnap(
+      window_, direction,
+      direction == SnapDirection::kPrimary ? kTwoThirdSnapRatio
+                                           : kOneThirdSnapRatio,
+      SnapController::SnapRequestSource::kWindowLayoutMenu);
   close_callback_.Run();
 
   base::RecordAction(base::UserMetricsAction(

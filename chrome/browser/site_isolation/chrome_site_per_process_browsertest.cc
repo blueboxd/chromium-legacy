@@ -207,12 +207,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_TRUE(
       content::ExecuteScript(frame_host, "localStorage['foo'] = 'bar'"));
   EXPECT_EQ(content::EvalJs(frame_host, "localStorage['foo'];"), "bar");
-  bool is_object_created = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      frame_host,
-      "window.domAutomationController.send(!!indexedDB.open('testdb', 2));",
-      &is_object_created));
-  EXPECT_TRUE(is_object_created);
+  EXPECT_EQ(true, EvalJs(frame_host, "!!indexedDB.open('testdb', 2);"));
   EXPECT_TRUE(ExecuteScript(frame_host,
                             "window.webkitRequestFileSystem("
                             "window.TEMPORARY, 1024, function() {});"));
@@ -583,10 +578,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PrintIgnoredInUnloadHandler) {
       GURL(embedded_test_server()->GetURL("c.com", "/title1.html"))));
 
   // Check that b.com's process is still alive.
-  bool renderer_alive = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      child_1, "window.domAutomationController.send(true);", &renderer_alive));
-  EXPECT_TRUE(renderer_alive);
+  EXPECT_EQ(true, EvalJs(child_1, "true;"));
 }
 
 // Ensure that when a window closes itself via window.close(), its process does
@@ -705,12 +697,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Add a postMessage handler in the top frame.  The handler opens a new
   // popup.
   GURL popup_url(embedded_test_server()->GetURL("a.com", "/title2.html"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+  EXPECT_TRUE(ExecJs(
       web_contents,
       base::StringPrintf("window.addEventListener('message', function() {\n"
                          "  window.w = window.open('%s');\n"
                          "});",
-                         popup_url.spec().c_str())));
+                         popup_url.spec().c_str()),
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Send a postMessage from the child frame to its parent.  Note that by
   // default ExecuteScript runs with a user gesture, which should be
@@ -754,12 +747,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Add a postMessage handler in the root frame.  The handler opens a new popup
   // for a URL constructed using postMessage event data.
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      web_contents, base::StringPrintf(
-                        "window.addEventListener('message', function(event) {\n"
-                        "  window.w = window.open('%s' + event.data);\n"
-                        "});",
-                        popup_url.spec().c_str())));
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             base::StringPrintf(
+                 "window.addEventListener('message', function(event) {\n"
+                 "  window.w = window.open('%s' + event.data);\n"
+                 "});",
+                 popup_url.spec().c_str()),
+             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Send two postMessages from child frame to parent frame as part of the same
   // user gesture.  Ensure that only one popup can be opened.
@@ -807,8 +802,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
       "  window.w = window.open('%s' + event.data);\n"
       "});",
       popup_url.spec().c_str());
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(web_contents, script));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(frame_b, script));
+  EXPECT_TRUE(
+      ExecJs(web_contents, script, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(ExecJs(frame_b, script, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Add a popup observer.
   content::TestNavigationObserver popup_observer(nullptr);
@@ -873,22 +869,24 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Add a postMessage handler to middle frame to send another postMessage to
   // top frame and then immediately attempt window.open().
   GURL popup1_url(embedded_test_server()->GetURL("popup.com", "/title1.html"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+  EXPECT_TRUE(ExecJs(
       child,
       base::StringPrintf("window.addEventListener('message', function() {\n"
                          "  parent.postMessage('foo', '*');\n"
                          "  window.w = window.open('%s');\n"
                          "});",
-                         popup1_url.spec().c_str())));
+                         popup1_url.spec().c_str()),
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Add a postMessage handler to top frame to attempt a window.open().
   GURL popup2_url(embedded_test_server()->GetURL("popup.com", "/title2.html"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+  EXPECT_TRUE(ExecJs(
       web_contents,
       base::StringPrintf("window.addEventListener('message', function() {\n"
                          "  window.w = window.open('%s');\n"
                          "});",
-                         popup2_url.spec().c_str())));
+                         popup2_url.spec().c_str()),
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Send a postMessage from bottom frame to middle frame as part of the same
   // user gesture.  Ensure that only one popup can be opened.
@@ -929,12 +927,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Add a postMessage handler in the root frame.  The handler opens a new popup
   // for a URL constructed using postMessage event data.
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/title1.html"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+  EXPECT_TRUE(ExecJs(
       web_contents,
       base::StringPrintf("window.addEventListener('message', function() {\n"
                          "  window.w = window.open('%s');\n"
                          "});",
-                         popup_url.spec().c_str())));
+                         popup_url.spec().c_str()),
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Send a postMessage from child frame to parent frame and then immediately
   // consume the user gesture with window.open().
@@ -993,14 +992,16 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Try opening popups from frame_c and root frame.
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      frame_c,
-      base::StringPrintf("window.w = window.open('%s' + 'title1.html');",
-                         popup_url.spec().c_str())));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      web_contents,
-      base::StringPrintf("window.w = window.open('%s' + 'title2.html');",
-                         popup_url.spec().c_str())));
+  EXPECT_TRUE(
+      ExecJs(frame_c,
+             base::StringPrintf("window.w = window.open('%s' + 'title1.html');",
+                                popup_url.spec().c_str()),
+             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             base::StringPrintf("window.w = window.open('%s' + 'title2.html');",
+                                popup_url.spec().c_str()),
+             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Wait and check that only one popup has opened.
   popup_observer.Wait();
@@ -1046,18 +1047,21 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Try opening popups from all three frames.
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      frame_b,
-      base::StringPrintf("window.w = window.open('%s' + 'title1.html');",
-                         popup_url.spec().c_str())));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      frame_c,
-      base::StringPrintf("window.w = window.open('%s' + 'title2.html');",
-                         popup_url.spec().c_str())));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      web_contents,
-      base::StringPrintf("window.w = window.open('%s' + 'title3.html');",
-                         popup_url.spec().c_str())));
+  EXPECT_TRUE(
+      ExecJs(frame_b,
+             base::StringPrintf("window.w = window.open('%s' + 'title1.html');",
+                                popup_url.spec().c_str()),
+             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(
+      ExecJs(frame_c,
+             base::StringPrintf("window.w = window.open('%s' + 'title2.html');",
+                                popup_url.spec().c_str()),
+             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             base::StringPrintf("window.w = window.open('%s' + 'title3.html');",
+                                popup_url.spec().c_str()),
+             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Wait and check that only one popup has opened.
   popup_observer.Wait();
@@ -1102,18 +1106,20 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Open a popup from the frame, with `noopener`. This should consume
   // transient user activation.
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+  EXPECT_TRUE(ExecJs(
       web_contents,
       base::StringPrintf(
           "window.w = window.open('%s'+'title1.html', '_blank', 'noopener');",
-          popup_url.spec().c_str())));
+          popup_url.spec().c_str()),
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Try to open another popup.
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+  EXPECT_TRUE(ExecJs(
       web_contents,
       base::StringPrintf(
           "window.w = window.open('%s'+'title2.html', '_blank', 'noopener');",
-          popup_url.spec().c_str())));
+          popup_url.spec().c_str()),
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Wait and check that only one popup was opened.
   popup_observer.Wait();
@@ -1396,13 +1402,16 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTestWithVerifiedUserActivation,
 
   // Try opening popups from frame_b and root frame.
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      frame_b, content::JsReplace("window.w = window.open($1 + 'title1.html');",
-                                  popup_url)));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
-      web_contents,
-      content::JsReplace("window.w = window.open($1 + 'title2.html');",
-                         popup_url)));
+  EXPECT_TRUE(
+      ExecJs(frame_b,
+             content::JsReplace("window.w = window.open($1 + 'title1.html');",
+                                popup_url),
+             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  EXPECT_TRUE(
+      ExecJs(web_contents,
+             content::JsReplace("window.w = window.open($1 + 'title2.html');",
+                                popup_url),
+             content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   // Wait and check that only one popup has opened.
   popup_observer.Wait();

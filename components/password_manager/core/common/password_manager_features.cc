@@ -71,7 +71,7 @@ BASE_FEATURE(kEnablePasswordManagerWithinFencedFrame,
 // affiliated website.
 BASE_FEATURE(kFillingAcrossAffiliatedWebsites,
              "FillingAcrossAffiliatedWebsites",
-#if !BUILDFLAG(IS_ANDROID) // Desktop and iOS
+#if !BUILDFLAG(IS_ANDROID)  // Desktop and iOS
              base::FEATURE_ENABLED_BY_DEFAULT);
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -123,12 +123,6 @@ BASE_FEATURE(kIOSPasswordCheckup,
              "IOSPasswordCheckup",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Feature flag to show local/account storage in save/update password infobar
-// subtitle.
-BASE_FEATURE(kIOSShowPasswordStorageInSaveInfobar,
-             "IOSShowPasswordStorageInSaveInfobar",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables password bottom sheet to be displayed (on iOS) when a user is
 // signed-in and taps on a username or password field on a website that has at
 // least one credential saved in their password manager.
@@ -157,20 +151,10 @@ BASE_FEATURE(kPasswordIssuesInSpecificsMetadata,
              "PasswordIssuesInSpecificsMetadata",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the new password viewing subpage.
-BASE_FEATURE(kPasswordViewPageInSettings,
-             "PasswordViewPageInSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables sending credentials from the settings UI.
 BASE_FEATURE(kSendPasswords,
              "SendPasswords",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables password leak detection for unauthenticated users.
-BASE_FEATURE(kLeakDetectionUnauthenticated,
-             "LeakDetectionUnauthenticated",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables .well-known based password change flow from leaked password dialog.
 BASE_FEATURE(kPasswordChangeWellKnown,
@@ -203,7 +187,7 @@ BASE_FEATURE(kPasswordsGrouping,
 // never save passwords on a certain website.
 BASE_FEATURE(kRecoverFromNeverSaveAndroid,
              "RecoverFromNeverSaveAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 // Enables a revamped version of the password management bubble triggered by
@@ -255,11 +239,6 @@ BASE_FEATURE(kUnifiedCredentialManagerDryRun,
 // database will be unused but kept in sync for local passwords.
 BASE_FEATURE(kUnifiedPasswordManagerAndroid,
              "UnifiedPasswordManagerAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables showing contextual error messages when UPM encounters an auth error.
-BASE_FEATURE(kUnifiedPasswordManagerErrorMessages,
-             "UnifiedPasswordManagerErrorMessages",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables showing the warning about UPM migrating local passwords.
@@ -315,21 +294,6 @@ BASE_FEATURE(kPasswordGenerationPreviewOnHover,
 extern const base::FeatureParam<int> kMigrationVersion = {
     &kUnifiedPasswordManagerAndroid, "migration_version", 1};
 
-// Whether to ignore the 24h timeout in between auth error messages as
-// well as the 30 mins distance to sync error messages.
-extern const base::FeatureParam<bool> kIgnoreAuthErrorMessageTimeouts = {
-    &kUnifiedPasswordManagerErrorMessages, "ignore_auth_error_message_timeouts",
-    false};
-
-// The maximum number of authentication error UI messages to show before
-// considering auth errors as unrecoverable and unenrolling the user from UPM.
-// If this param is set, unenrollment will happen even if the auth error is in
-// the ignore list.
-// By default, there is no limit to how many errors will be shown.
-extern const base::FeatureParam<int> kMaxShownUPMErrorsBeforeEviction = {
-    &kUnifiedPasswordManagerErrorMessages,
-    "max_shown_auth_errors_before_eviction", -1};
-
 // The string version to use for the save/update password prompts when the user
 // is syncing passwords. Version 1 is outdated, so the only supported versions
 // currently are 2 and 3.
@@ -359,8 +323,9 @@ const char kGenerationRequirementsTimeout[] = "timeout";
 
 #if BUILDFLAG(IS_ANDROID)
 bool UsesUnifiedPasswordManagerUi() {
-  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
+  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid)) {
     return false;
+  }
   UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
   switch (variation) {
     case UpmExperimentVariation::kEnableForSyncingUsers:
@@ -380,8 +345,9 @@ bool UsesUnifiedPasswordManagerBranding() {
 }
 
 bool RequiresMigrationForUnifiedPasswordManager() {
-  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
+  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid)) {
     return false;
+  }
   UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
   switch (variation) {
     case UpmExperimentVariation::kEnableForSyncingUsers:
@@ -396,8 +362,9 @@ bool RequiresMigrationForUnifiedPasswordManager() {
 }
 
 bool ManagesLocalPasswordsInUnifiedPasswordManager() {
-  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
+  if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid)) {
     return false;
+  }
   UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
   switch (variation) {
     case UpmExperimentVariation::kEnableForSyncingUsers:

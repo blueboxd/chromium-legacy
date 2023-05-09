@@ -764,7 +764,9 @@ public class ExternalNavigationHandler {
         PermissionCallback permissionCallback = new PermissionCallback() {
             @Override
             public void onRequestPermissionsResult(String[] permissions, int[] grantResults) {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                if (grantResults.length == 0) return;
+                assert permissionNeeded.equals(permissions[0]);
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && mDelegate.hasValidTab()) {
                     if (params.getRequiredAsyncActionTakenCallback() != null) {
                         params.getRequiredAsyncActionTakenCallback().onResult(
@@ -1495,17 +1497,9 @@ public class ExternalNavigationHandler {
                 || ignoreBackForwardNav(params);
     }
 
-    private void recordIntentSelectorMetrics(GURL targetUrl, Intent targetIntent) {
-        if (UrlUtilities.hasIntentScheme(targetUrl)) {
-            RecordHistogram.recordBooleanHistogram(
-                    "Android.Intent.IntentUriWithSelector", targetIntent.getSelector() != null);
-        }
-    }
-
     private OverrideUrlLoadingResult shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent targetIntent, GURL browserFallbackUrl,
             MutableBoolean canLaunchExternalFallbackResult) {
-        recordIntentSelectorMetrics(params.getUrl(), targetIntent);
         sanitizeQueryIntentActivitiesIntent(targetIntent);
 
         // Any subsequent navigations should cancel the existing AlertDialog.

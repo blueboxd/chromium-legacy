@@ -38,6 +38,7 @@ class ReadAnythingFontModel : public ui::ComboboxModel {
   std::string GetFontNameAt(size_t index);
   bool IsValidFontName(const std::string& font_name);
   bool IsValidFontIndex(size_t index);
+  void SetDefaultLanguage(const std::string& lang);
   size_t GetFontNameIndex(std::string font_name);
   void SetSelectedIndex(size_t index);
   std::vector<std::string> GetLabelFontNameAt(size_t index) override;
@@ -114,6 +115,7 @@ class ReadAnythingColorsModel : public ReadAnythingMenuModel {
               ui::ColorId separator_color_id,
               ui::ColorId dropdown_color_id,
               ui::ColorId selected_color_id,
+              ui::ColorId focus_ring_color_id,
               ColorInfo::ReadAnythingColor logging_value);
     ColorInfo(const ColorInfo& other);
     ColorInfo(ColorInfo&&);
@@ -142,6 +144,9 @@ class ReadAnythingColorsModel : public ReadAnythingMenuModel {
     // The selected / hover color of the dropdown menu, used for the combobox
     // menu model.
     ui::ColorId selected_dropdown_color_id;
+
+    // The color of the focus ring, used for all elements in the toolbar.
+    ui::ColorId focus_ring_color_id;
 
     // The enum value used to log this theme.
     ColorInfo::ReadAnythingColor logging_value;
@@ -255,6 +260,7 @@ class ReadAnythingModel {
         ui::ColorId separator_color_id,
         ui::ColorId dropdown_color_id,
         ui::ColorId selected_color_id,
+        ui::ColorId focus_ring_color_id,
         read_anything::mojom::LineSpacing line_spacing,
         read_anything::mojom::LetterSpacing letter_spacing) = 0;
   };
@@ -264,7 +270,8 @@ class ReadAnythingModel {
   ReadAnythingModel& operator=(const ReadAnythingModel&) = delete;
   ~ReadAnythingModel();
 
-  void Init(const std::string& font_name,
+  void Init(const std::string& lang_code,
+            const std::string& font_name,
             double font_scale,
             read_anything::mojom::Colors colors,
             read_anything::mojom::LineSpacing line_spacing,
@@ -313,6 +320,7 @@ class ReadAnythingModel {
   ui::ColorId separator_color_id_ = kColorReadAnythingSeparator;
   ui::ColorId dropdown_color_id_ = kColorReadAnythingDropdownBackground;
   ui::ColorId selected_dropdown_color_id_ = kColorReadAnythingDropdownSelected;
+  ui::ColorId focus_ring_color_id_ = kColorReadAnythingFocusRingBackground;
 
   // A scale multiplier for font size (internal use only, not shown to user).
   float font_scale_ = kReadAnythingDefaultFontScale;

@@ -22,6 +22,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_button.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_metrics.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_view.h"
 #include "chromeos/ui/frame/multitask_menu/split_button_view.h"
@@ -40,6 +41,10 @@ namespace {
 
 // The vertical distance used to end drag to show and start drag to hide.
 constexpr int kMenuDragPoint = 100;
+
+// The vertical position of the multitask menu, in the window (and widget)
+// coordinates.
+constexpr int kVerticalPosition = 8;
 
 }  // namespace
 
@@ -371,6 +376,27 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, CloseMultitaskMenuOnTap) {
   EXPECT_FALSE(GetMultitaskMenu());
 }
 
+// Tests that pressing a button before the show animation ends closes the menu
+// (http://b/279355302).
+TEST_F(TabletModeMultitaskMenuEventHandlerTest,
+       CloseMultitaskMenuOnButtonPress) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Swipe down the menu partially to start an animation.
+  auto window = CreateAppWindow();
+  GenerateScroll(window->bounds().CenterPoint().x(), 0,
+                 /*end_y=*/60);
+  GestureTapOn(
+      GetMultitaskMenuView(GetMultitaskMenu())->float_button_for_testing());
+
+  // Wait for the TabletModeMultitaskMenuView layer to fade out.
+  ui::LayerAnimationStoppedWaiter().Wait(
+      GetMultitaskMenu()->widget()->GetContentsView()->layer());
+
+  ASSERT_FALSE(GetMultitaskMenu());
+}
+
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, CloseOnDoubleTapDivider) {
   auto window1 = CreateTestWindow(gfx::Rect(800, 600));
   auto window2 = CreateTestWindow(gfx::Rect(800, 600));
@@ -591,32 +617,63 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, HiddenButtons) {
   EXPECT_FALSE(multitask_menu_view->float_button_for_testing());
 }
 
-// Tests that showing the menu will dismiss the visual cue (drag bar).
-TEST_F(TabletModeMultitaskMenuEventHandlerTest, CueVisibleOnShowMenu) {
-  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
-
+// Tests that the cue is still showing when the menu is opened, and it has been
+// transformed to the correct position below the menu.
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, CueTransformOnShowMenu) {
   auto window = CreateAppWindow();
 
   auto* multitask_cue = GetMultitaskMenuEventHandler()->multitask_cue();
   ASSERT_TRUE(multitask_cue);
   EXPECT_TRUE(multitask_cue->cue_layer());
 
-  // Wait for fade in to finish.
-  ui::LayerAnimationStoppedWaiter animation_waiter;
-  animation_waiter.Wait(multitask_cue->cue_layer());
-
   // Cue should still be showing when the menu is activated.
   ShowMultitaskMenu(*window);
   ASSERT_TRUE(multitask_cue);
-  EXPECT_TRUE(multitask_cue->cue_layer());
+  ui::Layer* cue_layer = multitask_cue->cue_layer();
+  EXPECT_TRUE(cue_layer);
 
+  // Verify cue is transformed to the right position.
+  const gfx::Rect expected_bounds(
+      (window->bounds().width() - TabletModeMultitaskCue::kCueWidth) / 2,
+      GetMultitaskMenuView(GetMultitaskMenu())->bounds().bottom() +
+          kVerticalPosition + TabletModeMultitaskCue::kCueYOffset,
+      TabletModeMultitaskCue::kCueWidth, TabletModeMultitaskCue::kCueHeight);
+  EXPECT_EQ(expected_bounds, cue_layer->GetTargetTransform().MapRect(
+                                 cue_layer->GetTargetBounds()));
+
+  // Cue should still dismiss via timer after menu opened.
   multitask_cue->FireCueDismissTimerForTesting();
 
-  // Wait for fade out to finish.
-  animation_waiter.Wait(multitask_cue->cue_layer());
   ASSERT_TRUE(multitask_cue);
   EXPECT_FALSE(multitask_cue->cue_layer());
+}
+
+// Tests that the cue appears on the correct window when the multitask menu is
+// activated on different windows in split view.
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, CueCorrectWindowInSplitView) {
+  auto window1 = CreateAppWindow();
+  PressPartialPrimary(*window1);
+  auto window2 = CreateAppWindow();
+  PressPartialSecondary(*window2);
+
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(split_view_controller->IsWindowInSplitView(window1.get()));
+  ASSERT_TRUE(split_view_controller->IsWindowInSplitView(window2.get()));
+
+  // Show the menu and cue on the first window.
+  ShowMultitaskMenu(*window1);
+  auto* multitask_cue = GetMultitaskMenuEventHandler()->multitask_cue();
+  ASSERT_TRUE(multitask_cue);
+  EXPECT_TRUE(multitask_cue->cue_layer());
+  EXPECT_EQ(window1.get(), multitask_cue->window_);
+
+  // Show the menu and cue on the second window.
+  ShowMultitaskMenu(*window2);
+  multitask_cue = GetMultitaskMenuEventHandler()->multitask_cue();
+  ASSERT_TRUE(multitask_cue);
+  EXPECT_TRUE(multitask_cue->cue_layer());
+  EXPECT_EQ(window2.get(), multitask_cue->window_);
 }
 
 // Tests that the bottom window can open the multitask menu in portrait mode. In
@@ -718,7 +775,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, HidesWhenMinimized) {
   ShowMultitaskMenu(*window);
 
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-      WINDOW_MINIMIZE, {});
+      AcceleratorAction::kWindowMinimize, {});
   ASSERT_TRUE(WindowState::Get(window.get())->IsMinimized());
   EXPECT_FALSE(GetMultitaskMenu());
 }

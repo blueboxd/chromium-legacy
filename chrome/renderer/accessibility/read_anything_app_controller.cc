@@ -13,6 +13,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/accessibility/read_anything_constants.h"
 #include "chrome/renderer/accessibility/ax_tree_distiller.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
@@ -24,6 +25,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -50,7 +52,11 @@ void SetAXNodeDataChildIds(v8::Isolate* isolate,
                            ui::AXNodeData* ax_node_data) {
   v8::Local<v8::Value> v8_child_ids;
   v8_dict->Get("childIds", &v8_child_ids);
-  gin::ConvertFromV8(isolate, v8_child_ids, &ax_node_data->child_ids);
+  std::vector<int32_t> child_ids;
+  if (!gin::ConvertFromV8(isolate, v8_child_ids, &child_ids)) {
+    return;
+  }
+  ax_node_data->child_ids = std::move(child_ids);
 }
 
 void SetAXNodeDataId(v8::Isolate* isolate,
@@ -58,7 +64,11 @@ void SetAXNodeDataId(v8::Isolate* isolate,
                      ui::AXNodeData* ax_node_data) {
   v8::Local<v8::Value> v8_id;
   v8_dict->Get("id", &v8_id);
-  gin::ConvertFromV8(isolate, v8_id, &ax_node_data->id);
+  ui::AXNodeID id;
+  if (!gin::ConvertFromV8(isolate, v8_id, &id)) {
+    return;
+  }
+  ax_node_data->id = id;
 }
 
 void SetAXNodeDataLanguage(v8::Isolate* isolate,
@@ -67,7 +77,9 @@ void SetAXNodeDataLanguage(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_language;
   v8_dict->Get("language", &v8_language);
   std::string language;
-  gin::ConvertFromV8(isolate, v8_language, &language);
+  if (!gin::ConvertFromV8(isolate, v8_language, &language)) {
+    return;
+  }
   ax_node_data->AddStringAttribute(ax::mojom::StringAttribute::kLanguage,
                                    language);
 }
@@ -78,7 +90,9 @@ void SetAXNodeDataName(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_name;
   v8_dict->Get("name", &v8_name);
   std::string name;
-  gin::ConvertFromV8(isolate, v8_name, &name);
+  if (!gin::ConvertFromV8(isolate, v8_name, &name)) {
+    return;
+  }
   ax_node_data->SetName(name);
   ax_node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
 }
@@ -89,7 +103,9 @@ void SetAXNodeDataRole(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_role;
   v8_dict->Get("role", &v8_role);
   std::string role_name;
-  gin::ConvertFromV8(isolate, v8_role, &role_name);
+  if (!gin::ConvertFromV8(isolate, v8_role, &role_name)) {
+    return;
+  }
   if (role_name == "rootWebArea") {
     ax_node_data->role = ax::mojom::Role::kRootWebArea;
   } else if (role_name == "heading") {
@@ -111,7 +127,9 @@ void SetAXNodeDataHtmlTag(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_html_tag;
   v8_dict->Get("htmlTag", &v8_html_tag);
   std::string html_tag;
-  gin::Converter<std::string>::FromV8(isolate, v8_html_tag, &html_tag);
+  if (!gin::Converter<std::string>::FromV8(isolate, v8_html_tag, &html_tag)) {
+    return;
+  }
   ax_node_data->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag,
                                    html_tag);
 }
@@ -122,7 +140,9 @@ void SetAXNodeDataTextDirection(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_direction;
   v8_dict->Get("direction", &v8_direction);
   int direction;
-  gin::ConvertFromV8(isolate, v8_direction, &direction);
+  if (!gin::ConvertFromV8(isolate, v8_direction, &direction)) {
+    return;
+  }
   ax_node_data->AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
                                 direction);
 }
@@ -133,7 +153,9 @@ void SetAXNodeDataTextStyle(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_text_style;
   v8_dict->Get("textStyle", &v8_text_style);
   std::string text_style;
-  gin::ConvertFromV8(isolate, v8_text_style, &text_style);
+  if (!gin::ConvertFromV8(isolate, v8_text_style, &text_style)) {
+    return;
+  }
   if (text_style.find("underline") != std::string::npos) {
     ax_node_data->AddTextStyle(ax::mojom::TextStyle::kUnderline);
   }
@@ -154,7 +176,9 @@ void SetAXNodeDataUrl(v8::Isolate* isolate,
   v8::Local<v8::Value> v8_url;
   v8_dict->Get("url", &v8_url);
   std::string url;
-  gin::ConvertFromV8(isolate, v8_url, &url);
+  if (!gin::ConvertFromV8(isolate, v8_url, &url)) {
+    return;
+  }
   ax_node_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
 }
 
@@ -163,8 +187,12 @@ void SetSelectionAnchorObjectId(v8::Isolate* isolate,
                                 ui::AXTreeData* ax_tree_data) {
   v8::Local<v8::Value> v8_anchor_object_id;
   v8_dict->Get("anchor_object_id", &v8_anchor_object_id);
-  gin::ConvertFromV8(isolate, v8_anchor_object_id,
-                     &ax_tree_data->sel_anchor_object_id);
+  ui::AXNodeID sel_anchor_object_id;
+  if (!gin::ConvertFromV8(isolate, v8_anchor_object_id,
+                          &sel_anchor_object_id)) {
+    return;
+  }
+  ax_tree_data->sel_anchor_object_id = sel_anchor_object_id;
 }
 
 void SetSelectionFocusObjectId(v8::Isolate* isolate,
@@ -172,8 +200,11 @@ void SetSelectionFocusObjectId(v8::Isolate* isolate,
                                ui::AXTreeData* ax_tree_data) {
   v8::Local<v8::Value> v8_focus_object_id;
   v8_dict->Get("focus_object_id", &v8_focus_object_id);
-  gin::ConvertFromV8(isolate, v8_focus_object_id,
-                     &ax_tree_data->sel_focus_object_id);
+  ui::AXNodeID sel_focus_object_id;
+  if (!gin::ConvertFromV8(isolate, v8_focus_object_id, &sel_focus_object_id)) {
+    return;
+  }
+  ax_tree_data->sel_focus_object_id = sel_focus_object_id;
 }
 
 void SetSelectionAnchorOffset(v8::Isolate* isolate,
@@ -181,8 +212,11 @@ void SetSelectionAnchorOffset(v8::Isolate* isolate,
                               ui::AXTreeData* ax_tree_data) {
   v8::Local<v8::Value> v8_anchor_offset;
   v8_dict->Get("anchor_offset", &v8_anchor_offset);
-  gin::ConvertFromV8(isolate, v8_anchor_offset,
-                     &ax_tree_data->sel_anchor_offset);
+  int32_t sel_anchor_offset;
+  if (!gin::ConvertFromV8(isolate, v8_anchor_offset, &sel_anchor_offset)) {
+    return;
+  }
+  ax_tree_data->sel_anchor_offset = sel_anchor_offset;
 }
 
 void SetSelectionFocusOffset(v8::Isolate* isolate,
@@ -190,7 +224,11 @@ void SetSelectionFocusOffset(v8::Isolate* isolate,
                              ui::AXTreeData* ax_tree_data) {
   v8::Local<v8::Value> v8_focus_offset;
   v8_dict->Get("focus_offset", &v8_focus_offset);
-  gin::ConvertFromV8(isolate, v8_focus_offset, &ax_tree_data->sel_focus_offset);
+  int32_t sel_focus_offset;
+  if (!gin::ConvertFromV8(isolate, v8_focus_offset, &sel_focus_offset)) {
+    return;
+  }
+  ax_tree_data->sel_focus_offset = sel_focus_offset;
 }
 
 void SetSelectionIsBackward(v8::Isolate* isolate,
@@ -198,8 +236,11 @@ void SetSelectionIsBackward(v8::Isolate* isolate,
                             ui::AXTreeData* ax_tree_data) {
   v8::Local<v8::Value> v8_sel_is_backward;
   v8_dict->Get("is_backward", &v8_sel_is_backward);
-  gin::ConvertFromV8(isolate, v8_sel_is_backward,
-                     &ax_tree_data->sel_is_backward);
+  bool sel_is_backward;
+  if (!gin::ConvertFromV8(isolate, v8_sel_is_backward, &sel_is_backward)) {
+    return;
+  }
+  ax_tree_data->sel_is_backward = sel_is_backward;
 }
 
 void SetAXTreeUpdateRootId(v8::Isolate* isolate,
@@ -207,7 +248,11 @@ void SetAXTreeUpdateRootId(v8::Isolate* isolate,
                            ui::AXTreeUpdate* snapshot) {
   v8::Local<v8::Value> v8_root_id;
   v8_dict->Get("rootId", &v8_root_id);
-  gin::ConvertFromV8(isolate, v8_root_id, &snapshot->root_id);
+  ui::AXNodeID root_id;
+  if (!gin::ConvertFromV8(isolate, v8_root_id, &root_id)) {
+    return;
+  }
+  snapshot->root_id = root_id;
 }
 
 ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
@@ -260,6 +305,18 @@ ui::AXTreeUpdate GetSnapshotFromV8SnapshotLite(
   SetSelectionFocusOffset(isolate, &v8_selection_dict, &snapshot.tree_data);
   SetSelectionIsBackward(isolate, &v8_selection_dict, &snapshot.tree_data);
   return snapshot;
+}
+
+bool GetSelectable(const GURL& url) {
+  std::string full_url = url.spec();
+  for (std::string non_selectable_url :
+       string_constants::GetNonSelectableUrls()) {
+    if (re2::RE2::PartialMatch(full_url, non_selectable_url)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -329,13 +386,15 @@ void ReadAnythingAppController::AccessibilityEventReceived(
 
 void ReadAnythingAppController::OnActiveAXTreeIDChanged(
     const ui::AXTreeID& tree_id,
-    ukm::SourceId ukm_source_id) {
+    ukm::SourceId ukm_source_id,
+    const GURL& url) {
   if (tree_id == model_.active_tree_id()) {
     return;
   }
   ui::AXTreeID previous_active_tree_id = model_.active_tree_id();
   model_.SetActiveTreeId(tree_id);
   model_.SetActiveUkmSourceId(ukm_source_id);
+  model_.SetActiveTreeSelectable(GetSelectable(url));
   // Delete all pending updates on the formerly active AXTree.
   // TODO(crbug.com/1266555): If distillation is in progress, cancel the
   // distillation request.
@@ -511,6 +570,8 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("isOverline", &ReadAnythingAppController::IsOverline)
       .SetMethod("onConnected", &ReadAnythingAppController::OnConnected)
       .SetMethod("onLinkClicked", &ReadAnythingAppController::OnLinkClicked)
+      .SetMethod("isSelectable", &ReadAnythingAppController::isSelectable)
+      .SetMethod("clearSelection", &ReadAnythingAppController::ClearSelection)
       .SetMethod("onSelectionChange",
                  &ReadAnythingAppController::OnSelectionChange)
       .SetMethod("setContentForTesting",
@@ -660,11 +721,15 @@ bool ReadAnythingAppController::IsOverline(ui::AXNodeID ax_node_id) const {
   return ax_node->HasTextStyle(ax::mojom::TextStyle::kOverline);
 }
 
+bool ReadAnythingAppController::isSelectable() const {
+  return model_.active_tree_selectable();
+}
+
 void ReadAnythingAppController::OnConnected() {
-  mojo::PendingReceiver<read_anything::mojom::PageHandlerFactory>
+  mojo::PendingReceiver<read_anything::mojom::UntrustedPageHandlerFactory>
       page_handler_factory_receiver =
           page_handler_factory_.BindNewPipeAndPassReceiver();
-  page_handler_factory_->CreatePageHandler(
+  page_handler_factory_->CreateUntrustedPageHandler(
       receiver_.BindNewPipeAndPassRemote(),
       page_handler_.BindNewPipeAndPassReceiver());
   render_frame_->GetBrowserInterfaceBroker()->GetInterface(
@@ -683,6 +748,17 @@ void ReadAnythingAppController::OnLinkClicked(ui::AXNodeID ax_node_id) const {
   page_handler_->OnLinkClicked(model_.active_tree_id(), ax_node_id);
 }
 
+void ReadAnythingAppController::ClearSelection() const {
+  if (model_.active_tree_id() == ui::AXTreeIDUnknown() ||
+      !model_.ContainsTree(model_.active_tree_id())) {
+    return;
+  }
+  ui::AXSerializableTree* tree =
+      model_.GetTreeFromId(model_.active_tree_id()).get();
+  page_handler_->OnSelectionChange(model_.active_tree_id(), tree->root()->id(),
+                                   0, tree->root()->id(), 0);
+}
+
 void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
                                                   int anchor_offset,
                                                   ui::AXNodeID focus_node_id,
@@ -698,6 +774,7 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
 
   // Ignore the selection if it's collapsed, which is created by a simple click.
   if ((anchor_offset == focus_offset) && (anchor_node_id == focus_node_id)) {
+    ClearSelection();
     return;
   }
 
@@ -756,7 +833,8 @@ void ReadAnythingAppController::SetContentForTesting(
   selectionEvent.event_type = ax::mojom::Event::kDocumentSelectionChanged;
   selectionEvent.event_from = ax::mojom::EventFrom::kUser;
   AccessibilityEventReceived(snapshot.tree_data.tree_id, {snapshot}, {});
-  OnActiveAXTreeIDChanged(snapshot.tree_data.tree_id, ukm::kInvalidSourceId);
+  OnActiveAXTreeIDChanged(snapshot.tree_data.tree_id, ukm::kInvalidSourceId,
+                          GURL::EmptyGURL());
   OnAXTreeDistilled(snapshot.tree_data.tree_id, content_node_ids);
 
   // Trigger a selection event (for testing selections).

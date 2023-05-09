@@ -56,6 +56,7 @@
 <translation id="121097972571826261">कर्सरलाई एक शब्द अगाडि लैजानुहोस्</translation>
 <translation id="1217633719248931900">एपमा जानुहोस्</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, Play Store एप</translation>
+<translation id="1219309685806246869"><ph name="APP_TITLE" /> मा फर्कनुहोस्।</translation>
 <translation id="1225748608451425081">कुनै ज्ञात समस्याका कारण तपाईंको Chromebook लक गरिएको छ। तपाईं यति समयपछि साइन इन गर्न सक्नु हुने छ: <ph name="TIME_LEFT" />।</translation>
 <translation id="1229194443904279055">पाठ चयन गर्न छाडियोस्</translation>
 <translation id="1235458158152011030">ज्ञात नेटवर्कहरू</translation>
@@ -221,6 +222,7 @@
 <translation id="1961239773406905488">क्यामेरामा फोटोको प्रिभ्यू लुकाइएको छ</translation>
 <translation id="1961832440516943645"><ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="1962969542251276847">लक स्क्रिन</translation>
+<translation id="1962972976741217487">तपाईंको <ph name="DEVICE_NAME" /> को हटस्पटमा एउटा डिभाइस कनेक्ट गरिएको छ</translation>
 <translation id="1967970931040389207">हटस्पट अन गर्नुहोस्</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">नमस्कार, <ph name="USERNAME" /></translation>
@@ -301,12 +303,11 @@
 <translation id="2367972762794486313">एप्स देखाउनुहोस्</translation>
 <translation id="2369165858548251131">चिनियाँ भाषामा "नमस्ते" कसरी भनिन्छ</translation>
 <translation id="2386292613071805067">पेजमा भएका सबै सामग्री चयन गर्नुहोस्</translation>
-<translation id="2390318262976603432">भाषिक भेदका सेटिङहरू</translation>
 <translation id="2397416548179033562">Chrome मेनु देखाउनुहोस्</translation>
 <translation id="240006516586367791">मिडियासम्बन्धी नियन्त्रणहरू</translation>
 <translation id="2402411679569069051">तपाईं आफ्नो Chromebook अनलक गर्न चाहनुहुन्छ भने आफ्नो फिंगरप्रिन्ट प्रयोग गर्नुहोस् वा आफ्नो फोन अनलक गर्नुहोस्</translation>
 <translation id="2405664212338326887">कनेक्ट गरिएको छैन</translation>
-<translation id="2408955596600435184">आफ्नो PIN प्रविष्टि गर्नुहोस्</translation>
+<translation id="2408955596600435184">आफ्नो PIN हाल्नुहोस्</translation>
 <translation id="2412593942846481727">अद्यावधिक उपलब्ध छ</translation>
 <translation id="2417486498593892439">नेटवर्कमा साइन इन गर्नुहोस्</translation>
 <translation id="2426051945783024481">क्यामेराको फ्रेम स्वतः बिच भागमा पारियो</translation>
@@ -382,6 +383,7 @@
 <translation id="2791421900609674576">तपाईं आफूले छाडेकै ठाउँबाट जारी राख्न सक्नुहोस् भन्नाका लागि तपाईंलाई सिफारिसहरू देखाइने छन्।  तपाईं टच एण्ड होल्ड गरेर ती सिफारिसहरू हटाउन सक्नुहुन्छ।</translation>
 <translation id="2792498699870441125">Alt + खोज</translation>
 <translation id="2797741504905337289">सेल्फ पार्टी</translation>
+<translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, चयन गरिएको छ</translation>
 <translation id="2805756323405976993">एप्स</translation>
 <translation id="2814448776515246190">स्क्रिनको केही भाग क्याप्चर गर्ने सुविधा</translation>
 <translation id="2819276065543622893">तपाइँलाई अब साइन आउट गराइनेछ।</translation>
@@ -600,6 +602,7 @@
 <translation id="3735740477244556633">यसअनुसार क्रमबद्ध गर्नुहोस्</translation>
 <translation id="3738664582935948253">तपाईं अब स्क्रिन रेकर्डिङमा क्लिक तथा किबोर्डका सर्टकटहरू देखाउन सक्नुहुन्छ</translation>
 <translation id="3742055079367172538">स्क्रिनसट लिइयो</translation>
+<translation id="3756485814916578707">स्क्रिन कास्ट गरिँदै छ</translation>
 <translation id="3765841986579723851">आज सम्पादन गरिएको</translation>
 <translation id="3773700760453577392">कुनै प्रशासकले <ph name="USER_EMAIL" /> बाट एकभन्दा बढी साइन इन गर्ने अनुमति दिनुभएको छैन। जारी राख्न सबै प्रयोगकर्ताहरूले अनिवार्य रूपमा साइन आउट गर्नु पर्छ।</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> कनेक्ट गरिँदै छ</translation>
@@ -821,6 +824,7 @@
 <translation id="4777825441726637019">Play स्टोर</translation>
 <translation id="4778095205580009397">Google सहायक डेमो सत्रमा उपलब्ध छैन।</translation>
 <translation id="4789348252524569426">वाक् पहिचानसम्बन्धी फाइलहरू इन्स्टल गर्न सकिएन। तपाईंको डिभाइस अपडेट गर्नु पर्ने हुन्छ। आफ्नो डिभाइस रिस्टार्ट गर्नुहोस् र फेरि प्रयास गर्नुहोस्।</translation>
+<translation id="478959186716341421">Cast गर्दै</translation>
 <translation id="479989351350248267">खोज्नुहोस्</translation>
 <translation id="4804818685124855865">जडान विच्छेद</translation>
 <translation id="4814539958450445987">लग इन स्क्रिन</translation>
@@ -928,6 +932,7 @@
 <translation id="5297704307811127955">अफ</translation>
 <translation id="5300589172476337783">देखाउनुहोस्</translation>
 <translation id="5302048478445481009">भाषा</translation>
+<translation id="5303783651764314393">तपाईंको <ph name="DEVICE_NAME" /> को हटस्पटमा <ph name="DEVICECOUNT" /> वटा डिभाइस कनेक्ट गरिएका छन्</translation>
 <translation id="5308380583665731573">कनेक्ट गर्नुहोस्</translation>
 <translation id="5313326810920013265">ब्लुटुथ सम्बन्धी सेटिङहरू</translation>
 <translation id="5314219114274263156">स्क्रिन रेकर्डिङ गरियो</translation>
@@ -996,7 +1001,6 @@
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
 <translation id="5600837773213129531">बोली प्रतिक्रिया असक्षम पार्न Ctrl + Alt + Z थिच्नुहोस्।</translation>
 <translation id="5601503069213153581">पिन</translation>
-<translation id="5601571553788043181">यो फाइल Chrome ब्राउजरमा खोल्नुहोस्</translation>
 <translation id="5618148318840095371">तपाईंको डिभाइस अझ राम्रो नेटवर्कमा कनेक्ट गरिएको छ</translation>
 <translation id="5619862035903135339">एड्मिनले तोक्नुभएको नीतिअनुसार स्क्रिन क्याप्चर गर्ने सुविधा अफ गरिन्छ</translation>
 <translation id="5625955975703555628">LTE+</translation>
@@ -1117,6 +1121,7 @@
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> को खाता हटाउने कार्यसम्बन्धी डायलग खोल्नुहोस्</translation>
 <translation id="6141988275892716286">डाउनलोड गर्ने पुष्टि गर्नुहोस्</translation>
 <translation id="6154006699632741460">यो सहायक उपकरण प्रयोग गर्न मिल्दैन</translation>
+<translation id="6156960295318603523">भाषा सम्बन्धी सेटिङहरू</translation>
 <translation id="615957422585914272">अन-स्क्रिन कुञ्जीपाटी देखाउनुहोस्</translation>
 <translation id="6165508094623778733">थप जान्नुहोस्</translation>
 <translation id="6166852626429024716">आफ्नो यन्त्र, एप, सेटिङ, वेबमा खोज्नुहोस्...</translation>
@@ -1158,7 +1163,7 @@
 <translation id="6359587239691116345">नयाँ सुविधा तथा सुरक्षासम्बन्धी सुधारहरू प्राप्त गर्नुहोस्। तपाईंले यो अपडेट लागू गर्नुभएन भने तपाईंको डिभाइसले राम्रोसँग काम गर्न छाड्न सक्छ र सुरक्षा तथा पर्फर्मेन्ससम्बन्धी समस्या आउन सक्छ।</translation>
 <translation id="6376931439017688372">ब्लुटुथ सक्रिय छ</translation>
 <translation id="6378515133128829137">विन्डो दायाँतिर पिन गर्नुहोस्</translation>
-<translation id="6381109794406942707">यो डिभाइस अनलक गर्न आफ्नो PIN प्रविष्टि गर्नुहोस्।</translation>
+<translation id="6381109794406942707">यो डिभाइस अनलक गर्न आफ्नो PIN हाल्नुहोस्।</translation>
 <translation id="638716340450135524">क्यामेरा प्रयोग गर्ने अनुमति अन गर्नुहोस्</translation>
 <translation id="639644700271529076">CAPS LOCK बन्द छ</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -1335,6 +1340,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> सेकेन्डमा पुरानो रिजोल्युसनमा फिर्ता जाँदै</translation>
 <translation id="7180611975245234373">ताजा गर्नुहोस्</translation>
+<translation id="7187711731540696127">तपाईंको <ph name="DEVICE_NAME" /> को हटस्पट अन छ, कुनै पनि डिभाइस कनेक्ट गरिएको छैन</translation>
 <translation id="7188494361780961876">मेनु सारेर स्क्रिनको सिरानको बायाँ कुनामा लगियो।</translation>
 <translation id="7189412385142492784">शुक्र ग्रह पृथ्वीबाट कति टाढा छ</translation>
 <translation id="7198435252016571249">क्यामेरा पुछारको दायाँ कुनामा स्न्याप गरियो। सिस्टमको सतहसँग बाझियो।</translation>
@@ -1392,6 +1398,7 @@
 <translation id="7497767806359279797">भाषा तथा किबोर्ड छनौट गर्नुहोस्</translation>
 <translation id="7508690557411636492">गत महिना खोलिएको</translation>
 <translation id="7509246181739783082">आफ्नो पहिचान पुष्टि गर्नुहोस्</translation>
+<translation id="7512726380443357693"><ph name="BUTTON_LABEL" />, चयन गरिएको छैन</translation>
 <translation id="7513622367902644023">स्क्रिनसट मोड चयन गरियो</translation>
 <translation id="7513922695575567867">पात्रो, <ph name="DATE" /> को हप्ता, हाल चयन गरिएको मिति: <ph name="SELECTED_DATE" />।</translation>
 <translation id="7514365320538308">डाउनलोड गर्नुहोस्</translation>
@@ -1413,7 +1420,6 @@
 <translation id="7569509451529460200">Braille र ChromeVox सक्षम पारिएका छन्</translation>
 <translation id="7573585051776738856">सक्रिय विन्डो दायाँतिर डक गरिएको छ।</translation>
 <translation id="7579778809502851308">स्क्रिन क्याप्चर</translation>
-<translation id="7590883480672980941">इनपुटसम्बन्धी सेटिङ</translation>
 <translation id="7593891976182323525">सिफ्टको लागि खोज्नुहोस्</translation>
 <translation id="7600875258240007829">सबै सूचनाहरू हेर्नुहोस्</translation>
 <translation id="7607002721634913082">रोकिएको छ</translation>
@@ -1555,6 +1561,7 @@
 <translation id="8185090165691050712">लक मोडको आकार बदल्न मेनु टगल गरी अन/अफ गर्नुहोस्</translation>
 <translation id="8192202700944119416">सूचनाहरू लुकाइन्छन्।</translation>
 <translation id="8196787716797768628">एउटा अनुप्रयोगबाट तुरुन्तै अर्को एपमा जान र आफ्नो Chromebook ट्याब्लेट मोडमा प्रयोग गर्न इसाराहरूको प्रयोग गर्नुहोस्।</translation>
+<translation id="8198456017687137612">ट्याब कास्ट गरिँदै छ</translation>
 <translation id="8200772114523450471">रिजुमी</translation>
 <translation id="8203795194971602413">दायाँ क्लिक गर्नुहोस्</translation>
 <translation id="8209010265547628927">रिसेट गर्नुहोस्</translation>
@@ -1583,6 +1590,7 @@
 <translation id="8349964124165471584">यो लिंक नयाँ विन्डोमा खोल्नुहोस्</translation>
 <translation id="8351131234907093545">टिपोट सिर्जना गर्नुहोस्</translation>
 <translation id="8364673525741149932">सेल्फ पार्टी टगल गर्नुहोस्। <ph name="STATE_TEXT" /></translation>
+<translation id="8367948981300340152"><ph name="CAPTURE_MEDIUM" /> प्रयोग भइरहेको छ।</translation>
 <translation id="8369166482916924789">सेभ गरिएको डेस्क, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">कर्सरलाई एक अक्षर अगाडि लैजानुहोस्</translation>
 <translation id="8371991222807690464">गेस्ट मोडमा भएका बेला सहायक यन्त्रले पूर्ण रूपमा काम नगर्न सक्छ</translation>

@@ -928,6 +928,11 @@ void ResourceFetcher::UpdateMemoryCacheStats(
     RecordResourceHistogram("Preload.", factory.GetType(), policy);
   } else {
     RecordResourceHistogram("", factory.GetType(), policy);
+
+    // Log metrics to evaluate effectiveness of the memory cache if it was
+    // partitioned by the top-frame site.
+    if (same_top_frame_site_resource_cached)
+      RecordResourceHistogram("PerTopFrameSite.", factory.GetType(), policy);
   }
 
   // Aims to count Resource only referenced from MemoryCache (i.e. what would be
@@ -1503,8 +1508,18 @@ std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
             frame_scheduler->GetAgentGroupScheduler()->DefaultTaskRunner();
       }
     }
+  } else if (request.GetRequestContext() ==
+                 mojom::blink::RequestContextType::IMAGE &&
+             base::FeatureList::IsEnabled(
+                 features::kMainThreadHighPriorityImageLoading)) {
+    if (auto* frame_or_worker_scheduler = GetFrameOrWorkerScheduler()) {
+      if (auto* frame_scheduler =
+              frame_or_worker_scheduler->ToFrameScheduler()) {
+        task_runner = frame_scheduler->GetTaskRunner(
+            TaskType::kNetworkingUnfreezableImageLoading);
+      }
+    }
   }
-
   return loader_factory_->CreateURLLoader(ResourceRequest(request), options,
                                           freezable_task_runner_, task_runner,
                                           back_forward_cache_loader_helper_);

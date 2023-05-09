@@ -138,7 +138,7 @@
     {
       "channel": "stable",
       "extension_types": ["platform_app"],
-      "platforms": ["chromeos", "win", "mac", "linux"],
+      "platforms": ["chromeos", "lacros", "win", "mac", "linux"],
       "allowlist": [
         "1C93BD3CF875F4A73C0B2A163BB8FBDA8B8B3D80",  // http://crbug.com/387169
         "A3BC37E2148AC4E99BE4B16AF9D42DD1E592BBBE",  // http://crbug.com/387169
@@ -498,11 +498,17 @@
       "A9A9FC0228ADF541F0334F22BEFB8F9C245B21D7"   // http://crbug.com/839189
     ]
   },
-  "offscreen": {
+  "offscreen": [{
     "channel": "stable",
     "extension_types": ["extension"],
     "min_manifest_version": 3
   },
+  {
+    "channel": "stable",
+    "dependencies": ["behavior:imprivata_login_screen_extension"],
+    "extension_types": ["login_screen_extension"],
+    "min_manifest_version": 3
+  }],
   "power": [{
     "channel": "stable",
     "extension_types": [ "extension", "legacy_packaged_app", "platform_app" ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PrinterOnlineState, PrinterType} from 'chrome://os-settings/chromeos/lazy_load.js';
+import {PrinterStatusReason, PrinterType} from 'chrome://os-settings/chromeos/lazy_load.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
@@ -96,7 +96,6 @@ function createPrinterEntry(printerType) {
       printerId: 'id_123',
       printerMakeAndModel: '',
       printerName: 'Test name',
-      printerOnlineState: PrinterOnlineState.UNKNOWN,
       printerPPDPath: '',
       printerPpdReference: {
         userSuppliedPpdUrl: '',
@@ -105,6 +104,7 @@ function createPrinterEntry(printerType) {
       },
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
+      printerStatusReason: PrinterStatusReason.UNKNOWN_REASON,
     },
     printerType: printerType,
   };
@@ -205,21 +205,8 @@ suite('CupsPrinterEntry', function() {
     }
   });
 
-  // Verify the printer status icons are only visible for saved printers.
-  test('savedPrinterShowPrinterStatusIcons', function() {
-    printerEntryTestElement.printerEntry =
-        createPrinterEntry(PrinterType.SAVED);
-    assertTrue(isVisible(printerEntryTestElement.shadowRoot.querySelector(
-        '#printerStatusIcon')));
-
-    printerEntryTestElement.printerEntry =
-        createPrinterEntry(PrinterType.AUTOMATIC);
-    assertFalse(isVisible(printerEntryTestElement.shadowRoot.querySelector(
-        '#printerStatusIcon')));
-  });
-
   // Verify the correct printer status icon is shown based on the printer's
-  // online state.
+  // status reason.
   test('savedPrinterCorrectPrinterStatusIcon', function() {
     printerEntryTestElement.printerEntry =
         createPrinterEntry(PrinterType.SAVED);
@@ -230,22 +217,45 @@ suite('CupsPrinterEntry', function() {
         printerEntryTestElement.shadowRoot.querySelector('#printerStatusIcon')
             .icon);
 
-    // Set online state.
+    // Set to a good status reason.
     printerEntryTestElement.set(
-        'printerEntry.printerInfo.printerOnlineState',
-        PrinterOnlineState.ONLINE);
+        'printerEntry.printerInfo.printerStatusReason',
+        PrinterStatusReason.NO_ERROR);
     assertEquals(
         'os-settings:printer-status-green',
         printerEntryTestElement.shadowRoot.querySelector('#printerStatusIcon')
             .icon);
 
-    // Set offline state.
+    // Set to an error status reason.
     printerEntryTestElement.set(
-        'printerEntry.printerInfo.printerOnlineState',
-        PrinterOnlineState.OFFLINE);
+        'printerEntry.printerInfo.printerStatusReason',
+        PrinterStatusReason.OUT_OF_PAPER);
     assertEquals(
         'os-settings:printer-status-red',
         printerEntryTestElement.shadowRoot.querySelector('#printerStatusIcon')
             .icon);
+  });
+
+  // Verify the printer icon is visible based on the printer's type.
+  test('visiblePrinterIconByPrinterType', function() {
+    printerEntryTestElement.printerEntry =
+        createPrinterEntry(PrinterType.ENTERPRISE);
+    assertFalse(isVisible(printerEntryTestElement.shadowRoot.querySelector(
+        '#printerStatusIcon')));
+
+    printerEntryTestElement.printerEntry =
+        createPrinterEntry(PrinterType.DISCOVERED);
+    assertTrue(isVisible(printerEntryTestElement.shadowRoot.querySelector(
+        '#printerStatusIcon')));
+
+    printerEntryTestElement.printerEntry =
+        createPrinterEntry(PrinterType.AUTOMATIC);
+    assertTrue(isVisible(printerEntryTestElement.shadowRoot.querySelector(
+        '#printerStatusIcon')));
+
+    printerEntryTestElement.printerEntry =
+        createPrinterEntry(PrinterType.SAVED);
+    assertTrue(isVisible(printerEntryTestElement.shadowRoot.querySelector(
+        '#printerStatusIcon')));
   });
 });

@@ -196,8 +196,7 @@ class BottomSheet extends FrameLayout
     public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
         // If the sheet is scrolling off-screen or in the process of hiding, gestures should not
         // affect it.
-        if (getCurrentOffsetPx() < getSheetHeightForState(SheetState.PEEK)
-                || getOffsetFromBrowserControls() > 0) {
+        if (getOffsetFromBrowserControls() > 0 || isHiding()) {
             return false;
         }
 
@@ -419,7 +418,8 @@ class BottomSheet extends FrameLayout
         mBrowserControlsHiddenRatio = ratio;
 
         if (getSheetState() == SheetState.HIDDEN) return;
-        if (getCurrentOffsetPx() > getSheetHeightForState(SheetState.PEEK)) return;
+        int state = isHalfStateEnabled() ? SheetState.HALF : SheetState.PEEK;
+        if (getCurrentOffsetPx() > getSheetHeightForState(state)) return;
 
         // Updating the offset will automatically account for the browser controls.
         setSheetOffsetFromBottom(getCurrentOffsetPx(), StateChangeReason.SWIPE);
@@ -658,14 +658,15 @@ class BottomSheet extends FrameLayout
     }
 
     /**
-     * @return Get the height in px that the peeking bar is offset due to the browser controls.
+     * @return Get the height in px that the sheet is offset due to the browser controls.
      */
     private float getOffsetFromBrowserControls() {
-        if (mSheetContent == null || !mSheetContent.hideOnScroll() || !isPeekStateEnabled()) {
-            return 0;
-        }
+        if (mSheetContent == null || !mSheetContent.hideOnScroll()) return 0;
 
-        return getPeekRatio() * mContainerHeight * mBrowserControlsHiddenRatio;
+        // We only care about peek/half state.
+        int state = getSheetState();
+        if (state != SheetState.PEEK && state != SheetState.HALF) return 0;
+        return getSheetHeightForState(state) * mBrowserControlsHiddenRatio;
     }
 
     /**

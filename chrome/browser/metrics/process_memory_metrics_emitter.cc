@@ -243,12 +243,18 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      EmitTo::kSizeInUmaOnly, nullptr},
     {"gpu/vulkan", "Vulkan.AllocatedObjects", MetricSize::kLarge, "used_size",
      EmitTo::kSizeInUmaOnly, nullptr},
+    {"gpu/vulkan", "Vulkan.Fragmentation", MetricSize::kLarge,
+     "fragmentation_size", EmitTo::kSizeInUmaOnly, nullptr},
     {"history", "History", MetricSize::kSmall, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetHistory},
 #if BUILDFLAG(IS_MAC)
     {"iosurface", "IOSurface", MetricSize::kLarge, kSize,
      EmitTo::kSizeInUmaOnly, nullptr},
     {"iosurface", "IOSurface.DirtyMemory", MetricSize::kLarge,
+     "resident_swapped", EmitTo::kSizeInUmaOnly, nullptr},
+    {"ioaccelerator", "IOAccelerator", MetricSize::kLarge, kSize,
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {"ioaccelerator", "IOAccelerator.DirtyMemory", MetricSize::kLarge,
      "resident_swapped", EmitTo::kSizeInUmaOnly, nullptr},
 #endif
     {"java_heap", "JavaHeap", MetricSize::kLarge, kEffectiveSize,

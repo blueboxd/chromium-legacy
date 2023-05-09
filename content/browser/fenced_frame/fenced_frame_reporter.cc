@@ -36,9 +36,11 @@
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/attribution_utils.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/attribution.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -48,10 +50,6 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "services/network/public/cpp/attribution_utils.h"
-#endif
 
 namespace content {
 
@@ -120,8 +118,8 @@ base::StringPiece ReportingDestinationAsString(
 
 AutomaticBeaconInfo::AutomaticBeaconInfo(
     const std::string& data,
-    const std::vector<blink::FencedFrame::ReportingDestination>& destination)
-    : data(data), destination(destination) {}
+    const std::vector<blink::FencedFrame::ReportingDestination>& destinations)
+    : data(data), destinations(destinations) {}
 
 AutomaticBeaconInfo::AutomaticBeaconInfo(const AutomaticBeaconInfo&) = default;
 
@@ -295,11 +293,8 @@ bool FencedFrameReporter::SendReport(
       WebContents::FromRenderFrameHost(request_initiator_frame));
   if (attribution_host &&
       request_initiator_frame->IsFeatureEnabled(
-          blink::mojom::PermissionsPolicyFeature::kAttributionReporting)
-#if BUILDFLAG(IS_ANDROID)
-      && network::HasAttributionSupport(AttributionManager::GetSupport())
-#endif
-  ) {
+          blink::mojom::PermissionsPolicyFeature::kAttributionReporting) &&
+      network::HasAttributionSupport(AttributionManager::GetSupport())) {
     BeaconId beacon_id(unique_id_counter.GetNext());
     attribution_reporting_data.emplace(AttributionReportingData{
         .beacon_id = beacon_id,
@@ -377,10 +372,11 @@ bool FencedFrameReporter::SendReportInternal(
       attribution_reporting_data.has_value();
 
   if (attribution_manager_ && is_attribution_reporting_allowed) {
-    request->headers.SetHeader("Attribution-Reporting-Eligible",
-                               attribution_reporting_data->is_automatic_beacon
-                                   ? "navigation-source"
-                                   : "event-source");
+    request->attribution_reporting_eligibility =
+        attribution_reporting_data->is_automatic_beacon
+            ? network::mojom::AttributionReportingEligibility::kNavigationSource
+            : network::mojom::AttributionReportingEligibility::kEventSource;
+
     request->attribution_reporting_support = AttributionManager::GetSupport();
   }
 

@@ -191,6 +191,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="1396259464226642517">Ce résultat était-il inattendu ? <ph name="BEGIN_LINK" />Envoyer des commentaires<ph name="END_LINK" /></translation>
 <translation id="1405567553485452995">Vert clair</translation>
 <translation id="1406500794671479665">Vérification en cours…</translation>
+<translation id="1406812885827747674">Autoriser cette fois-ci</translation>
 <translation id="1407135791313364759">Tout ouvrir</translation>
 <translation id="1408787208417187241">Triple agrafe en haut</translation>
 <translation id="1410941016594047814">Enveloppe d'invitation</translation>
@@ -315,6 +316,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="1689333818294560261">Pseudo</translation>
 <translation id="1697430960030447570"><ph name="BEGIN_BOLD" />Comment vous pouvez gérer vos données<ph name="END_BOLD" /> : Chrome supprime automatiquement les thèmes qui datent de plus de quatre semaines. À mesure que vous continuez de naviguer, un thème peut réapparaître dans la liste. Vous pouvez aussi bloquer certains thèmes pour empêcher que Chrome les partage avec les sites, et désactiver les thèmes d'annonces à tout moment dans les paramètres Chrome.</translation>
 <translation id="1697532407822776718">Vous êtes prêt !</translation>
+<translation id="1699651774646344471">Vous pouvez désormais utiliser les adresses de votre compte Google</translation>
 <translation id="1702815194757674443">ROC 16K</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706625117072057435">Niveaux de zoom</translation>
@@ -438,6 +440,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2003775180883135320">Quadruple perforation en haut</translation>
 <translation id="201174227998721785">Gérez les autorisations et les données stockées sur les sites dans les paramètres Chrome</translation>
 <translation id="2019607688127825327">Bouton "Gérer les paramètres d'accessibilité", puis Entrée pour personnaliser vos outils d'accessibilité dans les paramètres Chrome</translation>
+<translation id="2021333772895814435">Cette règle désactive automatiquement la synchronisation sur les appareils pour : <ph name="ACTION_LIST" />.</translation>
 <translation id="202224654587969958">12 x 19 pouces</translation>
 <translation id="2025115093177348061">Réalité augmentée</translation>
 <translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
@@ -468,6 +471,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2079545284768500474">Annuler</translation>
 <translation id="20817612488360358">Les paramètres de proxy du système sont configurés pour être utilisés, mais une configuration de proxy explicite est également spécifiée.</translation>
 <translation id="2082238445998314030">Résultat <ph name="RESULT_NUMBER" /> sur <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2083256696566019397">Autoriser à chaque visite</translation>
 <translation id="2085876078937250610">Enregistrer…</translation>
 <translation id="2088086323192747268">Bouton "Gérer la synchronisation" : appuyez sur Entrée pour gérer les infos que vous synchronisez dans les paramètres Chrome</translation>
 <translation id="2091887806945687916">Son</translation>
@@ -490,7 +494,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2119867082804433120">Perforation en bas à droite</translation>
 <translation id="2122719317867821810">Cette règle fonctionne comme prévu, mais notez qu'une valeur conflictuelle a été définie ailleurs et que cette règle la remplace.</translation>
 <translation id="2126374524350484896">Outil de conversion PDF :</translation>
-<translation id="2128262927290305126">Dans votre compte Google <ph name="ACCOUNT" /></translation>
 <translation id="2130448033692577677">Les modèles que vous avez spécifiés risquent de ne pas être appliqués, car la règle DnsOverHttpsMode n'est pas configurée.</translation>
 <translation id="2130699163006053678">A3x7</translation>
 <translation id="2135799067377889518">Mode hommes</translation>
@@ -537,6 +540,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2224337661447660594">Aucun accès à Internet</translation>
 <translation id="2225927550500503913">Carte virtuelle activée</translation>
 <translation id="2226636330183131181"><ph name="BEGIN_LINK" />Se connecter<ph name="END_LINK" /> au réseau Wi-Fi</translation>
+<translation id="2228057197024893428">Cette adresse est actuellement enregistrée dans Chrome. Pour l'utiliser avec d'autres produits Google, enregistrez-la dans votre compte Google (<ph name="ACCOUNT" />).</translation>
 <translation id="2239100178324503013">Envoyer maintenant</translation>
 <translation id="2241693394036365668">Fichier téléchargé</translation>
 <translation id="2246264294482514010">10 x 12 pouces</translation>
@@ -639,6 +643,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2521736961081452453">Créer un formulaire</translation>
 <translation id="2523886232349826891">Enregistrée sur cet appareil uniquement</translation>
 <translation id="2524461107774643265">Ajouter des informations</translation>
+<translation id="2526280916094749336">Vous pouvez utiliser les adresses enregistrées dans l'ensemble des produits Google. Celle-ci sera enregistrée dans votre compte Google (<ph name="ACCOUNT" />).</translation>
 <translation id="2527451058878391043">Votre code CVC figure au recto de votre carte. Il s'agit du code à quatre chiffres en haut à droite, au-dessus du numéro de votre carte.</translation>
 <translation id="2529899080962247600">Ce champ ne peut pas contenir plus de <ph name="MAX_ITEMS_LIMIT" /> entrées. Les entrées supplémentaires seront ignorées.</translation>
 <translation id="253493526287553278">Voir les détails du code promotionnel</translation>
@@ -655,6 +660,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2547466893236767989">Conception et développement Web</translation>
 <translation id="254947805923345898">La valeur de la règle n'est pas valide.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> a envoyé une réponse incorrecte.</translation>
+<translation id="2551608178605132291">Adresse : <ph name="ADDRESS" />.</translation>
 <translation id="2552246211866555379">Hagaki</translation>
 <translation id="2552295903035773204">Utiliser le verrouillage de l'écran pour confirmer les cartes à partir de maintenant</translation>
 <translation id="2553853292994445426">Vérifiez les paramètres du DNS sécurisé. L'échec de connexion est peut-être dû à un serveur DNS sécurisé que vous avez configuré.</translation>
@@ -834,7 +840,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3029752078111257850">Actualités internationales</translation>
 <translation id="3037177537145227281">Suivi du prix activé</translation>
 <translation id="3037605927509011580">Aïe aïe aïe</translation>
-<translation id="3041450980936463495">Vous pouvez utiliser les adresses enregistrées dans l'ensemble des produits Google. Celle-ci est enregistrée dans votre compte Google (<ph name="ACCOUNT" />).</translation>
 <translation id="3041612393474885105">Informations relatives au certificat</translation>
 <translation id="305162504811187366">Historique du Bureau à distance Chrome, y compris les horodatages, les hôtes et les ID de sessions client</translation>
 <translation id="3052964831964880138"><ph name="PRODUCT_NAME" /> : prix en baisse (-<ph name="PRICE_DROP" />)</translation>
@@ -853,6 +858,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3107591622054137333"><ph name="BEGIN_LINK" />Vérifiez la configuration du DNS sécurisé<ph name="END_LINK" /></translation>
 <translation id="3108943290502734357">Bac intermédiaire</translation>
 <translation id="3109728660330352905">Vous n'êtes pas autorisé à consulter cette page.</translation>
+<translation id="3112892588078695695">Numéro de téléphone : <ph name="PHONE" />.</translation>
 <translation id="3113284927548439113">Troisième quart de travail</translation>
 <translation id="3114040155724590991">Mise à jour du système Android…
     Votre appli peut prendre plus de temps que d'habitude pour démarrer.</translation>
@@ -1054,6 +1060,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3587738293690942763">Milieu</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{Vous pouvez réinitialiser votre groupe à tout moment. Comptez environ une journée pour rejoindre un nouveau groupe.}=1{Vous pouvez réinitialiser votre groupe à tout moment. Comptez environ une journée pour rejoindre un nouveau groupe.}one{Vous pouvez réinitialiser votre groupe à tout moment. Comptez {NUM_DAYS} jour pour rejoindre un nouveau groupe.}other{Vous pouvez réinitialiser votre groupe à tout moment. Comptez {NUM_DAYS} jours pour rejoindre un nouveau groupe.}}</translation>
 <translation id="3600246354004376029">"<ph name="TITLE" />", <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="360335678635752619">Chrome supprime automatiquement les thèmes et les sites qui suggèrent des annonces s'ils datent de plus de 30 jours. Vous pouvez aussi bloquer des thèmes et des sites spécifiques que vous n'aimez pas.</translation>
 <translation id="3603507503523709">Application bloquée par votre administrateur</translation>
 <translation id="3605899229568538311">5 x 5 pouces</translation>
 <translation id="3608932978122581043">Orientation de l'alimentation</translation>
@@ -1183,6 +1190,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3906954721959377182">Tablette</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3911401144270344103">Vous pouvez modifier vos options à tout moment dans les paramètres Chrome</translation>
+<translation id="3919748199683685809"><ph name="BEGIN_BOLD" />Comment vous pouvez gérer vos données<ph name="END_BOLD" /> : Chrome supprime automatiquement les sites datant de plus de 30 jours. Un site peut réapparaître dans la liste si vous le consultez de nouveau. Vous pouvez aussi empêcher un site de vous suggérer des annonces et désactiver les annonces suggérées par les sites à tout moment dans les paramètres Chrome.</translation>
 <translation id="3921869355029467742">Saisir votre code de sécurité</translation>
 <translation id="3927932062596804919">Refuser</translation>
 <translation id="393316646445601645">Internet et télécoms</translation>
@@ -1225,7 +1233,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4031179711345676612">Micro autorisé</translation>
 <translation id="4040350669425716613">Écoles et universités</translation>
 <translation id="4047351652147966654">18 x 24 pouces</translation>
-<translation id="4047620889508350431">Vous pouvez désormais utiliser les adresses de votre compte Google.</translation>
+<translation id="4050392779074832022">Vous pourrez l'utiliser dans tous les produits Google</translation>
 <translation id="405399507749852140">Recevez des alertes si le prix baisse sur un site</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4063063121357725926">Demander à Google de vous aider à trouver des remises pour vos paniers</translation>
@@ -1348,6 +1356,8 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Cette carte a été enregistrée dans votre compte Google}one{Cette carte a été enregistrée dans votre compte Google}other{Ces cartes ont été enregistrées dans votre compte Google}}</translation>
 <translation id="4287495839370498922">Confidentialité des annonces améliorée dans Chrome</translation>
 <translation id="4287885627794386150">Essai possible, mais non actif</translation>
+<translation id="4290920330097335010">Ne jamais autoriser</translation>
+<translation id="4296207570293932800">Nouvelle fonctionnalité de confidentialité des annonces disponible</translation>
 <translation id="4297502707443874121">Vignette de la page <ph name="THUMBNAIL_PAGE" /></translation>
 <translation id="4298000214066716287">Investissement</translation>
 <translation id="42981349822642051">Développer</translation>
@@ -1416,7 +1426,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4451135742916150903">Peut demander à se connecter à des périphériques HID</translation>
 <translation id="4451684391620232683">Texte présenté à l'utilisateur :</translation>
 <translation id="4452328064229197696">Le mot de passe que vous venez d'utiliser a été détecté lors d'une violation de données. Pour sécuriser vos comptes, le Gestionnaire de mots de passe Google vous recommande de vérifier vos mots de passe enregistrés.</translation>
-<translation id="4460315069258617173">Autorisée jusqu'à ce que vous fermiez les onglets pour ce site</translation>
 <translation id="4464826014807964867">Sites Web avec des infos fournies par votre organisation</translation>
 <translation id="447665707681730621"><ph name="BUBBLE_MESSAGE" />. <ph name="LEARN_MORE_TEXT" /></translation>
 <translation id="4476953670630786061">Ce formulaire n'est pas sécurisé. La saisie automatique a été désactivée.</translation>
@@ -1620,6 +1629,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953689047182316270">Répondre aux événements d'accessibilité</translation>
 <translation id="4958444002117714549">Développer la liste</translation>
+<translation id="4960068118612257147">Vous pouvez effectuer des modifications dans les paramètres de confidentialité des annonces de Chrome.</translation>
 <translation id="4964505745997821360">Assurance santé</translation>
 <translation id="4968522289500246572">Cette appli est conçue pour les mobiles et ne sera peut-être pas bien redimensionnée. Elle pourrait rencontrer des problèmes ou redémarrer.</translation>
 <translation id="4968665849807487749">Peut demander à gérer les fenêtres sur tous vos écrans</translation>
@@ -1795,7 +1805,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5344579389779391559">L'accès à la page suivante peut engendrer des frais</translation>
 <translation id="5347645913823149105">Bouton "Personnaliser les polices dans Chrome", appuyez sur Entrée pour personnaliser la taille des polices et les polices de caractères dans Chrome</translation>
 <translation id="5355557959165512791">Le site <ph name="SITE" /> est actuellement inaccessible, car son certificat a été révoqué. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page plus tard.</translation>
-<translation id="5356345925629253198">Vous pouvez utiliser les adresses enregistrées dans l'ensemble des produits Google. Cette adresse sera enregistrée dans votre compte Google (<ph name="ACCOUNT" />).</translation>
 <translation id="5357848622083956825">Design et arts visuels</translation>
 <translation id="536296301121032821">Échec du stockage des paramètres de la règle.</translation>
 <translation id="5363309033720083897">Port série autorisé par votre administrateur</translation>
@@ -1886,7 +1895,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5596939519753369075">2 x 3,5 pouces</translation>
 <translation id="560412284261940334">Gestion non acceptée.</translation>
 <translation id="5605670050355397069">Ledger</translation>
-<translation id="5606444889871204172"><ph name="BEGIN_BOLD" />Comment vous pouvez gérer vos données<ph name="END_BOLD" /> : Chrome supprime automatiquement les sites qui datent de plus de quatre semaines. Un site peut réapparaître dans la liste si vous le consultez à nouveau. Vous pouvez aussi bloquer un site pour l'empêcher de suggérer des annonces pour vous et désactiver les annonces suggérées par les sites à tout moment dans les paramètres Chrome.</translation>
 <translation id="5610142619324316209">Vérifier la connexion</translation>
 <translation id="5610807607761827392">Vous pouvez gérer les cartes et les adresses dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="5611398002774823980">Enregistrer dans le compte</translation>
@@ -1974,6 +1982,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5830698870816298009">Utiliser et bouger la caméra</translation>
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="5838278095973806738">Nous vous conseillons de ne pas saisir d'informations sensibles sur ce site (par exemple, vos mots de passe ou les informations de votre carte de paiement), car elles pourraient être dérobées par des pirates informatiques.</translation>
+<translation id="5840318881868981258">Dans votre compte Google <ph name="ACCOUNT" /></translation>
 <translation id="5841338463993781099">Enregistrer dans le compte ?</translation>
 <translation id="5851548754964597211">Liste d'onglets</translation>
 <translation id="5852909432155870672">RA4</translation>
@@ -2021,7 +2030,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5967592137238574583">Modifier les coordonnées</translation>
 <translation id="5967867314010545767">Supprimer de l'historique</translation>
 <translation id="5968022600320704045">Aucun résultat de recherche</translation>
-<translation id="5968793460449681917">À chaque visite</translation>
 <translation id="5974052231147553524">6e rouleau</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
 <translation id="5979084224081478209">Vérifier les mots de passe</translation>
@@ -2067,6 +2075,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6051221802930200923">Le site <ph name="SITE" /> est actuellement inaccessible, car il utilise l'épinglage des certificats. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page plus tard.</translation>
 <translation id="6051898664905071243">Nombre de pages :</translation>
 <translation id="6052284303005792909">•</translation>
+<translation id="6053584886670442526">Vous pouvez utiliser les adresses enregistrées dans l'ensemble des produits Google. Celle-ci est enregistrée dans votre compte Google (<ph name="ACCOUNT" />).</translation>
 <translation id="6053735090575989697">Pour savoir comment Google protège vos données, lisez nos règles de confidentialité.</translation>
 <translation id="6055888660316801977">Fiche indiquant qu'aucun identifiant ne correspond pour le paiement sécurisé</translation>
 <translation id="6058977677006700226">Vous utilisez vos cartes sur tous vos appareils ?</translation>
@@ -2246,6 +2255,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6513005815064132016">Peut demander à suivre la position de la caméra</translation>
 <translation id="6517596291481585650">Avertissement : Cette règle n'a pas été fusionnée en tant que liste comme indiqué, car ce n'est pas une liste.</translation>
 <translation id="6518133107902771759">Valider</translation>
+<translation id="65203098586853226">Traduction <ph name="SOURCE" /> – <ph name="TARGET" /></translation>
 <translation id="6521745193039995384">Inactive</translation>
 <translation id="6529173248185917884">7e rouleau</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
@@ -2387,7 +2397,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6897140037006041989">Agent utilisateur</translation>
 <translation id="6898699227549475383">Organisation (O)</translation>
 <translation id="6899000063526916106">Saisissez le code à <ph name="NUMBER_OF_DIGITS" /> chiffres</translation>
-<translation id="6907293445143367439">Autoriser le site "<ph name="SITE_NAME" />" à :</translation>
 <translation id="6907458757809079309">Remise en forme</translation>
 <translation id="6910240653697687763"><ph name="URL" /> souhaite obtenir le contrôle total de vos appareils MIDI</translation>
 <translation id="691024665142758461">Télécharger plusieurs fichiers</translation>
@@ -2464,6 +2473,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="7083258188081898530">Bac 9</translation>
 <translation id="7086090958708083563">Importation demandée par l'utilisateur</translation>
 <translation id="7095139009144195559"><ph name="MANAGE_SITE_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" /> : appuyez sur Tabulation, puis sur Entrée pour gérer les autorisations et les données stockées sur les sites dans les paramètres Chrome</translation>
+<translation id="7096341143397839437">Adresse e-mail : <ph name="EMAIL" />.</translation>
 <translation id="7096937462164235847">L'identité de ce site Web n'a pas été validée.</translation>
 <translation id="7101893872976785596">Films d'horreur</translation>
 <translation id="7102079138917191645">Construction et maintenance</translation>
@@ -2543,6 +2553,7 @@ Informations supplémentaires :
 <translation id="7256634549594854023">Bac arrière</translation>
 <translation id="725866823122871198">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre ordinateur (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
 <translation id="7260504762447901703">Révoquer l'accès</translation>
+<translation id="7265608370113700582">L'adresse n'est disponible que sur cet appareil</translation>
 <translation id="7275334191706090484">Favoris gérés</translation>
 <translation id="7277998515889183784">Maquillage et cosmétiques</translation>
 <translation id="7285654172857511148"><ph name="CHANGE_GOOGLE_PASSWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur Tabulation, puis sur Entrée pour changer le mot de passe de votre compte Google</translation>
@@ -2567,7 +2578,6 @@ Informations supplémentaires :
 <translation id="733923710415886693">Le certificat du serveur n'a pas été communiqué tel que le prévoient les règles de transparence des certificats.</translation>
 <translation id="7341357280245177602">Véhicules d'occasion</translation>
 <translation id="7346048084945669753">Affilié :</translation>
-<translation id="7349921148288539306">Autorisée jusqu'à ce que vous fermiez cet onglet</translation>
 <translation id="7352651011704765696">Un problème est survenu</translation>
 <translation id="7353601530677266744">Ligne de commande</translation>
 <translation id="7354880545102894991">Voyage économique et de dernière minute</translation>
@@ -2966,6 +2976,7 @@ Informations supplémentaires :
 <translation id="8245703462678310750">Appuyez de manière prolongée sur |<ph name="ACCELERATOR" />| pour quitter le mode plein écran et voir le téléchargement.</translation>
 <translation id="8249296373107784235">Annuler</translation>
 <translation id="8249463483885748674">Tests d'admission et standardisés</translation>
+<translation id="8250094606476360498">Cette adresse est actuellement enregistrée sur cet appareil. Pour l'utiliser avec d'autres produits Google, enregistrez-la dans votre compte Google (<ph name="ACCOUNT" />).</translation>
 <translation id="8252991034201168845">Bouton "Gérer les paramètres d'accessibilité", appuyez sur Entrée pour personnaliser vos outils d'accessibilité dans les paramètres Chrome OS</translation>
 <translation id="8253091569723639551">Adresse de facturation obligatoire</translation>
 <translation id="8257387598443225809">Cette appli est conçue pour les mobiles</translation>
@@ -3043,7 +3054,6 @@ Informations supplémentaires :
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8434840396568290395">Animaux de compagnie</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
-<translation id="8438476240229491014">Mémoriser ce paramètre</translation>
 <translation id="8438786541497918448">Utiliser la caméra et le micro ?</translation>
 <translation id="8438923942245957911">Ce site est signalé par votre organisation</translation>
 <translation id="8443613539889492016">Rap et hip-hop</translation>
@@ -3211,7 +3221,6 @@ Informations supplémentaires :
 <translation id="8876033571432926051">Jeux grand public</translation>
 <translation id="8877780815363510165">Pêche</translation>
 <translation id="8884537526797090108">Impossible d'enregistrer un contenu confidentiel</translation>
-<translation id="8890798179125483517">Chrome supprime automatiquement les thèmes et les sites qui suggèrent des annonces qui datent de plus de quatre semaines. Vous pouvez aussi bloquer des thèmes spécifiques et des sites que vous n'aimez pas.</translation>
 <translation id="8891727572606052622">Mode proxy non valide.</translation>
 <translation id="8894794286471754040">Bord long en premier</translation>
 <translation id="8897428486789851669">Natation</translation>

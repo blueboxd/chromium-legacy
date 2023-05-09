@@ -30,7 +30,6 @@ Só alguém com a sua frase de acesso pode ler os dados encriptados. A Google n�
 <translation id="1145536944570833626">Eliminar dados existentes.</translation>
 <translation id="1149401351239820326">Mês de expiração</translation>
 <translation id="1150263420752757504">A app <ph name="APP_NAME" /> vai abrir no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização da Google<ph name="END_LINK1" /> e os <ph name="BEGIN_LINK2" />Termos de Utilização Adicionais do Google Chrome e ChromeOS<ph name="END_LINK2" />.</translation>
-<translation id="1154704303112745282">Página indisponível offline: <ph name="VIOLATED_URL" /></translation>
 <translation id="1173894706177603556">Mudar nome</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1181037720776840403">Remover</translation>
@@ -120,6 +119,7 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="1571304935088121812">Copiar nome de utilizador</translation>
 <translation id="1592864538817356322">Proteção padrão:</translation>
 <translation id="1594635596540195766"><ph name="SUGGESTIONS_COUNT" /> itens sugeridos na lista abaixo.</translation>
+<translation id="1598163867407640634">Use o <ph name="SITE_ETLD_PLUS_ONE" /> com o fornecedor <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Como pode gerir os seus dados:<ph name="END_BOLD" /> para proteger a sua privacidade, eliminamos automaticamente os seus interesses com mais de 4 semanas. Enquanto navega, um interesse pode aparecer novamente na lista. Em alternativa, pode remover os interesses que não quer que o Chrome considere.</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Remover 1 item selecionado}other{Remover # itens selecionados}}</translation>
 <translation id="1633659023549081553">Descubra novo conteúdo na página inicial do Chrome</translation>
@@ -150,6 +150,7 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="1810845389119482123">A configuração da sincronização inicial não está concluída</translation>
 <translation id="1829244130665387512">Localizar na página</translation>
 <translation id="1832459821645506983">Sim, aceito</translation>
+<translation id="185383612275551373">Sincronize para obter o conteúdo mais relevante da Google</translation>
 <translation id="1854311313115643875">Quando as avaliações estão ativadas, a medição de anúncios permite que os sites que visita peçam informações ao Chrome que ajudam o site a medir o desempenho dos respetivos anúncios. A medição de anúncios restringe a monitorização entre sites ao transferir o mínimo de informações possível entre sites.
 
 Quando elimina o seu histórico de navegação, todo ou de um site específico, também elimina as informações de medição associadas. Veja <ph name="BEGIN_LINK" />o seu histórico de navegação<ph name="END_LINK" />.</translation>
@@ -241,7 +242,6 @@ Quando elimina o seu histórico de navegação, todo ou de um site específico, 
 <translation id="2386938421315164605">Oculte e mostre tópicos</translation>
 <translation id="2390510615457643724">Pretende transferir <ph name="FILE_NAME" /><ph name="FILE_SIZE" /> novamente?</translation>
 <translation id="2394602618534698961">Os ficheiros que transferir aparecem aqui.</translation>
-<translation id="2407481962792080328">Quando inicia sessão na sua Conta Google, esta funcionalidade está ativada.</translation>
 <translation id="2410754283952462441">Selecione uma conta</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2426805022920575512">Selecionar outra conta</translation>
@@ -285,6 +285,7 @@ Os símbolos de estado privado melhoram a privacidade na Web e não podem ser us
 <translation id="2587052924345400782">Versão mais recente dispon.</translation>
 <translation id="2593272815202181319">Monoespaço</translation>
 <translation id="2603212228005142861">Inicie sessão para gerir as suas preferências</translation>
+<translation id="260403163289591229">A seguir</translation>
 <translation id="2604446170045642109">Pode desativar o tema escuro para sites nas suas definições.</translation>
 <translation id="2612676031748830579">Número do cartão</translation>
 <translation id="2625189173221582860">Palavra-passe copiada</translation>
@@ -298,6 +299,7 @@ Os símbolos de estado privado melhoram a privacidade na Web e não podem ser us
 <translation id="265156376773362237">Pré-carregamento padrão</translation>
 <translation id="2656405586795711023">Apps para a Web</translation>
 <translation id="2669454659051515572">Qualquer pessoa que use este dispositivo pode ver os ficheiros transferidos</translation>
+<translation id="2688382350024736268">O Chrome partilha agora apenas informações muito limitadas entre sites e apps, como quando um anúncio lhe foi apresentado, para ajudar os sites a medirem o desempenho dos anúncios.</translation>
 <translation id="2702516483241149200">Novo: partilhe um link que se desloca para este texto</translation>
 <translation id="2707726405694321444">Atualizar página</translation>
 <translation id="271033894570825754">Novo</translation>
@@ -386,7 +388,6 @@ Os símbolos de estado privado melhoram a privacidade na Web e não podem ser us
 <translation id="3091010850649238832">Mostrar conteúdos de Copiar e colar</translation>
 <translation id="3098745985164956033">Algumas imagens são enviadas para a Google para melhorar as descrições.</translation>
 <translation id="3114507951000454849">Leia as notícias de hoje <ph name="NEWS_ICON" /></translation>
-<translation id="311958134571892113">associado a</translation>
 <translation id="3123734510202723619">Anúncios</translation>
 <translation id="3134784203083076891">"</translation>
 <translation id="314939179385989105">Página inicial do Chrome</translation>
@@ -546,6 +547,7 @@ Os símbolos de estado privado melhoram a privacidade na Web e não podem ser us
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
 <translation id="4035877632587724847">Não permitir</translation>
 <translation id="4036177530563778041">Continue facilmente onde parou</translation>
+<translation id="4042941173059740150">Continue para o <ph name="SITE_ETLD_PLUS_ONE" /> com o fornecedor <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="4045764304651014138">Dados de utilização</translation>
 <translation id="405399507749852140">Obtenha alertas se o preço descer em qualquer site</translation>
 <translation id="4056223980640387499">Sépia</translation>
@@ -583,6 +585,7 @@ Os símbolos de estado privado melhoram a privacidade na Web e não podem ser us
 <translation id="4198423547019359126">Não existem localizações de transferência disponíveis.</translation>
 <translation id="4202218894997543208">Tópicos que bloqueou</translation>
 <translation id="4214315110991671325">Se permitir cookies, o Chrome pode utilizá-los para o pré-carregamento.</translation>
+<translation id="4225725533026049334">A seguir</translation>
 <translation id="4225895483398857530">Atalho da barra de ferramentas</translation>
 <translation id="4242533952199664413">Abrir definições</translation>
 <translation id="4248098802131000011">Mantenha as suas palavras-passe protegidas contra violações de dados e outros problemas de segurança.</translation>
@@ -692,7 +695,6 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Nome no cartão</translation>
 <translation id="481574578487123132">Dispositivos associados</translation>
-<translation id="4818017973810341238">Falha ao validar os Digital Asset Links em <ph name="VIOLATED_URL" /></translation>
 <translation id="4826163340425232009">Secção inferior de início de sessão.</translation>
 <translation id="4831037795716408498">Transfira o conteúdo</translation>
 <translation id="4834007576107377210">Se aplicável, consulte as instruções do motor de pesquisa para eliminar o histórico de pesquisas</translation>
@@ -725,6 +727,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="492284538114688557">Descida do preço detetada</translation>
 <translation id="4925120120285606924">Captura de ecrã <ph name="CURRENT_DATE_ISO" /></translation>
 <translation id="49268022542405662">As suas palavras-passe serão exportadas e transferidas como um ficheiro de texto. Serão visíveis para qualquer pessoa e qualquer app com acesso à pasta de destino.</translation>
+<translation id="4926901776383726965">Pode guardar imagens e ficheiros para ver offline ou partilhar noutras apps</translation>
 <translation id="4932247056774066048">Uma vez que está a terminar sessão numa conta gerida pelo domínio <ph name="DOMAIN_NAME" />, os dados do Chrome serão eliminados deste dispositivo. Estes irão permanecer na sua Conta Google.</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Nenhum resultado</translation>
@@ -785,7 +788,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5235196193381275927">Algo correu mal durante o início de sessão</translation>
 <translation id="5246093389635966745">Editar atalho da barra de ferramentas</translation>
 <translation id="5271967389191913893">O dispositivo não consegue abrir o conteúdo a transferir.</translation>
-<translation id="5274286919938458946">Associado a <ph name="CARD_DETAIL" /></translation>
 <translation id="5292796745632149097">Enviar para</translation>
 <translation id="5300426565656326054">Personalização de anúncios com base no navegador</translation>
 <translation id="5304593522240415983">Este campo não pode estar em branco</translation>
@@ -847,6 +849,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="562289928968387744">Gerir reações</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5628604359369369630">Não lido – Disponível offline</translation>
+<translation id="5635091213277904818">O Chrome elimina automaticamente os sites com mais de 30 dias. Um site que visita novamente pode voltar a aparecer na lista. Em alternativa, pode impedir que um site lhe sugira anúncios.</translation>
 <translation id="5639724618331995626">Permitir todos os sites</translation>
 <translation id="5641456720590409793">O <ph name="BEGIN_LINK1" />histórico de pesquisas<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />outras formas de atividade<ph name="END_LINK2" /> podem ser guardados na sua Conta Google</translation>
 <translation id="564667659802381754">Guia de privacidade <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
@@ -888,7 +891,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5833984609253377421">Partilhar link</translation>
 <translation id="5834764604050996579">Para ler um código QR, permita que o Chrome utilize a sua câmara</translation>
 <translation id="5839058148541733625">Chrome Dino</translation>
-<translation id="5842437907245493289">Organize os produtos monitorizados nos Marcadores através do ícone da pasta</translation>
 <translation id="5853623416121554550">em pausa</translation>
 <translation id="5854512288214985237">Não são enviados relatórios de falhas ou estatísticas para a Google.</translation>
 <translation id="5855546874025048181">Refinar: <ph name="REFINE_TEXT" /></translation>
@@ -923,6 +925,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="6005538289190791541">Palavra-passe sugerida</translation>
 <translation id="6011308810877101166">Melhorar sugestões de pesquisa</translation>
 <translation id="6026538407078977628">Expandir para ecrã inteiro</translation>
+<translation id="6030719887161080597">Faça a gestão das informações usadas pelos sites para medir o desempenho dos anúncios</translation>
 <translation id="6039379616847168523">Ir para o próximo separador</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="604124094241169006">Automático</translation>
@@ -990,7 +993,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6395288395575013217">LINK</translation>
 <translation id="6397616442223433927">Ligação retomada</translation>
 <translation id="6401458660421980302">Para enviar este separador para outro dispositivo, inicie sessão no Chrome nesse dispositivo</translation>
-<translation id="6402652558933147609"><ph name="ERROR_CODE" /> em <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Editar marcador</translation>
 <translation id="6406506848690869874">Sincronização</translation>
 <translation id="6407224748847589805">Não é possível estabelecer ligação ao seu computador. Experimente outra opção de validação.</translation>
@@ -1173,6 +1175,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7291910923717764901">Descrições de imagens adicionadas a esta página.</translation>
 <translation id="7293429513719260019">Selecionar idioma</translation>
 <translation id="729975465115245577">O dispositivo não tem uma aplicação para armazenar o ficheiro de palavras-passe.</translation>
+<translation id="7304072650267745798">O seu dispositivo Android pode incluir uma definição semelhante. Se esta definição estiver ativada no Chrome e dispositivo Android, uma empresa pode conseguir medir a eficácia de um anúncio nos Websites que visita e nas apps que usa.</translation>
 <translation id="7304873321153398381">Está offline. O Chrome não consegue verificar as suas palavras-passe.</translation>
 <translation id="7313188324932846546">Toque para configurar a sincronização.</translation>
 <translation id="7332075081379534664">Início de sessão com êxito</translation>
@@ -1212,6 +1215,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7482656565088326534">Separador Pré-visualização</translation>
 <translation id="7484997419527351112">Discover – desativado</translation>
 <translation id="7485033510383818941">Para atualizar os conteúdos do feed, puxe a página para baixo</translation>
+<translation id="7486953194485875763">Os seguintes dados dos últimos 15 minutos vão ser eliminados:</translation>
 <translation id="749294055653435199">O Google Lens não está disponível neste dispositivo</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizado há <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7497755084107113646">Tópico novamente adicionado aos tópicos potenciais</translation>
@@ -1254,6 +1258,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7682724950699840886">Experimente as seguintes sugestões: certifique-se de que existe espaço suficiente no dispositivo e tente exportar novamente.</translation>
 <translation id="7686086654630106285">Mais informações acerca de anúncios sugeridos por sites</translation>
 <translation id="768618399695552958">Algumas das páginas que visita são pré-carregadas. As páginas podem ser pré-carregadas através dos servidores da Google quando contêm links de um site Google.</translation>
+<translation id="7690596512217303514">O seu dispositivo não conseguiu abrir o Chrome. Para corrigir o problema, transfira a atualização mais recente do Chrome a partir da loja de apps.</translation>
 <translation id="7691043218961417207">Explore conteúdo a seguir</translation>
 <translation id="7697383401610880082">Indicador para arrastar</translation>
 <translation id="7698359219371678927">Criar email no <ph name="APP_NAME" /></translation>
@@ -1262,6 +1267,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7709918231054955894">Obtenha todos os seus separadores</translation>
 <translation id="772434085369393266">Atualizar as navegações para HTTPS e avisar antes de carregar sites que não o suportam. Não pode alterar esta definição porque tem a Proteção avançada ativada.</translation>
 <translation id="7725024127233776428">As páginas que adiciona aos marcadores aparecem aqui.</translation>
+<translation id="7733878270780732638">Espaço insuficiente no dispositivo.</translation>
 <translation id="7757787379047923882">Texto partilhado a partir do dispositivo <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Cartão SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
@@ -1364,6 +1370,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8216351761227087153">Ver</translation>
 <translation id="8218622182176210845">Faça a gestão da sua conta</translation>
+<translation id="8221401890884589479">Pode bloquear sites que não quer. O Chrome também elimina automaticamente os sites da lista com mais de 30 dias. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8223642481677794647">Menu do cartão do feed</translation>
 <translation id="8236097722223016103">Adicionar aos marcadores</translation>
 <translation id="8250920743982581267">Docs</translation>
@@ -1419,6 +1426,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8503559462189395349">Palavras-passe do Chrome</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="8505766168025405649">Veja a notificação para obter o estado da transferência</translation>
+<translation id="8506357771923193001">As suas transferências são apresentadas aqui</translation>
 <translation id="8514477925623180633">Exportar palavras-passe armazenadas com o Chrome</translation>
 <translation id="8516012719330875537">Editor de imagens</translation>
 <translation id="8516431725144212809">Os seus interesses conforme estimados pelo Chrome</translation>
@@ -1455,6 +1463,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8664215986015753476">Use o Chrome à sua maneira</translation>
 <translation id="8664979001105139458">O nome do ficheiro já existe</translation>
 <translation id="8666759526542103597">Acerca da personalização de anúncios com base no navegador</translation>
+<translation id="8676276370198826499">Inscreva-se no <ph name="SITE_ETLD_PLUS_ONE" /> com o fornecedor <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /></translation>
 <translation id="8676789164135894283">Validações de início de sessão</translation>
 <translation id="8683039184091909753">imagem</translation>
 <translation id="869891660844655955">Data de expiração</translation>
@@ -1548,7 +1557,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="9158770349521403363">Apenas partilhar conteúdo</translation>
 <translation id="9159716826369098114">Restaure o grupo de <ph name="TAB_COUNT" /> separadores como um novo grupo de separadores em segundo plano.</translation>
 <translation id="9169507124922466868">O histórico de navegação está aberto até meio.</translation>
-<translation id="9183331776983279456">O Chrome apaga automaticamente os sites com mais de 4 semanas. Um site que visita novamente pode voltar a aparecer na lista. Em alternativa, pode impedir que um site lhe sugira anúncios.</translation>
 <translation id="9190276265094487094">Terá o seu histórico em todos os dispositivos sincronizados para que possa continuar o que estava a fazer</translation>
 <translation id="9199368092038462496">{NUM_MINS,plural, =1{Última verificação há 1 minuto}other{Última verificação há # minutos}}</translation>
 <translation id="9204836675896933765">Falta 1 ficheiro</translation>
@@ -1570,7 +1578,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="96681097142096641">Pretende ver a página simplificada?</translation>
 <translation id="968900484120156207">As páginas que visita aparecem aqui.</translation>
 <translation id="970715775301869095">Faltam <ph name="MINUTES" /> minutos</translation>
-<translation id="978317418833355355">Pode bloquear sites que não quer. O Chrome também apaga automaticamente os sites da lista com mais de 4 semanas. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Fechar todos os separadores</translation>
 <translation id="987264212798334818">Geral</translation>

@@ -9,15 +9,14 @@
 #import "base/run_loop.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/scoped_feature_list.h"
-#import "components/signin/public/identity_manager/account_info.h"
 #import "components/sync/base/features.h"
 #import "components/sync/driver/sync_service.h"
 #import "components/sync/test/test_sync_service.h"
 #import "components/variations/scoped_variations_ids_provider.h"
 #import "google_apis/gaia/core_account_id.h"
-#import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
+#import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -165,7 +164,8 @@ TEST_F(AccountsTableViewControllerTest, AddChromeIdentity) {
   fake_system_identity_manager()->AddIdentity(identity);
 
   // Simulates a credential reload.
-  authentication_service()->SignIn(identity);
+  authentication_service()->SignIn(
+      identity, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
   fake_system_identity_manager()->FireSystemIdentityReloaded();
   base::RunLoop().RunUntilIdle();
 
@@ -190,7 +190,8 @@ TEST_F(AccountsTableViewControllerTest, IgnoreMismatchWithAccountInfo) {
   fake_system_identity_manager()->AddIdentity(identity2);
 
   // Simulates a credential reload.
-  authentication_service()->SignIn(identity1);
+  authentication_service()->SignIn(
+      identity1, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
   fake_system_identity_manager()->FireSystemIdentityReloaded();
   base::RunLoop().RunUntilIdle();
 
@@ -232,7 +233,8 @@ TEST_F(AccountsTableViewControllerTest, HoldPassphraseErrorWhenEligible) {
   fake_system_identity_manager()->AddIdentity(identity);
 
   // Simulate a credential reload.
-  authentication_service()->SignIn(identity);
+  authentication_service()->SignIn(
+      identity, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
   fake_system_identity_manager()->FireSystemIdentityReloaded();
   base::RunLoop().RunUntilIdle();
 
@@ -268,7 +270,8 @@ TEST_F(AccountsTableViewControllerTest, ClearPassphraseErrorWhenResolved) {
   fake_system_identity_manager()->AddIdentity(identity);
 
   // Simulate a credential reload.
-  authentication_service()->SignIn(identity);
+  authentication_service()->SignIn(
+      identity, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
   fake_system_identity_manager()->FireSystemIdentityReloaded();
   base::RunLoop().RunUntilIdle();
 
@@ -314,7 +317,8 @@ TEST_F(AccountsTableViewControllerTest, DontHoldPassphraseErrorWhenIneligible) {
   fake_system_identity_manager()->AddIdentity(identity);
 
   // Simulate a credential reload.
-  authentication_service()->SignIn(identity);
+  authentication_service()->SignIn(
+      identity, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
   fake_system_identity_manager()->FireSystemIdentityReloaded();
   base::RunLoop().RunUntilIdle();
 
@@ -349,7 +353,8 @@ TEST_F(AccountsTableViewControllerTest,
   fake_system_identity_manager()->AddIdentity(identity);
 
   // Simulate a credential reload.
-  authentication_service()->SignIn(identity);
+  authentication_service()->SignIn(
+      identity, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
   fake_system_identity_manager()->FireSystemIdentityReloaded();
   base::RunLoop().RunUntilIdle();
 

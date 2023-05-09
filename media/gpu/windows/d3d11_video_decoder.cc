@@ -908,10 +908,10 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   base::TimeDelta timestamp = picture_buffer->timestamp_;
 
   // Prefer the frame color space over what's in the config.
-  gfx::ColorSpace picture_color_space =
-      (picture->get_colorspace().IsSpecified() ? picture->get_colorspace()
-                                               : config_.color_space_info())
-          .ToGfxColorSpace();
+  auto picture_color_space = picture->get_colorspace().ToGfxColorSpace();
+  if (!picture_color_space.IsValid()) {
+    picture_color_space = config_.color_space_info().ToGfxColorSpace();
+  }
 
   MailboxHolderArray mailbox_holders;
   gfx::ColorSpace output_color_space;
@@ -965,6 +965,11 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
     // preferred over metadata provide by the configuration.
     frame->set_hdr_metadata(picture->hdr_metadata() ? picture->hdr_metadata()
                                                     : config_.hdr_metadata());
+  }
+
+  if (IsMultiPlaneFormatForHardwareVideoEnabled()) {
+    frame->set_shared_image_format_type(
+        SharedImageFormatType::kSharedImageFormat);
   }
 
   // TODO(crbug.com/1236801): WebGPU cannot import and create texture view on

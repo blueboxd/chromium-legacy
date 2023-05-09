@@ -9,7 +9,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/cart/cart_service.h"
-#include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_ranker.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_util.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranker.h"
 #include "chrome/browser/new_tab_page/new_tab_page_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "components/history_clusters/core/history_clusters_service.h"
@@ -119,48 +120,70 @@ base::Time GetBeginTime() {
 HistoryClustersModuleService::HistoryClustersModuleService(
     history_clusters::HistoryClustersService* history_clusters_service,
     CartService* cart_service,
-    TemplateURLService* template_url_service)
+    TemplateURLService* template_url_service,
+    OptimizationGuideKeyedService* optimization_guide_keyed_service)
     : filter_params_(GetFilterParamsFromFeatureFlags()),
+      max_clusters_to_return_(GetMaxClusters()),
+      category_boostlist_(GetCategories(
+          ntp_features::kNtpHistoryClustersModuleCategoriesBoostlistParam)),
+      should_fetch_clusters_until_exhausted_(base::FeatureList::IsEnabled(
+          ntp_features::kNtpHistoryClustersModuleFetchClustersUntilExhausted)),
       history_clusters_service_(history_clusters_service),
       cart_service_(cart_service),
-      template_url_service_(template_url_service),
-      module_ranker_(std::make_unique<HistoryClustersModuleRanker>(
-          GetMaxClusters(),
-          GetCategories(
-              ntp_features::
-                  kNtpHistoryClustersModuleCategoriesBoostlistParam))) {}
+      template_url_service_(template_url_service) {
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kNtpHistoryClustersModuleUseModelRanking) &&
+      optimization_guide_keyed_service) {
+    module_ranker_ = std::make_unique<HistoryClustersModuleRanker>(
+        optimization_guide_keyed_service, category_boostlist_);
+  }
+}
 HistoryClustersModuleService::~HistoryClustersModuleService() = default;
 
-std::unique_ptr<history_clusters::HistoryClustersServiceTask>
-HistoryClustersModuleService::GetClusters(GetClustersCallback callback) {
-  history_clusters::QueryClustersContinuationParams continuation_params;
-
-  return history_clusters_service_->QueryClusters(
-      history_clusters::ClusteringRequestSource::kNewTabPage, filter_params_,
-      GetBeginTime(), continuation_params,
-      /*recluster=*/false,
-      base::BindOnce(&HistoryClustersModuleService::OnGetFilteredClusters,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void HistoryClustersModuleService::OnGetFilteredClusters(
-    GetClustersCallback callback,
-    std::vector<history::Cluster> clusters,
-    history_clusters::QueryClustersContinuationParams continuation_params) {
-  module_ranker_->RankClusters(
-      std::move(clusters),
-      base::BindOnce(&HistoryClustersModuleService::OnGetRankedClusters,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void HistoryClustersModuleService::OnGetRankedClusters(
-    GetClustersCallback callback,
-    std::vector<history::Cluster> clusters) {
+void HistoryClustersModuleService::GetClusters(GetClustersCallback callback) {
   if (!template_url_service_) {
     std::move(callback).Run({});
     return;
   }
 
+  GetClusters(GetBeginTime(),
+              history_clusters::QueryClustersContinuationParams(),
+              std::move(callback));
+}
+
+void HistoryClustersModuleService::GetClusters(
+    base::Time begin_time,
+    history_clusters::QueryClustersContinuationParams continuation_params,
+    GetClustersCallback callback) {
+  // TODO(crbug/1442619): Encapsulate work done by this method in a task that
+  // gets returned to the caller.
+
+  size_t task_id = task_id_++;
+  std::unique_ptr<history_clusters::HistoryClustersServiceTask>
+      query_clusters_task = history_clusters_service_->QueryClusters(
+          history_clusters::ClusteringRequestSource::kNewTabPage,
+          filter_params_, begin_time, continuation_params,
+          /*recluster=*/false,
+          base::BindOnce(&HistoryClustersModuleService::OnGetFilteredClusters,
+                         weak_ptr_factory_.GetWeakPtr(), task_id, begin_time,
+                         std::move(callback)));
+  in_progress_query_clusters_tasks_.insert_or_assign(
+      task_id, std::move(query_clusters_task));
+}
+
+void HistoryClustersModuleService::OnGetFilteredClusters(
+    size_t pending_task_id,
+    base::Time begin_time,
+    GetClustersCallback callback,
+    std::vector<history::Cluster> clusters,
+    history_clusters::QueryClustersContinuationParams continuation_params) {
+  base::UmaHistogramBoolean(
+      "NewTabPage.HistoryClusters.ExhaustedEligibleClusters",
+      continuation_params.exhausted_all_visits);
+
+  in_progress_query_clusters_tasks_.erase(pending_task_id);
+
+  // Do additional filtering on clusters.
   history_clusters::CoalesceRelatedSearches(clusters);
 
   // Cull clusters that do not have the minimum number of visits with and
@@ -228,23 +251,65 @@ void HistoryClustersModuleService::OnGetRankedClusters(
     return false;
   });
 
-  base::UmaHistogramEnumeration("NewTabPage.HistoryClusters.IneligibleReason",
-                                ineligible_reason);
-  base::UmaHistogramBoolean("NewTabPage.HistoryClusters.HasClusterToShow",
-                            !clusters.empty());
-  base::UmaHistogramCounts100("NewTabPage.HistoryClusters.NumClusterCandidates",
-                              clusters.size());
+  bool should_fetch_more_clusters = should_fetch_clusters_until_exhausted_ &&
+                                    clusters.empty() &&
+                                    !continuation_params.exhausted_all_visits;
+  if (!should_fetch_more_clusters) {
+    // Only record metrics if we are ready to rank clusters or have no more
+    // clusters to query for.
+    base::UmaHistogramEnumeration("NewTabPage.HistoryClusters.IneligibleReason",
+                                  ineligible_reason);
+    base::UmaHistogramBoolean("NewTabPage.HistoryClusters.HasClusterToShow",
+                              !clusters.empty());
+    base::UmaHistogramCounts100(
+        "NewTabPage.HistoryClusters.NumClusterCandidates", clusters.size());
+  }
 
   if (clusters.empty()) {
-    std::move(callback).Run({});
+    if (should_fetch_more_clusters) {
+      // If no clusters to show and visits have not been exhausted, fetch for
+      // more clusters.
+      // TODO(crbug/1442074): This logic should probably change to just keep
+      // iterating until its over for the next phase of this project.
+      GetClusters(begin_time, continuation_params, std::move(callback));
+    } else {
+      std::move(callback).Run({});
+    }
+
     return;
   }
 
+  // Within each cluster, sort visits.
+  for (auto& cluster : clusters) {
+    history_clusters::StableSortVisits(cluster.visits);
+  }
+
+  if (module_ranker_) {
+    module_ranker_->RankClusters(
+        std::move(clusters),
+        base::BindOnce(&HistoryClustersModuleService::OnGetRankedClusters,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    SortClustersUsingHeuristic(category_boostlist_, clusters);
+    OnGetRankedClusters(std::move(callback), std::move(clusters));
+  }
+}
+
+void HistoryClustersModuleService::OnGetRankedClusters(
+    GetClustersCallback callback,
+    std::vector<history::Cluster> clusters) {
+  // Record metrics for top cluster.
   history::Cluster top_cluster = clusters.front();
   base::UmaHistogramCounts100("NewTabPage.HistoryClusters.NumVisits",
                               top_cluster.visits.size());
   base::UmaHistogramCounts100("NewTabPage.HistoryClusters.NumRelatedSearches",
                               top_cluster.related_searches.size());
+
+  // Cull to max clusters to return.
+  if (clusters.size() > max_clusters_to_return_) {
+    clusters.resize(max_clusters_to_return_);
+  }
+
   std::move(callback).Run(std::move(clusters));
 
   if (!IsCartModuleEnabled() || !cart_service_) {

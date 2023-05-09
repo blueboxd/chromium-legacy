@@ -84,9 +84,9 @@
 
 - (void)updateUserActivity {
   // Clear the user activity.
-  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static NSString* const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString*const*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
 
-  if(!NSUserActivityTypeBrowsingWebStr) {
+  if(NSUserActivityTypeBrowsingWebStr) {
     if (![self shouldUseActiveURL]) {
       [self.userActivity invalidate];
       self.userActivity = nil;

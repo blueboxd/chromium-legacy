@@ -1,4 +1,4 @@
-<style>
+<style include="cr-hidden-style">
 /* TODO(crbug.com/1350406): update the style after UI design
   spec is finalized.*/
 
@@ -61,7 +61,8 @@ cr-checkbox::part(label-container) {
 
 </style>
 
-<div title="[[appInfo.name]]" aria-hidden="true">
+<div title="[[appInfo.name]]" aria-hidden="true"
+    id="objectContainer">
   <div id="iconContainer">
     <img src="[[getIconUrl_(appInfo)]]" id="iconImage"
         alt="[[appInfo.name]]"

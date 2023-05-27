@@ -1993,6 +1993,122 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.SandboxMetrics.AvailableCapacity" units="MB"
+    expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The total amount of available storage capacity on the device. Logged once
+    per application cold launch, on startup.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.AvailableCapacityPercentage" units="%"
+    expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The percentage of the device storage which is available. Logged once per
+    application cold launch, on startup.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.CapacityForImportantUsage" units="MB"
+    expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The amount of device storage which is available for important storage.
+    Logged once per application cold launch, on startup.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.CapacityForImportantUsagePercentage"
+    units="%" expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The percentage of the device storage which is available for important
+    storage. Logged once per application cold launch, on startup.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.CapacityForOpportunisticUsage" units="MB"
+    expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The amount of device storage which is available for opportunistic storage.
+    Logged once per application cold launch, on startup.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.CapacityForOpportunisticUsagePercentage"
+    units="%" expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The percentage of the device storage which is available for opportunistic
+    storage. Logged once per application cold launch, on startup.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.DocumentsSize2" units="MB"
+    expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The total amount of storage used by the application Documents directory.
+    Chrome uses this directory to store files downloaded by the user. Logged at
+    application startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.LibrarySize" units="MB"
+    expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The total amount of storage used by the application Library directory.
+    Chrome uses this directory to store application data and caches. Logged at
+    application startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.OptimizationGuideModelDownloadedItems"
+    units="items" expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The number of download directories used by the optimization guide model
+    downloads. Logged at application startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.OptimizationGuideModelDownloadsSize"
+    units="KB" expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The total amount of storage used by the optimization guide model downloads.
+    Logged at application startup, maximum once every 2 weeks, if the
+    `kLogApplicationStorageSizeMetrics` flag is enabled.
+  </summary>
+</histogram>
+
+<histogram name="IOS.SandboxMetrics.TotalCapacity" enum="IOSStorageCapacity"
+    expires_after="2023-10-01">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>rohitrao@chromium.org</owner>
+  <summary>
+    The total amount of storage capacity on the device. Logged once per
+    application cold launch, on startup.
+  </summary>
+</histogram>
+
 <histogram name="IOS.SearchExtension.Action" enum="IOSSearchExtensionAction"
     expires_after="2023-09-24">
   <owner>olivierrobin@chromium.org</owner>
@@ -2344,6 +2460,28 @@ chromium-metrics-reviews@google.com.
   <summary>
     The time the Tab switcher is displayed to the user. This histogram will
     always be recorded once the user exit the tab switcher.
+  </summary>
+</histogram>
+
+<histogram name="IOS.TabSwitcher.TimeSpentOpeningExistingTab" units="ms"
+    expires_after="2024-05-14">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <summary>
+    The time it takes for a user to open an existing tab. If the user opens a
+    new tab or closes the tab switcher, this is not recorded.
+  </summary>
+</histogram>
+
+<histogram name="IOS.TabSwitcher.TimeSpentScrolling" units="ms"
+    expires_after="2024-05-14">
+  <owner>lpromero@chromium.org</owner>
+  <owner>alionadangla@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <summary>
+    The time spent while the tab grid is scrolled by the user. This includes the
+    deceleration time.
   </summary>
 </histogram>
 

@@ -170,18 +170,7 @@ BASE_FEATURE(kSFSymbolsFollowUp,
 
 BASE_FEATURE(kEnableExpKitAppleCalendar,
              "EnableExpKitAppleCalendar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-const char kExperienceKitMapsVariationName[] = "ExperienceKitMapsVariant";
-extern const char kEnableExperienceKitMapsVariationSrp[] = "with SRP";
-
-BASE_FEATURE(kMapsExperienceKit,
-             "MapsExperienceKit",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnableMiniMap,
-             "EnableMiniMap",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabGridRecencySort,
              "TabGridRecencySort",
@@ -189,6 +178,14 @@ BASE_FEATURE(kTabGridRecencySort,
 
 bool IsTabGridSortedByRecency() {
   return base::FeatureList::IsEnabled(kTabGridRecencySort);
+}
+
+BASE_FEATURE(kTabGridNewTransitions,
+             "TabGridNewTransitions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsNewTabGridTransitionsEnabled() {
+  return base::FeatureList::IsEnabled(kTabGridNewTransitions);
 }
 
 BASE_FEATURE(kMultilineFadeTruncatingLabel,

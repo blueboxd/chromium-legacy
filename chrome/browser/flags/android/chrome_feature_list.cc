@@ -191,6 +191,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCloseTabSuggestions,
     &kCloseTabSaveTabList,
     &kCriticalPersistedTabData,
+    &kCreateNewTabInitializeRenderer,
     &kCCTAllowCrossUidActivitySwitchFromBelow,
     &kCCTBackgroundTab,
     &kCCTBottomBarSwipeUpGesture,
@@ -239,6 +240,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchThinWebViewImplementation,
     &kDeferKeepScreenOnDuringGesture,
     &kDeferNotifyInMotion,
+    &kDelayTempStripRemoval,
     &kDelayTransitionsForAnimation,
     &kDrawEdgeToEdge,
     &kEmptyStates,
@@ -258,6 +260,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kNotificationPermissionVariant,
     &kNotificationPermissionBottomSheet,
     &kPageAnnotationsService,
+    &kPreconnectOnTabCreation,
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kOmahaMinSdkVersionAndroid,
@@ -331,6 +334,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kStartSurfaceOnTablet,
     &kStartSurfaceReturnTime,
     &kStartSurfaceRefactor,
+    &kStartSurfaceSpareTab,
     &kStartSurfaceDisabledFeedImprovement,
     &kStartSurfaceWithAccessibility,
     &kUmaBackgroundSessions,
@@ -547,6 +551,10 @@ BASE_FEATURE(kCloseTabSaveTabList,
              "CloseTabSaveTabList",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCreateNewTabInitializeRenderer,
+             "CreateNewTabInitializeRenderer",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCriticalPersistedTabData,
              "CriticalPersistedTabData",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -749,6 +757,10 @@ BASE_FEATURE(kDeferNotifyInMotion,
              "DeferNotifyInMotion",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDelayTempStripRemoval,
+             "DelayTempStripRemoval",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kDelayTransitionsForAnimation,
              "DelayTransitionsForAnimation",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -813,6 +825,10 @@ BASE_FEATURE(kInstanceSwitcher,
 
 BASE_FEATURE(kPageAnnotationsService,
              "PageAnnotationsService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPreconnectOnTabCreation,
+             "PreconnectOnTabCreation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kBookmarksImprovedSaveFlow,
@@ -895,7 +911,7 @@ BASE_FEATURE(kRecordSuppressionMetrics,
 
 BASE_FEATURE(kReduceToolbarUpdatesForSameDocNavigations,
              "ReduceToolbarUpdatesForSameDocNavigations",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReengagementNotification,
              "ReengagementNotification",
@@ -987,11 +1003,11 @@ BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
 
 BASE_FEATURE(kShareSheetCustomActionsPolish,
              "ShareSheetCustomActionsPolish",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShareSheetMigrationAndroid,
              "ShareSheetMigrationAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSpecialLocaleWrapper,
              "SpecialLocaleWrapper",
@@ -1117,6 +1133,10 @@ BASE_FEATURE(kShouldIgnoreIntentSkipInternalCheck,
 
 BASE_FEATURE(kStartSurfaceOnTablet,
              "StartSurfaceOnTablet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kStartSurfaceSpareTab,
+             "StartSurfaceSpareTab",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStartSurfaceReturnTime,

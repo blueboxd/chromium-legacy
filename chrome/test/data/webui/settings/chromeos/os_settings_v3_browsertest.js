@@ -257,6 +257,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'device_page/fake_input_device_settings_provider_test.js'
  ],
  [
+   'DevicePageInputDeviceMojoInterfaceProvider',
+   'device_page/input_device_mojo_interface_provider_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+ ],
+ [
    'DevicePagePerDeviceKeyboard', 'device_page/per_device_keyboard_test.js',
    {enabled: ['ash::features::kInputDeviceSettingsSplit']}
  ],
@@ -322,11 +327,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'hotspot_summary_item_tests.js',
    {enabled: ['ash::features::kHotspot']},
  ],
- [
-   'InputDeviceMojoInterfaceProvider',
-   'input_device_mojo_interface_provider_test.js',
-   {enabled: ['ash::features::kInputDeviceSettingsSplit']},
- ],
  ['InputMethodOptionPage', 'input_method_options_page_test.js'],
  ['InputPage', 'input_page_test.js'],
  ['InternetConfig', 'internet_config_test.js'],
@@ -389,12 +389,12 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'multidevice_page/multidevice_combined_setup_item_test.js'
  ],
  [
-   'MultidevicePageMultideviceWifiSyncItem',
-   'multidevice_page/multidevice_wifi_sync_item_test.js'
+   'MultidevicePageMultideviceTaskContinuationItem',
+   'multidevice_page/multidevice_task_continuation_item_test.js',
  ],
  [
-   'MultideviceTaskContinuationItem',
-   'multidevice_task_continuation_item_tests.js',
+   'MultidevicePageMultideviceWifiSyncItem',
+   'multidevice_page/multidevice_wifi_sync_item_test.js'
  ],
  [
    'MultideviceTaskContinuationDisabledLink',

@@ -117,22 +117,6 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     private int mMoveStartY;
     private float mOffsetY;
 
-    // These values are persisted to logs. Entries should not be renumbered and
-    // numeric values should never be reused.
-    // This should be kept in sync with the definition |CustomTabsResizeType2|
-    // in tools/metrics/histograms/enums.xml.
-    @IntDef({ResizeType.MANUAL_EXPANSION, ResizeType.MANUAL_MINIMIZATION, ResizeType.AUTO_EXPANSION,
-            ResizeType.AUTO_MINIMIZATION, ResizeType.COUNT})
-    @Retention(RetentionPolicy.SOURCE)
-    @VisibleForTesting
-    @interface ResizeType {
-        int MANUAL_EXPANSION = 0;
-        int MANUAL_MINIMIZATION = 1;
-        int AUTO_EXPANSION = 2;
-        int AUTO_MINIMIZATION = 3;
-        int COUNT = 4;
-    }
-
     // Used to initialize the coordinator view (R.id.coordinator) to full-height at the beginning.
     // This is a workaround to an issue of the host app briefly flashing when the tab is resized.
     private boolean mInitFirstHeight;
@@ -250,6 +234,10 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
 
         initializeHeight();
         positionAtWidth(mVersionCompat.getDisplayWidth());
+        if (shouldDrawDividerLine()) {
+            resetCoordinatorLayoutInsets();
+            drawDividerLine();
+        }
         updateShadowOffset();
         maybeInvokeResizeCallback();
         if (!isFixedHeight()) mRestoreAfterFindPage = false;
@@ -513,7 +501,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
             }
         }
 
-        int sideOffset = shouldDrawDividerLine()
+        int sideOffset = shouldDrawDividerLine() || isFullscreen()
                 ? 0
                 : mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_shadow_offset);
         int sideMargin = isMaxWidthLandscapeBottomSheet ? sideOffset : 0;
@@ -647,6 +635,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         showNavbarButtons(true);
         finishResizing(mStatus);
         updateShadowOffset();
+        if (shouldDrawDividerLine()) drawDividerLine();
         if (mSoftKeyboardRunnable != null) {
             mSoftKeyboardRunnable.run();
             mSoftKeyboardRunnable = null;
@@ -869,9 +858,10 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         int width =
                 mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_outline_width);
         boolean maxWidthBottomSheet = isMaxWidthLandscapeBottomSheet();
-        int dividerInset = maxWidthBottomSheet ? width : 0;
+        int dividerSideInset = maxWidthBottomSheet ? width : 0;
+        int dividerTopInset = shouldHaveNoShadowOffset() ? 0 : width;
 
-        drawDividerLineBase(dividerInset, 0, dividerInset);
+        drawDividerLineBase(dividerSideInset, dividerTopInset, dividerSideInset);
     }
 
     @Override
@@ -905,7 +895,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
 
     @VisibleForTesting
     void setMockViewForTesting(LinearLayout navbar, ImageView spinnerView,
-            CircularProgressDrawable spinner, View toolbar, View toolbarCoordinator,
+            CircularProgressDrawable spinner, CustomTabToolbar toolbar, View toolbarCoordinator,
             PartialCustomTabHandleStrategyFactory handleStrategyFactory) {
         mNavbar = navbar;
         mSpinnerView = spinnerView;

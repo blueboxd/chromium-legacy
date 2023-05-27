@@ -486,23 +486,11 @@ const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
     {{"minimal", kIOSNewPostRestoreExperienceMinimal,
       std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
 
-const FeatureEntry::FeatureParam
-    kNewTabPageRetentionPopularSitesIncludePopularApps[] = {
-        {ntp_tiles::kNewTabPageRetentionParam, "1"}};
-const FeatureEntry::FeatureParam
-    kNewTabPageRetentionPopularSitesExcludePopularApps[] = {
-        {ntp_tiles::kNewTabPageRetentionParam, "2"}};
 const FeatureEntry::FeatureParam kNewTabPageRetentionTileAblationHideAll[] = {
-    {ntp_tiles::kNewTabPageRetentionParam, "4"}};
+    {ntp_tiles::kNewTabPageRetentionParam, "1"}};
 const FeatureEntry::FeatureParam kNewTabPageRetentionTileAblationHideMVTOnly[] =
-    {{ntp_tiles::kNewTabPageRetentionParam, "5"}};
+    {{ntp_tiles::kNewTabPageRetentionParam, "2"}};
 const FeatureEntry::FeatureVariation kNewTabPageRetentionVariations[] = {
-    {"- Improved popular sites, Include popular apps",
-     kNewTabPageRetentionPopularSitesIncludePopularApps,
-     std::size(kNewTabPageRetentionPopularSitesIncludePopularApps), nullptr},
-    {"- Improved popular sites, Exclude popular apps",
-     kNewTabPageRetentionPopularSitesExcludePopularApps,
-     std::size(kNewTabPageRetentionPopularSitesExcludePopularApps), nullptr},
     {"- Tile ablation, Hide all", kNewTabPageRetentionTileAblationHideAll,
      std::size(kNewTabPageRetentionTileAblationHideAll), nullptr},
     {"- Tile ablation, Hide MVT only",
@@ -533,12 +521,6 @@ const FeatureEntry::FeatureVariation kEnableExpKitTextClassifierVariations[] = {
      std::size(kEnableExpKitTextClassifierPhoneNumber), nullptr},
     {"Enabled for email", kEnableExpKitTextClassifierEmail,
      std::size(kEnableExpKitTextClassifierEmail), nullptr}};
-
-const FeatureEntry::FeatureParam kEnableExperienceKitMapsWithSrp[] = {
-    {kExperienceKitMapsVariationName, kEnableExperienceKitMapsVariationSrp}};
-const FeatureEntry::FeatureVariation kEnableExperienceKitMapsVariations[] = {
-    {"with search result page", kEnableExperienceKitMapsWithSrp,
-     std::size(kEnableExperienceKitMapsWithSrp), nullptr}};
 
 const FeatureEntry::FeatureParam kFollowingFeedSortTypeGroupedByPublisher[] = {
     {kFollowingFeedDefaultSortTypeGroupedByPublisher, "true"},
@@ -1055,15 +1037,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableExpKitTextClassifier,
                                     kEnableExpKitTextClassifierVariations,
                                     "ExpKitTextClassifier")},
-    {"experience-kit-maps", flag_descriptions::kMapsExperienceKitName,
-     flag_descriptions::kMapsExperienceKitDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kMapsExperienceKit,
-                                    kEnableExperienceKitMapsVariations,
-                                    "IOSExperienceKitMaps")},
-    {"enable-long-press-surrounding-text",
-     flag_descriptions::kLongPressSurroundingTextName,
-     flag_descriptions::kLongPressSurroundingTextDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kLongPressSurroundingText)},
     {"one-tap-experience-maps", flag_descriptions::kOneTapForMapsName,
      flag_descriptions::kOneTapForMapsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kOneTapForMaps)},
@@ -1294,6 +1267,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tab-grid-recency-sort", flag_descriptions::kTabGridRecencySortName,
      flag_descriptions::kTabGridRecencySortDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kTabGridRecencySort)},
+    {"tab-grid-new-transitions", flag_descriptions::kTabGridNewTransitionsName,
+     flag_descriptions::kTabGridNewTransitionsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabGridNewTransitions)},
     {"enable-pinned-tabs", flag_descriptions::kEnablePinnedTabsName,
      flag_descriptions::kEnablePinnedTabsDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnablePinnedTabs,

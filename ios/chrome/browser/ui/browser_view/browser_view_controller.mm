@@ -967,7 +967,7 @@ enum HeaderBehaviour {
   if (self.bottomPosition)
     return NO;
 
-  return YES;
+  return self.viewVisible;
 }
 
 #pragma mark - UIViewController
@@ -2613,38 +2613,6 @@ enum HeaderBehaviour {
   [self updateContentPaddingForTopToolbarHeight:top bottomToolbarHeight:bottom];
 }
 
-// Updates the frame of the web view so that it's `offset` from the bottom of
-// the container view.
-- (void)updateWebViewFrameForBottomOffset:(CGFloat)offset {
-  if (!self.currentWebState)
-    return;
-
-  // Move the frame of the container view such that the bottom is aligned with
-  // the top of the bottom toolbar.
-  id<CRWWebViewProxy> webViewProxy = self.currentWebState->GetWebViewProxy();
-  CGRect webViewFrame = webViewProxy.frame;
-  CGFloat oldOriginY = CGRectGetMinY(webViewFrame);
-  webViewProxy.contentOffset = CGPointMake(0.0, -offset);
-  // Update the contentOffset so that the scroll position is maintained
-  // relative to the screen.
-  CRWWebViewScrollViewProxy* scrollViewProxy = webViewProxy.scrollViewProxy;
-  CGFloat originDelta = CGRectGetMinY(webViewProxy.frame) - oldOriginY;
-  CGPoint contentOffset = scrollViewProxy.contentOffset;
-  contentOffset.y += originDelta;
-  scrollViewProxy.contentOffset = contentOffset;
-}
-
-// Updates the web view's viewport by changing the safe area insets.
-- (void)updateBrowserSafeAreaForTopToolbarHeight:(CGFloat)topToolbarHeight
-                             bottomToolbarHeight:(CGFloat)bottomToolbarHeight {
-  UIViewController* containerViewController =
-      self.browserContainerViewController;
-  containerViewController.additionalSafeAreaInsets = UIEdgeInsetsMake(
-      topToolbarHeight - self.rootSafeAreaInsets.top -
-          self.currentWebState->GetWebViewProxy().contentOffset.y,
-      0, 0, 0);
-}
-
 // Updates the padding of the web view proxy. This either resets the frame of
 // the WKWebView or the contentInsets of the WKWebView's UIScrollView, depending
 // on the the proxy's `shouldUseViewContentInset` property.
@@ -2673,22 +2641,6 @@ enum HeaderBehaviour {
 
   UIView* topHeader = headers[0].view;
   return -(topHeader.frame.origin.y - self.headerOffset);
-}
-
-// Returns the insets into `view` that result in the visible viewport.
-- (UIEdgeInsets)viewportInsetsForView:(UIView*)view {
-  DCHECK(view);
-  UIEdgeInsets viewportInsets =
-      self.fullscreenController->GetCurrentViewportInsets();
-  // TODO(crbug.com/917548): Use BVC for viewport inset coordinate space rather
-  // than the content area.
-  CGRect viewportFrame = [view
-      convertRect:UIEdgeInsetsInsetRect(self.contentArea.bounds, viewportInsets)
-         fromView:self.contentArea];
-  return UIEdgeInsetsMake(
-      CGRectGetMinY(viewportFrame), CGRectGetMinX(viewportFrame),
-      CGRectGetMaxY(view.bounds) - CGRectGetMaxY(viewportFrame),
-      CGRectGetMaxX(view.bounds) - CGRectGetMaxX(viewportFrame));
 }
 
 #pragma mark - MainContentUI
@@ -3042,7 +2994,7 @@ enum HeaderBehaviour {
     [firstResponder resignFirstResponder];
     // Close presented view controllers, e.g. share sheets.
     if (self.presentedViewController) {
-      [self dismissViewControllerAnimated:NO completion:nil];
+      [self.applicationCommandsHandler dismissModalDialogs];
     }
 
   } else {

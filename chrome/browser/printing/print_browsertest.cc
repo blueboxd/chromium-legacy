@@ -652,6 +652,10 @@ void PrintBrowserTest::SetNumExpectedMessages(unsigned int num) {
   num_expected_messages_ = num;
 }
 
+void PrintBrowserTest::ResetNumReceivedMessages() {
+  num_received_messages_ = 0;
+}
+
 void PrintBrowserTest::WaitUntilCallbackReceived() {
   base::RunLoop run_loop;
   quit_callback_ = run_loop.QuitClosure();
@@ -1674,28 +1678,28 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
   // The script will ensure we return the id of <zoom-out-button> when
   // focused. Focus the element after PDF plugin in tab order.
   const char kScript[] = R"(
-    const button = document.getElementsByTagName('print-preview-app')[0]
-                       .$['previewArea']
-                       .shadowRoot.querySelector('iframe')
-                       .contentDocument.querySelector('pdf-viewer-pp')
-                       .shadowRoot.querySelector('#zoomToolbar')
-                       .$['zoom-out-button'];
-    button.addEventListener('focus', (e) => {
-      window.domAutomationController.send(e.target.id);
-    });
+    new Promise(resolve => {
+      const button = document.getElementsByTagName('print-preview-app')[0]
+                         .$['previewArea']
+                         .shadowRoot.querySelector('iframe')
+                         .contentDocument.querySelector('pdf-viewer-pp')
+                         .shadowRoot.querySelector('#zoomToolbar')
+                         .$['zoom-out-button'];
+      button.addEventListener('focus', (e) => {
+        window.domAutomationController.send(e.target.id);
+      });
 
-    const select_tag = document.getElementsByTagName('print-preview-app')[0]
-                           .$['sidebar']
-                           .$['destinationSettings']
-                           .$['destinationSelect'];
-    select_tag.addEventListener('focus', () => {
-      window.domAutomationController.send(true);
+      const select_tag = document.getElementsByTagName('print-preview-app')[0]
+                             .$['sidebar']
+                             .$['destinationSettings']
+                             .$['destinationSelect'];
+      select_tag.addEventListener('focus', () => {
+        resolve(true);
+      });
+      select_tag.focus();
     });
-    select_tag.focus();)";
-  bool success = false;
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractBool(preview_dialog, kScript, &success));
-  ASSERT_TRUE(success);
+    )";
+  ASSERT_EQ(true, content::EvalJs(preview_dialog, kScript));
 
   // Simulate a <shift-tab> press and wait for a focus message.
   content::DOMMessageQueue msg_queue(preview_dialog);

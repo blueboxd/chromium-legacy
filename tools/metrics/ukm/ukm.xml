@@ -4006,13 +4006,6 @@ be describing additional metrics about the same event.
       between navigation and First Contentful Paint, in microseconds.
     </summary>
   </metric>
-  <metric name="ScrollDocumentUpdate">
-    <summary>
-      The time spent doing forced document updates due to update scroll-related
-      data, between navigation and First Contentful Paint, in microseconds.
-      Includes actions like scroll-to-fragment.
-    </summary>
-  </metric>
   <metric name="ScrollingCoordinator">
     <obsolete>
       Merged into CompositingCommit in http://crrev.com/815947 in M88.
@@ -4062,6 +4055,8 @@ be describing additional metrics about the same event.
       The time spent doing forced document updates due to a user action such as
       input, find-in-page or printing, between navigation and First Contentful
       Paint, in microseconds.
+
+      As of 04/2023, updates for scrolling are included in this metric.
     </summary>
   </metric>
   <metric name="VisualUpdateDelay">
@@ -5157,18 +5152,6 @@ be describing additional metrics about the same event.
       An int in the range [0,100].
     </summary>
   </metric>
-  <metric name="ScrollDocumentUpdate">
-    <summary>
-      The time spent doing forced document updates due to update scroll-related
-      data, during a sampled frame, in microseconds.
-    </summary>
-  </metric>
-  <metric name="ScrollDocumentUpdateBeginMainFrame">
-    <summary>
-      The time spent doing forced document updates due to update scroll-related
-      data, during the BeginMainFrame block of a sampled frame, in microseconds.
-    </summary>
-  </metric>
   <metric name="ScrollingCoordinator">
     <obsolete>
       Merged into Blink.MainFrame.CompositingCommitRatio in
@@ -5407,6 +5390,8 @@ be describing additional metrics about the same event.
     <summary>
       The time spent doing forced document updates due to a user action such as
       input, find-in-page or printing, during a sampled frame, in microseconds.
+
+      As of 04/2023, updates for scrolling are included in this metric.
     </summary>
   </metric>
   <metric name="UserDrivenDocumentUpdateBeginMainFrame">
@@ -5414,6 +5399,8 @@ be describing additional metrics about the same event.
       The time spent doing forced document updates due to a user action such as
       input, find-in-page or printing, during the BeginMainFrame block of a
       sampled frame, in microseconds.
+
+      As of 04/2023, updates for scrolling are included in this metric.
     </summary>
   </metric>
   <metric name="VisualUpdateDelay">
@@ -14593,6 +14580,58 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NewTabPage.HistoryClusters">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    Metrics related to a History Clusters module shown on the New Tab Page.
+    Recorded for each History Clusters module shown on a 1P New Tab Page load,
+    which can be multiple for a page load.
+  </summary>
+  <metric name="BelongsToBoostedCategory" enum="Boolean">
+    <summary>
+      Cluster is of a boosted category.
+    </summary>
+  </metric>
+  <metric name="DidEngageWithModule" enum="Boolean">
+    <summary>
+      Whether the user engaged with the module.
+    </summary>
+  </metric>
+  <metric name="LayoutTypeShown" enum="NTPHistoryClustersModuleDisplayLayout">
+    <summary>
+      The layout type that was shown to the user for this module.
+    </summary>
+  </metric>
+  <metric name="MinutesSinceMostRecentVisit">
+    <summary>
+      Minutes since the shown cluster's most recent visit, exponentially
+      bucketed using GetExponentialBucketMin with a spacing of 1.3.
+    </summary>
+  </metric>
+  <metric name="NumAbandonedCarts">
+    <summary>
+      Number of abandoned carts associated with the cluster.
+    </summary>
+  </metric>
+  <metric name="NumTotalVisits">
+    <summary>
+      Number of total visits in the same cluster including ones that are not
+      necessarily shown in the module.
+    </summary>
+  </metric>
+  <metric name="NumUniqueHosts">
+    <summary>
+      Number of unique hosts represented in the cluster.
+    </summary>
+  </metric>
+  <metric name="NumVisitsWithImage">
+    <summary>
+      Number of visits with an image to show.
+    </summary>
+  </metric>
+</event>
+
 <event name="NoStatePrefetch" singular="True">
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -20377,6 +20416,36 @@ be describing additional metrics about the same event.
       An enum that records the type of same-site context if a cookie marked with
       SameSite=Lax or SameSite=Strict is set across schemes on a response. E.x.:
       An http site returning a response to an https site.
+    </summary>
+  </metric>
+</event>
+
+<event name="SamesiteRedirectContextDowngrade">
+  <owner>bingler@chromium.org</owner>
+  <summary>
+    A collection of metrics which are recorded for cookies whose inclusion would
+    be changed if the redirect chain was considered in their same-site
+    calculation. This change in inclusion is because the same-site context would
+    &quot;downgrade&quot; from a more permissive context to a less permissive
+    context, one which may not allow a cookie's inclusion.
+  </summary>
+  <metric name="AgePerCookie">
+    <summary>
+      Records the age of the cookies, in minutes, for cookies which are being
+      read (on a requset or via JS). The value rounded down to the exponential
+      bucket with factor of 2.0.
+    </summary>
+  </metric>
+  <metric name="SamesiteValueReadPerCookie" enum="SameSiteCookieValue">
+    <summary>
+      Records the SameSite value of the cookie for cookies which are being read
+      (on a request or via JS).
+    </summary>
+  </metric>
+  <metric name="SamesiteValueWritePerCookie" enum="SameSiteCookieValue">
+    <summary>
+      Records the SameSite value of the cookie for cookies which are being
+      written (on a response or via JS).
     </summary>
   </metric>
 </event>

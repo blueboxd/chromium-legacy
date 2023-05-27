@@ -120,6 +120,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -191,8 +192,6 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "content/browser/attribution_reporting/attribution_manager.h"
-#include "services/network/public/cpp/attribution_utils.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #endif
@@ -385,8 +384,7 @@ void AddAdditionalRequestHeaders(
     const std::string& user_agent_override,
     const absl::optional<url::Origin>& initiator_origin,
     blink::mojom::Referrer* referrer,
-    FrameTreeNode* frame_tree_node,
-    bool has_attribution_src_token) {
+    FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
@@ -441,14 +439,6 @@ void AddAdditionalRequestHeaders(
   if (frame_tree_node->frame_tree().is_prerendering()) {
     headers->SetHeader("Sec-Purpose", "prefetch;prerender");
     headers->SetHeader("Purpose", "prefetch");
-  }
-
-  if (has_attribution_src_token
-#if BUILDFLAG(IS_ANDROID)
-      && network::HasAttributionSupport(AttributionManager::GetSupport())
-#endif
-  ) {
-    headers->SetHeader("Attribution-Reporting-Eligible", "navigation-source");
   }
 }
 
@@ -1899,8 +1889,7 @@ NavigationRequest::NavigationRequest(
         ui::PageTransitionFromInt(common_params_->transition),
         controller->GetBrowserContext(), common_params_->method,
         GetUserAgentOverride(), common_params_->initiator_origin,
-        common_params_->referrer.get(), frame_tree_node,
-        begin_params_->impression.has_value());
+        common_params_->referrer.get(), frame_tree_node);
 
     if (begin_params_->is_form_submission) {
       // During form resubmit, `commit_params_->post_content_type` is populated
@@ -1971,7 +1960,14 @@ NavigationRequest::NavigationRequest(
   // service worker (e.g, Prerendering or the previous navigation already
   // started the service worker), but this call does nothing if the service
   // worker already started for the URL.
-  if (reload_type_ != ReloadType::BYPASSING_CACHE &&
+  //
+  // Checking OriginCanAccessServiceWorkers() is needed before calling
+  // GetTentativeOriginAtRequestTime() since loading an about:srcdoc URL
+  // on the main frame will cause a failure while processing
+  // GetTentativeOriginAtRequestTime(). OriginCanAccessServiceWorkers()
+  // can also skip unnecessary computation.
+  if (GetURL().is_valid() && OriginCanAccessServiceWorkers(GetURL()) &&
+      reload_type_ != ReloadType::BYPASSING_CACHE &&
       base::FeatureList::IsEnabled(kSpeculativeServiceWorkerStartup)) {
     if (ServiceWorkerContext* context =
             frame_tree_node_->navigator()
@@ -5457,7 +5453,13 @@ void NavigationRequest::CommitErrorPage(
     topics_eligible_ = false;
   }
 
+  base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
   ReadyToCommitNavigation(true /* is_error */);
+  // The caller above might result in the deletion of `this`. Return immediately
+  // if so.
+  if (!weak_self) {
+    return;
+  }
 
   PopulateDocumentTokenForCrossDocumentNavigation();
   // Use a separate cache shard, and no cookies, for error pages.

@@ -263,6 +263,8 @@ static_library("browser") {
     "browsing_topics/browsing_topics_service_factory.h",
     "cart/commerce_hint_service.cc",
     "cart/commerce_hint_service.h",
+    "chained_back_navigation_tracker.cc",
+    "chained_back_navigation_tracker.h",
     "child_process_host_flags.h",
     "chooser_controller/title_util.cc",
     "chooser_controller/title_util.h",
@@ -3886,14 +3888,20 @@ static_library("browser") {
       "new_tab_page/modules/feed/feed_handler.h",
       "new_tab_page/modules/history_clusters/cart/cart_processor.cc",
       "new_tab_page/modules/history_clusters/cart/cart_processor.h",
-      "new_tab_page/modules/history_clusters/history_clusters_module_ranker.cc",
-      "new_tab_page/modules/history_clusters/history_clusters_module_ranker.h",
       "new_tab_page/modules/history_clusters/history_clusters_module_service.cc",
       "new_tab_page/modules/history_clusters/history_clusters_module_service.h",
       "new_tab_page/modules/history_clusters/history_clusters_module_service_factory.cc",
       "new_tab_page/modules/history_clusters/history_clusters_module_service_factory.h",
+      "new_tab_page/modules/history_clusters/history_clusters_module_util.cc",
+      "new_tab_page/modules/history_clusters/history_clusters_module_util.h",
       "new_tab_page/modules/history_clusters/history_clusters_page_handler.cc",
       "new_tab_page/modules/history_clusters/history_clusters_page_handler.h",
+      "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranker.cc",
+      "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranker.h",
+      "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_metrics_logger.cc",
+      "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_metrics_logger.h",
+      "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_signals.cc",
+      "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_signals.h",
       "new_tab_page/modules/modules_switches.cc",
       "new_tab_page/modules/modules_switches.h",
       "new_tab_page/modules/new_tab_page_modules.cc",
@@ -4287,6 +4295,8 @@ static_library("browser") {
       "task_manager/providers/web_contents/tool_task.h",
       "task_manager/providers/web_contents/web_app_tag.cc",
       "task_manager/providers/web_contents/web_app_tag.h",
+      "task_manager/providers/web_contents/web_app_task.cc",
+      "task_manager/providers/web_contents/web_app_task.h",
       "task_manager/providers/web_contents/web_contents_tag.cc",
       "task_manager/providers/web_contents/web_contents_tag.h",
       "task_manager/providers/web_contents/web_contents_tags_manager.cc",
@@ -7457,6 +7467,8 @@ static_library("browser") {
       "supervised_user/supervised_user_google_auth_navigation_throttle.h",
       "supervised_user/supervised_user_interstitial.cc",
       "supervised_user/supervised_user_interstitial.h",
+      "supervised_user/supervised_user_interstitial_tab_closer.cc",
+      "supervised_user/supervised_user_interstitial_tab_closer.h",
       "supervised_user/supervised_user_metrics_service_factory.cc",
       "supervised_user/supervised_user_metrics_service_factory.h",
       "supervised_user/supervised_user_navigation_observer.cc",
@@ -7629,6 +7641,18 @@ static_library("browser") {
       "permissions/prediction_model_handler_provider_factory.cc",
       "permissions/prediction_model_handler_provider_factory.h",
     ]
+    if (!is_android) {
+      sources += [
+        "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_model_executor.cc",
+        "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_model_executor.h",
+        "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_model_handler.cc",
+        "new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_model_handler.h",
+      ]
+      deps += [
+        "new_tab_page/modules/history_clusters/ranking:history_clusters_module_proto",
+        "//third_party/tflite_support",
+      ]
+    }
     deps += [ "//components/segmentation_platform/internal:optimization_guide_segmentation_handler" ]
   }
 }

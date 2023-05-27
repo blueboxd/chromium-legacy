@@ -217,17 +217,6 @@ extern const char kMagicStackDescription[] =
     "When enabled, a Magic Stack will be shown in the Home surface displaying "
     "a variety of modules.";
 
-extern const char kMapsExperienceKitName[] = "Experience Kit Maps";
-extern const char kMapsExperienceKitDescription[] =
-    "When enabled, long pressing on an address will trigger Experience Kit Maps"
-    "location and directions handling. Requires "
-    "#enable-long-press-surrounding-text to be enabled.";
-
-extern const char kLongPressSurroundingTextName[] =
-    "Enable Long Press Surrounding Text";
-extern const char kLongPressSurroundingTextDescription[] =
-    "When enabled, long pressing a text will analyze larger part of the text.";
-
 const char kCredentialProviderExtensionPromoName[] =
     "Enable the Credential Provider Extension promo.";
 const char kCredentialProviderExtensionPromoDescription[] =
@@ -1057,6 +1046,11 @@ const char kSFSymbolsFollowUpDescription[] = "Change the + button.";
 const char kTabGridRecencySortName[] = "Change TabGrid sorting";
 const char kTabGridRecencySortDescription[] =
     "When enabled, the tabs in the Tab Grid are sorted differently.";
+
+const char kTabGridNewTransitionsName[] = "Enable new TabGrid transitions";
+const char kTabGridNewTransitionsDescription[] =
+    "When enabled, the new Tab Grid to Browser (and vice versa) transitions"
+    "are used.";
 
 const char kTabInactivityThresholdName[] = "Change Tab inactivity threshold";
 const char kTabInactivityThresholdDescription[] =

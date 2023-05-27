@@ -88,10 +88,11 @@ const int kMainIntentCheckDelay = 1;
     [_mainController setMetricsMediator:_metricsMediator];
     _browserLauncher = _mainController;
     _startupInformation = _mainController;
-    _pushNotificationDelegate = [[PushNotificationDelegate alloc] init];
     _appState = [[AppState alloc] initWithBrowserLauncher:_browserLauncher
                                        startupInformation:_startupInformation
                                       applicationDelegate:self];
+    _pushNotificationDelegate =
+        [[PushNotificationDelegate alloc] initWithAppState:_appState];
     [_mainController setAppState:_appState];
   }
   return self;
@@ -241,6 +242,8 @@ const int kMainIntentCheckDelay = 1;
   // This method is invoked by iOS on the successful registration of the app to
   // APNS and retrieval of the device's APNS token.
   _didRegisterDeviceWithAPNS = YES;
+  base::UmaHistogramBoolean("IOS.PushNotification.APNSDeviceRegistration",
+                            true);
   [_pushNotificationDelegate applicationDidRegisterWithAPNS:deviceToken];
 }
 

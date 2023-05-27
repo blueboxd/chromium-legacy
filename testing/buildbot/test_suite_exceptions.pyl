@@ -3953,6 +3953,11 @@
           '--top-chrome-touch-ui=disabled',
         ],
       },
+      'win10-code-coverage': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
     },
   },
   'vaapi_unittest eve': {
@@ -4525,6 +4530,11 @@
       'android-x86-code-coverage': {
         'swarming': {
           'inverse_quickrun_shards': 12,
+        },
+      },
+      'win10-code-coverage': {
+        'swarming': {
+          'shards': 4,
         },
       },
     },

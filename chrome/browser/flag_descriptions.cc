@@ -1995,6 +1995,12 @@ const char kLensImageTranslateDescription[] =
     "Lens. The context menu item appears when the current page is being "
     "translated.";
 
+const char kEnableLensPingName[] =
+    "Enable the ping to Lens before Lens requests";
+const char kEnableLensPingDescription[] =
+    "Enables a ping to the Lens Standalone server before a request is sent. "
+    "This ping is used to proactively set cookies needed by Lens.";
+
 const char kCscName[] = "CSC";
 const char kCscDescription[] = "";
 
@@ -4309,6 +4315,12 @@ const char kBaselineGM3SurfaceColorsName[] = "Baseline GM3 Surface Colors";
 const char kBaselineGM3SurfaceColorsDescription[] =
     "Updates baseline surface colors to match the GM3 formula.";
 
+const char kDelayTempStripRemovalName[] =
+    "Delay temp tab strip removal on startup";
+const char kDelayTempStripRemovalDescription[] =
+    "By delaying the removal of the placeholder tab strip, we mitigate the "
+    "jank seen as tabs are being restored on startup.";
+
 const char kTouchDragAndContextMenuName[] =
     "Simultaneous touch drag and context menu";
 const char kTouchDragAndContextMenuDescription[] =
@@ -4503,18 +4515,18 @@ const char kGlobalMediaControlsCastStartStopDescription[] =
     "Allows global media controls to control when a Cast session is started "
     "or stopped instead of relying on the Cast dialog.";
 
-extern const char kHighEfficiencyModeAvailableName[] =
-    "Enable the high efficiency mode feature in the settings";
-extern const char kHighEfficiencyModeAvailableDescription[] =
-    "When enabled, shows the performance section in the performance settings "
-    "page";
-
 extern const char kHeuristicMemorySaverName[] =
     "Enable the heuristics-based policy for Memory Saver Mode.";
 extern const char kHeuristicMemorySaverDescription[] =
     "When enabled, Memory Saver will take multiple signals into account before "
     "discarding a tab rather than doing it after a fixed amount of time in the "
     "background.";
+
+extern const char kHighEfficiencySavingsReportingImprovementsName[] =
+    "Enable improvements to how memory savings are reported.";
+extern const char kHighEfficiencySavingsReportingImprovementsDescription[] =
+    "When enabled, the Memory Saver page action chip and dialog will be used "
+    "to highlight memory savings.";
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kIOSPromoPasswordBubbleName[] =
@@ -4576,6 +4588,12 @@ const char kNtpChromeCartInHistoryClustersModuleName[] =
 const char kNtpChromeCartInHistoryClustersModuleDescription[] =
     "Shows ChromeCart tile in the Journeys module when available on the New "
     "Tab Page.";
+
+const char kNtpChromeCartHistoryClusterCoexistName[] =
+    "NTP ChromeCart and Journeys Module Coexist";
+const char kNtpChromeCartHistoryClusterCoexistDescription[] =
+    "Shows ChromeCart module and ChromeCart+Journeys module together when "
+    "available on the New Tab Page.";
 
 const char kNtpMiddleSlotPromoDismissalName[] =
     "NTP Middle Slot Promo Dismissal";

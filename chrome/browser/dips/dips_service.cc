@@ -9,6 +9,8 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
@@ -100,6 +102,12 @@ inline void UmaHistogramDeletionLatency(base::Time deletion_start) {
                                  base::Time::Now() - deletion_start);
 }
 
+void OnDeletionFinished(base::OnceClosure finished_callback,
+                        base::Time deletion_start) {
+  UmaHistogramDeletionLatency(deletion_start);
+  std::move(finished_callback).Run();
+}
+
 class StateClearer : public content::BrowsingDataRemover::Observer {
  public:
   StateClearer(const StateClearer&) = delete;
@@ -159,16 +167,23 @@ DIPSService::DIPSService(content::BrowserContext* context)
   absl::optional<base::FilePath> path_to_use;
   base::FilePath dips_path = GetDIPSFilePath(browser_context_);
 
-  if (dips::kPersistedDatabaseEnabled.Get() &&
-      !browser_context_->IsOffTheRecord()) {
-    path_to_use = dips_path;
-    // Existing database files won't be deleted, so quit the
-    // `wait_for_file_deletion_` RunLoop.
+  if (browser_context_->IsOffTheRecord()) {
+    // OTR profiles should have no existing DIPS database file to be cleaned up.
+    // In fact, attempting to delete one at the path associated with the OTR
+    // profile would delete the DIPS database for the underlying regular
+    // profile.
     wait_for_file_deletion_.Quit();
   } else {
-    // If opening in-memory, delete any database files that may exist.
-    DIPSStorage::DeleteDatabaseFiles(dips_path,
-                                     wait_for_file_deletion_.QuitClosure());
+    if (dips::kPersistedDatabaseEnabled.Get()) {
+      path_to_use = dips_path;
+      // Existing database files won't be deleted, so quit the
+      // `wait_for_file_deletion_` RunLoop.
+      wait_for_file_deletion_.Quit();
+    } else {
+      // If opening in-memory, delete any database files that may exist.
+      DIPSStorage::DeleteDatabaseFiles(dips_path,
+                                       wait_for_file_deletion_.QuitClosure());
+    }
   }
 
   storage_ = base::SequenceBound<DIPSStorage>(CreateTaskRunner(), path_to_use);
@@ -387,19 +402,23 @@ void DIPSService::OnTimerFired() {
   storage_.AsyncCall(&DIPSStorage::GetSitesToClear)
       .WithArgs(absl::nullopt)
       .Then(base::BindOnce(&DIPSService::DeleteDIPSEligibleState,
-                           weak_factory_.GetWeakPtr(), start));
+                           weak_factory_.GetWeakPtr(), base::DoNothing(),
+                           start));
 }
 
-void DIPSService::DeleteEligibleSitesImmediately() {
+void DIPSService::DeleteEligibleSitesImmediately(
+    DeletedSitesCallback callback) {
   base::Time start = base::Time::Now();
   // Storage init should be finished by now, so no need to delay until then.
   storage_.AsyncCall(&DIPSStorage::GetSitesToClear)
       .WithArgs(base::Seconds(0))
       .Then(base::BindOnce(&DIPSService::DeleteDIPSEligibleState,
-                           weak_factory_.GetWeakPtr(), start));
+                           weak_factory_.GetWeakPtr(), std::move(callback),
+                           start));
 }
 
 void DIPSService::DeleteDIPSEligibleState(
+    DeletedSitesCallback callback,
     base::Time deletion_start,
     std::vector<std::string> sites_to_clear) {
   base::UmaHistogramCounts1000(
@@ -408,6 +427,7 @@ void DIPSService::DeleteDIPSEligibleState(
       sites_to_clear.size());
 
   if (sites_to_clear.empty()) {
+    std::move(callback).Run(std::vector<std::string>());
     return;
   }
 
@@ -417,6 +437,8 @@ void DIPSService::DeleteDIPSEligibleState(
     ukm::builders::DIPS_Deletion(source_id).SetDetected(true).Record(
         ukm::UkmRecorder::Get());
   }
+
+  base::OnceClosure finish_callback;
 
   if (ShouldBlockThirdPartyCookies() && dips::kDeletionEnabled.Get()) {
     if (IsShuttingDown()) {
@@ -434,25 +456,35 @@ void DIPSService::DeleteDIPSEligibleState(
       }
     }
 
+    finish_callback = base::BindOnce(
+        std::move(callback), std::vector<std::string>(non_excepted_sites));
+
     if (excepted_sites.empty()) {
-      PostDeletionTaskToUIThread(deletion_start, std::move(non_excepted_sites));
+      PostDeletionTaskToUIThread(std::move(finish_callback), deletion_start,
+                                 std::move(non_excepted_sites));
     } else {
       // Storage init should be finished by now, so no need to delay until then.
       storage_.AsyncCall(&DIPSStorage::RemoveRows)
           .WithArgs(std::move(excepted_sites))
           .Then(base::BindOnce(&DIPSService::PostDeletionTaskToUIThread,
-                               weak_factory_.GetWeakPtr(), deletion_start,
+                               weak_factory_.GetWeakPtr(),
+                               std::move(finish_callback), deletion_start,
                                std::move(non_excepted_sites)));
     }
   } else {
+    finish_callback = base::BindOnce(std::move(callback),
+                                     std::vector<std::string>(sites_to_clear));
+
     // Storage init should be finished by now, so no need to delay until then.
     storage_.AsyncCall(&DIPSStorage::RemoveRows)
         .WithArgs(std::move(sites_to_clear))
-        .Then(base::BindOnce(&UmaHistogramDeletionLatency, deletion_start));
+        .Then(base::BindOnce(&OnDeletionFinished, std::move(finish_callback),
+                             deletion_start));
   }
 }
 
-void DIPSService::PostDeletionTaskToUIThread(base::Time deletion_start,
+void DIPSService::PostDeletionTaskToUIThread(base::OnceClosure callback,
+                                             base::Time deletion_start,
                                              std::vector<std::string> sites) {
   std::unique_ptr<content::BrowsingDataFilterBuilder> filter =
       content::BrowsingDataFilterBuilder::Create(
@@ -462,10 +494,11 @@ void DIPSService::PostDeletionTaskToUIThread(base::Time deletion_start,
   }
 
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&DIPSService::RunDeletionTaskOnUIThread,
-                                weak_factory_.GetWeakPtr(), std::move(filter),
-                                base::BindOnce(&UmaHistogramDeletionLatency,
-                                               deletion_start)));
+      FROM_HERE,
+      base::BindOnce(&DIPSService::RunDeletionTaskOnUIThread,
+                     weak_factory_.GetWeakPtr(), std::move(filter),
+                     base::BindOnce(&OnDeletionFinished, std::move(callback),
+                                    deletion_start)));
 }
 
 void DIPSService::RunDeletionTaskOnUIThread(

@@ -77,6 +77,11 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
 
 @implementation PushNotificationDelegate
 
+- (instancetype)initWithAppState:(AppState*)appState {
+  [appState addObserver:self];
+  return self;
+}
+
 #pragma mark - UNUserNotificationCenterDelegate -
 
 - (void)userNotificationCenter:(UNUserNotificationCenter*)center
@@ -118,8 +123,6 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
 - (UIBackgroundFetchResult)applicationWillProcessIncomingRemoteNotification:
     (NSDictionary*)userInfo {
   double incomingNotificationTime = base::Time::Now().ToDoubleT();
-  base::UmaHistogramBoolean("IOS.PushNotification.APNSDeviceRegistration",
-                            true);
   auto* clientManager = GetApplicationContext()
                             ->GetPushNotificationService()
                             ->GetPushNotificationClientManager();
@@ -176,6 +179,22 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
                                 true);
     }
   });
+}
+
+#pragma mark - AppStateObserver
+
+- (void)appState:(AppState*)appState
+    didTransitionFromInitStage:(InitStage)previousInitStage {
+  if (appState.initStage < InitStageFinal) {
+    return;
+  }
+  PushNotificationClientManager* clientManager =
+      GetApplicationContext()
+          ->GetPushNotificationService()
+          ->GetPushNotificationClientManager();
+  DCHECK(clientManager);
+  clientManager->OnBrowserReady();
+  [appState removeObserver:self];
 }
 
 @end

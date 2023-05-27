@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_layout.h"
@@ -79,9 +78,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   // Tracks if the view is available.
   BOOL _available;
-
-  // Tracks if the view is visible.
-  BOOL _visible;
 
   // Tracks if a drag action is in progress.
   BOOL _dragSessionEnabled;
@@ -177,6 +173,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   if (visible == _visible) {
     return;
   }
+  _visible = visible;
 
   // Show the view if `visible` is true to ensure smooth animation.
   if (visible) {
@@ -184,13 +181,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     self.view.hidden = NO;
   }
 
+  // Tell the delegate that the visibility has changed in order to update the
+  // tab grid view inset before hiding the pinned view.
+  [self.delegate pinnedTabsViewControllerVisibilityDidChange:self];
+
   __weak __typeof(self) weakSelf = self;
   [UIView animateWithDuration:kPinnedViewFadeInTime
       animations:^{
         self.view.alpha = visible ? 1.0 : 0.0;
       }
       completion:^(BOOL finished) {
-        [weakSelf updatePinnedTabsVisibilityAfterAnimation:visible];
+        [weakSelf updatePinnedTabsVisibilityAfterAnimation];
       }];
 }
 
@@ -873,23 +874,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 // Updates the pinned tabs view visibility after an animation.
-- (void)updatePinnedTabsVisibilityAfterAnimation:(BOOL)visible {
-  _visible = visible;
-  if (!visible) {
+- (void)updatePinnedTabsVisibilityAfterAnimation {
+  if (!_visible) {
     self.view.hidden = YES;
   }
 
   // Don't call the delegate if the pinned view is hidden after a tab grid page
   // change.
-  if (!visible && _items.count > 0) {
+  if (!_visible && _items.count > 0) {
     return;
   }
 
-  if (visible && _items.count == 1) {
+  if (_visible && _items.count == 1) {
     [self popLastInsertedItem];
   }
-
-  [self.delegate pinnedTabsViewControllerVisibilityDidChange:self];
 }
 
 // Shows `_dropOverlayView` when a external drag action is in progress.

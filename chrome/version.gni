@@ -37,18 +37,59 @@ if (is_mac) {
   ]
 } else if (target_os == "android") {
   import("//build/config/android/config.gni")
+  import("//build/config/chrome_build.gni")
 
   _version_dictionary_template +=
       "chrome_version_code = " + "\"@CHROME_VERSION_CODE@\" " +
-      "chrome_modern_version_code = \"@CHROME_MODERN_VERSION_CODE@\" " +
       "monochrome_version_code = \"@MONOCHROME_VERSION_CODE@\" " +
       "trichrome_version_code = \"@TRICHROME_VERSION_CODE@\" " +
+      "trichrome_beta_version_code = \"@TRICHROME_BETA_VERSION_CODE@\" " +
       "webview_stable_version_code = \"@WEBVIEW_STABLE_VERSION_CODE@\" " +
       "webview_beta_version_code = \"@WEBVIEW_BETA_VERSION_CODE@\" " +
       "webview_dev_version_code = \"@WEBVIEW_DEV_VERSION_CODE@\" "
 
   if (target_cpu == "arm64" || target_cpu == "x64") {
-    _version_dictionary_template += "monochrome_32_version_code = \"@MONOCHROME_32_VERSION_CODE@\" " + "monochrome_32_64_version_code = \"@MONOCHROME_32_64_VERSION_CODE@\" " + "monochrome_64_32_version_code = \"@MONOCHROME_64_32_VERSION_CODE@\" " + "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" " + "trichrome_32_version_code = \"@TRICHROME_32_VERSION_CODE@\" " + "trichrome_32_64_version_code = \"@TRICHROME_32_64_VERSION_CODE@\" " + "trichrome_64_32_version_code = \"@TRICHROME_64_32_VERSION_CODE@\" " + "trichrome_64_version_code = \"@TRICHROME_64_VERSION_CODE@\" " + "webview_32_stable_version_code = \"@WEBVIEW_32_STABLE_VERSION_CODE@\" " + "webview_32_beta_version_code = \"@WEBVIEW_32_BETA_VERSION_CODE@\" " + "webview_32_dev_version_code = \"@WEBVIEW_32_DEV_VERSION_CODE@\" " + "webview_64_stable_version_code = \"@WEBVIEW_64_STABLE_VERSION_CODE@\" " + "webview_64_beta_version_code = \"@WEBVIEW_64_BETA_VERSION_CODE@\" " + "webview_64_dev_version_code = \"@WEBVIEW_64_DEV_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "monochrome_32_version_code = \"@MONOCHROME_32_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "monochrome_32_64_version_code = \"@MONOCHROME_32_64_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "monochrome_64_32_version_code = \"@MONOCHROME_64_32_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "monochrome_64_version_code = \"@MONOCHROME_64_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "trichrome_32_version_code = \"@TRICHROME_32_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "trichrome_32_64_version_code = \"@TRICHROME_32_64_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "trichrome_64_32_version_code = \"@TRICHROME_64_32_VERSION_CODE@\" "
+    _version_dictionary_template += "trichrome_auto_64_32_version_code = \"@TRICHROME_AUTO_64_32_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "trichrome_64_version_code = \"@TRICHROME_64_VERSION_CODE@\" "
+    if (target_cpu == "arm64") {
+      _version_dictionary_template += "trichrome_64_32_high_version_code = \"@TRICHROME_64_32_HIGH_VERSION_CODE@\" "
+    }
+    _version_dictionary_template +=
+        "trichrome_32_beta_version_code = \"@TRICHROME_32_BETA_VERSION_CODE@\" "
+    _version_dictionary_template += "trichrome_32_64_beta_version_code = \"@TRICHROME_32_64_BETA_VERSION_CODE@\" "
+    _version_dictionary_template += "trichrome_64_32_beta_version_code = \"@TRICHROME_64_32_BETA_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "trichrome_64_beta_version_code = \"@TRICHROME_64_BETA_VERSION_CODE@\" "
+    if (target_cpu == "arm64") {
+      _version_dictionary_template += "trichrome_64_32_high_beta_version_code = \"@TRICHROME_64_32_HIGH_BETA_VERSION_CODE@\" "
+    }
+    _version_dictionary_template +=
+        "webview_32_stable_version_code = \"@WEBVIEW_32_STABLE_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "webview_32_beta_version_code = \"@WEBVIEW_32_BETA_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "webview_32_dev_version_code = \"@WEBVIEW_32_DEV_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "webview_64_stable_version_code = \"@WEBVIEW_64_STABLE_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "webview_64_beta_version_code = \"@WEBVIEW_64_BETA_VERSION_CODE@\" "
+    _version_dictionary_template +=
+        "webview_64_dev_version_code = \"@WEBVIEW_64_DEV_VERSION_CODE@\" "
   }
 
   _script_arguments += [
@@ -96,7 +137,6 @@ if (is_mac) {
 } else if (target_os == "android") {
   forward_variables_from(_result,
                          [
-                           "chrome_modern_version_code",
                            "chrome_version_code",
                            "monochrome_version_code",
                            "monochrome_32_version_code",
@@ -107,7 +147,15 @@ if (is_mac) {
                            "trichrome_32_version_code",
                            "trichrome_32_64_version_code",
                            "trichrome_64_32_version_code",
+                           "trichrome_64_32_high_version_code",
+                           "trichrome_auto_64_32_version_code",
                            "trichrome_64_version_code",
+                           "trichrome_beta_version_code",
+                           "trichrome_32_beta_version_code",
+                           "trichrome_32_64_beta_version_code",
+                           "trichrome_64_32_beta_version_code",
+                           "trichrome_64_32_high_beta_version_code",
+                           "trichrome_64_beta_version_code",
                            "webview_beta_version_code",
                            "webview_dev_version_code",
                            "webview_stable_version_code",
@@ -126,9 +174,9 @@ if (is_android && current_toolchain == default_toolchain) {
   lines_to_write = [
     "VersionName: $chrome_version_name",
     "Chrome: $chrome_version_code",
-    "ChromeModern: $chrome_modern_version_code",
     "Monochrome: $monochrome_version_code",
     "TrichromeChrome: $trichrome_version_code",
+    "TrichromeChromeOpenBeta: $trichrome_beta_version_code",
     "AndroidWebviewStable: $webview_stable_version_code",
     "AndroidWebviewBeta: $webview_beta_version_code",
     "AndroidWebviewDev: $webview_dev_version_code",
@@ -144,6 +192,22 @@ if (is_android && current_toolchain == default_toolchain) {
       "TrichromeChrome3264: $trichrome_32_64_version_code",
       "TrichromeChrome6432: $trichrome_64_32_version_code",
       "TrichromeChrome64: $trichrome_64_version_code",
+      "TrichromeChromeAuto6432: $trichrome_auto_64_32_version_code",
+    ]
+    if (target_cpu == "arm64") {
+      lines_to_write +=
+          [ "TrichromeChrome6432High: $trichrome_64_32_high_version_code" ]
+    }
+    lines_to_write += [
+      "TrichromeChrome32OpenBeta: $trichrome_32_beta_version_code",
+      "TrichromeChrome3264OpenBeta: $trichrome_32_64_beta_version_code",
+      "TrichromeChrome6432OpenBeta: $trichrome_64_32_beta_version_code",
+      "TrichromeChrome64OpenBeta: $trichrome_64_beta_version_code",
+    ]
+    if (target_cpu == "arm64") {
+      lines_to_write += [ "TrichromeChrome6432HighOpenBeta: $trichrome_64_32_high_beta_version_code" ]
+    }
+    lines_to_write += [
       "AndroidWebview32Stable: $webview_32_stable_version_code",
       "AndroidWebview32Beta: $webview_32_beta_version_code",
       "AndroidWebview32Dev: $webview_32_dev_version_code",
@@ -176,21 +240,21 @@ if (is_android) {
     # 64-bit constants are not generated by version.py on non-64-bit target_cpu.
     if (android_64bit_target_cpu) {
       if (_use_stable_package_name_for_trichrome) {
-        true_true_true_true = trichrome_64_32_beta_version_code
         if (is_high_end_android) {
-          true_true_true_false = trichrome_64_high_beta_version_code
+          true_true_true_true = trichrome_64_32_high_beta_version_code
         } else {
-          true_true_true_false = trichrome_64_beta_version_code
+          true_true_true_true = trichrome_64_32_beta_version_code
         }
+        true_true_true_false = trichrome_64_beta_version_code
         true_false_false_true = trichrome_32_beta_version_code
         true_false_true_true = trichrome_32_64_beta_version_code
       } else {
-        true_true_true_true = trichrome_64_32_version_code
         if (is_high_end_android) {
-          true_true_true_false = trichrome_64_high_version_code
+          true_true_true_true = trichrome_64_32_high_version_code
         } else {
-          true_true_true_false = trichrome_64_version_code
+          true_true_true_true = trichrome_64_32_version_code
         }
+        true_true_true_false = trichrome_64_version_code
         true_false_false_true = trichrome_32_version_code
         true_false_true_true = trichrome_32_64_version_code
       }

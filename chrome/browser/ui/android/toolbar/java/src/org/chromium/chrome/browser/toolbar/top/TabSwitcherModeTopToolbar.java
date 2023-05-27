@@ -18,6 +18,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.ToolbarAlphaInOverviewObserver;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
@@ -56,9 +58,8 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
     // as the button for creating new tab, the incognito toggle is hidden.
     private @Nullable View mNewTabViewButton;
 
-    // The following three buttons are not used when Duet is enabled.
+    // The following two buttons are not used when Duet is enabled.
     private @Nullable NewTabButton mNewTabImageButton;
-    private @Nullable ToggleTabStackButton mToggleTabStackButton;
     private @Nullable MenuButton mMenuButton;
 
     private int mPrimaryColor;
@@ -84,7 +85,6 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
 
         mNewTabImageButton = findViewById(R.id.new_tab_button);
         mNewTabViewButton = findViewById(R.id.new_tab_view);
-        mToggleTabStackButton = findViewById(R.id.tab_switcher_mode_tab_switcher_button);
         mMenuButton = findViewById(R.id.menu_button_wrapper);
 
         // TODO(twellington): Try to make NewTabButton responsible for handling its own clicks.
@@ -108,7 +108,6 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
         mNewTabImageButton.setGridTabSwitcherEnabled(isGridTabSwitcherEnabled);
         mNewTabImageButton.setStartSurfaceEnabled(false);
         setIncognitoToggleVisibility(shouldShowIncognitoToggle());
-        setToggleTabStackButtonVisibility(shouldShowTabStackButton());
         updateNewTabButtonVisibility();
     }
 
@@ -131,10 +130,6 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
         if (mNewTabImageButton != null) {
             mNewTabImageButton.destroy();
             mNewTabImageButton = null;
-        }
-        if (mToggleTabStackButton != null) {
-            mToggleTabStackButton.destroy();
-            mToggleTabStackButton = null;
         }
         if (mIncognitoToggleTabLayout != null) {
             mIncognitoToggleTabLayout.destroy();
@@ -206,18 +201,22 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
                 }
             });
         }
+
+        // If the accessibility layout is showing the transition is immediate.
+        boolean skipAnimation = DeviceClassManager.enableAccessibilityLayout(getContext());
+
+        // When animating into the TabSwitcherMode when the GTS supports accessibility then the
+        // transition should also be immediate if touch exploration is enabled as the animation
+        // causes races in the Android accessibility focus framework.
+        skipAnimation |=
+                (inTabSwitcherMode && ChromeFeatureList.sTabGroupsContinuationAndroid.isEnabled()
+                        && ChromeFeatureList.sTabGroupsAndroid.isEnabled()
+                        && DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT.getValue()
+                        && ChromeAccessibilityUtil.get().isTouchExplorationEnabled());
+
         mVisiblityAnimator.start();
-
-        if (DeviceClassManager.enableAccessibilityLayout(getContext())) mVisiblityAnimator.end();
-    }
-
-    /**
-     * Sets the OnClickListener that will be notified when the TabSwitcher button is pressed.
-     * @param listener The callback that will be notified when the TabSwitcher button is pressed.
-     */
-    void setOnTabSwitcherClickHandler(View.OnClickListener listener) {
-        if (mToggleTabStackButton != null) {
-            mToggleTabStackButton.setOnTabSwitcherClickHandler(listener);
+        if (skipAnimation) {
+            mVisiblityAnimator.end();
         }
     }
 
@@ -243,9 +242,6 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
      */
     void setTabCountProvider(TabCountProvider tabCountProvider) {
         mTabCountProvider = tabCountProvider;
-        if (mToggleTabStackButton != null) {
-            mToggleTabStackButton.setTabCountProvider(tabCountProvider);
-        }
         if (mIncognitoToggleTabLayout != null) {
             mIncognitoToggleTabLayout.setTabCountProvider(tabCountProvider);
         }
@@ -343,10 +339,6 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
 
         mBrandedColorScheme = brandedColorScheme;
 
-        if (mToggleTabStackButton != null) {
-            mToggleTabStackButton.setBrandedColorScheme(brandedColorScheme);
-        }
-
         final ColorStateList tint =
                 ThemeUtils.getThemedToolbarIconTint(getContext(), brandedColorScheme);
         if (mNewTabViewButton != null) {
@@ -393,27 +385,19 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
         }
     }
 
-    private void setToggleTabStackButtonVisibility(boolean showToggleTabStackButton) {
-        if (mToggleTabStackButton == null) return;
-        mToggleTabStackButton.setVisibility(showToggleTabStackButton ? View.VISIBLE : View.GONE);
-    }
-
     /**
      * @return Whether or not incognito toggle should be visible based on the enabled features,
      *         incognito status and form-factor.
      */
     private boolean shouldShowIncognitoToggle() {
-        return mIsGridTabSwitcherEnabled && mIsIncognitoModeEnabledSupplier.getAsBoolean()
+        boolean accessibilityEnabled = DeviceClassManager.enableAccessibilityLayout(getContext());
+
+        // TODO(crbug.com/1434937): Remove top toggle (and update "New Tab" button logic,
+        //  accordingly) for the a11y switcher, since that variant has the bottom toggle showing.
+        return (mIsGridTabSwitcherEnabled || accessibilityEnabled)
+                && mIsIncognitoModeEnabledSupplier.getAsBoolean()
                 && (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
                         || mIsFullscreenToolbar);
-    }
-
-    /**
-     * @return Whether or not tab stack button should be visible based on the enabled features and
-     *         incognito status.
-     */
-    private boolean shouldShowTabStackButton() {
-        return !(mIsGridTabSwitcherEnabled && mIsIncognitoModeEnabledSupplier.getAsBoolean());
     }
 
     /**

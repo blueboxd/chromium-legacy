@@ -115,7 +115,7 @@ namespace crosapi {
 
 BASE_FEATURE(kLacrosLaunchAtLoginScreen,
              "LacrosLaunchAtLoginScreen",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 namespace {
 
@@ -738,6 +738,9 @@ void BrowserManager::InitializeAndStartIfNeeded() {
     return;
   }
   DCHECK_EQ(state_, State::NOT_INITIALIZED);
+
+  // Ensure this isn't run multiple times.
+  session_manager::SessionManager::Get()->RemoveObserver(this);
 
   PrepareLacrosPolicies();
 
@@ -1376,9 +1379,6 @@ void BrowserManager::OnSessionStateChanged() {
       session_manager::SessionState::ACTIVE) {
     return;
   }
-
-  // Ensure this isn't run multiple times.
-  session_manager::SessionManager::Get()->RemoveObserver(this);
 
   if (launch_at_login_screen_ && postlogin_pipe_fd_.is_valid()) {
     // Resume Lacros launch after login, if it was pre-launched.

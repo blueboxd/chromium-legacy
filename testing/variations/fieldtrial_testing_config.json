@@ -3829,6 +3829,24 @@
             ]
         }
     ],
+    "DXGIWaitableSwapChain": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_MaxQueuedFrames2_20230203",
+                    "params": {
+                        "DXGIWaitableSwapChainMaxQueuedFrames": "2"
+                    },
+                    "enable_features": [
+                        "DXGIWaitableSwapChain"
+                    ]
+                }
+            ]
+        }
+    ],
     "DefaultBrowserBlueDotPromo": [
         {
             "platforms": [
@@ -4041,6 +4059,14 @@
                     "enable_features": [
                         "CustomizeChromeColorExtraction",
                         "CustomizeChromeSidePanel"
+                    ]
+                },
+                {
+                    "name": "Panorama_In_Product_Help",
+                    "enable_features": [
+                        "CustomizeChromeColorExtraction",
+                        "CustomizeChromeSidePanel",
+                        "IPH_DesktopCustomizeChrome"
                     ]
                 }
             ]
@@ -5690,10 +5716,10 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledA-1",
+                    "name": "EnabledA-2",
                     "params": {
                         "close_should_proceed": "false",
-                        "group_name": "EnabledA-1",
+                        "group_name": "EnabledA-2",
                         "signin_promo_variant": "sign-in"
                     },
                     "enable_features": [
@@ -6675,21 +6701,6 @@
             ]
         }
     ],
-    "IOSExpKitAppleCalendar": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableExpKitAppleCalendar"
-                    ]
-                }
-            ]
-        }
-    ],
     "IOSExpKitCalendarTextClassifier": [
         {
             "platforms": [
@@ -6701,22 +6712,6 @@
                     "enable_features": [
                         "EnableExpKitCalendarTextClassifier",
                         "EnableExpKitTextClassifier"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSExpKitMaps": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LongPressSurroundingText",
-                        "MapsExperienceKit"
                     ]
                 }
             ]
@@ -10131,21 +10126,6 @@
             ]
         }
     ],
-    "PolicyLogsPageAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PolicyLogsPageAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
     "PolicyLogsPageIOS": [
         {
             "platforms": [
@@ -10339,6 +10319,32 @@
                     },
                     "enable_features": [
                         "IPH_PriceDropNTP"
+                    ],
+                    "disable_features": []
+                }
+            ]
+        }
+    ],
+    "PriceTrackingPageActionIconLabelFeatureIPH": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:price_tracking_page_action_icon_label_in_trigger;comparator:==0;window:1;storage:365",
+                        "event_used": "name:used;comparator:any;window:365;storage:365",
+                        "session_rate": "any"
+                    },
+                    "enable_features": [
+                        "IPH_PriceTrackingPageActionIconLabelFeature"
                     ],
                     "disable_features": []
                 }
@@ -11166,6 +11172,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
+                        "IPH_PasswordsManagementBubbleAfterSave",
+                        "IPH_PasswordsManagementBubbleDuringSignin",
                         "RevampedPasswordManagementBubble"
                     ]
                 }
@@ -11221,9 +11229,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_33_0_20230323",
+                    "name": "Enabled_30_0_20230127",
                     "params": {
-                        "reporter_omaha_tag": "33.0"
+                        "reporter_omaha_tag": "30.0"
                     },
                     "enable_features": [
                         "ClientSideDetectionTag"

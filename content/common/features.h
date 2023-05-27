@@ -40,6 +40,11 @@ BASE_DECLARE_FEATURE(kOptimizeImmHideCalls);
 // proxy.
 BASE_DECLARE_FEATURE(kConsolidatedIPCForProxyCreation);
 
+// TODO(https://crbug.com/1442346): Feature flag to guard extra CHECKs put in
+// place to ensure that the AllowBindings API on RenderFrameHost is not called
+// for documents outside of WebUI ones.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kEnsureAllowBindingsIsAlwaysForWebUI);
+
 // When enabled, queues navigations instead of cancelling the previous
 // navigation if the previous navigation is already waiting for commit.
 // See https://crbug.com/838348 and https://crbug.com/1220337.
@@ -80,21 +85,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kSiteIsolationCitadelEnforcement);
 
 // (crbug/1377753): Speculatively start service worker before BeforeUnload runs.
 BASE_DECLARE_FEATURE(kSpeculativeServiceWorkerStartup);
-
-#if BUILDFLAG(IS_ANDROID)
-// Monitor total private memory footprint and dispatch memory pressure signal
-// if the value exceeds the pre-defined threshold. (for Android 4GB devices)
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kUserLevelMemoryPressureSignalOn4GbDevices);
-
-// (for Android 6GB devices)
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kUserLevelMemoryPressureSignalOn6GbDevices);
-
-// Helper functions for UserLevelMemoryPressureSignal features.
-CONTENT_EXPORT base::TimeDelta
-MinimumIntervalOfUserLevelMemoryPressureSignalOn4GbDevices();
-CONTENT_EXPORT base::TimeDelta
-MinimumIntervalOfUserLevelMemoryPressureSignalOn6GbDevices();
-#endif
 
 // Please keep features in alphabetical order.
 

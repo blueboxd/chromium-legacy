@@ -171,23 +171,6 @@ if (current_toolchain == default_toolchain) {
     ]
   }
 
-  if (enable_vr) {
-    # TODO(crbug.com/935982): Currently, adding multiple resource folders to a
-    # resource target may clobber some resources. Once that is fixed we should add
-    # the VR resources to chrome_app_java_resources.
-    android_resources("chrome_vr_java_resources") {
-      # Overrides 'gvr_vr_mode_component' in //third_party/gvr-android-sdk:gvr_common_java
-      # in tests.
-      resource_overlay = true
-      sources = [
-        "//chrome/android/java/res_vr/values-v17/styles.xml",
-        "//chrome/android/java/res_vr/values-vrheadset-v26/styles.xml",
-        "//chrome/android/java/res_vr/values/values.xml",
-      ]
-      deps = [ ":chrome_app_java_resources" ]
-    }
-  }
-
   android_library("app_hooks_java") {
     sources = [ app_hooks_impl ]
     deps = [ ":chrome_java" ]
@@ -611,10 +594,6 @@ if (current_toolchain == default_toolchain) {
 
     # Include sources for start_surface_java_sources.gni
     sources += start_surface_java_sources
-
-    if (enable_vr) {
-      deps += [ ":chrome_vr_java_resources" ]
-    }
 
     srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
 
@@ -1198,6 +1177,7 @@ if (current_toolchain == default_toolchain) {
       "//third_party/android_media:android_media_resources",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_browser_browser_java",
+      "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/blink/public/mojom:android_mojo_bindings_java",
       "//third_party/hamcrest:hamcrest_java",
@@ -1343,6 +1323,7 @@ if (current_toolchain == default_toolchain) {
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_browser_browser_java",
       "//third_party/androidx:androidx_core_core_java",
+      "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/blink/public:blink_headers_java",
@@ -1682,6 +1663,7 @@ if (current_toolchain == default_toolchain) {
       "//third_party/androidx:androidx_browser_browser_java",
       "//third_party/androidx:androidx_collection_collection_java",
       "//third_party/androidx:androidx_preference_preference_java",
+      "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/androidx:androidx_test_rules_java",
       "//third_party/androidx:androidx_test_runner_java",
@@ -2718,6 +2700,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/test/android:chrome_java_test_pagecontroller",
       "//content/public/test/android:content_java_test_support",
       "//net/android:net_java_test_support",
+      "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/androidx:androidx_test_uiautomator_uiautomator_java",
@@ -2784,6 +2767,7 @@ if (current_toolchain == default_toolchain) {
       "//base:base_java_test_support",
       "//chrome/test/android:chrome_java_test_pagecontroller",
       "//content/public/test/android:content_java_test_support",
+      "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/junit",

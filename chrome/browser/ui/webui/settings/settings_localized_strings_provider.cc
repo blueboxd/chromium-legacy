@@ -238,6 +238,12 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
 
   html_source->AddBoolean("isChildAccount", profile->IsChild());
+#if BUILDFLAG(IS_LINUX)
+  bool allow_qt_theme = base::FeatureList::IsEnabled(ui::kAllowQt);
+#else
+  bool allow_qt_theme = false;
+#endif
+  html_source->AddBoolean("allowQtTheme", allow_qt_theme);
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
@@ -3374,6 +3380,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"antiAbuseWhenOnHeader", IDS_SETTINGS_ANTI_ABUSE_WHEN_ON_HEADER},
     {"antiAbuseWhenOnSectionOne", IDS_SETTINGS_ANTI_ABUSE_WHEN_ON_SECTION_ONE},
     {"antiAbuseWhenOnSectionTwo", IDS_SETTINGS_ANTI_ABUSE_WHEN_ON_SECTION_TWO},
+    {"antiAbuseWhenOnSectionThree",
+     IDS_SETTINGS_ANTI_ABUSE_WHEN_ON_SECTION_THREE},
     {"antiAbuseThingsToConsiderHeader",
      IDS_SETTINGS_ANTI_ABUSE_THINGS_TO_CONSIDER_HEADER},
     {"antiAbuseThingsToConsiderSectionOne",

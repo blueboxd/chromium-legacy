@@ -19195,9 +19195,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileInactiveTabsCloseAll">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User pressed 'Close All Inactive' from the inactive tabs view. iOS only.
+  </description>
+</action>
+
+<action name="MobileInactiveTabsCloseAllConfirm">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User pressed 'Close All' from the 'Close All Inactive' confirmation toast.
+    iOS only.
+  </description>
+</action>
+
 <action name="MobileInactiveTabsSettingsBack">
   <owner>alionadangla@chromium.org</owner>
   <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <description>
     Reported when user goes back from Inactive Tabs Settings UI to Tabs Settings
     screen. iOS only.
@@ -19207,6 +19227,7 @@ should be able to be added at any place in this file.
 <action name="MobileInactiveTabsSettingsClose">
   <owner>alionadangla@chromium.org</owner>
   <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
   <description>
     Reported when Inactive Tabs Settings UI was dismissed. iOS only.
   </description>
@@ -20714,6 +20735,15 @@ should be able to be added at any place in this file.
   <description>User switched on torch in the QR Scanner.</description>
 </action>
 
+<action name="MobileReadingListAccessibilityClose">
+  <owner>myuu@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when a user closes Reading List on iOS by performing a VoiceOver
+    dismiss action.
+  </description>
+</action>
+
 <action name="MobileReadingListAdd">
   <owner>gambard@chromium.org</owner>
   <description>
@@ -20724,7 +20754,10 @@ should be able to be added at any place in this file.
 <action name="MobileReadingListClose">
   <owner>rohitrao@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
-  <description>Recorded when a user closes Reading List on iOS.</description>
+  <description>
+    Recorded when a user closes Reading List on iOS by tapping the
+    dismiss(&quot;Done&quot;) button.
+  </description>
 </action>
 
 <action name="MobileReadingListDeleteEntry">
@@ -21539,6 +21572,25 @@ should be able to be added at any place in this file.
   <description>User adds one new bookmark, in the iOS tab grid.</description>
 </action>
 
+<action name="MobileTabGridOpenInactiveTab">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User in the iOS tab grid opened an inactive tab by tapping on it.
+  </description>
+</action>
+
+<action name="MobileTabGridOpenInactiveTabSearchResult">
+  <owner>alionadangla@chromium.org</owner>
+  <owner>lpromero@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User in the iOS tab grid opened an inactive tab by tapping on it from search
+    results.
+  </description>
+</action>
+
 <action name="MobileTabGridOpenIncognitoTab">
   <owner>edchin@chromium.org</owner>
   <owner>marq@chromium.org</owner>
@@ -21762,6 +21814,23 @@ should be able to be added at any place in this file.
   <description>
     User in the iOS tab grid used the Undo control after closing all regular
     tabs.
+  </description>
+</action>
+
+<action name="MobileTabGridUserScrolled">
+  <owner>lpromero@chromium.org</owner>
+  <owner>alionadangla@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>User in the iOS tab grid scrolled the grid of tabs.</description>
+</action>
+
+<action name="MobileTabGridUserScrolledToTop">
+  <owner>lpromero@chromium.org</owner>
+  <owner>alionadangla@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    User in the iOS tab grid tapped the status bar to scroll to the top of the
+    grid of tabs.
   </description>
 </action>
 
@@ -37234,8 +37303,11 @@ should be able to be added at any place in this file.
       label="For AutoDarkUserEducationMessageOptIn feature."/>
   <suffix name="AutofillExternalAccountProfileSuggestion"
       label="For AutofillExternalAccountProfileSuggestion feature."/>
+  <suffix name="AutofillFeedbackNewBadge"
+      label="For AutofillFeedbackNewBadge feature."/>
   <suffix name="AutofillVirtualCardSuggestion"
       label="For AutofillVirtualCardSuggestion feature."/>
+  <suffix name="BackNavigationMenu" label="For BackNavigationMenu feature."/>
   <suffix name="BadgedReadingList" label="For BadgedReadingList feature."/>
   <suffix name="BadgedTranslateManualTrigger"
       label="For BadgedTranslateManualTrigger feature."/>
@@ -37423,6 +37495,8 @@ should be able to be added at any place in this file.
   <suffix name="PreviewsOmniboxUI"
       label="For the Previews UI in the Android Omnibox feature."/>
   <suffix name="PriceDropNTP" label="For PriceDropNTP feature."/>
+  <suffix name="PriceTrackingChipFeature"
+      label="For PriceTrackingChipFeature feature."/>
   <suffix name="PriceTrackingInSidePanel"
       label="For PriceTrackingInSidePanelFeature feature."/>
   <suffix name="PriceTrackingPageActionIconLabel"

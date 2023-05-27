@@ -1142,6 +1142,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.FedCm.SignInStatusSetToSignout.NetError"
+    enum="NetErrorCodes" expires_after="2023-11-04">
+  <owner>npm@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the NetError from the accounts list endpoint. This histogram is only
+    recorded when the IDP Sign-In Status of an IDP is marked as signout as a
+    result of the accounts list endpoint not returning any accounts.
+  </summary>
+</histogram>
+
 <histogram name="Blink.FedCm.SignUp.PrivacyPolicyClicked" enum="BooleanHit"
     expires_after="M120">
   <owner>pkotwicz@chromium.org</owner>
@@ -2457,6 +2468,19 @@ chromium-metrics-reviews@google.com.
   <token key="ResourceType" variants="ResourceType"/>
 </histogram>
 
+<histogram
+    name="Blink.MemoryCache.RevalidationPolicy.PerTopFrameSite.{ResourceType}"
+    enum="RevalidationPolicy" expires_after="2021-12-26">
+  <owner>shivanisha@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    RevalidationPolicy used for requests for each resource type. Logged only if
+    the resource is found in the memory cache and if the same top-frame site had
+    loaded this resource earlier.
+  </summary>
+  <token key="ResourceType" variants="ResourceType"/>
+</histogram>
+
 <histogram name="Blink.MemoryCache.RevalidationPolicy.Preload.{ResourceType}"
     enum="RevalidationPolicy" expires_after="2023-10-01">
   <owner>hiroshige@chromium.org</owner>
@@ -2899,32 +2923,6 @@ chromium-metrics-reviews@google.com.
 
     Note that clients without high-resolution clocks will report 0 for very
     short times.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Blink.ScrollDocumentUpdate.UpdateTime"
-    units="microseconds" expires_after="2023-06-04">
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
-
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
-
-<!-- Name completed by histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" -->
-
-  <owner>pdr@chromium.org</owner>
-  <owner>paint-dev@chromium.org</owner>
-  <summary>
-    Time spent preparing the document to ensure correct scroll behavior, such as
-    scroll chaining or other programatic scrolling. Includes time spent in style
-    update and layout.
-
-    Note: PreFCP metrics will be recorded even if FCP is not reached, whereas
-    AggregatedPreFCP metrics are only recorded if FCP is reached.
-
-    Note: Not recorded on ~5% of Windows machines with low-resolution clocks.
-
-    Note: The histograms with PreFCP/PostFCP/AggregatedPreFCP suffixes before
-    105.0.5175.0 were impacted by https://crbug.com/1330675. Be careful when
-    aggregating or comparing these histograms across the version.
   </summary>
 </histogram>
 
@@ -3576,6 +3574,8 @@ chromium-metrics-reviews@google.com.
     Time spent preparing the document to service user driven behaviors. Examples
     include inspector, selection, editing, find-in-page and focus. Includes time
     spent in style update and layout.
+
+    Note: As of 04/2023, scroll updates are included in user driven behaviors.
 
     Note: PreFCP metrics will be recorded even if FCP is not reached, whereas
     AggregatedPreFCP metrics are only recorded if FCP is reached.

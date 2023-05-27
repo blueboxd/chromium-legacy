@@ -107,6 +107,8 @@ HistoryClustersService::KeywordMap DictToKeywordsCache(
   return keyword_map;
 }
 
+constexpr base::TimeDelta kAllKeywordsCacheRefreshAge = base::Hours(2);
+
 }  // namespace
 
 HistoryClustersService::HistoryClustersService(
@@ -123,10 +125,6 @@ HistoryClustersService::HistoryClustersService(
           GetConfig().is_journeys_enabled_no_locale_check &&
           IsApplicationLocaleSupportedByJourneys(application_locale)),
       history_service_(history_service),
-      context_clusterer_observer_(history_service,
-                                  template_url_service,
-                                  optimization_guide_decider,
-                                  engagement_score_provider),
       pref_service_(prefs) {
   if (prefs && is_journeys_enabled_) {
     // Log whether the user has Journeys enabled if they are eligible for it.
@@ -135,9 +133,21 @@ HistoryClustersService::HistoryClustersService(
         prefs->GetBoolean(prefs::kVisible));
   }
 
+  if (!is_journeys_enabled_) {
+    return;
+  }
+
+  // The remaining pieces are only needed for Journeys, so don't instantiate
+  // them if Journeys is not enabled.
+
   if (history_service_) {
     history_service_observation_.Observe(history_service);
   }
+
+  context_clusterer_observer_ =
+      std::make_unique<ContextClustererHistoryServiceObserver>(
+          history_service, template_url_service, optimization_guide_decider,
+          engagement_score_provider);
 
   backend_ = FileClusteringBackend::CreateIfEnabled();
   if (!backend_) {
@@ -236,6 +246,11 @@ HistoryClustersService::QueryClusters(
     QueryClustersContinuationParams continuation_params,
     bool recluster,
     QueryClustersCallback callback) {
+  if (!IsJourneysEnabled()) {
+    std::move(callback).Run({}, QueryClustersContinuationParams::DoneParams());
+    return nullptr;
+  }
+
   if (ShouldNotifyDebugMessage()) {
     NotifyDebugMessage("HistoryClustersService::QueryClusters()");
     NotifyDebugMessage("  begin_time = " + GetDebugTime(begin_time));
@@ -256,31 +271,6 @@ HistoryClustersService::QueryClusters(
       weak_ptr_factory_.GetWeakPtr(), incomplete_visit_context_annotations_,
       backend_.get(), history_service_, clustering_request_source, begin_time,
       continuation_params, recluster, std::move(callback));
-}
-
-void HistoryClustersService::RepeatedlyUpdateClusters() {
-  // If `persist_on_query` is enabled, clusters are updated on query and not on
-  // a timer.
-  if (!GetConfig().persist_clusters_in_history_db ||
-      GetConfig().persist_on_query) {
-    return;
-  }
-
-  // Update clusters, both periodically and once after startup because:
-  // 1) To avoid having very stale (up to 90 days) clusters for the initial
-  //    period after startup.
-  // 2) Likewise, to avoid having very stale keywords.
-  // 3) Some users might not keep chrome running for the period.
-  update_clusters_after_startup_delay_timer_.Start(
-      FROM_HERE,
-      base::Minutes(
-          GetConfig()
-              .persist_clusters_in_history_db_after_startup_delay_minutes),
-      this, &HistoryClustersService::UpdateClusters);
-  update_clusters_period_timer_.Start(
-      FROM_HERE,
-      base::Minutes(GetConfig().persist_clusters_in_history_db_period_minutes),
-      this, &HistoryClustersService::UpdateClusters);
 }
 
 void HistoryClustersService::UpdateClusters() {
@@ -413,6 +403,31 @@ void HistoryClustersService::OnURLsDeleted(
   ClearKeywordCache();
 }
 
+void HistoryClustersService::RepeatedlyUpdateClusters() {
+  // If `persist_on_query` is enabled, clusters are updated on query and not on
+  // a timer.
+  if (!GetConfig().persist_clusters_in_history_db ||
+      GetConfig().persist_on_query) {
+    return;
+  }
+
+  // Update clusters, both periodically and once after startup because:
+  // 1) To avoid having very stale (up to 90 days) clusters for the initial
+  //    period after startup.
+  // 2) Likewise, to avoid having very stale keywords.
+  // 3) Some users might not keep chrome running for the period.
+  update_clusters_after_startup_delay_timer_.Start(
+      FROM_HERE,
+      base::Minutes(
+          GetConfig()
+              .persist_clusters_in_history_db_after_startup_delay_minutes),
+      this, &HistoryClustersService::UpdateClusters);
+  update_clusters_period_timer_.Start(
+      FROM_HERE,
+      base::Minutes(GetConfig().persist_clusters_in_history_db_period_minutes),
+      this, &HistoryClustersService::UpdateClusters);
+}
+
 void HistoryClustersService::StartKeywordCacheRefresh() {
   // If `all_keywords_cache_` is older than 2 hours, update it with the keywords
   // of all clusters. Otherwise, update `short_keyword_cache_` with the
@@ -433,7 +448,8 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
   }
 
   // 2 hour threshold chosen arbitrarily for cache refresh time.
-  if ((base::Time::Now() - all_keywords_cache_timestamp_) > base::Hours(2)) {
+  if ((base::Time::Now() - all_keywords_cache_timestamp_) >
+      kAllKeywordsCacheRefreshAge) {
     // Update the timestamp right away, to prevent this from running again.
     // (The cache_query_task_tracker_ should also do this.)
     all_keywords_cache_timestamp_ = base::Time::Now();
@@ -592,9 +608,14 @@ void HistoryClustersService::LoadCachesFromPrefs() {
   const base::Value::Dict* all_keywords_dict =
       all_cache_dict.FindDict("all_keywords");
   all_keywords_cache_ = DictToKeywordsCache(all_keywords_dict);
-  all_keywords_cache_timestamp_ =
+  // When loading `all_keywords_cache_` from the prefs, make sure it will be
+  // refreshed after 15 seconds, regardless of the persisted timestamp. This is
+  // to account for new synced visits, and to flush away stale data on restart.
+  // Extra 15 seconds is to avoid impacting startup. https://crbug.com/1444256.
+  all_keywords_cache_timestamp_ = std::min(
       base::ValueToTime(all_cache_dict.Find("all_timestamp"))
-          .value_or(all_keywords_cache_timestamp_);
+          .value_or(all_keywords_cache_timestamp_),
+      base::Time::Now() - kAllKeywordsCacheRefreshAge + base::Seconds(15));
 
   base::UmaHistogramCustomTimes(
       "History.Clusters.KeywordCache.LoadCachesFromPrefs.Latency",

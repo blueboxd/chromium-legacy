@@ -24,8 +24,8 @@
 #import "components/sync/base/features.h"
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
+#import "ios/chrome/browser/passwords/password_checkup_utils.h"
 #import "ios/chrome/browser/ui/settings/password/account_storage_utils.h"
-#import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
@@ -56,24 +56,56 @@ bool MatchesRealmUsernameAndPassword(PasswordDetails* password,
 // password details. Even if a credential is compromised, it is only displayed
 // as such when password details was opened from the password manager or the
 // compromised password issues page.
-bool ShouldDisplayCredentialAsCompromised(DetailsContext details_context,
-                                          const CredentialUIEntry& credential) {
+bool ShouldDisplayCredentialAsCompromised(
+    DetailsContext details_context,
+    const CredentialUIEntry& credential,
+    std::vector<password_manager::CredentialUIEntry> insecure_credentials) {
   switch (details_context) {
     case DetailsContext::kGeneral:
     case DetailsContext::kCompromisedIssues:
-      return password_manager::features::IsPasswordCheckupEnabled()
-                 ? IsCredentialUnmutedCompromised(credential)
-                 : IsCompromised(credential);
+    case DetailsContext::kDismissedWarnings:
+      for (const auto& insecure_credential : insecure_credentials) {
+        if (credential == insecure_credential) {
+          return password_manager::features::IsPasswordCheckupEnabled()
+                     ? IsCredentialUnmutedCompromised(insecure_credential)
+                     : IsCompromised(insecure_credential);
+        }
+      }
+      return false;
     case DetailsContext::kReusedIssues:
     case DetailsContext::kWeakIssues:
-    case DetailsContext::kDismissedWarnings:
       return false;
   }
 }
 
-bool SupportsMuteOperation(password_manager::InsecureType insecure_type) {
-  return (insecure_type == password_manager::InsecureType::kLeaked ||
-          insecure_type == password_manager::InsecureType::kPhished);
+// Helper that determines if a credential should be displayed as muted in
+// password details. Even if a credential is muted, it is only displayed
+// as such when password details was opened from the dismissed warning issues
+// page.
+bool ShouldDisplayCredentialAsMuted(
+    DetailsContext details_context,
+    const CredentialUIEntry& credential,
+    std::vector<password_manager::CredentialUIEntry> insecure_credentials) {
+  // Muted credentials are only available when kIOSPasswordCheckup feature is
+  // enabled.
+  if (!password_manager::features::IsPasswordCheckupEnabled()) {
+    return false;
+  }
+
+  switch (details_context) {
+    case DetailsContext::kGeneral:
+    case DetailsContext::kCompromisedIssues:
+    case DetailsContext::kReusedIssues:
+    case DetailsContext::kWeakIssues:
+      return false;
+    case DetailsContext::kDismissedWarnings:
+      for (const auto& insecure_credential : insecure_credentials) {
+        if (credential == insecure_credential) {
+          return insecure_credential.IsMuted();
+        }
+      }
+      return false;
+  }
 }
 
 }  // namespace
@@ -282,22 +314,6 @@ bool SupportsMuteOperation(password_manager::InsecureType insecure_type) {
   }
 
   _manager->MuteCredential(*it);
-
-  // TODO(crbug.com/1359392). Once kPasswordsGrouping launches, the mediator
-  // should update the passwords model and receive the updates via
-  // SavedPasswordsPresenterObserver, instead of replicating the updates to its
-  // own copy and calling [self providePasswordsToConsumer:]. Today when the
-  // flag is disabled and the password is edited, it's impossible to identify
-  // the new object to show (sign-on realm can't be used as an id, there might
-  // be multiple credentials; nor username/password since the values changed).
-  // The lines below should be removed once this is fixed.
-  for (auto& password_issue : it->password_issues) {
-    if (!password_issue.second.is_muted.value() &&
-        SupportsMuteOperation(password_issue.first)) {
-      password_issue.second.is_muted = password_manager::IsMuted(true);
-    }
-  }
-  [self providePasswordsToConsumer];
 }
 
 #pragma mark - PasswordDetailsTableViewControllerDelegate
@@ -431,12 +447,23 @@ bool SupportsMuteOperation(password_manager::InsecureType insecure_type) {
 // Pushes password details to the consumer.
 - (void)providePasswordsToConsumer {
   NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
+  // Fetch the insecure credentials to get their updated version.
+  std::vector<password_manager::CredentialUIEntry> insecureCredentials =
+      _manager->GetInsecureCredentials();
   for (const CredentialUIEntry& credential : _credentials) {
     PasswordDetails* password =
         [[PasswordDetails alloc] initWithCredential:credential];
     password.context = _context;
-    password.compromised =
-        ShouldDisplayCredentialAsCompromised(_context, credential);
+    password.compromised = ShouldDisplayCredentialAsCompromised(
+        _context, credential, insecureCredentials);
+
+    // `password.isCompromised` is always false for muted credentials, so
+    // short-circuit to avoid unnecessary computation in
+    // ShouldDisplayCredentialAsMuted.
+    password.muted = !password.isCompromised &&
+                     ShouldDisplayCredentialAsMuted(_context, credential,
+                                                    insecureCredentials);
+
     // Only offer moving to the account if all of these hold.
     // - The embedder of this page wants to support it.
     // - The entry was flagged as local only in the top-level view.

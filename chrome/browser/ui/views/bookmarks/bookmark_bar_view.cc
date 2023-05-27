@@ -183,6 +183,16 @@ enum class PreloadBookmarkMetricsEvent {
   kMaxValue = kMouseClick,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PrerenderPredictionResult {
+  kPrerenderedAndNavigated = 0,        // True Positive
+  kPrerenderedButNotNavigated = 1,     // False Positive
+  kNotPrerenderedButNavigated = 2,     // False Negative
+  kNotPrerenderedAndNotNavigated = 3,  // True Negative
+  kMaxValue = kNotPrerenderedAndNotNavigated,
+};
+
 // These are used as control the behavior of kBookmarkTriggerForPrerender2.
 const base::FeatureParam<int> kPrerenderStartDelayOnMouseHoverByMiliSeconds{
     &features::kBookmarkTriggerForPrerender2,
@@ -301,6 +311,19 @@ class BookmarkButton : public BookmarkButtonBase {
                                   : "Prerender.Experimental.BookmarkBar."
                                     "HoverDuration.FromLastMouseMove.NotTaken",
                             duration_from_last_move);
+
+    // Check `prerender_handle_` to know if we triggered prerendering for this
+    // bookmark button. The handle could be invalidated if the primary page
+    // navigates but we still need to count such a case as prerendered.
+    bool prerendered = prerender_handle_ || prerender_handle_.WasInvalidated();
+    base::UmaHistogramEnumeration(
+        "Prerender.Experimental.BookmarkBar.PredictionResult",
+        prerendered
+            ? (taken ? PrerenderPredictionResult::kPrerenderedAndNavigated
+                     : PrerenderPredictionResult::kPrerenderedButNotNavigated)
+            : (taken ? PrerenderPredictionResult::kNotPrerenderedButNavigated
+                     : PrerenderPredictionResult::
+                           kNotPrerenderedAndNotNavigated));
   }
 
   // views::View:
@@ -366,6 +389,16 @@ class BookmarkButton : public BookmarkButtonBase {
   void OnMouseExited(const ui::MouseEvent& event) override {
     MayRecordHoverDuration(/*taken=*/false);
     BookmarkButtonBase::OnMouseExited(event);
+    if (base::FeatureList::IsEnabled(features::kBookmarkTriggerForPrerender2)) {
+      preloading_timer_.Stop();
+      if (prerender_web_contents_) {
+        auto* prerender_manager =
+            PrerenderManager::FromWebContents(&(*prerender_web_contents_));
+        prerender_manager->StopPrerenderBookmark(prerender_handle_);
+        prerender_handle_ = nullptr;
+        prerender_web_contents_ = nullptr;
+      }
+    }
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
@@ -406,16 +439,16 @@ class BookmarkButton : public BookmarkButtonBase {
 
  private:
   void StartPrerendering(content::PreloadingPredictor predictor, GURL url) {
-    // TODO(https://crbug.com/1422819): Cancel the prerendering if the mouse
-    // exits without triggering PressedCallback. Prerender only for https
-    // scheme, and add an enum metric to report the protocol scheme.
+    // TODO(https://crbug.com/1422819): Prerender only for https scheme, and add
+    // an enum metric to report the protocol scheme.
     CHECK(
         base::FeatureList::IsEnabled(features::kBookmarkTriggerForPrerender2));
     if (!prerender_handle_) {
-      PrerenderManager::CreateForWebContents(
-          browser_->tab_strip_model()->GetActiveWebContents());
-      auto* prerender_manager = PrerenderManager::FromWebContents(
-          browser_->tab_strip_model()->GetActiveWebContents());
+      prerender_web_contents_ =
+          browser_->tab_strip_model()->GetActiveWebContents()->GetWeakPtr();
+      PrerenderManager::CreateForWebContents(&(*prerender_web_contents_));
+      auto* prerender_manager =
+          PrerenderManager::FromWebContents(&(*prerender_web_contents_));
       prerender_handle_ =
           prerender_manager->StartPrerenderBookmark(url, predictor);
     }
@@ -430,6 +463,7 @@ class BookmarkButton : public BookmarkButtonBase {
   const raw_ptr<Browser> browser_;
   base::WeakPtr<content::PrerenderHandle> prerender_handle_;
   base::RetainingOneShotTimer preloading_timer_;
+  base::WeakPtr<content::WebContents> prerender_web_contents_;
 
   // Information for metrics.
   absl::optional<base::TimeTicks> mouse_entered_time_;

@@ -9076,7 +9076,19 @@ chromium-metrics-reviews@google.com.
     Records the backend chosen for the request. For requests with no valid
     backend, this is still recorded as the &quot;No Valid Backend&quot; bucket.
 
-    Only recorded for requests that have passed the permission gate.
+    Only recorded for requests that have passed the URL consent gate.
+  </summary>
+  <token key="ClientId" variants="PageImageServiceClientId"/>
+</histogram>
+
+<histogram name="PageImageService.ConsentSuccess{ClientId}"
+    enum="BooleanSuccess" expires_after="2023-08-08">
+  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-journeys@google.com</owner>
+  <component>UI&gt;Browser&gt;Journeys</component>
+  <summary>
+    Records whether the URL consent check was successfully passed for this
+    request.
   </summary>
   <token key="ClientId" variants="PageImageServiceClientId"/>
 </histogram>
@@ -14085,6 +14097,25 @@ regressions. -->
     [iOS] Measures the proportion of external URL requests that originate from a
     subframe without any user interaction (e.g. an advertisement contains an
     iframe directed at the App Store).
+  </summary>
+</histogram>
+
+<histogram name="WebDatabase.FailedMigrationToVersion" units="version"
+    expires_after="2023-12-01">
+  <owner>battre@chromium.org</owner>
+  <owner>asully@chromium.org</owner>
+  <summary>
+    If a migration to a new WebDatabase schema fails, this histogram records the
+    target version to which the migration failed.
+  </summary>
+</histogram>
+
+<histogram name="WebDatabase.InitResult" enum="WebDatabaseInitResult"
+    expires_after="2023-12-01">
+  <owner>battre@chromium.org</owner>
+  <owner>asully@chromium.org</owner>
+  <summary>
+    Records whether WebDatabase::Init succeeds or otherwise a failure reason.
   </summary>
 </histogram>
 

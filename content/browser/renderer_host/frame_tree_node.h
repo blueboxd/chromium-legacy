@@ -308,6 +308,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
 
   // Returns true if this node is in a loading state.
   bool IsLoading() const;
+  LoadingState GetLoadingState() const;
 
   // Returns true if this node has a cross-document navigation in progress.
   bool HasPendingCrossDocumentNavigation() const;
@@ -570,7 +571,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // `Fence.setReportEventDataForAutomaticBeacons` JS API.
   void SetFencedFrameAutomaticBeaconReportEventData(
       const std::string& event_data,
-      const std::vector<blink::FencedFrame::ReportingDestination>& destination)
+      const std::vector<blink::FencedFrame::ReportingDestination>& destinations)
       override;
 
   // Returns the number of fenced frame boundaries above this frame. The
@@ -636,8 +637,7 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   void ResetAllNavigationsForFrameDetach();
 
   // RenderFrameHostOwner implementation:
-  void DidStartLoading(bool should_show_loading_ui,
-                       bool was_previously_loading) override;
+  void DidStartLoading(LoadingState previous_frame_tree_loading_state) override;
   void DidStopLoading() override;
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) override;

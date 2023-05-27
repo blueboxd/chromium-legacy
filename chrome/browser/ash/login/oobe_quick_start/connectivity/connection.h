@@ -39,6 +39,14 @@ class Connection
 
   using ConnectionClosedCallback = base::OnceCallback<void(
       TargetDeviceConnectionBroker::ConnectionClosedReason)>;
+
+  enum class State {
+    kOpen,     // The NearbyConnection is Open
+    kClosing,  // A close has been requested, but the connection is not yet
+               // closed
+    kClosed    // The connection is closed
+  };
+
   class Factory {
    public:
     Factory() = default;
@@ -76,6 +84,12 @@ class Connection
   Connection(const Connection&) = delete;
   Connection& operator=(const Connection&) = delete;
   ~Connection() override;
+
+  // Get the state of the connection (open, closing, or closed)
+  State GetState();
+
+  // Close the connection.
+  void Close(TargetDeviceConnectionBroker::ConnectionClosedReason reason);
 
   // Changes the connection state to authenticated and invokes the
   // ConnectionAuthenticatedCallback. The caller must ensure that the connection
@@ -135,12 +149,14 @@ class Connection
   void SendPayloadAndReadResponse(const base::Value::Dict& message_payload,
                                   PayloadResponseCallback callback);
 
-  void OnConnectionClosed();
+  void OnConnectionClosed(
+      TargetDeviceConnectionBroker::ConnectionClosedReason reason);
 
   raw_ptr<NearbyConnection, ExperimentalAsh> nearby_connection_;
   RandomSessionId random_session_id_;
   SharedSecret shared_secret_;
   SharedSecret secondary_shared_secret_;
+  State connection_state_ = State::kOpen;
   std::unique_ptr<NonceGenerator> nonce_generator_;
   ConnectionClosedCallback on_connection_closed_;
   bool authenticated_ = false;

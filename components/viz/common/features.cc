@@ -178,6 +178,12 @@ BASE_FEATURE(kCanSkipRenderPassOverlay,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
+// Allow SkiaRenderer to skip drawing render passes that contain a single
+// RenderPassDrawQuad.
+BASE_FEATURE(kAllowBypassRenderPassQuads,
+             "AllowBypassRenderPassQuads",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // TODO(crbug.com/1357744): Solve the vulkan flakiness issue before enabling
 // this on Linux.
 BASE_FEATURE(kAllowUndamagedNonrootRenderPassToSkip,
@@ -242,6 +248,15 @@ BASE_FEATURE(kEvictSubtree, "EvictSubtree", base::FEATURE_DISABLED_BY_DEFAULT);
 // ReclaimResources signals will not be sent.
 BASE_FEATURE(kOnBeginFrameAcks,
              "OnBeginFrameAcks",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, and kOnBeginFrameAcks is also enabled, then if we issue an
+// CompositorFrameSinkClient::OnBeginFrame, while we are pending an Ack. If the
+// Ack arrives before the next OnBeginFrame we will send it immediately, instead
+// of batching it. This is to support a frame submission/draw that occurs right
+// near the OnBeginFrame boundary.
+BASE_FEATURE(kOnBeginFrameAllowLateAcks,
+             "OnBeginFrameAllowLateAcks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsDelegatedCompositingEnabled() {

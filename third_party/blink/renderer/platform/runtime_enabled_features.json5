@@ -339,6 +339,23 @@
       base_feature: "none",
     },
     {
+      name: "AttributionReportingCrossAppWeb",
+      origin_trial_feature_name: "AttributionReportingCrossAppWeb",
+      origin_trial_allows_third_party: true,
+      base_feature: "none",
+    },
+    {
+      // This only exists so we can use RuntimeEnabled in the IDL file
+      // when either implied_by flag is enabled.
+      name: "AttributionReportingInterface",
+      // This is not going into origin trial, "origin_trial_feature_name" is
+      // required for using the "implied_by" behaviour.
+      origin_trial_feature_name: "AttributionReportingInterface",
+      origin_trial_allows_third_party: true,
+      implied_by: ["AttributionReporting", "AttributionReportingCrossAppWeb"],
+      base_feature: "none",
+    },
+    {
       name: "AudioContextSetSinkId",
       status: "stable",
       base_feature: "none",
@@ -721,7 +738,7 @@
       // Additionally, animation-delay becomes a shorthand which expands
       // to those properties.
       name: "CSSAnimationDelayStartEnd",
-      depends_on: ["CSSScrollTimeline"],
+      depends_on: ["ScrollTimeline"],
       status: "test",
     },
     {
@@ -784,7 +801,7 @@
     },
     {
       name: "CSSDisplayAnimation",
-      status: "stable",
+      status: "experimental",
     },
     {
       // crbug.com/995106
@@ -1046,14 +1063,6 @@
       status: "test",
       base_feature: "none",
     },
-    // Support for scroll-timeline.
-    //
-    // https://drafts.csswg.org/scroll-animations-1/#scroll-timeline-shorthand
-    {
-      name: "CSSScrollTimeline",
-      status: "experimental",
-      base_feature: "none",
-    },
     {
       name: "CSSSelectorFragmentAnchor",
       status: "experimental",
@@ -1131,7 +1140,7 @@
     },
     {
       name: "CSSTransitionDiscrete",
-      status: "stable",
+      status: "experimental",
     },
     {
       // Support for tree-scoped [1] timeline names (e.g. produced by
@@ -1181,14 +1190,6 @@
       // https://drafts.csswg.org/css-values-4/#viewport-relative-units
       name: "CSSViewportUnits4",
       status: "stable",
-      base_feature: "none",
-    },
-    // Support for view-timeline.
-    //
-    // https://drafts.csswg.org/scroll-animations-1/#view-timeline-shorthand
-    {
-      name: "CSSViewTimeline",
-      status: "experimental",
       base_feature: "none",
     },
     // `white-space` as a shorthand. crbug.com/1417543
@@ -3014,7 +3015,7 @@
     {
       name: "ScrollTimeline",
       status: "experimental",
-      implied_by: ["AnimationWorklet", "CSSScrollTimeline", "CSSViewTimeline"],
+      implied_by: ["AnimationWorklet"],
       base_feature: "none",
     },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
@@ -3092,6 +3093,12 @@
       name: "ServiceWorkerClientLifecycleState",
       status: "experimental",
       base_feature: "none",
+    },
+    {
+      name: "ServiceWorkerRaceNetworkRequest",
+      base_feature: "none",
+      origin_trial_feature_name: "ServiceWorkerBypassFetchHandlerWithRaceNetworkRequest",
+      public: true,
     },
     {
       name: "SharedArrayBuffer",
@@ -3693,7 +3700,7 @@
     // https://w3c.github.io/webauthn/#sctn-parseRequestOptionsFromJSON
     {
       name: "WebAuthenticationJSONSerialization",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "WebAuthenticationLargeBlobExtension",

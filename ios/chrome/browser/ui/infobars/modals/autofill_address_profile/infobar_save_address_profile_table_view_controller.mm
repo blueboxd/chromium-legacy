@@ -122,13 +122,16 @@ const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
   self.styler.cellBackgroundColor = [UIColor colorNamed:kBackgroundColor];
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
-  [self.tableView
-      setSeparatorInset:UIEdgeInsetsMake(
-                            0,
-                            self.isUpdateModal
-                                ? kTableViewHorizontalSpacing
-                                : kInfobarSaveAddressProfileSeparatorInset,
-                            0, 0)];
+  if (self.isUpdateModal && [self shouldShowOldSection]) {
+    [self.tableView
+        setSeparatorInset:UIEdgeInsetsMake(0, kTableViewHorizontalSpacing, 0,
+                                           0)];
+  } else {
+    [self.tableView
+        setSeparatorInset:UIEdgeInsetsMake(
+                              0, kInfobarSaveAddressProfileSeparatorInset, 0,
+                              0)];
+  }
 
   if (!self.isMigrationToAccount || self.currentAddressProfileSaved) {
     // Do not show the cancel button when the migration prompt is presented and
@@ -334,19 +337,13 @@ const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
 - (void)loadUpdateAddressModal {
   DCHECK([self.profileDataDiff count] > 0);
 
-  // Determines whether the old section is to be shown or not.
-  BOOL showOld = NO;
-  for (NSNumber* type in self.profileDataDiff) {
-    if ([self.profileDataDiff[type][1] length] > 0) {
-      showOld = YES;
-    }
-  }
-
   TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierFields];
   [model addItem:[self updateModalDescriptionItem]
       toSectionWithIdentifier:SectionIdentifierFields];
+
+  BOOL showOld = [self shouldShowOldSection];
 
   if (showOld) {
     TableViewTextItem* newTitleItem = [self
@@ -583,6 +580,18 @@ const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
   return @[ editOption ];
 }
 
+// Returns YES if the old section is shown in the update modal.
+- (BOOL)shouldShowOldSection {
+  // Determines whether the old section is to be shown or not.
+  for (NSNumber* type in self.profileDataDiff) {
+    if ([self.profileDataDiff[type][1] length] > 0) {
+      return YES;
+    }
+  }
+
+  return NO;
+}
+
 #pragma mark - Item Constructors
 
 // Returns a `SettingsImageDetailTextItem` for the fields to be shown in the
@@ -621,19 +630,19 @@ const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
 }
 
 - (TableViewTextItem*)saveFooterItem {
-  // TODO(crbug.com/1407666): Align the text with the icon of the other fields.
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
-  item.text =
-      l10n_util::GetNSStringF(IDS_IOS_AUTOFILL_SAVE_ADDRESS_IN_ACCOUNT_FOOTER,
-                              base::SysNSStringToUTF16(self.syncingUserEmail));
+  int footerTextId = self.currentAddressProfileSaved
+                         ? IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT
+                         : IDS_IOS_AUTOFILL_SAVE_ADDRESS_IN_ACCOUNT_FOOTER;
+  item.text = l10n_util::GetNSStringF(
+      footerTextId, base::SysNSStringToUTF16(self.syncingUserEmail));
   item.textFont = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   item.textColor = [UIColor colorNamed:kTextSecondaryColor];
   return item;
 }
 
 - (TableViewTextItem*)updateFooterItem {
-  // TODO(crbug.com/1407666): Align the text with the icon of the other fields.
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
   item.text = l10n_util::GetNSStringF(
@@ -647,9 +656,11 @@ const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
 - (TableViewTextItem*)migrationPromptFooterItem {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
+  int footerTextId = self.currentAddressProfileSaved
+                         ? IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT
+                         : IDS_IOS_AUTOFILL_ADDRESS_MIGRATE_IN_ACCOUNT_FOOTER;
   item.text = l10n_util::GetNSStringF(
-      IDS_IOS_AUTOFILL_ADDRESS_MIGRATE_IN_ACCOUNT_FOOTER,
-      base::SysNSStringToUTF16(self.syncingUserEmail));
+      footerTextId, base::SysNSStringToUTF16(self.syncingUserEmail));
   item.textFont = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   item.textColor = [UIColor colorNamed:kTextSecondaryColor];
   return item;

@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ActivityLayoutState;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
@@ -74,7 +75,7 @@ public abstract class PartialCustomTabBaseStrategy
     protected int mHeight;
     protected int mWidth;
 
-    protected View mToolbarView;
+    protected CustomTabToolbar mToolbarView;
     protected View mToolbarCoordinator;
     protected int mToolbarColor;
     protected int mToolbarCornerRadius;
@@ -86,19 +87,47 @@ public abstract class PartialCustomTabBaseStrategy
     protected boolean mIsInMultiWindowMode;
     protected int mOrientation;
 
+    private final Callback<Integer> mVisibilityChangeObserver =
+            this::onToolbarContainerVisibilityChange;
+
     private ValueAnimator mAnimator;
     private Runnable mPostAnimationRunnable;
 
     private BooleanSupplier mIsFullscreen;
 
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    // This should be kept in sync with the definition |CustomTabsPartialCustomTabType|
+    // in tools/metrics/histograms/enums.xml.
     @IntDef({PartialCustomTabType.NONE, PartialCustomTabType.BOTTOM_SHEET,
-            PartialCustomTabType.SIDE_SHEET, PartialCustomTabType.FULL_SIZE})
+            PartialCustomTabType.SIDE_SHEET, PartialCustomTabType.FULL_SIZE,
+            PartialCustomTabType.COUNT})
     @Retention(RetentionPolicy.SOURCE)
     @interface PartialCustomTabType {
         int NONE = 0;
         int BOTTOM_SHEET = 1;
         int SIDE_SHEET = 2;
         int FULL_SIZE = 3;
+
+        // Number of elements in the enum
+        int COUNT = 4;
+    }
+
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    // This should be kept in sync with the definition |CustomTabsResizeType2|
+    // in tools/metrics/histograms/enums.xml.
+    @IntDef({ResizeType.MANUAL_EXPANSION, ResizeType.MANUAL_MINIMIZATION, ResizeType.AUTO_EXPANSION,
+            ResizeType.AUTO_MINIMIZATION, ResizeType.COUNT})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface ResizeType {
+        int MANUAL_EXPANSION = 0;
+        int MANUAL_MINIMIZATION = 1;
+        int AUTO_EXPANSION = 2;
+        int AUTO_MINIMIZATION = 3;
+
+        // Number of elements in the enum
+        int COUNT = 4;
     }
 
     public PartialCustomTabBaseStrategy(Activity activity, OnResizedCallback onResizedCallback,
@@ -147,6 +176,9 @@ public abstract class PartialCustomTabBaseStrategy
     public void destroy() {
         mFullscreenManager.removeObserver(this);
         cleanupImeStateCallback();
+        if (mToolbarView != null) {
+            mToolbarView.removeContainerVisibilityChangeObserver(mVisibilityChangeObserver);
+        }
     }
 
     @Override
@@ -159,9 +191,15 @@ public abstract class PartialCustomTabBaseStrategy
     }
 
     public void setToolbar(View toolbarCoordinator, CustomTabToolbar toolbar) {
+        if (mToolbarView != null) {
+            mToolbarView.removeContainerVisibilityChangeObserver(mVisibilityChangeObserver);
+        }
+
         mToolbarCoordinator = toolbarCoordinator;
         mToolbarView = toolbar;
         mToolbarColor = toolbar.getBackground().getColor();
+
+        mToolbarView.addContainerVisibilityChangeObserver(mVisibilityChangeObserver);
     }
 
     public void onShowSoftInput(Runnable softKeyboardRunnable) {
@@ -202,8 +240,8 @@ public abstract class PartialCustomTabBaseStrategy
         attrs.y = 0;
         attrs.x = 0;
         mActivity.getWindow().setAttributes(attrs);
-        updateShadowOffset();
         if (shouldDrawDividerLine()) resetCoordinatorLayoutInsets();
+        setTopMargins(0, 0);
         maybeInvokeResizeCallback();
     }
 
@@ -212,8 +250,8 @@ public abstract class PartialCustomTabBaseStrategy
         // |mNavbarHeight| is zero now. Post the task instead.
         new Handler().post(() -> {
             initializeSize();
-            updateShadowOffset();
             if (shouldDrawDividerLine()) drawDividerLine();
+            updateShadowOffset();
             maybeInvokeResizeCallback();
         });
     }
@@ -405,7 +443,7 @@ public abstract class PartialCustomTabBaseStrategy
         dragBar.setBackground(
                 new InsetDrawable(dragBarBackground, leftInset, topInset, rightInset, 0));
         getCoordinatorLayout().setBackground(
-                new InsetDrawable(cctBackground, leftInset, topInset, rightInset, 0));
+                new InsetDrawable(cctBackground, leftInset, 0, rightInset, 0));
     }
 
     protected GradientDrawable getDragBarBackground() {
@@ -510,8 +548,22 @@ public abstract class PartialCustomTabBaseStrategy
         mFinishRunnable = null;
     }
 
+    private void onToolbarContainerVisibilityChange(int visibility) {
+        // See https://crbug.com/1430948 for more context. The issue is that sometimes when
+        // exiting fullscreen, if we don't get a new layout, SurfaceFlinger doesn't recalculate
+        // transparent regions and this View (and children) are never shown. Theoretically this
+        // should also only ever need to be done the first time becoming visible after exiting
+        // fullscreen, but PCCTs do not currently allow scrolling off the toolbar, so it doesn't
+        // matter.
+        if (visibility == View.VISIBLE) {
+            ViewUtils.requestLayout(mToolbarView,
+                    "PartialCustomTabBaseStrategy.onToolbarContainerVisibilityChange");
+        }
+    }
+
     @VisibleForTesting
-    void setMockViewForTesting(ViewGroup coordinatorLayout, View toolbar, View toolbarCoordinator) {
+    void setMockViewForTesting(
+            ViewGroup coordinatorLayout, CustomTabToolbar toolbar, View toolbarCoordinator) {
         mPositionUpdater = this::updatePosition;
         mToolbarView = toolbar;
         mToolbarCoordinator = toolbarCoordinator;

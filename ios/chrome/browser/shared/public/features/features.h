@@ -135,24 +135,17 @@ BASE_DECLARE_FEATURE(kSFSymbolsFollowUp);
 // Feature flag to enable Apple Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
 
-// Parameter name for the parameter controlling whether or not experience kit
-// maps should be enabled in search result pages or not.
-extern const char kExperienceKitMapsVariationName[];
-
-// Variation to enable experience kit Maps in search result pages.
-extern const char kEnableExperienceKitMapsVariationSrp[];
-
-// Feature flag to enable Maps in experience kit.
-BASE_DECLARE_FEATURE(kMapsExperienceKit);
-
-// Feature flag to enable Mini Map in experience kit.
-BASE_DECLARE_FEATURE(kEnableMiniMap);
-
 // When enabled sort tab by last usage in the TabGrid.
 BASE_DECLARE_FEATURE(kTabGridRecencySort);
 
 // Whether the tab grid tabs should be sorted by recency.
 bool IsTabGridSortedByRecency();
+
+// When enabled uses new transitions in the TabGrid.
+BASE_DECLARE_FEATURE(kTabGridNewTransitions);
+
+// Whether the new tab grid tabs transitions should be enabled.
+bool IsNewTabGridTransitionsEnabled();
 
 // Feature to enable multiline gradient support in fade truncating label.
 BASE_DECLARE_FEATURE(kMultilineFadeTruncatingLabel);

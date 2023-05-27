@@ -760,11 +760,6 @@
     "expiry_milestone": 115
   },
   {
-    "name": "battery-saver-mode-available",
-    "owners": [ "chrome-performance-ui-team@google.com" ],
-    "expiry_milestone": 115
-  },
-  {
     "name": "binding-manager-connection-limit",
     "owners": ["ckitagawa", "yfriedman"],
     "expiry_milestone": 115
@@ -2260,6 +2255,11 @@
     "expiry_milestone": 115
   },
   {
+    "name": "enable-delay-temp-strip-removal",
+    "owners": [ "skavuluru", "nemco", "clank-app-team@google.com" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-delegated-compositing",
     "owners": [ "petermcneeley" ],
     "expiry_milestone": 120
@@ -2818,6 +2818,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "enable-lens-ping",
+    "owners": [ "schechter", "hujasonx", "lens-chrome@google.com" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-lens-region-search-static-page",
     "owners": ["juanmojica@google.com", "stanfield@google.com", "lens-chrome@google.com"],
     "expiry_milestone": 112
@@ -2859,11 +2864,6 @@
     // console messages in system logs for debugging purposes. It's disabled by
     // default because logs may contain PII.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-long-press-surrounding-text",
-    "owners": [ "erahmaoui@google.com", "djean@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 116
   },
   {
     "name": "enable-machine-learning-model-loader-web-platform-api",
@@ -3763,11 +3763,6 @@
     "expiry_milestone": 112
   },
   {
-    "name": "experience-kit-maps",
-    "owners": [ "djean@google.com", "erahmaoui@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 116
-  },
-  {
     "name": "experimental-web-app-profile-isolation",
     "owners": [ "lxj@google.com", "glenrob@chromium.org", "chromeos-web-apps-platform-syd@google.com"],
     "expiry_milestone": 120
@@ -4388,11 +4383,6 @@
     "name": "hidpi-capture",
     "owners": [ "//content/browser/media/capture/OWNERS" ],
     "expiry_milestone": 118
-  },
-  {
-    "name": "high-efficiency-mode-available",
-    "owners": [ "chrome-performance-ui-team@google.com" ],
-    "expiry_milestone": 115
   },
   {
     "name": "highlight-managed-pref-disclaimer-android",
@@ -5049,6 +5039,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "memory-saver-savings-reporting-improvements",
+    "owners": [ "chrome-performance-ui-team@google.com" ],
+    "expiry_milestone": 117
+  },
+  {
     "name": "messages-for-android-ads-blocked",
     "owners": [ "pavely", "aishwaryarj" ],
     "expiry_milestone": 99
@@ -5264,6 +5259,11 @@
   },
   {
     "name": "ntp-chrome-cart-in-journeys-module",
+    "owners": [ "yuezhanggg", "romanarora", "tiborg" ],
+    "expiry_milestone": 118
+  },
+  {
+    "name": "ntp-chrome-cart-journeys-module-coexist",
     "owners": [ "yuezhanggg", "romanarora", "tiborg" ],
     "expiry_milestone": 118
   },
@@ -7229,6 +7229,11 @@
     "expiry_milestone": 120
   },
   {
+    "name": "tab-grid-new-transitions",
+    "owners": [ "pakzhygitov", "bling-flags@google.com" ],
+    "expiry_milestone": 120
+  },
+  {
     "name": "tab-grid-recency-sort",
     "owners": [ "gambard", "bling-flags@google.com" ],
     "expiry_milestone": 120
@@ -7241,12 +7246,12 @@
   {
     "name": "tab-groups-save",
     "owners": [ "chrome-desktop-ui-sea@google.com", "dpenning" ],
-    "expiry_milestone": 115
+    "expiry_milestone": 120
   },
   {
     "name": "tab-hover-card-images",
-    "owners": [ "dfried", "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
-    "expiry_milestone": 110
+    "owners": [ "dfried", "estalin" ],
+    "expiry_milestone": 116
   },
   {
     "name": "tab-inactivity-threshold",
@@ -7820,7 +7825,7 @@
   {
     "name": "web-share",
     "owners": [ "mhochk@microsoft.com", "ericwilligers@google.com", "hatalat@microsoft.com" ],
-    "expiry_milestone": 114
+    "expiry_milestone": 118
   },
   {
     "name": "web-sql-access",

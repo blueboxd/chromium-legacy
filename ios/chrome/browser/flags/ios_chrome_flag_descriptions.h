@@ -181,15 +181,6 @@ extern const char kEnablePopoutOmniboxIpadDescription[];
 extern const char kEnableUIButtonConfigurationName[];
 extern const char kEnableUIButtonConfigurationDescription[];
 
-// Title and description for the flag to enable long press surrounding text.
-extern const char kLongPressSurroundingTextName[];
-extern const char kLongPressSurroundingTextDescription[];
-
-// Title and description for the flag to enable experience kit maps location and
-// directions.
-extern const char kMapsExperienceKitName[];
-extern const char kMapsExperienceKitDescription[];
-
 // Title and description for the flag to enable the Credential
 // Provider Extension promo.
 extern const char kCredentialProviderExtensionPromoName[];
@@ -922,6 +913,11 @@ extern const char kSFSymbolsFollowUpDescription[];
 // Title and description for the flag to sort the tab by recency in the TabGrid.
 extern const char kTabGridRecencySortName[];
 extern const char kTabGridRecencySortDescription[];
+
+// Title and description for the flag to enable the new transitions in the
+// TabGrid.
+extern const char kTabGridNewTransitionsName[];
+extern const char kTabGridNewTransitionsDescription[];
 
 // Title and description for the flag to determine tab inactivity in the
 // TabGrid.

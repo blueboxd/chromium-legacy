@@ -1118,6 +1118,9 @@ extern const char kLensImageFormatOptimizationsDescription[];
 extern const char kLensImageTranslateName[];
 extern const char kLensImageTranslateDescription[];
 
+extern const char kEnableLensPingName[];
+extern const char kEnableLensPingDescription[];
+
 extern const char kCscName[];
 extern const char kCscDescription[];
 
@@ -1813,6 +1816,9 @@ extern const char kFoldableJankFixAndroidDescription[];
 
 extern const char kBaselineGM3SurfaceColorsName[];
 extern const char kBaselineGM3SurfaceColorsDescription[];
+
+extern const char kDelayTempStripRemovalName[];
+extern const char kDelayTempStripRemovalDescription[];
 
 extern const char kTextBasedAudioDescriptionName[];
 extern const char kTextBasedAudioDescriptionDescription[];
@@ -2577,11 +2583,11 @@ extern const char kEnableWebHidOnExtensionServiceWorkerDescription[];
 extern const char kGlobalMediaControlsCastStartStopName[];
 extern const char kGlobalMediaControlsCastStartStopDescription[];
 
-extern const char kHighEfficiencyModeAvailableName[];
-extern const char kHighEfficiencyModeAvailableDescription[];
-
 extern const char kHeuristicMemorySaverName[];
 extern const char kHeuristicMemorySaverDescription[];
+
+extern const char kHighEfficiencySavingsReportingImprovementsName[];
+extern const char kHighEfficiencySavingsReportingImprovementsDescription[];
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kIOSPromoPasswordBubbleName[];
@@ -2622,6 +2628,9 @@ extern const char kNtpHistoryClustersModuleDescription[];
 
 extern const char kNtpChromeCartInHistoryClustersModuleName[];
 extern const char kNtpChromeCartInHistoryClustersModuleDescription[];
+
+extern const char kNtpChromeCartHistoryClusterCoexistName[];
+extern const char kNtpChromeCartHistoryClusterCoexistDescription[];
 
 extern const char kNtpMiddleSlotPromoDismissalName[];
 extern const char kNtpMiddleSlotPromoDismissalDescription[];

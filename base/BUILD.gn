@@ -2776,6 +2776,10 @@ test("base_perftests") {
     # build, only do stack trace perftest for unofficial build
     sources += [ "debug/stack_trace_perftest.cc" ]
   }
+
+  if (build_allocation_stack_trace_recorder) {
+    sources += [ "debug/allocation_trace_perftest.cc" ]
+  }
 }
 
 test("base_i18n_perftests") {
@@ -4244,7 +4248,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/BaseFeatureList.java",
       "android/java/src/org/chromium/base/BuildInfo.java",
       "android/java/src/org/chromium/base/BundleUtils.java",
-      "android/java/src/org/chromium/base/ByteArrayGenerator.java",
       "android/java/src/org/chromium/base/Callback.java",
       "android/java/src/org/chromium/base/CallbackController.java",
       "android/java/src/org/chromium/base/CollectionUtil.java",

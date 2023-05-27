@@ -16,6 +16,7 @@
 #include "chrome/browser/cart/cart_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_signals.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_context.h"
@@ -75,7 +76,8 @@ class HistoryClustersModuleServiceTest : public testing::Test {
     history_clusters_module_service_ =
         std::make_unique<HistoryClustersModuleService>(
             test_history_clusters_service_.get(), mock_cart_service_.get(),
-            template_url_service_.get());
+            template_url_service_.get(),
+            /*optimization_guide_keyed_service=*/nullptr);
   }
 
   history_clusters::TestHistoryClustersService&
@@ -95,7 +97,9 @@ class HistoryClustersModuleServiceTest : public testing::Test {
     base::RunLoop run_loop;
     auto task = service().GetClusters(base::BindOnce(
         [](base::RunLoop* run_loop, std::vector<history::Cluster>* out_clusters,
-           std::vector<history::Cluster> clusters) {
+           std::vector<history::Cluster> clusters,
+           base::flat_map<int64_t, HistoryClustersModuleRankingSignals>
+               ranking_signals) {
           *out_clusters = std::move(clusters);
           run_loop->Quit();
         },
@@ -243,14 +247,9 @@ TEST_F(HistoryClustersModuleServiceTest, ClusterVisitsCulled) {
 TEST_F(HistoryClustersModuleServiceTest, IneligibleClusterNonProminent) {
   base::HistogramTester histogram_tester;
 
-  const history::Cluster kSampleCluster = history::Cluster(
-      1, {},
-      {{u"apples", history::ClusterKeywordData()},
-       {u"Red Oranges", history::ClusterKeywordData()}},
-      /*should_show_on_prominent_ui_surfaces=*/false,
-      /*label=*/
-      l10n_util::GetStringFUTF16(
-          IDS_HISTORY_CLUSTERS_CLUSTER_LABEL_SEARCH_TERMS, u"Red fruits"));
+  history::Cluster kSampleCluster =
+      SampleCluster(/*srp_visits=*/0, /*non_srp_visits=*/3);
+  kSampleCluster.should_show_on_prominent_ui_surfaces = false;
   test_history_clusters_service().SetClustersToReturn({kSampleCluster});
 
   std::vector<history::Cluster> clusters = GetClusters();

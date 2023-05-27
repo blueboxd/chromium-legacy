@@ -3261,12 +3261,6 @@ if (!is_android) {
         "../browser/user_bypass/user_bypass_web_contents_observer_browsertest.cc",
       ]
 
-      if (is_win) {
-        data_deps += [
-          "//chrome/browser/extensions/api:native_messaging_test_echo_host",
-        ]
-      }
-
       if (is_chromeos_ash && enable_extensions) {
         deps +=
             [ "//chromeos/ash/components/network/portal_detector:test_support" ]
@@ -3713,22 +3707,27 @@ if (!is_android) {
     }
 
     # TODO(https://crbug.com/1218633): Fix the mixin and enable tests on LaCrOS and desktop.
-    if (enable_supervised_users && is_chromeos_ash) {
-      sources += [
-        "../browser/supervised_user/permission_request_creator_mock.cc",
-        "../browser/supervised_user/permission_request_creator_mock.h",
-        "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
-        "../browser/supervised_user/supervised_user_regional_url_filter_browsertest.cc",
-        "../browser/supervised_user/supervised_user_service_browsertest.cc",
-        "../browser/supervised_user/supervised_user_url_filter_browsertest.cc",
-      ]
+    if (enable_supervised_users) {
       if (enable_extensions) {
         sources += [
           "../browser/supervised_user/supervised_user_extension_browsertest.cc",
           "../browser/ui/views/supervised_user/extension_install_blocked_by_parent_dialog_browsertest.cc",
-          "../browser/ui/views/supervised_user/parent_permission_dialog_view_browsertest.cc",
         ]
       }
+      if (is_chromeos_ash) {
+        sources += [
+          "../browser/supervised_user/permission_request_creator_mock.cc",
+          "../browser/supervised_user/permission_request_creator_mock.h",
+          "../browser/supervised_user/supervised_user_navigation_throttle_browsertest.cc",
+          "../browser/supervised_user/supervised_user_regional_url_filter_browsertest.cc",
+          "../browser/supervised_user/supervised_user_service_browsertest.cc",
+          "../browser/supervised_user/supervised_user_url_filter_browsertest.cc",
+        ]
+        if (enable_extensions) {
+          sources += [ "../browser/ui/views/supervised_user/parent_permission_dialog_view_browsertest.cc" ]
+        }
+      }
+
       deps += [
         "//chrome/browser/supervised_user:test_support",
         "//components/supervised_user/core/browser",
@@ -5488,6 +5487,7 @@ test("unit_tests") {
     "../browser/browsing_data/counters/site_data_counting_helper_unittest.cc",
     "../browser/browsing_data/counters/site_settings_counter_unittest.cc",
     "../browser/browsing_data/site_data_size_collector_unittest.cc",
+    "../browser/chained_back_navigation_tracker_unittest.cc",
     "../browser/chooser_controller/title_util_unittest.cc",
     "../browser/chrome_browser_field_trials_unittest.cc",
     "../browser/chrome_content_browser_client_unittest.cc",
@@ -5788,6 +5788,7 @@ test("unit_tests") {
     "../browser/ssl/certificate_error_reporter_unittest.cc",
     "../browser/ssl/certificate_reporting_test_utils.cc",
     "../browser/ssl/certificate_reporting_test_utils.h",
+    "../browser/ssl/https_first_mode_settings_tracker_unittest.cc",
     "../browser/ssl/security_state_tab_helper_unittest.cc",
     "../browser/ssl/ssl_config_service_manager_unittest.cc",
     "../browser/status_icons/status_icon_menu_model_unittest.cc",
@@ -6648,6 +6649,7 @@ test("unit_tests") {
       "../browser/android/compositor/tab_content_manager_unittest.cc",
       "../browser/android/customtabs/detached_resource_request_unittest.cc",
       "../browser/android/customtabs/tab_interaction_recorder_android_unittest.cc",
+      "../browser/android/customtabs/text_fragment_lookup_state_tracker_unittest.cc",
       "../browser/android/explore_sites/block_site_task_unittest.cc",
       "../browser/android/explore_sites/clear_activities_task_unittest.cc",
       "../browser/android/explore_sites/clear_catalog_task_unittest.cc",
@@ -7335,9 +7337,12 @@ test("unit_tests") {
       "../browser/new_tab_page/modules/drive/drive_service_unittest.cc",
       "../browser/new_tab_page/modules/feed/feed_handler_unittest.cc",
       "../browser/new_tab_page/modules/history_clusters/cart/cart_processor_unittest.cc",
-      "../browser/new_tab_page/modules/history_clusters/history_clusters_module_ranker_unittest.cc",
       "../browser/new_tab_page/modules/history_clusters/history_clusters_module_service_unittest.cc",
+      "../browser/new_tab_page/modules/history_clusters/history_clusters_module_util_unittest.cc",
       "../browser/new_tab_page/modules/history_clusters/history_clusters_page_handler_unittest.cc",
+      "../browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranker_unittest.cc",
+      "../browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_metrics_logger_unittest.cc",
+      "../browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_signals_unittest.cc",
       "../browser/new_tab_page/modules/new_tab_page_modules_unittest.cc",
       "../browser/new_tab_page/modules/photos/photos_service_unittest.cc",
       "../browser/new_tab_page/modules/recipes/recipes_service_unittest.cc",
@@ -7345,6 +7350,11 @@ test("unit_tests") {
       "../browser/new_tab_page/modules/safe_browsing/safe_browsing_handler_unittest.cc",
       "../browser/search/ntp_features_unittest.cc",
     ]
+    if (build_with_tflite_lib) {
+      sources += [ "../browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_model_handler_unittest.cc" ]
+      data += [ "//components/test/data/omnibox/adder.tflite" ]
+      deps += [ "//chrome/browser/new_tab_page/modules/history_clusters/ranking:history_clusters_module_proto" ]
+    }
 
     sources += [
       # Android uses a different way of showing browser windows.
@@ -9362,6 +9372,14 @@ if (!is_android) {
       "permissions/permission_request_manager_test_api.cc",
       "permissions/permission_request_manager_test_api.h",
     ]
+
+    if (enable_supervised_users) {
+      sources += [
+        "supervised_user/supervision_mixin.cc",
+        "supervised_user/supervision_mixin.h",
+      ]
+    }
+
     if (is_mac) {
       sources += [
         "../browser/ui/test/test_browser_dialog_mac.h",

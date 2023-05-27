@@ -491,6 +491,12 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesJourneysOpenAllInNewTabGroupButtonText",
        IDS_NTP_MODULES_HISTORY_CLUSTERS_OPEN_ALL_IN_NEW_TAB_GROUP_BUTTON_TEXT},
       {"modulesJourneysCartAnnotation", IDS_NTP_MODULES_QUEST_CART_ANNOTATION},
+      {"modulesJourneysCartTileLabelPlural",
+       IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_PLURAL},
+      {"modulesJourneysCartTileLabelSingular",
+       IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_SINGULAR},
+      {"modulesJourneysCartTileLabelDefault",
+       IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_DEFAULT},
 
       // Middle slot promo.
       {"undoDismissPromoButtonToast", IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST},
@@ -553,6 +559,12 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean("modulesChromeCartInHistoryClustersModuleEnabled",
                      base::FeatureList::IsEnabled(
                          ntp_features::kNtpChromeCartInHistoryClusterModule));
+
+  source->AddBoolean(
+      "showCartInQuestModuleSetting",
+      IsCartModuleEnabled() &&
+          base::FeatureList::IsEnabled(
+              ntp_features::kNtpChromeCartInHistoryClusterModule));
 
   RealboxHandler::SetupWebUIDataSource(source, profile);
 

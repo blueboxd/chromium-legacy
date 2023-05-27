@@ -138,6 +138,7 @@ class HistoryClustersServiceTestBase : public testing::Test {
       : task_environment_(
             base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME) {
     Config config;
+    config.is_journeys_enabled_no_locale_check = true;
     // TODO(b/276488340): Update this test when non context clusterer code gets
     //   cleaned up.
     config.use_navigation_context_clusters = false;
@@ -152,6 +153,15 @@ class HistoryClustersServiceTestBase : public testing::Test {
     prefs::RegisterProfilePrefs(pref_service_->registry());
 
     ResetHistoryClustersServiceWithLocale("en-US");
+  }
+
+  void TearDown() override {
+    // Give history a chance to flush out the task to avoid memory leaks.
+    history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
+
+    history_clusters_service_.reset();
+    pref_service_.reset();
+    history_service_.reset();
   }
 
   HistoryClustersServiceTestBase(const HistoryClustersServiceTestBase&) =
@@ -1399,6 +1409,130 @@ TEST_P(HistoryClustersServiceTest,
       ExpectSyncedVisits());
 }
 
+class HistoryClustersServicePrefPersistenceTest
+    : public HistoryClustersServiceTestBase {
+ public:
+  HistoryClustersServicePrefPersistenceTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{internal::kJourneys,
+                              internal::kJourneysPersistCachesToPrefs},
+        /*disabled_features=*/{});
+    Config config;
+    config.persist_clusters_in_history_db = true;
+    // TODO(b/276488340): Update this test when non context clusterer code gets
+    //   cleaned up.
+    config.use_navigation_context_clusters = false;
+    SetConfigForTesting(config);
+  }
+};
+
+TEST_F(HistoryClustersServicePrefPersistenceTest, LoadCachesFromPrefs) {
+  AddHardcodedTestDataToHistoryService();
+  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("apples"));
+
+  std::vector<history::Cluster> clusters;
+  clusters.push_back(history::Cluster(
+      0,
+      {
+          GetHardcodedClusterVisit(5),
+          GetHardcodedClusterVisit(2),
+      },
+      {{u"apples",
+        history::ClusterKeywordData(history::ClusterKeywordData::kEntity, 5.0f,
+                                    {"fuji", "honeycrisp"})},
+       {u"oranges", history::ClusterKeywordData(
+                        history::ClusterKeywordData::kSearchTerms, 100.0f, {})},
+       {u"z", history::ClusterKeywordData()},
+       {u"apples bananas", history::ClusterKeywordData()}},
+      /*should_show_on_prominent_ui_surfaces=*/true));
+
+  FlushKeywordRequests(clusters, 3);
+
+  const auto keyword_data =
+      history_clusters_service_->DoesQueryMatchAnyCluster("apples");
+  EXPECT_TRUE(keyword_data);
+
+  // Empty the cache artificially to simulate a process restart.
+  history_clusters_service_test_api_->SetAllKeywordsCache({});
+  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("apples"));
+
+  LoadCachesFromPrefs();
+
+  const auto apples_keyword_data =
+      history_clusters_service_->DoesQueryMatchAnyCluster("apples");
+  EXPECT_TRUE(apples_keyword_data);
+  EXPECT_EQ(apples_keyword_data,
+            history::ClusterKeywordData(history::ClusterKeywordData::kEntity,
+                                        5.0f, {"fuji", "honeycrisp"}));
+  const auto oranges_keyword_data =
+      history_clusters_service_->DoesQueryMatchAnyCluster("oranges");
+  EXPECT_TRUE(oranges_keyword_data);
+  EXPECT_EQ(oranges_keyword_data,
+            history::ClusterKeywordData(history::ClusterKeywordData(
+                history::ClusterKeywordData::kSearchTerms, 100.0f, {})));
+  EXPECT_TRUE(
+      history_clusters_service_->DoesQueryMatchAnyCluster("apples bananas"));
+}
+
+TEST_F(HistoryClustersServicePrefPersistenceTest,
+       LoadSecondaryCachesFromPrefs) {
+  AddHardcodedTestDataToHistoryService();
+  auto minutes_ago = [](int minutes) {
+    return base::Time::Now() - base::Minutes(minutes);
+  };
+
+  // Set up the cache timestamps.
+  history_clusters_service_test_api_->SetAllKeywordsCacheTimestamp(
+      minutes_ago(60));
+  history_clusters_service_test_api_->SetShortKeywordCacheTimestamp(
+      minutes_ago(15));
+
+  // Set up the visit timestamps.
+  // Visits newer than both cache timestamps should be reclustered.
+  auto visit = GetHardcodedTestVisits()[0];
+  visit.visit_row.visit_time = minutes_ago(5);
+  AddCompleteVisit(visit);
+  visit = GetHardcodedTestVisits()[1];
+  visit.visit_row.visit_time = minutes_ago(10);
+  AddCompleteVisit(visit);
+
+  // Kick off cluster request and verify the correct visits are sent.
+  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("peach"));
+  test_clustering_backend_->WaitForGetClustersCall();
+
+  // Send the cluster response and verify the keyword was cached.
+  std::vector<history::Cluster> clusters2;
+  clusters2.push_back(history::Cluster(
+      0,
+      {
+          GetHardcodedClusterVisit(1),
+          GetHardcodedClusterVisit(2),
+      },
+      {{u"peach",
+        history::ClusterKeywordData(history::ClusterKeywordData::kEntity, 13.0f,
+                                    {"georgia"})},
+       {u"", history::ClusterKeywordData()}},
+      /*should_show_on_prominent_ui_surfaces=*/true));
+  test_clustering_backend_->FulfillCallback(clusters2);
+  history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
+  EXPECT_TRUE(history_clusters_service_->DoesQueryMatchAnyCluster("peach"));
+
+  // Verify the keyword is in the short cache specifically.
+  history_clusters_service_test_api_->SetAllKeywordsCache({});
+  EXPECT_TRUE(history_clusters_service_->DoesQueryMatchAnyCluster("peach"));
+
+  // Empty the cache artificially to simulate a process restart.
+  history_clusters_service_test_api_->SetShortKeywordCache({});
+  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("peach"));
+
+  LoadCachesFromPrefs();
+  const auto peach_keyword_data =
+      history_clusters_service_->DoesQueryMatchAnyCluster("peach");
+  EXPECT_EQ(peach_keyword_data,
+            history::ClusterKeywordData(history::ClusterKeywordData(
+                history::ClusterKeywordData::kEntity, 13.0f, {"georgia"})));
+}
+
 class HistoryClustersServiceJourneysDisabledTest
     : public HistoryClustersServiceTestBase {
  public:
@@ -1409,6 +1543,10 @@ class HistoryClustersServiceJourneysDisabledTest
             internal::kJourneys,
             internal::kPersistContextAnnotationsInHistoryDb,
         });
+
+    Config config;
+    config.is_journeys_enabled_no_locale_check = false;
+    SetConfigForTesting(config);
   }
 };
 
@@ -1425,6 +1563,18 @@ TEST_F(HistoryClustersServiceJourneysDisabledTest,
   history_clusters_service_->CompleteVisitContextAnnotationsIfReady(0);
   EXPECT_FALSE(
       history_clusters_service_->HasIncompleteVisitContextAnnotations(0));
+}
+
+TEST_F(HistoryClustersServiceJourneysDisabledTest, QueryClusters) {
+  // Create 5 persisted visits with visit times 2, 1, 1, 60, and 1 days ago.
+  AddHardcodedTestDataToHistoryService();
+
+  QueryClustersContinuationParams continuation_params = {};
+  continuation_params.continuation_time = base::Time::Now();
+
+  const auto [clusters, visits] = NextQueryClusters(
+      continuation_params, /*expect_clustering_backend_call=*/false);
+  EXPECT_TRUE(clusters.empty());
 }
 
 class HistoryClustersServiceMaxKeywordsTest

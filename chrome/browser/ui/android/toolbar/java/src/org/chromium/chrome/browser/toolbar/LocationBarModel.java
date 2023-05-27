@@ -187,9 +187,8 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     // using the flags below to short circuit all calls after the UrlBar has already been updated.
     private static final MutableFlagWithSafeDefault sSameDocOptimizationsFlag =
             new MutableFlagWithSafeDefault(
-                    ChromeFeatureList.REDUCE_TOOLBAR_UPDATES_FOR_SAME_DOC_NAVIGATIONS, true);
+                    ChromeFeatureList.REDUCE_TOOLBAR_UPDATES_FOR_SAME_DOC_NAVIGATIONS, false);
     private boolean mIsInSameDocNav;
-    private boolean mIsSameDocNavFinished;
     private boolean mAlreadyUpdatedUrlBarForSameDocNav;
     private boolean mAlreadyChangedSecurityStateForSameDocNav;
 
@@ -363,9 +362,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
         if (isSameDocOptimizationEnabled()) {
             mAlreadyUpdatedUrlBarForSameDocNav = mIsInSameDocNav;
-            if (mIsSameDocNavFinished) {
-                resetSameDocNavFlags();
-            }
         }
     }
 
@@ -800,9 +796,6 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
 
         if (isSameDocOptimizationEnabled()) {
             mAlreadyChangedSecurityStateForSameDocNav = mIsInSameDocNav;
-            if (mIsSameDocNavFinished) {
-                resetSameDocNavFlags();
-            }
         }
     }
 
@@ -880,15 +873,12 @@ public class LocationBarModel implements ToolbarDataProvider, LocationBarDataPro
     public void notifyDidStartNavigation(boolean isSameDocument) {
         if (isSameDocOptimizationEnabled()) {
             resetSameDocNavFlags();
-            mIsSameDocNavFinished = false;
             mIsInSameDocNav = isSameDocument;
         }
     }
 
-    public void notifyDidFinishNavigation(boolean isSameDocument) {
-        if (isSameDocOptimizationEnabled()) {
-            mIsSameDocNavFinished = true;
-        }
+    public void notifyDidFinishNavigationEnd() {
+        resetSameDocNavFlags();
     }
 
     public void notifyOnCrash() {

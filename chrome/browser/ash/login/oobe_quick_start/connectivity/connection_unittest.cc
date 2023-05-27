@@ -395,7 +395,7 @@ TEST_F(ConnectionTest, SendPayloadAndReadResponse) {
             kTestMessagePayloadValue);
 }
 
-TEST_F(ConnectionTest, TestDisconnectionTriggersListener) {
+TEST_F(ConnectionTest, TestClose) {
   base::test::TestFuture<TargetDeviceConnectionBroker::ConnectionClosedReason>
       future;
   std::unique_ptr<Connection> connection_under_test =
@@ -406,12 +406,37 @@ TEST_F(ConnectionTest, TestDisconnectionTriggersListener) {
           /*on_connection_authenticated=*/base::DoNothing());
 
   ASSERT_FALSE(future.IsReady());
+  ASSERT_EQ(connection_under_test->GetState(), Connection::State::kOpen);
 
-  fake_nearby_connection_->Close();
+  connection_under_test->Close(
+      TargetDeviceConnectionBroker::ConnectionClosedReason::kComplete);
 
   ASSERT_TRUE(future.IsReady());
   ASSERT_EQ(future.Get(),
             TargetDeviceConnectionBroker::ConnectionClosedReason::kComplete);
+  ASSERT_EQ(connection_under_test->GetState(), Connection::State::kClosed);
+}
+
+TEST_F(ConnectionTest, TestDisconnectsWithoutCloseIssueUnknownError) {
+  base::test::TestFuture<TargetDeviceConnectionBroker::ConnectionClosedReason>
+      future;
+  std::unique_ptr<Connection> connection_under_test =
+      std::make_unique<Connection>(
+          fake_nearby_connection_.get(), session_id_, kSharedSecret,
+          kSecondarySharedSecret, std::make_unique<ConstantNonceGenerator>(),
+          /*on_connection_closed=*/future.GetCallback(),
+          /*on_connection_authenticated=*/base::DoNothing());
+
+  ASSERT_FALSE(future.IsReady());
+  ASSERT_EQ(connection_under_test->GetState(), Connection::State::kOpen);
+
+  fake_nearby_connection_->Close();
+
+  ASSERT_TRUE(future.IsReady());
+  ASSERT_EQ(
+      future.Get(),
+      TargetDeviceConnectionBroker::ConnectionClosedReason::kUnknownError);
+  ASSERT_EQ(connection_under_test->GetState(), Connection::State::kClosed);
 }
 
 TEST_F(ConnectionTest, InitiateHandshake) {

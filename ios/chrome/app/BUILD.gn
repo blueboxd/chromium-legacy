@@ -198,9 +198,11 @@ if (ios_enable_credential_provider_extension) {
       "//components/keyed_service/core",
       "//ios/chrome/app/application_delegate:app_state_header",
       "//ios/chrome/app/application_delegate:observing_app_state_agent",
+      "//ios/chrome/browser/browser_state",
       "//ios/chrome/browser/credential_provider",
       "//ios/chrome/browser/passwords:store_factory",
       "//ios/chrome/browser/shared/coordinator/scene:scene_state_header",
+      "//ios/chrome/browser/sync",
       "//ios/chrome/common/app_group",
       "//ios/chrome/common/credential_provider",
     ]
@@ -387,8 +389,12 @@ source_set("feed_app_agent") {
 source_set("app_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "application_storage_metrics.h",
+    "application_storage_metrics.mm",
     "chrome_overlay_window.h",
     "chrome_overlay_window.mm",
+    "features.h",
+    "features.mm",
     "main_application_delegate.h",
     "main_application_delegate.mm",
     "main_application_delegate_testing.h",
@@ -435,6 +441,7 @@ source_set("app_internal") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/metrics",
+    "//components/optimization_guide/core:features",
     "//components/password_manager/core/common",
     "//components/prefs",
     "//components/prefs/ios",

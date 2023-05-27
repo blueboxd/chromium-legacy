@@ -759,7 +759,7 @@
     baseViewController.pinnedTabsDelegate = self.pinnedTabsMediator;
   }
 
-  if (IsInactiveTabsEnabled()) {
+  if (IsInactiveTabsAvailable()) {
     self.inactiveTabsButtonMediator = [[InactiveTabsButtonMediator alloc]
         initWithConsumer:baseViewController.regularTabsConsumer
             webStateList:_inactiveBrowser->GetWebStateList()
@@ -780,9 +780,7 @@
     baseViewController.pinnedTabsDragDropHandler = self.pinnedTabsMediator;
   }
 
-  baseViewController.regularTabsImageDataSource = self.regularTabsMediator;
   baseViewController.priceCardDataSource = self.priceCardMediator;
-  baseViewController.incognitoTabsImageDataSource = self.incognitoTabsMediator;
 
   baseViewController.regularTabsShareableItemsProvider =
       self.regularTabsMediator;
@@ -811,7 +809,7 @@
   self.baseViewController.incognitoTabsContextMenuProvider =
       self.incognitoTabContextMenuHelper;
 
-  if (IsInactiveTabsEnabled()) {
+  if (IsInactiveTabsAvailable()) {
     self.inactiveTabsCoordinator = [[InactiveTabsCoordinator alloc]
         initWithBaseViewController:self.baseViewController
                            browser:_inactiveBrowser
@@ -1138,7 +1136,7 @@
 }
 
 - (void)showInactiveTabs {
-  DCHECK(IsInactiveTabsEnabled());
+  CHECK(IsInactiveTabsEnabled());
   [self.inactiveTabsCoordinator show];
 }
 
@@ -1147,8 +1145,6 @@
 - (void)inactiveTabsCoordinator:
             (InactiveTabsCoordinator*)inactiveTabsCoordinator
             didSelectItemWithID:(NSString*)itemID {
-  // TODO(crbug.com/1418021): Add metrics when the user activate back an
-  // inactive tab and bring it back to the active tab list.
   WebStateList* regularWebStateList = self.regularBrowser->GetWebStateList();
   int toInsertIndex = regularWebStateList->count();
 
@@ -1165,7 +1161,7 @@
 
 - (void)inactiveTabsCoordinatorDidFinish:
     (InactiveTabsCoordinator*)inactiveTabsCoordinator {
-  DCHECK(IsInactiveTabsEnabled() || IsInactiveTabsExplictlyDisabledByUser());
+  CHECK(IsInactiveTabsAvailable());
   [self.inactiveTabsCoordinator hide];
 }
 

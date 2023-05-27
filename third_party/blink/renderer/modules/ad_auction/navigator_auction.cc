@@ -173,6 +173,17 @@ class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
         interest_group_buyers_;
   };
 
+  class ResolveToConfigResolved : public ScriptFunction::Callable {
+   public:
+    ResolveToConfigResolved(AuctionHandle* auction_handle);
+
+    ScriptValue Call(ScriptState* script_state, ScriptValue value) override;
+    void Trace(Visitor* visitor) const override;
+
+   private:
+    Member<AuctionHandle> auction_handle_;
+  };
+
   class Rejected : public ScriptFunction::Callable {
    public:
     explicit Rejected(AuctionHandle* auction_handle);
@@ -248,11 +259,26 @@ class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(abortable_ad_auction_);
+    visitor->Trace(auction_resolver_);
     AbortSignal::Algorithm::Trace(visitor);
   }
 
+  void AuctionComplete(
+      ScriptPromiseResolver*,
+      std::unique_ptr<ScopedAbortState>,
+      bool manually_aborted,
+      const absl::optional<FencedFrame::RedactedFencedFrameConfig>&);
+
+  void MaybeResolveAuction();
+
+  void SetResolveToConfig(bool value) { resolve_to_config_ = value; }
+
  private:
   HeapMojoRemote<mojom::blink::AbortableAdAuction> abortable_ad_auction_;
+
+  absl::optional<bool> resolve_to_config_;
+  Member<ScriptPromiseResolver> auction_resolver_;
+  absl::optional<FencedFrame::RedactedFencedFrameConfig> auction_config_;
 };
 
 namespace {
@@ -1776,6 +1802,47 @@ bool CopyRequiredSellerSignalsFromIdlToMojo(
   return true;
 }
 
+bool CopyRequestedSizeFromIdlToMojo(const ExecutionContext& execution_context,
+                                    ExceptionState& exception_state,
+                                    const AuctionAdConfig& input,
+                                    mojom::blink::AuctionAdConfig& output) {
+  if (!input.hasRequestedSize()) {
+    return true;
+  }
+  auto [width_val, width_units] =
+      blink::ParseAdSizeString(input.requestedSize()->width().Ascii());
+  auto [height_val, height_units] =
+      blink::ParseAdSizeString(input.requestedSize()->height().Ascii());
+  if (width_units == blink::AdSize::LengthUnit::kInvalid) {
+    exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+        input, "requestedSize width", input.requestedSize()->width(),
+        "must use units '', 'px', 'sw', or 'sh'."));
+    return false;
+  }
+  if (height_units == blink::AdSize::LengthUnit::kInvalid) {
+    exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+        input, "requestedSize height", input.requestedSize()->height(),
+        "must use units '', 'px', 'sw', or 'sh'."));
+    return false;
+  }
+  if (width_val <= 0 || !std::isfinite(width_val)) {
+    exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+        input, "requestedSize width", input.requestedSize()->width(),
+        "must be finite and positive."));
+    return false;
+  }
+  if (height_val <= 0 || !std::isfinite(height_val)) {
+    exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+        input, "requestedSize height", input.requestedSize()->height(),
+        "must be finite and positive."));
+    return false;
+  }
+  output.auction_ad_config_non_shared_params->requested_size =
+      mojom::blink::AdSize::New(width_val, width_units, height_val,
+                                height_units);
+  return true;
+}
+
 // Attempts to convert the AuctionAdConfig `config`, passed in via Javascript,
 // to a `mojom::blink::AuctionAdConfig`. Throws a Javascript exception and
 // return null on failure. `auction_handle` is used for promise handling;
@@ -1839,7 +1906,9 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
       !CopyAuctionReportBuyersFromIdlToMojo(exception_state, config,
                                             *mojo_config) ||
       !CopyRequiredSellerSignalsFromIdlToMojo(context, exception_state, config,
-                                              *mojo_config)) {
+                                              *mojo_config) ||
+      !CopyRequestedSizeFromIdlToMojo(context, exception_state, config,
+                                      *mojo_config)) {
     return mojom::blink::AuctionAdConfigPtr();
   }
 
@@ -2189,6 +2258,36 @@ NavigatorAuction::AuctionHandle::DirectFromSellerSignalsResolved::Call(
 }
 
 void NavigatorAuction::AuctionHandle::DirectFromSellerSignalsResolved::Trace(
+    Visitor* visitor) const {
+  visitor->Trace(auction_handle_);
+  Callable::Trace(visitor);
+}
+
+NavigatorAuction::AuctionHandle::ResolveToConfigResolved::
+    ResolveToConfigResolved(AuctionHandle* auction_handle)
+    : auction_handle_(auction_handle) {}
+ScriptValue NavigatorAuction::AuctionHandle::ResolveToConfigResolved::Call(
+    ScriptState* script_state,
+    ScriptValue value) {
+  v8::Local<v8::Value> v8_value = value.V8Value();
+
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (!context) {
+    return ScriptValue();
+  }
+
+  if (!v8_value->IsBoolean()) {
+    auction_handle_->SetResolveToConfig(false);
+  } else {
+    auction_handle_->SetResolveToConfig(
+        v8_value->BooleanValue(script_state->GetIsolate()));
+  }
+
+  auction_handle_->MaybeResolveAuction();
+  return ScriptValue();
+}
+
+void NavigatorAuction::AuctionHandle::ResolveToConfigResolved::Trace(
     Visitor* visitor) const {
   visitor->Trace(auction_handle_);
   Callable::Trace(visitor);
@@ -2551,15 +2650,32 @@ ScriptPromise NavigatorAuction::runAdAuction(ScriptState* script_state,
         std::make_unique<ScopedAbortState>(signal, abort_handle);
   }
 
-  bool resolve_to_config =
-      config->getResolveToConfigOr(false) &&
-      RuntimeEnabledFeatures::FencedFramesAPIChangesEnabled(context);
+  if (config->hasResolveToConfig() &&
+      config->resolveToConfig().V8Value()->IsPromise()) {
+    ScriptPromise resolve_to_config_promise(
+        script_state, config->resolveToConfig().V8Value());
+    auction_handle->AttachPromiseHandler(
+        *script_state, resolve_to_config_promise,
+        MakeGarbageCollected<
+            NavigatorAuction::AuctionHandle::ResolveToConfigResolved>(
+            auction_handle));
+  } else {
+    bool resolve_val = false;
+
+    if (config->hasResolveToConfig() &&
+        config->resolveToConfig().V8Value()->IsBoolean()) {
+      resolve_val = config->resolveToConfig().V8Value()->BooleanValue(
+          script_state->GetIsolate());
+    }
+
+    auction_handle->SetResolveToConfig(resolve_val);
+  }
 
   ad_auction_service_->RunAdAuction(
       std::move(mojo_config), std::move(abort_receiver),
-      WTF::BindOnce(&NavigatorAuction::AuctionComplete, WrapPersistent(this),
-                    WrapPersistent(resolver), std::move(scoped_abort_state),
-                    resolve_to_config));
+      WTF::BindOnce(&NavigatorAuction::AuctionHandle::AuctionComplete,
+                    WrapPersistent(auction_handle), WrapPersistent(resolver),
+                    std::move(scoped_abort_state)));
   return promise;
 }
 
@@ -2924,10 +3040,9 @@ void NavigatorAuction::LeaveComplete(bool is_cross_origin,
   resolver->Resolve();
 }
 
-void NavigatorAuction::AuctionComplete(
+void NavigatorAuction::AuctionHandle::AuctionComplete(
     ScriptPromiseResolver* resolver,
     std::unique_ptr<ScopedAbortState> scoped_abort_state,
-    bool resolve_to_config,
     bool manually_aborted,
     const absl::optional<FencedFrame::RedactedFencedFrameConfig>&
         result_config) {
@@ -2950,13 +3065,30 @@ void NavigatorAuction::AuctionComplete(
   } else if (result_config) {
     DCHECK(result_config->mapped_url().has_value());
     DCHECK(!result_config->mapped_url()->potentially_opaque_value.has_value());
-    if (resolve_to_config) {
-      resolver->Resolve(FencedFrameConfig::From(result_config.value()));
-    } else {
-      resolver->Resolve(KURL(result_config->urn_uuid().value()));
-    }
+
+    auction_resolver_ = resolver;
+    auction_config_ = result_config;
+
+    MaybeResolveAuction();
   } else {
     resolver->Resolve(v8::Null(script_state->GetIsolate()));
+  }
+}
+
+void NavigatorAuction::AuctionHandle::MaybeResolveAuction() {
+  if (!resolve_to_config_.has_value() || !auction_resolver_ ||
+      !auction_config_.has_value()) {
+    // Once both the resolveToConfig promise is resolved and the auction is
+    // completed, this function will be called again to actually
+    // complete the auction.
+    return;
+  }
+
+  if (resolve_to_config_.value() == true) {
+    auction_resolver_->Resolve(
+        FencedFrameConfig::From(auction_config_.value()));
+  } else {
+    auction_resolver_->Resolve(KURL(auction_config_->urn_uuid().value()));
   }
 }
 

@@ -3094,6 +3094,8 @@ test("content_unittests") {
     frameworks = [
       "Carbon.framework",
       "IOSurface.framework",
+    ]
+    weak_frameworks = [
       "AuthenticationServices.framework",
     ]
   }

@@ -382,6 +382,8 @@ test("device_unittests") {
     frameworks += [
       "IOBluetooth.framework",
       "Security.framework",
+    ]
+    weak_frameworks = [
       "AuthenticationServices.framework",
     ]
   }

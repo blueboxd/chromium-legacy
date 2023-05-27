@@ -247,9 +247,10 @@ component("fido") {
       "Foundation.framework",
       "LocalAuthentication.framework",
       "Security.framework",
+    ]
+    weak_frameworks = [
       "AuthenticationServices.framework",
     ]
-
     configs += [ "//build/config/compiler:enable_arc" ]
   }
 

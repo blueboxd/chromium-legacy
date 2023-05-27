@@ -140,15 +140,15 @@ std::u16string DialogDelegate::GetDialogButtonLabel(
              : l10n_util::GetStringUTF16(IDS_APP_CLOSE);
 }
 
-MdTextButton::Style DialogDelegate::GetDialogButtonStyle(
+ui::ButtonStyle DialogDelegate::GetDialogButtonStyle(
     ui::DialogButton button) const {
-  absl::optional<MdTextButton::Style> style = GetParams().button_styles[button];
+  absl::optional<ui::ButtonStyle> style = GetParams().button_styles[button];
   if (style.has_value()) {
     return *style;
   }
 
-  return GetIsDefault(button) ? MdTextButton::Style::kProminent
-                              : MdTextButton::Style::kDefault;
+  return GetIsDefault(button) ? ui::ButtonStyle::kProminent
+                              : ui::ButtonStyle::kDefault;
 }
 
 bool DialogDelegate::GetIsDefault(ui::DialogButton button) const {
@@ -159,6 +159,12 @@ bool DialogDelegate::GetIsDefault(ui::DialogButton button) const {
 
 bool DialogDelegate::IsDialogButtonEnabled(ui::DialogButton button) const {
   return params_.enabled_buttons & button;
+}
+
+bool DialogDelegate::ShouldIgnoreButtonPressedEventHandling(
+    View* button,
+    const ui::Event& event) const {
+  return false;
 }
 
 bool DialogDelegate::Cancel() {
@@ -333,8 +339,8 @@ void DialogDelegate::DialogModelChanged() {
     observer.OnDialogChanged();
 }
 
-void DialogDelegate::TriggerInputProtection() {
-  GetDialogClientView()->TriggerInputProtection();
+void DialogDelegate::TriggerInputProtection(bool force_early) {
+  GetDialogClientView()->TriggerInputProtection(force_early);
 }
 
 void DialogDelegate::SetDefaultButton(int button) {
@@ -370,7 +376,7 @@ void DialogDelegate::SetButtonLabel(ui::DialogButton button,
 }
 
 void DialogDelegate::SetButtonStyle(ui::DialogButton button,
-                                    absl::optional<MdTextButton::Style> style) {
+                                    absl::optional<ui::ButtonStyle> style) {
   if (params_.button_styles[button] == style) {
     return;
   }

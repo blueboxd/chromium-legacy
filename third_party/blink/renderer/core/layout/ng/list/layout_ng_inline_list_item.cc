@@ -73,6 +73,7 @@ void LayoutNGInlineListItem::StyleDidChange(StyleDifference diff,
         (!old_list_style_type || !new_list_style_type ||
          *old_list_style_type != *new_list_style_type)) {
       list_marker->ListStyleTypeChanged(*marker);
+      SetNeedsCollectInlines();
     }
   }
 }
@@ -100,6 +101,8 @@ void LayoutNGInlineListItem::OrdinalValueChanged() {
   LayoutObject* marker = Marker();
   if (auto* list_marker = ListMarker::Get(marker)) {
     list_marker->OrdinalValueChanged(*marker);
+    // UpdateMarkerTextIfNeeded() will be called by CollectInlinesInternal().
+    marker->SetNeedsCollectInlines();
   }
 }
 

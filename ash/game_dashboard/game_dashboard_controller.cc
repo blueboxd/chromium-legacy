@@ -7,6 +7,8 @@
 #include <memory>
 #include <string>
 
+#include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/game_dashboard/game_dashboard_context.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/window_properties.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -26,6 +28,12 @@ GameDashboardController* GameDashboardController::Get() {
   return g_instance;
 }
 
+// static
+bool GameDashboardController::IsGameWindow(aura::Window* window) {
+  DCHECK(window);
+  return window->GetProperty(chromeos::kIsGameKey);
+}
+
 GameDashboardController::GameDashboardController(
     std::unique_ptr<GameDashboardDelegate> delegate)
     : delegate_(std::move(delegate)) {
@@ -33,11 +41,21 @@ GameDashboardController::GameDashboardController(
   g_instance = this;
   CHECK(aura::Env::HasInstance());
   env_observation_.Observe(aura::Env::GetInstance());
+  CaptureModeController::Get()->AddObserver(this);
 }
 
 GameDashboardController::~GameDashboardController() {
-  DCHECK_EQ(g_instance, this);
+  CHECK_EQ(g_instance, this);
   g_instance = nullptr;
+  CaptureModeController::Get()->RemoveObserver(this);
+}
+
+GameDashboardContext* GameDashboardController::GetGameDashboardContext(
+    aura::Window* window) const {
+  DCHECK(window);
+  game_window_contexts_.find(window);
+  auto it = game_window_contexts_.find(window);
+  return it != game_window_contexts_.end() ? it->second.get() : nullptr;
 }
 
 void GameDashboardController::OnWindowInitialized(aura::Window* new_window) {
@@ -58,8 +76,42 @@ void GameDashboardController::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
+void GameDashboardController::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
+  if (auto* context = GetGameDashboardContext(window)) {
+    context->OnWindowBoundsChanged();
+  }
+}
+
 void GameDashboardController::OnWindowDestroying(aura::Window* window) {
   window_observations_.RemoveObservation(window);
+  game_window_contexts_.erase(window);
+}
+
+void GameDashboardController::OnRecordingStarted(aura::Window* current_root) {
+  // Update any needed game dashboard UIs if and only if this recording started
+  // from a request by a game dashboard entry point.
+}
+
+void GameDashboardController::OnRecordingEnded() {}
+
+void GameDashboardController::OnVideoFileFinalized(
+    bool user_deleted_video_file,
+    const gfx::ImageSkia& thumbnail) {}
+
+void GameDashboardController::OnRecordedWindowChangingRoot(
+    aura::Window* new_root) {
+  // TODO(phshah): Update any game dashboard UIs that need to change as a result
+  // of the recorded window moving to a different display if and only if this
+  // recording started from a request by a game dashboard entry point. If
+  // nothing needs to change, leave empty.
+}
+
+void GameDashboardController::OnRecordingStartAborted() {
+  // Reset the Gamedashboard UI state to its initial state.
 }
 
 GameDashboardController::WindowGameState
@@ -79,7 +131,16 @@ void GameDashboardController::RefreshWindowTracking(aura::Window* window) {
   const bool should_observe = state != WindowGameState::kNotGame;
 
   if (state != WindowGameState::kNotYetKnown) {
-    window->SetProperty(chromeos::kIsGameKey, state == WindowGameState::kGame);
+    const bool is_game = state == WindowGameState::kGame;
+    DCHECK(!window->GetProperty(chromeos::kIsGameKey) || is_game)
+        << "Window property cannot change from `Game` to `Not Game`";
+    window->SetProperty(chromeos::kIsGameKey, is_game);
+    if (is_game) {
+      auto& context = game_window_contexts_[window];
+      if (!context) {
+        context = std::make_unique<GameDashboardContext>(window);
+      }
+    }
   }
 
   if (is_observing == should_observe) {

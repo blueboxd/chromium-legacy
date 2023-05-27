@@ -20,14 +20,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_profile_manager.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_change_event.h"
-#include "components/supervised_user/core/browser/kids_external_fetcher.h"
 #include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
+#include "components/supervised_user/core/browser/proto_fetcher.h"
+#include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "content/public/browser/browser_context.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -36,13 +36,13 @@
 // KidsManagementAPI.
 class KidsManagementService : public KeyedService,
                               public signin::IdentityManager::Observer,
-                              SupervisedUserService::Delegate {
+                              supervised_user::SupervisedUserService::Delegate {
  public:
   KidsManagementService() = delete;
   KidsManagementService(
       Profile* profile,
       signin::IdentityManager& identity_manager,
-      SupervisedUserService& supervised_user_service,
+      supervised_user::SupervisedUserService& supervised_user_service,
       PrefService& pref_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   KidsManagementService(const KidsManagementService&) = delete;
@@ -87,11 +87,10 @@ class KidsManagementService : public KeyedService,
   void AddChildStatusReceivedCallback(base::OnceClosure callback);
 
  private:
-  using ListFamilyMembersFetcher =
-      KidsExternalFetcher<kids_chrome_management::ListFamilyMembersRequest,
-                          kids_chrome_management::ListFamilyMembersResponse>;
+  using ListFamilyMembersFetcher = supervised_user::ProtoFetcher<
+      kids_chrome_management::ListFamilyMembersResponse>;
   void ConsumeListFamilyMembers(
-      KidsExternalFetcherStatus status,
+      supervised_user::ProtoFetcherStatus status,
       std::unique_ptr<kids_chrome_management::ListFamilyMembersResponse>
           response);
 
@@ -102,7 +101,8 @@ class KidsManagementService : public KeyedService,
   raw_ptr<Profile>
       profile_;  // TODO(b/252793687): remove direct uses of the profile.
   const raw_ref<signin::IdentityManager> identity_manager_;
-  const raw_ref<SupervisedUserService> supervised_user_service_;
+  const raw_ref<supervised_user::SupervisedUserService>
+      supervised_user_service_;
   KidsProfileManager profile_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

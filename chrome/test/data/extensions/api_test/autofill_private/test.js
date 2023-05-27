@@ -541,6 +541,22 @@ var availableTests = [
 
     chrome.autofillPrivate.isValidIban(IBAN_VALUE, handler1);
   },
+
+  function authenticateUserAndFlipMandatoryAuthToggle() {
+    chrome.autofillPrivate.authenticateUserAndFlipMandatoryAuthToggle();
+    chrome.test.assertNoLastError();
+    chrome.test.succeed();
+  },
+
+  function authenticateUserToEditLocalCard() {
+    var handler = function(auth_succeeded) {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+      chrome.test.assertTrue(auth_succeeded);
+    }
+
+    chrome.autofillPrivate.authenticateUserToEditLocalCard(handler);
+  },
 ];
 
 /** @const */
@@ -560,6 +576,9 @@ var TESTS_FOR_CONFIG = {
       ['addNewIbanNoNickname', 'updateExistingIban_WithNickname'],
   'removeExistingIban': ['addNewIbanNoNickname', 'removeExistingIban'],
   'isValidIban': ['isValidIban'],
+  'authenticateUserAndFlipMandatoryAuthToggle':
+      ['authenticateUserAndFlipMandatoryAuthToggle'],
+  'authenticateUserToEditLocalCard': ['authenticateUserToEditLocalCard'],
 };
 
 var testConfig = window.location.search.substring(1);

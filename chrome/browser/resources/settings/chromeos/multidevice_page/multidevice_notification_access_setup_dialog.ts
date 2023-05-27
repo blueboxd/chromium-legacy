@@ -15,7 +15,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import '../os_settings_icons.html.js';
-import '../../settings_shared.css.js';
+import '../settings_shared.css.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -41,7 +41,7 @@ export enum NotificationAccessSetupOperationStatus {
   NOTIFICATION_ACCESS_PROHIBITED = 6,
 }
 
-interface SettingsMultideviceNotificationAccessSetupDialogElement {
+export interface SettingsMultideviceNotificationAccessSetupDialogElement {
   $: {
     dialog: CrDialogElement,
   };
@@ -50,7 +50,7 @@ interface SettingsMultideviceNotificationAccessSetupDialogElement {
 const SettingsMultideviceNotificationAccessSetupDialogElementBase =
     WebUiListenerMixin(I18nMixin(PolymerElement));
 
-class SettingsMultideviceNotificationAccessSetupDialogElement extends
+export class SettingsMultideviceNotificationAccessSetupDialogElement extends
     SettingsMultideviceNotificationAccessSetupDialogElementBase {
   static get is() {
     return 'settings-multidevice-notification-access-setup-dialog' as const;

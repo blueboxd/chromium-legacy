@@ -12,7 +12,7 @@
 sync_bookmarks::BookmarkSyncService* BookmarkSyncServiceFactory::GetForProfile(
     Profile* profile) {
   return static_cast<sync_bookmarks::BookmarkSyncService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(profile, /*create=*/true));
 }
 
 // static
@@ -23,7 +23,12 @@ BookmarkSyncServiceFactory* BookmarkSyncServiceFactory::GetInstance() {
 BookmarkSyncServiceFactory::BookmarkSyncServiceFactory()
     : ProfileKeyedServiceFactory(
           "BookmarkSyncServiceFactory",
-          ProfileSelections::BuildRedirectedInIncognito()) {
+          ProfileSelections::Builder()
+              .WithRegular(ProfileSelection::kRedirectedToOriginal)
+              // TODO(crbug.com/1418376): Check if this service is needed in
+              // Guest mode.
+              .WithGuest(ProfileSelection::kRedirectedToOriginal)
+              .Build()) {
   DependsOn(BookmarkUndoServiceFactory::GetInstance());
 }
 
@@ -33,5 +38,6 @@ KeyedService* BookmarkSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return new sync_bookmarks::BookmarkSyncService(
-      BookmarkUndoServiceFactory::GetForProfileIfExists(profile));
+      BookmarkUndoServiceFactory::GetForProfileIfExists(profile),
+      /*wipe_model_on_stopping_sync_with_clear_data=*/false);
 }

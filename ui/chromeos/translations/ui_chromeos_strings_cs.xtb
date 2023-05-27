@@ -59,7 +59,6 @@
 <translation id="1499943022354839699">angličtina (USA) s klávesnicí Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – hostitelský server</translation>
 <translation id="1521655867290435174">Tabulky Google</translation>
-<translation id="1538729222189715449">Otevírání souborů systému Linux...</translation>
 <translation id="1547964879613821194">Kanadská anglická klávesnice</translation>
 <translation id="1556189134700913550">Použít na vše</translation>
 <translation id="1561842594491319104">Chrome</translation>
@@ -147,7 +146,6 @@
 <translation id="2208919847696382164">Instalovat aplikaci pro Linux</translation>
 <translation id="2225536596944493418">Opravdu chcete tyto položky (<ph name="NUMBER_OF_ITEMS" />) smazat?</translation>
 <translation id="2230062665678605299">Složku „<ph name="FOLDER_NAME" />“ se nepodařilo vytvořit. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="2236732657580416950">Mezipaměť Disku Google byla vymazána.</translation>
 <translation id="2239068707900391003">Člověk s kávou</translation>
 <translation id="2251368349685848079">Obnovit z koše</translation>
 <translation id="2278133026967558505">Přístup k souborům ze všech webů a adres URL</translation>
@@ -166,7 +164,6 @@
 <translation id="23721837607121582">Stáhněte si mobilní profil, síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Přepnout na zobrazení seznamu</translation>
 <translation id="2377590462528165447">Počet složek sdílených s Linuxem: <ph name="NUMBER_OF_ITEMS" /></translation>
-<translation id="2378075407703503998">Vybrané soubory: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2383454254762599978">Přesunout do koše</translation>
 <translation id="2387458720915042159">Typ připojení k proxy serveru</translation>
 <translation id="2389832672041313158">barmština/myanmarština</translation>
@@ -321,6 +318,7 @@
 <translation id="3619593063686672873">Žádná nedávná videa</translation>
 <translation id="3634507049637220048">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, spravováno administrátorem, podrobnosti</translation>
 <translation id="3645233063072417428">Přesunuté položky: <ph name="NUMBER_OF_ITEMS" />.</translation>
+<translation id="3658269352872031728">Vybrané soubory: <ph name="SELECTED_FILE_COUNT" /></translation>
 <translation id="3685122418104378273">Když používáte mobilní datové připojení, synchronizace s Diskem Google je ve výchozím nastavení vypnutá.</translation>
 <translation id="3689865792480713551">Zrušit <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3690128548376345212">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, neaktivováno, <ph name="CONNECTION_STATUS" />, síla signálu <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>
@@ -330,7 +328,6 @@
 <translation id="3727148787322499904">Změna tohoto nastavení bude mít dopad na všechny sdílené sítě</translation>
 <translation id="3737576078404241332">Odstranit z postranního panelu</translation>
 <translation id="3749289110408117711">Název souboru</translation>
-<translation id="3780536599611287598">K přesunutí souborů do složky „<ph name="FOLDER_NAME" />“ nemáte oprávnění.</translation>
 <translation id="3786301125658655746">Jste offline</translation>
 <translation id="3789841737615482174">Instalovat</translation>
 <translation id="3793469551756281394">Zbývá přibližně: <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
@@ -419,6 +416,7 @@
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
 <translation id="4465725236958772856">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, spravováno administrátorem, připojit</translation>
 <translation id="4470564870223067757">Hangul – 2 sady</translation>
+<translation id="4472575034687746823">Začít</translation>
 <translation id="4474142134969976028">Dotazu neodpovídají žádné výsledky</translation>
 <translation id="4477002475007461989">rumunština</translation>
 <translation id="4477219268485577442">Bulharská fonetická klávesnice</translation>
@@ -468,10 +466,8 @@
 <translation id="4804827417948292437">Avokádo</translation>
 <translation id="4805966553127040832">Obnovování <ph name="COUNT" /> položek…</translation>
 <translation id="4816695657735045067">{COUNT,plural, =1{K použití anonymního režimu vaše organizace vyžaduje rozšíření}few{K použití anonymního režimu vaše organizace vyžaduje určitá rozšíření}many{K použití anonymního režimu vaše organizace vyžaduje určitá rozšíření}other{K použití anonymního režimu vaše organizace vyžaduje určitá rozšíření}}</translation>
-<translation id="4823651846660089135">Zařízení je pouze pro čtení</translation>
 <translation id="4826849268470072925">tamilština ITRANS</translation>
 <translation id="482932175346970750">Do prohlížeče zadejte adresu <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" />.</translation>
-<translation id="4839847978919684242">Vybrané položky: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="485316830061041779">němčina</translation>
@@ -578,6 +574,7 @@
 <translation id="5533102081734025921">Obrázek <ph name="IMAGE_TYPE" /></translation>
 <translation id="5534520101572674276">Výpočet velikosti</translation>
 <translation id="554153475311314364">řečtina (přepis)</translation>
+<translation id="5554171655917412781">Vybrané složky: <ph name="SELECTED_FOLDERS_COUNT" /></translation>
 <translation id="5580591966435005537">virtuální počítač</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">Šířka interpunkce je Plná</translation>
@@ -600,6 +597,7 @@
 <translation id="5724172041621205163">thajština s klávesnicí Pattachote</translation>
 <translation id="57383366388012121">Minulý měsíc</translation>
 <translation id="5756666464756035725">Maďarská klávesnice QWERTY</translation>
+<translation id="5760252553414789727">Vybrané položky: <ph name="SELECTED_FILES_COUNT" /></translation>
 <translation id="5763377084591234761">němčina (Švýcarsko)</translation>
 <translation id="5769519078756170258">Hostitelský server nebo doména k vyloučení</translation>
 <translation id="5775750595919327203">urdština</translation>
@@ -617,6 +615,7 @@
 <translation id="5838451609423551646">Z výběru byly odstraněny všechny položky.</translation>
 <translation id="5838825566232597749">Americká mezinárodní klávesnice s rozložením Workman</translation>
 <translation id="5845721951356578987">Zdravotní sestra</translation>
+<translation id="5860491529813859533">Zapnout</translation>
 <translation id="5861477046012235702">Hráč</translation>
 <translation id="5864471791310927901">Vyhledávání serveru DHCP selhalo.</translation>
 <translation id="5896749729057314184">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, neaktivováno, síla signálu <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>
@@ -674,7 +673,6 @@
 <translation id="6327785803543103246">Automatické zjišťování webového proxy serveru</translation>
 <translation id="6337014272874260727">Odepnout z rychlých souborů</translation>
 <translation id="6339145975392024142">USA – mezinárodní (PC)</translation>
-<translation id="6346310558342052870">Přístup je omezen</translation>
 <translation id="6356685157277930264">Okno zpětné vazby k souborům</translation>
 <translation id="6358884629796491903">Drak</translation>
 <translation id="636254897931573416">Neplatná hodnota shody přípony domény</translation>
@@ -755,7 +753,6 @@
 <translation id="6989942356279143254">švédština</translation>
 <translation id="6990081529015358884">Došlo vám místo</translation>
 <translation id="6993826899923627728">Tyto položky jsou v koši</translation>
-<translation id="6998711733709403587">Vybrané soubory: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="7008426324576352165">K dokončení nahrávání vaše organizace potřebuje víc úložného prostoru.</translation>
 <translation id="7009985720488544166">Přesunutí souborů (<ph name="COUNT" />) je blokováno zásadami administrátora</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -919,6 +916,7 @@
 <translation id="8264024885325823677">Toto nastavení spravuje administrátor.</translation>
 <translation id="8269755669432358899">Sbalit panely zpětné vazby k souborům</translation>
 <translation id="8280151743281770066">Arménská fonetická klávesnice</translation>
+<translation id="8285791779547722821">Zašifrovaný soubor typu <ph name="ORIGINAL_MIME_TYPE" /></translation>
 <translation id="8294431847097064396">Zdroj</translation>
 <translation id="8297012244086013755">Hangul – 3 sady (bez klávesy Shift)</translation>
 <translation id="8299269255470343364">japonština</translation>

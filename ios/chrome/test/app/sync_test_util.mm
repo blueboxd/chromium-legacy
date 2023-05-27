@@ -21,12 +21,12 @@
 #import "components/metrics/demographics/demographic_metrics_test_utils.h"
 #import "components/sync/base/pref_names.h"
 #import "components/sync/base/time.h"
-#import "components/sync/driver/sync_service.h"
-#import "components/sync/driver/sync_service_impl.h"
 #import "components/sync/engine/loopback_server/loopback_server_entity.h"
 #import "components/sync/protocol/device_info_specifics.pb.h"
 #import "components/sync/protocol/session_specifics.pb.h"
 #import "components/sync/protocol/sync_enums.pb.h"
+#import "components/sync/service/sync_service.h"
+#import "components/sync/service/sync_service_impl.h"
 #import "components/sync/test/entity_builder_factory.h"
 #import "components/sync/test/fake_server.h"
 #import "components/sync/test/fake_server_network_resources.h"
@@ -187,30 +187,10 @@ void AddSessionToFakeSyncServer(
     specifics_list.push_back(tab);
     tab_list.push_back(distant_tab->tab_id);
   }
-  // Compute device type.
-  // TODO(crbug.com/1434959): This is a temporary workaround. Remove the switch
-  // statement and use `session.form_factor` after
-  // `BuildHeaderSpecificsWithoutWindows` is updated.
-  sync_pb::SyncEnums_DeviceType device_type =
-      sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_UNSET;
-  switch (session.form_factor) {
-    case syncer::DeviceInfo::FormFactor::kDesktop:
-      device_type =
-          sync_pb::SyncEnums::DeviceType::SyncEnums_DeviceType_TYPE_MAC;
-      break;
-    case syncer::DeviceInfo::FormFactor::kPhone:
-      device_type = sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
-      break;
-    case syncer::DeviceInfo::FormFactor::kTablet:
-      device_type = sync_pb::SyncEnums_DeviceType_TYPE_TABLET;
-      break;
-    case syncer::DeviceInfo::FormFactor::kUnknown:
-      break;
-  }
   // Header specifics.
   sync_pb::SessionSpecifics header =
       sync_sessions::SessionSyncTestHelper::BuildHeaderSpecificsWithoutWindows(
-          session.tag, device_type);
+          session.tag, session.form_factor);
   sync_sessions::SessionSyncTestHelper::AddWindowSpecifics(window_id, tab_list,
                                                            &header);
   specifics_list.push_back(header);

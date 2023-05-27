@@ -38,10 +38,16 @@ namespace {
 // Tests popups with multi-screen features from the Window Management API.
 // Tests are run with and without the requisite Window Management permission.
 // Tests must run in series to manage virtual displays on supported platforms.
-class PopupMultiScreenTest : public PopupTestBase,
-                             public ::testing::WithParamInterface<bool> {
+// Use 2+ physical displays to run locally with --gtest_also_run_disabled_tests.
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC)
+#define MAYBE_PopupMultiScreenTest PopupMultiScreenTest
+#else
+#define MAYBE_PopupMultiScreenTest DISABLED_PopupMultiScreenTest
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC)
+class MAYBE_PopupMultiScreenTest : public PopupTestBase,
+                                   public ::testing::WithParamInterface<bool> {
  public:
-  PopupMultiScreenTest() {
+  MAYBE_PopupMultiScreenTest() {
     scoped_feature_list_.InitWithFeatures(
         {blink::features::kFullscreenPopupWindows}, {});
   }
@@ -83,7 +89,7 @@ class PopupMultiScreenTest : public PopupTestBase,
     }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
-        .UpdateDisplay("100+100-801x802,901+100-802x802");
+        .UpdateDisplay("100+100-801x802,901+100-802x803");
     return true;
 #elif BUILDFLAG(IS_MAC)
     if (display::test::VirtualDisplayMacUtil::IsAPIAvailable()) {
@@ -107,10 +113,10 @@ class PopupMultiScreenTest : public PopupTestBase,
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(, PopupMultiScreenTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, MAYBE_PopupMultiScreenTest, ::testing::Bool());
 
 // Tests opening a popup on another screen.
-IN_PROC_BROWSER_TEST_P(PopupMultiScreenTest, OpenOnAnotherScreen) {
+IN_PROC_BROWSER_TEST_P(MAYBE_PopupMultiScreenTest, OpenOnAnotherScreen) {
   // Copy the display vector so references are not invalidated while looping.
   std::vector<display::Display> displays =
       display::Screen::GetScreen()->GetAllDisplays();
@@ -120,7 +126,7 @@ IN_PROC_BROWSER_TEST_P(PopupMultiScreenTest, OpenOnAnotherScreen) {
     for (const display::Display& target_display : displays) {
       for (const char* url : {".", "about:blank"}) {
         const std::string open_script = content::JsReplace(
-            "open('$1', '', 'left=$2,top=$3,width=200,height=200')", url,
+            "open($1, '', 'left=$2,top=$3,width=200,height=200')", url,
             target_display.work_area().x(), target_display.work_area().y());
         Browser* popup = OpenPopup(browser(), open_script);
         display::Display popup_display = GetDisplayNearestBrowser(popup);
@@ -143,8 +149,16 @@ IN_PROC_BROWSER_TEST_P(PopupMultiScreenTest, OpenOnAnotherScreen) {
   }
 }
 
+#if BUILDFLAG(IS_CHROMEOS) && defined(ADDRESS_SANITIZER) && \
+    defined(LEAK_SANITIZER)
+#define MAYBE_MoveToAnotherScreen DISABLED_MoveToAnotherScreen
+#else
+#define MAYBE_MoveToAnotherScreen MoveToAnotherScreen
+#endif
+
 // Tests opening a popup on the same screen, then moving it to another screen.
-IN_PROC_BROWSER_TEST_P(PopupMultiScreenTest, MoveToAnotherScreen) {
+// TODO(crbug.com/1444721): Re-enable this test
+IN_PROC_BROWSER_TEST_P(MAYBE_PopupMultiScreenTest, MAYBE_MoveToAnotherScreen) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   // Copy the display vector so references are not invalidated while looping.
@@ -190,7 +204,7 @@ IN_PROC_BROWSER_TEST_P(PopupMultiScreenTest, MoveToAnotherScreen) {
 }
 
 // Tests opening a popup on another screen from a cross-origin iframe.
-IN_PROC_BROWSER_TEST_P(PopupMultiScreenTest, CrossOriginIFrame) {
+IN_PROC_BROWSER_TEST_P(MAYBE_PopupMultiScreenTest, CrossOriginIFrame) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
   https_server.AddDefaultHandlers(GetChromeTestDataDir());
@@ -256,7 +270,7 @@ IN_PROC_BROWSER_TEST_P(PopupMultiScreenTest, CrossOriginIFrame) {
 }
 
 // Tests opening a fullscreen popup on another display, when permitted.
-IN_PROC_BROWSER_TEST_P(PopupMultiScreenTest, FullscreenDifferentScreen) {
+IN_PROC_BROWSER_TEST_P(MAYBE_PopupMultiScreenTest, FullscreenDifferentScreen) {
   // Falls back to opening a popup on the current screen in testing scenarios
   // where window management is not granted in SetUpWindowManagement().
   Browser* popup = OpenPopup(browser(), R"JS(

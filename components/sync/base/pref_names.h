@@ -10,8 +10,23 @@
 
 namespace syncer::prefs {
 
+// Enabled the local sync backend implemented by the LoopbackServer.
+inline constexpr char kEnableLocalSyncBackend[] =
+    "sync.enable_local_sync_backend";
+
+// Specifies the local sync backend directory. The name is chosen to mimic
+// user-data-dir etc. This flag only matters if the enable-local-sync-backend
+// flag is present.
+inline constexpr char kLocalSyncBackendDir[] = "sync.local_sync_backend_dir";
+
+// NOTE: All the "internal" prefs should not be used directly by non-sync code,
+// but should rather always be accessed via SyncUserSettings.
+// TODO(crbug.com/1435427): Clean up/replace any existing references to these
+// prefs from outside components/sync/.
+namespace internal {
 // Boolean specifying whether the user finished setting up sync at least once.
-inline constexpr char kSyncFirstSetupComplete[] = "sync.has_setup_completed";
+inline constexpr char kSyncInitialSyncFeatureSetupComplete[] =
+    "sync.has_setup_completed";
 
 // Boolean specifying whether to automatically sync all data types (including
 // future ones, as they're added).  If this is true, the following preferences
@@ -70,9 +85,10 @@ inline constexpr char kSyncManaged[] = "sync.managed";
 
 // Boolean whether has requested sync to be enabled. This is set early in the
 // sync setup flow, after the user has pressed "turn on sync" but before they
-// have accepted the confirmation dialog (that maps to kSyncFirstSetupComplete).
-// This is also set to false when sync is disabled by the user in sync settings,
-// or when sync was reset from the dashboard.
+// have accepted the confirmation dialog (that maps to
+// kSyncInitialSyncFeatureSetupComplete). This is also set to false when sync is
+// disabled by the user in sync settings, or when sync was reset from the
+// dashboard.
 inline constexpr char kSyncRequested[] = "sync.requested";
 
 // A string that can be used to restore sync encryption infrastructure on
@@ -86,15 +102,7 @@ inline constexpr char kSyncEncryptionBootstrapToken[] =
 inline constexpr char kSyncPassphrasePromptMutedProductVersion[] =
     "sync.passphrase_prompt_muted_product_version";
 
-// Enabled the local sync backend implemented by the LoopbackServer.
-inline constexpr char kEnableLocalSyncBackend[] =
-    "sync.enable_local_sync_backend";
-
-// Specifies the local sync backend directory. The name is chosen to mimic
-// user-data-dir etc. This flag only matters if the enable-local-sync-backend
-// flag is present.
-inline constexpr char kLocalSyncBackendDir[] = "sync.local_sync_backend_dir";
-
+}  // namespace internal
 }  // namespace syncer::prefs
 
 #endif  // COMPONENTS_SYNC_BASE_PREF_NAMES_H_

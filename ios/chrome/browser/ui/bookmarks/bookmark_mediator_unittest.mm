@@ -10,7 +10,7 @@
 #import "base/test/scoped_feature_list.h"
 #import "components/bookmarks/common/storage_type.h"
 #import "components/sync/base/user_selectable_type.h"
-#import "components/sync/driver/sync_service.h"
+#import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/bookmarks/bookmark_ios_unit_test_support.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -81,7 +81,7 @@ class BookmarkMediatorUnitTest
     sync_setup_service_ = std::make_unique<FakeSyncSetupService>(sync_service_);
 
     mediator_ = [[BookmarkMediator alloc]
-        initWithWithProfileBookmarkModel:profile_bookmark_model_
+        initWithWithProfileBookmarkModel:local_or_syncable_bookmark_model_
                     accountBookmarkModel:nullptr
                                    prefs:chrome_browser_state_->GetPrefs()
                    authenticationService:authentication_service_

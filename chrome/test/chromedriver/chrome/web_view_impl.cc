@@ -31,6 +31,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 #include "chrome/test/chromedriver/chrome/download_directory_override_manager.h"
+#include "chrome/test/chromedriver/chrome/fedcm_tracker.h"
 #include "chrome/test/chromedriver/chrome/frame_tracker.h"
 #include "chrome/test/chromedriver/chrome/geolocation_override_manager.h"
 #include "chrome/test/chromedriver/chrome/heap_snapshot_taker.h"
@@ -324,8 +325,8 @@ WebViewImpl::WebViewImpl(const std::string& id,
       is_detached_(false),
       parent_(parent),
       client_(std::move(client)),
-      frame_tracker_(new FrameTracker(client_.get(), this, browser_info)),
-      dialog_manager_(new JavaScriptDialogManager(client_.get(), browser_info)),
+      frame_tracker_(new FrameTracker(client_.get(), this)),
+      dialog_manager_(new JavaScriptDialogManager(client_.get())),
       mobile_emulation_override_manager_(
           new MobileEmulationOverrideManager(client_.get(),
                                              std::move(mobile_device),
@@ -347,9 +348,9 @@ WebViewImpl::WebViewImpl(const std::string& id,
   // all related calls to their parent. All WebViews must have either parent_
   // or navigation_tracker_
   if (!parent_) {
-    navigation_tracker_ = std::unique_ptr<PageLoadStrategy>(
-        PageLoadStrategy::Create(page_load_strategy, client_.get(), this,
-                                 browser_info, dialog_manager_.get()));
+    navigation_tracker_ =
+        std::unique_ptr<PageLoadStrategy>(PageLoadStrategy::Create(
+            page_load_strategy, client_.get(), this, dialog_manager_.get()));
   }
   client_->SetOwner(this);
 }
@@ -839,15 +840,6 @@ Status WebViewImpl::CallFunction(const std::string& frame,
                                  result);
 }
 
-Status WebViewImpl::CallAsyncFunction(const std::string& frame,
-                                      const std::string& function,
-                                      const base::Value::List& args,
-                                      const base::TimeDelta& timeout,
-                                      std::unique_ptr<base::Value>* result) {
-  return CallAsyncFunctionInternal(
-      frame, function, args, false, timeout, result);
-}
-
 Status WebViewImpl::CallUserSyncScript(const std::string& frame,
                                        const std::string& script,
                                        const base::Value::List& args,
@@ -878,8 +870,7 @@ Status WebViewImpl::CallUserAsyncFunction(
     const base::Value::List& args,
     const base::TimeDelta& timeout,
     std::unique_ptr<base::Value>* result) {
-  return CallAsyncFunctionInternal(
-      frame, function, args, true, timeout, result);
+  return CallAsyncFunctionInternal(frame, function, args, timeout, result);
 }
 
 // TODO (crbug.com/chromedriver/4364): Simplify this function
@@ -1572,13 +1563,12 @@ Status WebViewImpl::CallAsyncFunctionInternal(
     const std::string& frame,
     const std::string& function,
     const base::Value::List& args,
-    bool is_user_supplied,
     const base::TimeDelta& timeout,
     std::unique_ptr<base::Value>* result) {
   base::Value::List async_args;
   async_args.Append("return (" + function + ").apply(null, arguments);");
   async_args.Append(args.Clone());
-  async_args.Append(is_user_supplied);
+  async_args.Append(/*is_user_supplied=*/true);
   std::unique_ptr<base::Value> tmp;
   Timeout local_timeout(timeout);
   Status status = CallFunctionWithTimeout(frame, kExecuteAsyncScriptScript,
@@ -1673,6 +1663,19 @@ bool WebViewImpl::IsNonBlocking() const {
   if (navigation_tracker_)
     return navigation_tracker_->IsNonBlocking();
   return parent_->IsNonBlocking();
+}
+
+Status WebViewImpl::GetFedCmTracker(FedCmTracker** out_tracker) {
+  if (!fedcm_tracker_) {
+    fedcm_tracker_ = std::make_unique<FedCmTracker>(client_.get());
+    Status status = fedcm_tracker_->Enable(client_.get());
+    if (!status.IsOk()) {
+      fedcm_tracker_.reset();
+      return status;
+    }
+  }
+  *out_tracker = fedcm_tracker_.get();
+  return Status(kOk);
 }
 
 FrameTracker* WebViewImpl::GetFrameTracker() const {

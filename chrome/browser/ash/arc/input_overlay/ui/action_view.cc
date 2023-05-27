@@ -11,6 +11,8 @@
 #include "base/strings/string_piece.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
+#include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
+#include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "chrome/grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -205,11 +207,15 @@ void ActionView::ApplyMouseDragged(const ui::MouseEvent& event) {
 }
 
 void ActionView::ApplyMouseReleased(const ui::MouseEvent& event) {
-  reposition_controller_->OnMouseReleased(event);
+  if (!reposition_controller_->OnMouseReleased(event)) {
+    ShowButtonOptionsMenu();
+  }
 }
 
 void ActionView::ApplyGestureEvent(ui::GestureEvent* event) {
-  reposition_controller_->OnGestureEvent(event);
+  if (!reposition_controller_->OnGestureEvent(event)) {
+    ShowButtonOptionsMenu();
+  }
 }
 
 bool ActionView::ApplyKeyPressed(const ui::KeyEvent& event) {
@@ -257,6 +263,11 @@ void ActionView::SetTouchPointCenter(const gfx::Point& touch_point_center) {
   if (touch_point_) {
     touch_point_->OnCenterPositionChanged(*touch_point_center_);
   }
+}
+
+void ActionView::ShowButtonOptionsMenu() {
+  DCHECK(display_overlay_controller_);
+  display_overlay_controller_->AddButtonOptionsMenu(action_);
 }
 
 void ActionView::AddEditButton() {

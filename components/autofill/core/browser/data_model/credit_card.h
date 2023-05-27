@@ -124,6 +124,9 @@ class CreditCard : public AutofillDataModel {
   CreditCard& operator=(CreditCard&& credit_card);
   ~CreditCard() override;
 
+  std::string origin() const { return origin_; }
+  void set_origin(const std::string& origin) { origin_ = origin; }
+
   // Returns a version of |number| that has any separator characters removed.
   static const std::u16string StripSeparators(const std::u16string& number);
 
@@ -226,9 +229,10 @@ class CreditCard : public AutofillDataModel {
   // card.
   [[nodiscard]] int Compare(const CreditCard& credit_card) const;
 
-  // Determines if |this| is a local version of the server card |other|.
-  [[nodiscard]] bool IsLocalDuplicateOfServerCard(
-      const CreditCard& other) const;
+  // Determines if `this` and `other` are likely duplicates of each other (name,
+  // expiration date, cc number, billing address match each other if they are
+  // defined) but one card is a local card and the other is a server card.
+  [[nodiscard]] bool IsLocalOrServerDuplicateOf(const CreditCard& other) const;
 
   // Determines if `this` is the matching card as `other` (same card number and
   // expiration date). If either is a masked server card, compares their last
@@ -242,10 +246,17 @@ class CreditCard : public AutofillDataModel {
   //    number as `this`.
   [[nodiscard]] bool HasSameNumberAs(const CreditCard& other) const;
 
+  // Returns true if expiration date for `this` card is the same as `other`.
+  [[nodiscard]] bool HasSameExpirationDateAs(const CreditCard& other) const;
+
   // Equality operators compare GUIDs, origins, and the contents.
   // Usage metadata (use count, use date, modification date) are NOT compared.
   bool operator==(const CreditCard& credit_card) const;
   bool operator!=(const CreditCard& credit_card) const;
+
+  // Returns true if the data in this model was entered directly by the user,
+  // rather than automatically aggregated.
+  bool IsVerified() const;
 
   // How this card is stored.
   RecordType record_type() const { return record_type_; }
@@ -447,6 +458,14 @@ class CreditCard : public AutofillDataModel {
 
   // Sets the name_on_card_ value based on the saved name parts.
   void SetNameOnCardFromSeparateParts();
+
+  // The origin of this data.  This should be
+  //   (a) a web URL for the domain of the form from which the data was
+  //       automatically aggregated, e.g. https://www.example.com/register,
+  //   (b) some other non-empty string, which cannot be interpreted as a web
+  //       URL, identifying the origin for non-aggregated data, or
+  //   (c) an empty string, indicating that the origin for this data is unknown.
+  std::string origin_;
 
   // See enum definition above.
   RecordType record_type_;

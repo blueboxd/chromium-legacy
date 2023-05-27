@@ -79,7 +79,7 @@ bool WaitForUpdaterExit(UpdaterScope scope) {
           },
           scope),
       base::BindLambdaForTesting(
-          []() { VLOG(0) << "Still waiting for updater to exit..."; }));
+          [] { VLOG(0) << "Still waiting for updater to exit..."; }));
 }
 
 void Uninstall(UpdaterScope scope) {
@@ -231,6 +231,11 @@ void RunOfflineInstall(UpdaterScope scope,
                        bool is_legacy_install,
                        bool is_silent_install) {
   // TODO(crbug.com/1286574).
+}
+
+base::CommandLine MakeElevated(base::CommandLine command_line) {
+  command_line.PrependWrapper("/usr/bin/sudo");
+  return command_line;
 }
 
 }  // namespace updater::test

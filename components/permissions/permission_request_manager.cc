@@ -17,13 +17,16 @@
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
+#include "components/permissions/constants.h"
 #include "components/permissions/features.h"
 #include "components/permissions/origin_keyed_permission_action_service.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_prompt.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
 #include "components/permissions/request_type.h"
@@ -37,6 +40,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/window_open_disposition_utils.h"
+#include "ui/events/event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -542,6 +547,10 @@ GURL PermissionRequestManager::GetRequestingOrigin() const {
 }
 
 GURL PermissionRequestManager::GetEmbeddingOrigin() const {
+  if (embedding_origin_for_testing_.has_value()) {
+    return embedding_origin_for_testing_.value();
+  }
+
   return PermissionUtil::GetLastCommittedOriginAsURL(
       web_contents()->GetPrimaryMainFrame());
 }
@@ -558,6 +567,17 @@ void PermissionRequestManager::Accept() {
                                 PermissionAction::GRANTED);
     PermissionGrantedIncludingDuplicates(*requests_iter,
                                          /*is_one_time=*/false);
+
+#if !BUILDFLAG(IS_ANDROID)
+    absl::optional<ContentSettingsType> content_settings_type =
+        RequestTypeToContentSettingsType((*requests_iter)->request_type());
+    if (content_settings_type.has_value()) {
+      PermissionUmaUtil::RecordPermissionRegrantForUnusedSites(
+          (*requests_iter)->requesting_origin(), content_settings_type.value(),
+          PermissionSourceUI::PROMPT, web_contents()->GetBrowserContext(),
+          base::Time::Now());
+    }
+#endif
   }
 
   NotifyRequestDecided(PermissionAction::GRANTED);
@@ -644,6 +664,21 @@ void PermissionRequestManager::Ignore() {
 
   NotifyRequestDecided(PermissionAction::IGNORED);
   FinalizeCurrentRequests(PermissionAction::IGNORED);
+}
+
+void PermissionRequestManager::OpenHelpCenterLink(const ui::Event& event) {
+  CHECK_GT(requests_.size(), 0u);
+  switch (requests_[0]->request_type()) {
+    case permissions::RequestType::kStorageAccess:
+      GetAssociatedWebContents()->OpenURL(content::OpenURLParams(
+          GURL(permissions::kEmbeddedContentHelpCenterURL), content::Referrer(),
+          ui::DispositionFromEventFlags(
+              event.flags(), WindowOpenDisposition::NEW_FOREGROUND_TAB),
+          ui::PAGE_TRANSITION_LINK, /*is_renderer_initiated=*/false));
+      break;
+    default:
+      NOTREACHED_NORETURN();
+  }
 }
 
 void PermissionRequestManager::PreIgnoreQuietPrompt() {

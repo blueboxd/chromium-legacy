@@ -45,10 +45,6 @@ bool WebClient::IsAppSpecificURL(const GURL& url) const {
   return false;
 }
 
-std::u16string WebClient::GetPluginNotSupportedText() const {
-  return std::u16string();
-}
-
 std::string WebClient::GetUserAgent(UserAgentType type) const {
   return std::string();
 }
@@ -106,8 +102,8 @@ bool WebClient::EnableWebInspector(BrowserState* browser_state) const {
   return false;
 }
 
-bool WebClient::RestoreSessionFromCache(web::WebState* web_state) const {
-  return false;
+NSData* WebClient::FetchSessionFromCache(web::WebState* web_state) const {
+  return nil;
 }
 
 void WebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {}

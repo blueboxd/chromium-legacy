@@ -152,16 +152,8 @@ GURL ToGURL(const base::FilePath& root, const std::string& path) {
                             abs_path}));
 }
 
-absl::optional<ino64_t> GetInodeValue(const base::FilePath& path) {
-  struct stat file_stats;
-  if (stat(path.value().c_str(), &file_stats) != 0) {
-    return absl::nullopt;
-  }
-  return file_stats.st_ino;
-}
-
 struct FilesTransferInfo {
-  FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction files_action,
+  FilesTransferInfo(policy::dlp::FileAction files_action,
                     std::vector<ino_t> file_inodes,
                     std::vector<std::string> file_sources,
                     std::vector<std::string> file_paths)
@@ -170,7 +162,7 @@ struct FilesTransferInfo {
         file_sources(file_sources),
         file_paths(file_paths) {}
 
-  policy::DlpFilesControllerAsh::FileAction files_action;
+  policy::dlp::FileAction files_action;
   std::vector<ino_t> file_inodes;
   std::vector<std::string> file_sources;
   std::vector<std::string> file_paths;
@@ -911,7 +903,7 @@ TEST_F(DlpFilesControllerAshTest, GetDlpMetadata_WithComponent) {
       future;
   ASSERT_TRUE(files_controller_);
   files_controller_->GetDlpMetadata(
-      files_to_check, DlpFileDestination(DlpRulesManager::Component::kUsb),
+      files_to_check, DlpFileDestination(data_controls::Component::kUsb),
       future.GetCallback());
   EXPECT_TRUE(future.Wait());
   EXPECT_EQ(dlp_metadata, future.Take());
@@ -994,9 +986,11 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Mixed) {
 
   DlpRulesManager::AggregatedComponents components;
   components[DlpRulesManager::Level::kBlock].insert(
-      DlpRulesManager::Component::kUsb);
+      data_controls::Component::kUsb);
   components[DlpRulesManager::Level::kWarn].insert(
-      DlpRulesManager::Component::kDrive);
+      data_controls::Component::kDrive);
+  components[DlpRulesManager::Level::kReport].insert(
+      data_controls::Component::kOneDrive);
 
   EXPECT_CALL(*rules_manager_, GetAggregatedDestinations)
       .WillOnce(testing::Return(destinations));
@@ -1006,12 +1000,12 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Mixed) {
   ASSERT_TRUE(files_controller_);
   auto result = files_controller_->GetDlpRestrictionDetails(kExampleUrl1);
 
-  ASSERT_EQ(result.size(), 3u);
+  ASSERT_EQ(result.size(), 4u);
   std::vector<std::string> expected_urls;
-  std::vector<DlpRulesManager::Component> expected_components;
+  std::vector<data_controls::Component> expected_components;
   // Block:
   expected_urls.push_back(kExampleUrl2);
-  expected_components.push_back(DlpRulesManager::Component::kUsb);
+  expected_components.push_back(data_controls::Component::kUsb);
   EXPECT_EQ(result[0].level, DlpRulesManager::Level::kBlock);
   EXPECT_EQ(result[0].urls, expected_urls);
   EXPECT_EQ(result[0].components, expected_components);
@@ -1022,20 +1016,27 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Mixed) {
   EXPECT_EQ(result[1].level, DlpRulesManager::Level::kAllow);
   EXPECT_EQ(result[1].urls, expected_urls);
   EXPECT_EQ(result[1].components, expected_components);
+  // Report:
+  expected_urls.clear();
+  expected_components.clear();
+  expected_components.push_back(data_controls::Component::kOneDrive);
+  EXPECT_EQ(result[2].level, DlpRulesManager::Level::kReport);
+  EXPECT_EQ(result[2].urls, expected_urls);
+  EXPECT_EQ(result[2].components, expected_components);
   // Warn:
   expected_urls.clear();
   expected_components.clear();
-  expected_components.push_back(DlpRulesManager::Component::kDrive);
-  EXPECT_EQ(result[2].level, DlpRulesManager::Level::kWarn);
-  EXPECT_EQ(result[2].urls, expected_urls);
-  EXPECT_EQ(result[2].components, expected_components);
+  expected_components.push_back(data_controls::Component::kDrive);
+  EXPECT_EQ(result[3].level, DlpRulesManager::Level::kWarn);
+  EXPECT_EQ(result[3].urls, expected_urls);
+  EXPECT_EQ(result[3].components, expected_components);
 }
 
 TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Components) {
   DlpRulesManager::AggregatedDestinations destinations;
   DlpRulesManager::AggregatedComponents components;
   components[DlpRulesManager::Level::kBlock].insert(
-      DlpRulesManager::Component::kUsb);
+      data_controls::Component::kUsb);
 
   EXPECT_CALL(*rules_manager_, GetAggregatedDestinations)
       .WillOnce(testing::Return(destinations));
@@ -1046,8 +1047,8 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Components) {
   auto result = files_controller_->GetDlpRestrictionDetails(kExampleUrl1);
   ASSERT_EQ(result.size(), 1u);
   std::vector<std::string> expected_urls;
-  std::vector<DlpRulesManager::Component> expected_components;
-  expected_components.push_back(DlpRulesManager::Component::kUsb);
+  std::vector<data_controls::Component> expected_components;
+  expected_components.push_back(data_controls::Component::kUsb);
   EXPECT_EQ(result[0].level, DlpRulesManager::Level::kBlock);
   EXPECT_EQ(result[0].urls, expected_urls);
   EXPECT_EQ(result[0].components, expected_components);
@@ -1056,13 +1057,13 @@ TEST_F(DlpFilesControllerAshTest, GetDlpRestrictionDetails_Components) {
 TEST_F(DlpFilesControllerAshTest, GetBlockedComponents) {
   DlpRulesManager::AggregatedComponents components;
   components[DlpRulesManager::Level::kBlock].insert(
-      DlpRulesManager::Component::kArc);
+      data_controls::Component::kArc);
   components[DlpRulesManager::Level::kBlock].insert(
-      DlpRulesManager::Component::kCrostini);
+      data_controls::Component::kCrostini);
   components[DlpRulesManager::Level::kWarn].insert(
-      DlpRulesManager::Component::kUsb);
+      data_controls::Component::kUsb);
   components[DlpRulesManager::Level::kReport].insert(
-      DlpRulesManager::Component::kDrive);
+      data_controls::Component::kDrive);
 
   EXPECT_CALL(*rules_manager_, GetAggregatedComponents)
       .WillOnce(testing::Return(components));
@@ -1070,9 +1071,9 @@ TEST_F(DlpFilesControllerAshTest, GetBlockedComponents) {
   ASSERT_TRUE(files_controller_);
   auto result = files_controller_->GetBlockedComponents(kExampleUrl1);
   ASSERT_EQ(result.size(), 2u);
-  std::vector<DlpRulesManager::Component> expected_components;
-  expected_components.push_back(DlpRulesManager::Component::kArc);
-  expected_components.push_back(DlpRulesManager::Component::kCrostini);
+  std::vector<data_controls::Component> expected_components;
+  expected_components.push_back(data_controls::Component::kArc);
+  expected_components.push_back(data_controls::Component::kCrostini);
   EXPECT_EQ(result, expected_components);
 }
 
@@ -1156,7 +1157,7 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsDlpPolicyMatched) {
             src_pattern, rule_name, rule_id,
             DlpRulesManager::Restriction::kFiles, level);
         event_builder->SetDestinationComponent(
-            DlpRulesManager::Component::kUnknownComponent);
+            data_controls::Component::kUnknownComponent);
         event_builder->SetContentName(filename);
         return event_builder->Create();
       };
@@ -1205,18 +1206,16 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsDlpPolicyMatched) {
   EXPECT_THAT(
       histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
                                      std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(
-          base::Bucket(DlpFilesControllerAsh::FileAction::kUnknown, 3),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kDownload, 0),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kTransfer, 0)));
+      base::BucketsAre(base::Bucket(dlp::FileAction::kUnknown, 3),
+                       base::Bucket(dlp::FileAction::kDownload, 0),
+                       base::Bucket(dlp::FileAction::kTransfer, 0)));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
                                      std::string(dlp::kFileActionWarnedUMA)),
-      base::BucketsAre(
-          base::Bucket(DlpFilesControllerAsh::FileAction::kUnknown, 3),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kDownload, 0),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kTransfer, 0)));
+      base::BucketsAre(base::Bucket(dlp::FileAction::kUnknown, 3),
+                       base::Bucket(dlp::FileAction::kDownload, 0),
+                       base::Bucket(dlp::FileAction::kTransfer, 0)));
 }
 
 TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
@@ -1262,9 +1261,8 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
                          testing::SetArgPointee<5>(kRuleMetadata2),
                          testing::Return(DlpRulesManager::Level::kAllow)));
 
-  EXPECT_CALL(
-      *rules_manager_,
-      IsRestrictedComponent(_, DlpRulesManager::Component::kUsb, _, _, _))
+  EXPECT_CALL(*rules_manager_,
+              IsRestrictedComponent(_, data_controls::Component::kUsb, _, _, _))
       .WillOnce(
           testing::DoAll(testing::SetArgPointee<3>(kExampleSourcePattern1),
                          testing::SetArgPointee<4>(kRuleMetadata1),
@@ -1325,7 +1323,7 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
   event_builder->SetDestinationPattern(dst_pattern);
   const auto event1 = event_builder->Create();
 
-  event_builder->SetDestinationComponent(DlpRulesManager::Component::kUsb);
+  event_builder->SetDestinationComponent(data_controls::Component::kUsb);
   const auto event2 = event_builder->Create();
 
   base::TimeDelta cooldown_time =
@@ -1338,12 +1336,12 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnIsFilesTransferRestricted) {
     // Report `event1` after this call if `delay` is at least `cooldown_time`.
     files_controller_->IsFilesTransferRestricted(
         transferred_files, DlpFileDestination(dst_url),
-        DlpFilesControllerAsh::FileAction::kTransfer, cb.Get());
+        dlp::FileAction::kTransfer, cb.Get());
 
     // Report `event2` after this call if `delay` is at least `cooldown_time`.
     files_controller_->IsFilesTransferRestricted(
         transferred_files, DlpFileDestination(dst_path.path().value()),
-        DlpFilesControllerAsh::FileAction::kTransfer, cb.Get());
+        dlp::FileAction::kTransfer, cb.Get());
 
     task_runner_->FastForwardBy(delay);
   }
@@ -1405,7 +1403,7 @@ TEST_F(DlpFilesControllerAshTest, CheckReportingOnMixedCalls) {
   // Report a single `event` after this call
   files_controller_->IsFilesTransferRestricted(
       transferred_files, DlpFileDestination(dst_url),
-      DlpFilesControllerAsh::FileAction::kTransfer, cb.Get());
+      dlp::FileAction::kTransfer, cb.Get());
 
   // Do not report after these calls
   ASSERT_TRUE(files_controller_->IsDlpPolicyMatched(file1));
@@ -1512,203 +1510,6 @@ TEST_F(DlpFilesControllerAshTest, CheckIfDropAllowed) {
   EXPECT_EQ(::dlp::FileAction::MOVE, request.file_action());
 }
 
-TEST_F(DlpFilesControllerAshTest, LocalFileCopyTest) {
-  base::FilePath src_file = my_files_dir_.Append(FILE_PATH_LITERAL("test"));
-  base::File(src_file, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE)
-      .Flush();
-
-  base::FilePath dest_file = my_files_dir_.Append(FILE_PATH_LITERAL("dest"));
-
-  auto source = storage::FileSystemURL::CreateForTest(
-      kTestStorageKey, storage::kFileSystemTypeLocal, src_file);
-
-  auto destination = storage::FileSystemURL::CreateForTest(
-      kTestStorageKey, storage::kFileSystemTypeLocal, dest_file);
-
-  base::MockRepeatingCallback<void(
-      const ::dlp::GetFilesSourcesRequest,
-      chromeos::DlpClient::GetFilesSourcesCallback)>
-      get_files_source_call;
-
-  EXPECT_CALL(*rules_manager_, IsRestrictedByAnyRule)
-      .WillOnce(
-          testing::internal::ReturnAction(DlpRulesManager::Level::kAllow));
-
-  absl::optional<ino64_t> inode = GetInodeValue(src_file);
-  EXPECT_TRUE(inode.has_value());
-  ::dlp::GetFilesSourcesResponse response;
-  auto* metadata = response.add_files_metadata();
-  metadata->set_source_url("http://some.url/path");
-  metadata->set_inode(inode.value());
-
-  ::dlp::GetFilesSourcesRequest request;
-  request.add_files_inodes(inode.value());
-
-  EXPECT_CALL(get_files_source_call,
-              Run(EqualsProto(request), base::test::IsNotNullCallback()))
-      .WillOnce(base::test::RunOnceCallback<1>(response));
-
-  chromeos::DlpClient::Get()->GetTestInterface()->SetGetFilesSourceMock(
-      get_files_source_call.Get());
-
-  base::MockRepeatingCallback<void(
-      ::dlp::RequestFileAccessRequest,
-      chromeos::DlpClient::RequestFileAccessCallback)>
-      request_file_access_call;
-
-  ::dlp::RequestFileAccessResponse access_response;
-  access_response.set_allowed(true);
-  EXPECT_CALL(request_file_access_call,
-              Run(testing::Property(
-                      &::dlp::RequestFileAccessRequest::destination_component,
-                      ::dlp::DlpComponent::SYSTEM),
-                  base::test::IsNotNullCallback()))
-      .WillOnce(
-          base::test::RunOnceCallback<1>(access_response, base::ScopedFD()));
-  chromeos::DlpClient::Get()->GetTestInterface()->SetRequestFileAccessMock(
-      request_file_access_call.Get());
-
-  base::test::TestFuture<std::unique_ptr<file_access::ScopedFileAccess>>
-      file_access_future;
-  ASSERT_TRUE(files_controller_);
-  files_controller_->RequestCopyAccess(source, destination,
-                                       file_access_future.GetCallback());
-  std::unique_ptr<file_access::ScopedFileAccess> file_access =
-      file_access_future.Take();
-  EXPECT_TRUE(file_access->is_allowed());
-
-  base::RunLoop run_loop;
-  base::MockRepeatingCallback<void(
-      const ::dlp::AddFileRequest request,
-      chromeos::DlpClient::AddFileCallback callback)>
-      add_file_call;
-  EXPECT_CALL(add_file_call,
-              Run(testing::Property(&::dlp::AddFileRequest::file_path,
-                                    destination.path().value()),
-                  base::test::IsNotNullCallback()))
-      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  chromeos::DlpClient::Get()->GetTestInterface()->SetAddFileMock(
-      add_file_call.Get());
-  file_access.reset();
-  run_loop.Run();
-}
-
-TEST_F(DlpFilesControllerAshTest, CopyNoMetadataTest) {
-  base::FilePath src_file = my_files_dir_.Append(FILE_PATH_LITERAL("test"));
-  base::File(src_file, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE)
-      .Flush();
-
-  base::FilePath dest_file = my_files_dir_.Append(FILE_PATH_LITERAL("dest"));
-
-  auto source = storage::FileSystemURL::CreateForTest(
-      kTestStorageKey, storage::kFileSystemTypeLocal, src_file);
-
-  auto destination = storage::FileSystemURL::CreateForTest(
-      kTestStorageKey, storage::kFileSystemTypeLocal, dest_file);
-
-  base::MockRepeatingCallback<void(
-      const ::dlp::GetFilesSourcesRequest,
-      chromeos::DlpClient::GetFilesSourcesCallback)>
-      get_files_source_call;
-
-  EXPECT_CALL(*rules_manager_, IsRestrictedByAnyRule).Times(0);
-
-  EXPECT_CALL(get_files_source_call, Run(_, base::test::IsNotNullCallback()))
-      .WillOnce(
-          base::test::RunOnceCallback<1>(::dlp::GetFilesSourcesResponse()));
-  chromeos::DlpClient::Get()->GetTestInterface()->SetGetFilesSourceMock(
-      get_files_source_call.Get());
-
-  base::MockRepeatingCallback<void(
-      ::dlp::RequestFileAccessRequest request,
-      chromeos::DlpClient::RequestFileAccessCallback callback)>
-      request_file_access_call;
-
-  EXPECT_CALL(request_file_access_call, Run).Times(0);
-  base::test::TestFuture<std::unique_ptr<file_access::ScopedFileAccess>>
-      file_access_future;
-
-  files_controller_->RequestCopyAccess(source, destination,
-                                       file_access_future.GetCallback());
-  EXPECT_TRUE(file_access_future.Get()->is_allowed());
-}
-
-TEST_F(DlpFilesControllerAshTest, CopyEmptyMetadataTest) {
-  base::FilePath src_file = my_files_dir_.Append(FILE_PATH_LITERAL("test"));
-  base::File(src_file, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE)
-      .Flush();
-
-  base::FilePath dest_file = my_files_dir_.Append(FILE_PATH_LITERAL("dest"));
-
-  auto source = storage::FileSystemURL::CreateForTest(
-      kTestStorageKey, storage::kFileSystemTypeLocal, src_file);
-
-  auto destination = storage::FileSystemURL::CreateForTest(
-      kTestStorageKey, storage::kFileSystemTypeLocal, dest_file);
-
-  base::MockRepeatingCallback<void(
-      const ::dlp::GetFilesSourcesRequest,
-      chromeos::DlpClient::GetFilesSourcesCallback)>
-      get_files_source_call;
-
-  EXPECT_CALL(*rules_manager_, IsRestrictedByAnyRule)
-      .WillOnce(
-          testing::internal::ReturnAction(DlpRulesManager::Level::kAllow));
-
-  absl::optional<ino64_t> inode = GetInodeValue(src_file);
-  EXPECT_TRUE(inode.has_value());
-  ::dlp::GetFilesSourcesResponse response;
-  auto* metadata = response.add_files_metadata();
-  metadata->set_source_url("");
-  metadata->set_inode(inode.value());
-
-  ::dlp::GetFilesSourcesRequest request;
-  request.add_files_inodes(inode.value());
-
-  EXPECT_CALL(get_files_source_call,
-              Run(EqualsProto(request), base::test::IsNotNullCallback()))
-      .WillOnce(base::test::RunOnceCallback<1>(response));
-
-  chromeos::DlpClient::Get()->GetTestInterface()->SetGetFilesSourceMock(
-      get_files_source_call.Get());
-
-  base::MockRepeatingCallback<void(
-      ::dlp::RequestFileAccessRequest request,
-      chromeos::DlpClient::RequestFileAccessCallback callback)>
-      request_file_access_call;
-
-  EXPECT_CALL(request_file_access_call, Run).Times(0);
-  base::test::TestFuture<std::unique_ptr<file_access::ScopedFileAccess>>
-      file_access_future;
-
-  files_controller_->RequestCopyAccess(source, destination,
-                                       file_access_future.GetCallback());
-  EXPECT_TRUE(file_access_future.Get()->is_allowed());
-}
-
-TEST_F(DlpFilesControllerAshTest, CopyNoClientTest) {
-  base::FilePath src_file = my_files_dir_.Append(FILE_PATH_LITERAL("test"));
-  base::File(src_file, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE)
-      .Flush();
-
-  base::FilePath dest_file = my_files_dir_.Append(FILE_PATH_LITERAL("dest"));
-
-  auto source = storage::FileSystemURL::CreateForTest(
-      kTestStorageKey, storage::kFileSystemTypeLocal, src_file);
-
-  auto destination = storage::FileSystemURL::CreateForTest(
-      kTestStorageKey, storage::kFileSystemTypeLocal, dest_file);
-
-  ::chromeos::DlpClient::Shutdown();
-
-  base::test::TestFuture<std::unique_ptr<file_access::ScopedFileAccess>>
-      file_access_future;
-
-  files_controller_->RequestCopyAccess(source, destination,
-                                       file_access_future.GetCallback());
-  EXPECT_TRUE(file_access_future.Get()->is_allowed());
-}
-
 class DlpFilesTestWithMounts : public DlpFilesControllerAshTest {
  public:
   DlpFilesTestWithMounts(const DlpFilesTestWithMounts&) = delete;
@@ -1789,34 +1590,10 @@ class DlpFilesTestWithMounts : public DlpFilesControllerAshTest {
       nullptr;
 };
 
-TEST_F(DlpFilesTestWithMounts, FileCopyFromExternalTest) {
-  std::string mount_name = "android_files";
-  std::string path = "path/in/android";
-
-  auto src_url = mount_points_->CreateExternalFileSystemURL(
-      blink::StorageKey(), mount_name, base::FilePath(path));
-
-  base::MockRepeatingCallback<void(
-      ::dlp::RequestFileAccessRequest request,
-      chromeos::DlpClient::RequestFileAccessCallback callback)>
-      request_file_access_call;
-
-  EXPECT_CALL(request_file_access_call, Run).Times(0);
-
-  chromeos::DlpClient::Get()->GetTestInterface()->SetRequestFileAccessMock(
-      request_file_access_call.Get());
-
-  base::test::TestFuture<std::unique_ptr<file_access::ScopedFileAccess>> future;
-  ASSERT_TRUE(files_controller_);
-  files_controller_->RequestCopyAccess(src_url, storage::FileSystemURL(),
-                                       future.GetCallback());
-  EXPECT_TRUE(future.Get()->is_allowed());
-}
-
 class DlpFilesExternalDestinationTest
     : public DlpFilesTestWithMounts,
       public ::testing::WithParamInterface<
-          std::tuple<std::string, std::string, DlpRulesManager::Component>> {
+          std::tuple<std::string, std::string, data_controls::Component>> {
  public:
   DlpFilesExternalDestinationTest(const DlpFilesExternalDestinationTest&) =
       delete;
@@ -1835,16 +1612,16 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_tuple("android_files",
                         "path/in/android/filename",
-                        DlpRulesManager::Component::kArc),
+                        data_controls::Component::kArc),
         std::make_tuple("removable",
                         "MyUSB/path/in/removable/filename",
-                        DlpRulesManager::Component::kUsb),
+                        data_controls::Component::kUsb),
         std::make_tuple("crostini_test_termina_penguin",
                         "path/in/crostini/filename",
-                        DlpRulesManager::Component::kCrostini),
+                        data_controls::Component::kCrostini),
         std::make_tuple("drivefs-84675c855b63e12f384d45f033826980",
                         "root/path/in/mydrive/filename",
-                        DlpRulesManager::Component::kDrive)));
+                        data_controls::Component::kDrive)));
 
 TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
   auto [mount_name, path, expected_component] = GetParam();
@@ -1902,7 +1679,7 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
 
   files_controller_->IsFilesTransferRestricted(
       transferred_files, DlpFileDestination(dst_url.path().value()),
-      DlpFilesControllerAsh::FileAction::kTransfer, cb.Get());
+      dlp::FileAction::kTransfer, cb.Get());
 
   ASSERT_EQ(events.size(), 2u);
   EXPECT_THAT(events[0], IsDlpPolicyEvent(CreateDlpPolicyEvent(
@@ -1917,10 +1694,9 @@ TEST_P(DlpFilesExternalDestinationTest, IsFilesTransferRestricted_Component) {
   EXPECT_THAT(
       histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
                                      std::string(dlp::kFileActionBlockedUMA)),
-      base::BucketsAre(
-          base::Bucket(DlpFilesControllerAsh::FileAction::kUnknown, 0),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kDownload, 0),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kTransfer, 2)));
+      base::BucketsAre(base::Bucket(dlp::FileAction::kUnknown, 0),
+                       base::Bucket(dlp::FileAction::kDownload, 0),
+                       base::Bucket(dlp::FileAction::kTransfer, 2)));
 }
 
 TEST_P(DlpFilesExternalDestinationTest, FileDownloadBlocked) {
@@ -2060,7 +1836,7 @@ TEST_P(DlpFilesUrlDestinationTest, IsFilesTransferRestricted_Url) {
 
   files_controller_->IsFilesTransferRestricted(
       transferred_files, DlpFileDestination(destination_url),
-      DlpFilesControllerAsh::FileAction::kDownload, cb.Get());
+      dlp::FileAction::kDownload, cb.Get());
 
   ASSERT_EQ(events.size(), disallowed_source_patterns.size());
   for (size_t i = 0u; i < disallowed_source_patterns.size(); ++i) {
@@ -2080,9 +1856,8 @@ TEST_P(DlpFilesUrlDestinationTest, IsFilesTransferRestricted_Url) {
       histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
                                      std::string(dlp::kFileActionBlockedUMA)),
       base::BucketsAre(
-          base::Bucket(DlpFilesControllerAsh::FileAction::kDownload,
-                       blocked_downloads),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kTransfer, 0)));
+          base::Bucket(dlp::FileAction::kDownload, blocked_downloads),
+          base::Bucket(dlp::FileAction::kTransfer, 0)));
 }
 
 class DlpFilesWarningDialogChoiceTest
@@ -2114,14 +1889,21 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
   MockDlpWarnNotifier* mock_dlp_warn_notifier = wrapper.get();
   files_controller_->SetWarnNotifierForTesting(std::move(wrapper));
 
-  EXPECT_CALL(*mock_dlp_warn_notifier, ShowDlpWarningDialog).Times(1);
+  EXPECT_CALL(*mock_dlp_warn_notifier, ShowDlpFilesWarningDialog)
+      .WillOnce([&choice_result](
+                    OnDlpRestrictionCheckedCallback callback,
+                    const std::vector<DlpConfidentialFile>& confidential_files,
+                    const DlpFileDestination& destination,
+                    dlp::FileAction action) {
+        std::move(callback).Run(choice_result);
+        return nullptr;
+      });
 
   MockCheckIfDlpAllowedCallback cb;
   EXPECT_CALL(cb, Run(/*is_allowed=*/choice_result)).Times(1);
 
-  EXPECT_CALL(
-      *rules_manager_,
-      IsRestrictedComponent(_, DlpRulesManager::Component::kUsb, _, _, _))
+  EXPECT_CALL(*rules_manager_,
+              IsRestrictedComponent(_, data_controls::Component::kUsb, _, _, _))
       .WillOnce(
           testing::DoAll(testing::SetArgPointee<3>(kExampleSourcePattern1),
                          testing::SetArgPointee<4>(kRuleMetadata1),
@@ -2149,7 +1931,7 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
             : DlpPolicyEventBuilder::WarningProceededEvent(
                   kExampleSourcePattern1, kRuleName1, kRuleId1,
                   DlpRulesManager::Restriction::kFiles);
-    event_builder->SetDestinationComponent(DlpRulesManager::Component::kUsb);
+    event_builder->SetDestinationComponent(data_controls::Component::kUsb);
     event_builder->SetContentName(file_path.BaseName().value());
     return event_builder->Create();
   };
@@ -2167,109 +1949,17 @@ TEST_P(DlpFilesWarningDialogChoiceTest, FileDownloadWarned) {
   EXPECT_THAT(
       histogram_tester.GetAllSamples(GetDlpHistogramPrefix() +
                                      std::string(dlp::kFileActionWarnedUMA)),
-      base::BucketsAre(
-          base::Bucket(DlpFilesControllerAsh::FileAction::kDownload, 1),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kTransfer, 0)));
+      base::BucketsAre(base::Bucket(dlp::FileAction::kDownload, 1),
+                       base::Bucket(dlp::FileAction::kTransfer, 0)));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
           GetDlpHistogramPrefix() +
           std::string(dlp::kFileActionWarnProceededUMA)),
-      base::BucketsAre(
-          base::Bucket(DlpFilesControllerAsh::FileAction::kDownload,
-                       choice_result),
-          base::Bucket(DlpFilesControllerAsh::FileAction::kTransfer, 0)));
+      base::BucketsAre(base::Bucket(dlp::FileAction::kDownload, choice_result),
+                       base::Bucket(dlp::FileAction::kTransfer, 0)));
 
   storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
-}
-
-class DlpFilesExternalCopyTest
-    : public DlpFilesTestWithMounts,
-      public ::testing::WithParamInterface<
-          std::tuple<std::string, std::string, ::dlp::DlpComponent>> {
- public:
-  DlpFilesExternalCopyTest(const DlpFilesExternalCopyTest&) = delete;
-  DlpFilesExternalCopyTest& operator=(const DlpFilesExternalCopyTest&) = delete;
-
- protected:
-  DlpFilesExternalCopyTest() = default;
-  ~DlpFilesExternalCopyTest() override = default;
-};
-
-INSTANTIATE_TEST_SUITE_P(
-    DlpFiles,
-    DlpFilesExternalCopyTest,
-    // TODO(http://b/262223235) check for the actual component.
-    ::testing::Values(
-        std::make_tuple("android_files",
-                        "path/in/android",
-                        ::dlp::DlpComponent::SYSTEM),
-        std::make_tuple("removable",
-                        "MyUSB/path/in/removable",
-                        ::dlp::DlpComponent::SYSTEM),
-        std::make_tuple("crostini_test_termina_penguin",
-                        "path/in/crostini",
-                        ::dlp::DlpComponent::SYSTEM),
-        std::make_tuple("drivefs-84675c855b63e12f384d45f033826980",
-                        "root/path/in/mydrive",
-                        ::dlp::DlpComponent::SYSTEM)));
-
-TEST_P(DlpFilesExternalCopyTest, FileCopyTest) {
-  auto [mount_name, path, expected_component] = GetParam();
-
-  auto dst_url = mount_points_->CreateExternalFileSystemURL(
-      blink::StorageKey(), mount_name, base::FilePath(path));
-
-  base::MockRepeatingCallback<void(
-      ::dlp::RequestFileAccessRequest request,
-      chromeos::DlpClient::RequestFileAccessCallback callback)>
-      request_file_access_call;
-
-  ::dlp::RequestFileAccessResponse response;
-  response.set_allowed(true);
-  EXPECT_CALL(request_file_access_call,
-              Run(testing::Property(
-                      &::dlp::RequestFileAccessRequest::destination_component,
-                      expected_component),
-                  base::test::IsNotNullCallback()))
-      .WillOnce(base::test::RunOnceCallback<1>(response, base::ScopedFD()));
-  chromeos::DlpClient::Get()->GetTestInterface()->SetRequestFileAccessMock(
-      request_file_access_call.Get());
-
-  base::test::TestFuture<std::unique_ptr<file_access::ScopedFileAccess>> future;
-  ASSERT_TRUE(files_controller_);
-  files_controller_->RequestCopyAccess(storage::FileSystemURL(), dst_url,
-                                       future.GetCallback());
-  EXPECT_TRUE(future.Get()->is_allowed());
-}
-
-TEST_P(DlpFilesExternalCopyTest, FileCopyTestDeny) {
-  auto [mount_name, path, expected_component] = GetParam();
-
-  auto dst_url = mount_points_->CreateExternalFileSystemURL(
-      blink::StorageKey(), mount_name, base::FilePath(path));
-
-  base::MockRepeatingCallback<void(
-      ::dlp::RequestFileAccessRequest request,
-      chromeos::DlpClient::RequestFileAccessCallback callback)>
-      request_file_access_call;
-
-  ::dlp::RequestFileAccessResponse response;
-  response.set_allowed(false);
-  EXPECT_CALL(request_file_access_call,
-              Run(testing::Property(
-                      &::dlp::RequestFileAccessRequest::destination_component,
-                      expected_component),
-                  base::test::IsNotNullCallback()))
-      .WillOnce(base::test::RunOnceCallback<1>(response, base::ScopedFD()));
-  chromeos::DlpClient::Get()->GetTestInterface()->SetRequestFileAccessMock(
-      request_file_access_call.Get());
-
-  base::test::TestFuture<std::unique_ptr<file_access::ScopedFileAccess>> future;
-  ASSERT_TRUE(files_controller_);
-  files_controller_->RequestCopyAccess(storage::FileSystemURL(), dst_url,
-                                       future.GetCallback());
-  EXPECT_FALSE(future.Get()->is_allowed());
 }
 
 class DlpFilesWarningDialogContentTest
@@ -2280,42 +1970,42 @@ INSTANTIATE_TEST_SUITE_P(
     DlpFiles,
     DlpFilesWarningDialogContentTest,
     ::testing::Values(
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kDownload,
+        FilesTransferInfo(policy::dlp::FileAction::kDownload,
                           std::vector<ino_t>({kInode1}),
                           std::vector<std::string>({kExampleUrl1}),
                           std::vector<std::string>({kFilePath1})),
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kTransfer,
+        FilesTransferInfo(policy::dlp::FileAction::kTransfer,
                           std::vector<ino_t>({kInode1}),
                           std::vector<std::string>({kExampleUrl1}),
                           std::vector<std::string>({kFilePath1})),
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kTransfer,
+        FilesTransferInfo(policy::dlp::FileAction::kTransfer,
                           std::vector<ino_t>({kInode1, kInode2}),
                           std::vector<std::string>({kExampleUrl1,
                                                     kExampleUrl2}),
                           std::vector<std::string>({kFilePath1, kFilePath2})),
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kUpload,
+        FilesTransferInfo(policy::dlp::FileAction::kUpload,
                           std::vector<ino_t>({kInode1}),
                           std::vector<std::string>({kExampleUrl1}),
                           std::vector<std::string>({kFilePath1})),
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kUpload,
+        FilesTransferInfo(policy::dlp::FileAction::kUpload,
                           std::vector<ino_t>({kInode1, kInode2}),
                           std::vector<std::string>({kExampleUrl1,
                                                     kExampleUrl2}),
                           std::vector<std::string>({kFilePath1, kFilePath2})),
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kCopy,
+        FilesTransferInfo(policy::dlp::FileAction::kCopy,
                           std::vector<ino_t>({kInode1}),
                           std::vector<std::string>({kExampleUrl1}),
                           std::vector<std::string>({kFilePath1})),
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kCopy,
+        FilesTransferInfo(policy::dlp::FileAction::kCopy,
                           std::vector<ino_t>({kInode1, kInode2}),
                           std::vector<std::string>({kExampleUrl1,
                                                     kExampleUrl2}),
                           std::vector<std::string>({kFilePath1, kFilePath2})),
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kMove,
+        FilesTransferInfo(policy::dlp::FileAction::kMove,
                           std::vector<ino_t>({kInode1}),
                           std::vector<std::string>({kExampleUrl1}),
                           std::vector<std::string>({kFilePath1})),
-        FilesTransferInfo(policy::DlpFilesControllerAsh::FileAction::kMove,
+        FilesTransferInfo(policy::dlp::FileAction::kMove,
                           std::vector<ino_t>({kInode1, kInode2}),
                           std::vector<std::string>({kExampleUrl1,
                                                     kExampleUrl2}),
@@ -2356,33 +2046,36 @@ TEST_P(DlpFilesWarningDialogContentTest,
   AddFilesToDlpClient(std::move(files), files_urls);
 
   std::unique_ptr<MockDlpWarnNotifier> wrapper =
-      std::make_unique<MockDlpWarnNotifier>(false);
+      std::make_unique<MockDlpWarnNotifier>();
   MockDlpWarnNotifier* mock_dlp_warn_notifier = wrapper.get();
   files_controller_->SetWarnNotifierForTesting(std::move(wrapper));
-  std::vector<DlpConfidentialFile> expected_files;
 
-  if (transfer_info.files_action !=
-      DlpFilesControllerAsh::FileAction::kDownload) {
+  std::vector<DlpConfidentialFile> expected_files;
+  if (transfer_info.files_action != dlp::FileAction::kDownload) {
     for (const auto& file_path : transfer_info.file_paths) {
       expected_files.emplace_back(base::FilePath(file_path));
     }
   }
-  DlpWarnDialog::DlpWarnDialogOptions expected_dialog_options(
-      DlpWarnDialog::Restriction::kFiles, expected_files,
-      DlpFileDestination(DlpRulesManager::Component::kUsb),
-      transfer_info.files_action);
 
-  EXPECT_CALL(
-      *rules_manager_,
-      IsRestrictedComponent(_, DlpRulesManager::Component::kUsb, _, _, _))
+  EXPECT_CALL(*rules_manager_,
+              IsRestrictedComponent(_, data_controls::Component::kUsb, _, _, _))
       .WillRepeatedly(testing::Return(DlpRulesManager::Level::kWarn));
 
   EXPECT_CALL(*rules_manager_, GetReportingManager())
       .Times(::testing::AnyNumber());
 
   EXPECT_CALL(*mock_dlp_warn_notifier,
-              ShowDlpWarningDialog(_, expected_dialog_options, _))
-      .Times(1);
+              ShowDlpFilesWarningDialog(
+                  base::test::IsNotNullCallback(), expected_files,
+                  DlpFileDestination(data_controls::Component::kUsb),
+                  transfer_info.files_action))
+      .WillOnce([](OnDlpRestrictionCheckedCallback callback,
+                   const std::vector<DlpConfidentialFile>& confidential_files,
+                   const DlpFileDestination& destination,
+                   dlp::FileAction action) {
+        std::move(callback).Run(false);
+        return nullptr;
+      });
 
   MockIsFilesTransferRestrictedCallback cb;
   EXPECT_CALL(cb, Run(files_levels)).Times(1);
@@ -2814,6 +2507,50 @@ TEST_P(DlpFilesDnDTest, CheckIfDropAllowed) {
   EXPECT_EQ(request.files_paths()[0], file_path1.value());
   ASSERT_TRUE(request.has_destination_component());
   EXPECT_EQ(request.destination_component(), expected_component);
+}
+
+class DlpFilesControllerAshComponentsTest
+    : public DlpFilesTestWithMounts,
+      public ::testing::WithParamInterface<
+          std::tuple<std::string,
+                     std::string,
+                     absl::optional<data_controls::Component>>> {
+ public:
+  DlpFilesControllerAshComponentsTest(
+      const DlpFilesControllerAshComponentsTest&) = delete;
+  DlpFilesControllerAshComponentsTest& operator=(
+      const DlpFilesControllerAshComponentsTest&) = delete;
+
+ protected:
+  DlpFilesControllerAshComponentsTest() = default;
+  ~DlpFilesControllerAshComponentsTest() = default;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    DlpFiles,
+    DlpFilesControllerAshComponentsTest,
+    ::testing::Values(
+        std::make_tuple("android_files",
+                        "path/in/android",
+                        data_controls::Component::kArc),
+        std::make_tuple("removable",
+                        "MyUSB/path/in/removable",
+                        data_controls::Component::kUsb),
+        std::make_tuple("crostini_test_termina_penguin",
+                        "path/in/crostini",
+                        data_controls::Component::kCrostini),
+        std::make_tuple("drivefs-84675c855b63e12f384d45f033826980",
+                        "root/path/in/mydrive",
+                        data_controls::Component::kDrive),
+        std::make_tuple("", "/Downloads", absl::nullopt)));
+
+TEST_P(DlpFilesControllerAshComponentsTest, MapFilePathtoPolicyComponentTest) {
+  auto [mount_name, path, expected_component] = GetParam();
+  auto url = mount_points_->CreateExternalFileSystemURL(
+      blink::StorageKey(), mount_name, base::FilePath(path));
+  EXPECT_EQ(files_controller_->MapFilePathtoPolicyComponent(profile_.get(),
+                                                            url.path()),
+            expected_component);
 }
 
 }  // namespace policy

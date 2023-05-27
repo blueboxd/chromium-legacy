@@ -460,9 +460,7 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   if (auto* scrolling_coordinator = GetScrollingCoordinator()) {
     if (!scrolling_coordinator->UpdateCompositorScrollOffset(*frame, *this)) {
-      GetLayoutBox()->GetFrameView()->SetPaintArtifactCompositorNeedsUpdate(
-          PaintArtifactCompositorUpdateReason::
-              kPaintLayerScrollableAreaUpdateScrollOffset);
+      GetLayoutBox()->GetFrameView()->SetPaintArtifactCompositorNeedsUpdate();
     }
   }
 
@@ -1290,7 +1288,9 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
   if (!old_style ||
       old_style->UsedColorScheme() != UsedColorSchemeScrollbars() ||
       old_style->ScrollbarWidth() !=
-          GetLayoutBox()->StyleRef().ScrollbarWidth()) {
+          GetLayoutBox()->StyleRef().ScrollbarWidth() ||
+      old_style->ScrollbarColor() !=
+          GetLayoutBox()->StyleRef().ScrollbarColor()) {
     SetScrollControlsNeedFullPaintInvalidation();
   }
 }

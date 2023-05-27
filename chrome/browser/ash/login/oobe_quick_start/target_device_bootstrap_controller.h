@@ -8,10 +8,13 @@
 #include <memory>
 #include <string>
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "chrome/browser/ash/login/oobe_quick_start/connectivity/fido_assertion_info.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
+#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace ash::quick_start {
@@ -35,12 +38,19 @@ class TargetDeviceBootstrapController
     PIN_VERIFICATION,
     CONNECTED,
     GAIA_CREDENTIALS,
+    CONNECTING_TO_WIFI,
+    CONNECTED_TO_WIFI,
+    TRANSFERRING_GOOGLE_ACCOUNT_DETAILS,
+    TRANSFERRED_GOOGLE_ACCOUNT_DETAILS,
   };
 
   enum class ErrorCode {
     START_ADVERTISING_FAILED,
     CONNECTION_REJECTED,
     CONNECTION_CLOSED,
+    WIFI_CREDENTIALS_NOT_RECEIVED,
+    USER_VERIFICATION_FAILED,
+    GAIA_ASSERTION_NOT_RECEIVED,
   };
 
   using QRCodePixelData = std::vector<uint8_t>;
@@ -52,6 +62,9 @@ class TargetDeviceBootstrapController
     ~Status();
     Step step = Step::NONE;
     Payload payload;
+    std::string ssid;
+    std::string password;
+    std::string fido_email;
   };
 
   class Observer : public base::CheckedObserver {
@@ -79,6 +92,7 @@ class TargetDeviceBootstrapController
   // TODO: Finalize api for frontend.
   void StartAdvertising();
   void StopAdvertising();
+  void MaybeCloseOpenConnections();
 
   // A user may initiate Quick Start then have to download an update and reboot.
   // This function persists necessary data and notifies the source device so
@@ -96,6 +110,10 @@ class TargetDeviceBootstrapController
   void OnConnectionClosed(
       TargetDeviceConnectionBroker::ConnectionClosedReason reason) override;
 
+  std::string GetDiscoverableName();
+  void AttemptWifiCredentialTransfer();
+  void AttemptGoogleAccountTransfer();
+
  private:
   friend class TargetDeviceBootstrapControllerTest;
 
@@ -103,12 +121,20 @@ class TargetDeviceBootstrapController
   void OnStartAdvertisingResult(bool success);
   void OnStopAdvertising();
 
-  // If the target device successfully receives an ack message within a
-  // specified timeout, it prepares to automatically resume Quick Start after
-  // the update and closes the connection. If ack_successful is 'false', it
-  // closes the connection without preparing to automatically resume Quick Start
-  // after the update.
+  void WaitForUserVerification(base::OnceClosure on_verification);
+  void OnUserVerificationResult(base::OnceClosure on_verification,
+                                absl::optional<mojom::UserVerificationResponse>
+                                    user_verification_response);
+
+  // If the target device successfully receives an ack message, it prepares to
+  // automatically resume Quick Start after the update and closes the
+  // connection. If ack_successful is 'false', it closes the connection without
+  // preparing to automatically resume Quick Start after the update.
   void OnNotifySourceOfUpdateResponse(bool ack_successful);
+
+  void OnWifiCredentialsReceived(
+      absl::optional<mojom::WifiCredentials> credentials);
+  void OnFidoAssertionReceived(absl::optional<FidoAssertionInfo> assertion);
 
   std::unique_ptr<TargetDeviceConnectionBroker> connection_broker_;
 

@@ -11,6 +11,8 @@
 #import <vector>
 
 #import "base/containers/flat_map.h"
+#import "base/files/file_path.h"
+#import "base/path_service.h"
 #import "base/version.h"
 #import "components/component_updater/component_updater_command_line_config_policy.h"
 #import "components/component_updater/configurator_impl.h"
@@ -72,6 +74,7 @@ class IOSConfigurator : public update_client::Configurator {
   GetProtocolHandlerFactory() const override;
   absl::optional<bool> IsMachineExternallyManaged() const override;
   update_client::UpdaterStateProvider GetUpdaterStateProvider() const override;
+  absl::optional<base::FilePath> GetCrxCachePath() const override;
 
  private:
   friend class base::RefCountedThreadSafe<IOSConfigurator>;
@@ -222,6 +225,14 @@ absl::optional<bool> IOSConfigurator::IsMachineExternallyManaged() const {
 update_client::UpdaterStateProvider IOSConfigurator::GetUpdaterStateProvider()
     const {
   return configurator_impl_.GetUpdaterStateProvider();
+}
+
+absl::optional<base::FilePath> IOSConfigurator::GetCrxCachePath() const {
+  base::FilePath path;
+  if (!base::PathService::Get(base::DIR_CACHE, &path)) {
+    return absl::nullopt;
+  }
+  return path.Append(FILE_PATH_LITERAL("ios_crx_cache"));
 }
 
 }  // namespace

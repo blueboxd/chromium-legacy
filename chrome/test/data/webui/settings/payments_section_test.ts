@@ -10,8 +10,11 @@ import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_as
 import {isMac, isWindows} from 'chrome://resources/js/platform.js';
 
 import {createCreditCardEntry, TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
-import {createPaymentsSection, getLocalAndServerCreditCardListItems} from './payments_section_utils.js';
+import {createPaymentsSection, getLocalAndServerCreditCardListItems, getDefaultExpectations, getCardRowShadowRoot} from './payments_section_utils.js';
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
+
+import {isVisible} from 'chrome://webui-test/test_util.js';
+
 
 // clang-format on
 
@@ -425,4 +428,88 @@ suite('PaymentsSection', function() {
 
         assertFalse(!!mandatoryAuthToggle);
       });
+
+  test(
+      'verifyMandatoryAuthToggleDoesTriggerUserAuthWhenClicked',
+      async function() {
+        loadTimeData.overrideValues({deviceAuthAvailable: true});
+
+        const section = await createPaymentsSection(
+            /*creditCards=*/[], /*ibans=*/[], /*upiIds=*/[], {
+              credit_card_enabled: {value: true},
+              payment_methods_mandatory_reauth: {value: false},
+            });
+        const mandatoryAuthToggle =
+            section.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+                '#mandatoryAuthToggle');
+
+        if (isMac || isWindows) {
+          const paymentsManagerProxy =
+              PaymentsManagerImpl.getInstance() as TestPaymentsManager;
+          const expectations = getDefaultExpectations();
+
+          assertTrue(!!mandatoryAuthToggle);
+          mandatoryAuthToggle.click();
+          expectations.authenticateUserAndFlipMandatoryAuthToggle = 1;
+          paymentsManagerProxy.assertExpectations(expectations);
+        } else {
+          assertFalse(!!mandatoryAuthToggle);
+        }
+      });
+
+  test(
+      'verifyMandatoryAuthToggleDoesNotTriggersUserAuthWhenNotClicked',
+      async function() {
+        loadTimeData.overrideValues({deviceAuthAvailable: true});
+
+        const section = await createPaymentsSection(
+            /*creditCards=*/[], /*ibans=*/[], /*upiIds=*/[], {
+              credit_card_enabled: {value: true},
+              payment_methods_mandatory_reauth: {value: false},
+            });
+        const mandatoryAuthToggle =
+            section.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+                '#mandatoryAuthToggle');
+        const paymentsManagerProxy =
+            PaymentsManagerImpl.getInstance() as TestPaymentsManager;
+        const expectations = getDefaultExpectations();
+
+        if (isMac || isWindows) {
+          assertTrue(!!mandatoryAuthToggle);
+        } else {
+          assertFalse(!!mandatoryAuthToggle);
+        }
+        paymentsManagerProxy.assertExpectations(expectations);
+      });
+
+  test('verifyEditLocalCardTriggersUserAuth', async function() {
+    loadTimeData.overrideValues({deviceAuthAvailable: true});
+
+    const section = await createPaymentsSection(
+        [createCreditCardEntry()], /*ibans=*/[], /*upiIds=*/[], {
+          credit_card_enabled: {value: true},
+          payment_methods_mandatory_reauth: {value: true},
+        });
+
+    assertEquals(1, getLocalAndServerCreditCardListItems().length);
+
+    const rowShadowRoot = getCardRowShadowRoot(section.$.paymentsList);
+    assertFalse(!!rowShadowRoot.querySelector('#remoteCreditCardLink'));
+
+    const menuButton =
+        rowShadowRoot.querySelector<HTMLElement>('#creditCardMenu');
+    assertTrue(!!menuButton);
+    menuButton.click();
+    flush();
+
+    assertTrue(isVisible(section.$.menuEditCreditCard));
+    section.$.menuEditCreditCard.click();
+    flush();
+
+    const paymentsManagerProxy =
+        PaymentsManagerImpl.getInstance() as TestPaymentsManager;
+    const expectations = getDefaultExpectations();
+    expectations.authenticateUserToEditLocalCard = 1;
+    paymentsManagerProxy.assertExpectations(expectations);
+  });
 });

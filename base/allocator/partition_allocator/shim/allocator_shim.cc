@@ -14,7 +14,6 @@
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_notreached.h"
 #include "base/memory/page_size.h"
-#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
 #if !BUILDFLAG(IS_WIN)
@@ -48,8 +47,9 @@ bool g_call_new_handler_on_malloc_failure = false;
 
 ALWAYS_INLINE size_t GetCachedPageSize() {
   static size_t pagesize = 0;
-  if (!pagesize)
+  if (!pagesize) {
     pagesize = base::GetPageSize();
+  }
   return pagesize;
 }
 
@@ -60,8 +60,9 @@ bool CallNewHandler(size_t size) {
   return allocator_shim::WinCallNewHandler(size);
 #else
   std::new_handler nh = std::get_new_handler();
-  if (!nh)
+  if (!nh) {
     return false;
+  }
   (*nh)();
   // Assume the new_handler will abort if it fails. Exception are disabled and
   // we don't support the case of a new_handler throwing std::bad_balloc.

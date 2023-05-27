@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/trigger_verification.h"
 #include "services/network/public/mojom/attribution.mojom-shared.h"
 
@@ -28,6 +29,26 @@ struct COMPONENT_EXPORT(NETWORK_CPP_ATTRIBUTION_MOJOM_TRAITS)
 
   static bool Read(network::mojom::TriggerVerificationDataView data,
                    network::TriggerVerification* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_ATTRIBUTION_MOJOM_TRAITS)
+    StructTraits<network::mojom::AttributionReportingRuntimeFeaturesDataView,
+                 network::AttributionReportingRuntimeFeatures> {
+  static bool cross_app_web_enabled(
+      network::AttributionReportingRuntimeFeatures runtime_features) {
+    return runtime_features.Has(
+        network::AttributionReportingRuntimeFeature::kCrossAppWeb);
+  }
+
+  static bool Read(
+      network::mojom::AttributionReportingRuntimeFeaturesDataView data,
+      network::AttributionReportingRuntimeFeatures* out) {
+    if (data.cross_app_web_enabled()) {
+      out->Put(network::AttributionReportingRuntimeFeature::kCrossAppWeb);
+    }
+    return true;
+  }
 };
 
 }  // namespace mojo

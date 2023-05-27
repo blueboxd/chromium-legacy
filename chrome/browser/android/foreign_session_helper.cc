@@ -20,7 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/service/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/notification_details.h"
@@ -245,7 +245,8 @@ jboolean ForeignSessionHelper::GetForeignSessions(
     last_pushed_session.Reset(Java_ForeignSessionHelper_pushSession(
         env, result, ConvertUTF8ToJavaString(env, session.GetSessionTag()),
         ConvertUTF8ToJavaString(env, session.GetSessionName()),
-        session.GetModifiedTime().ToJavaTime()));
+        session.GetModifiedTime().ToJavaTime(),
+        static_cast<int>(session.GetDeviceFormFactor())));
 
     // Push the full session, with tabs ordered by visual position.
     JNI_ForeignSessionHelper_CopySessionToJava(env, session,
@@ -280,7 +281,8 @@ jboolean ForeignSessionHelper::GetMobileAndTabletForeignSessions(
       last_pushed_session.Reset(Java_ForeignSessionHelper_pushSession(
           env, result, ConvertUTF8ToJavaString(env, session->GetSessionTag()),
           ConvertUTF8ToJavaString(env, session->GetSessionName()),
-          session->GetModifiedTime().ToJavaTime()));
+          session->GetModifiedTime().ToJavaTime(),
+          static_cast<int>(session->GetDeviceFormFactor())));
 
       // Push the full session, with tabs ordered by visual position.
       JNI_ForeignSessionHelper_CopySessionToJava(env, *session,

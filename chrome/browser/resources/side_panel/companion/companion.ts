@@ -32,9 +32,11 @@ enum ParamType {
   // Arguments for MethodType.kOnPromoAction.
   PROMO_ACTION = 'promoAction',
   PROMO_TYPE = 'promoType',
+  EXPS_PROMO_URL = 'expsPromoUrl',
 
   // Arguments for MethodType.kOnPhFeedback.
   PH_FEEDBACK = 'phFeedback',
+  REPORTING_URL = 'reportingUrl',
 
   // Arguments for MethodType.kOnOpenInNewTabButtonURLChanged.
   URL_FOR_OPEN_IN_NEW_TAB = 'urlForOpenInNewTab',
@@ -43,7 +45,12 @@ enum ParamType {
   UI_SURFACE = 'uiSurface',
 
   // Arguments for MethodType.kRecordUiSurfaceShown.
-  CHILD_ELEMENT_COUNT = 'childElementCount',
+  UI_SURFACE_POSITION = 'uiSurfacePosition',
+  CHILD_ELEMENT_AVAILABLE_COUNT = 'childElementAvailableCount',
+  CHILD_ELEMENT_SHOWN_COUNT = 'childElementShownCount',
+
+  // Arguments for MethodType.kRecordUiSurfaceClicked.
+  CLICK_POSITION = 'clickPosition',
 
   // Arguments for MethodType.kOnCqJamptagClicked.
   CQ_JUMPTAG_TEXT = 'cqJumptagText',
@@ -178,8 +185,11 @@ function onCompanionMessageEvent(event: MessageEvent) {
   } else if (methodType === MethodType.kOnPromoAction) {
     const promoType = data[ParamType.PROMO_TYPE];
     const promoAction = data[ParamType.PROMO_ACTION];
+    const expsPromoUrl = new Url();
+    expsPromoUrl.url = data[ParamType.EXPS_PROMO_URL] || '';
     if (validatePromoArguments(promoType, promoAction)) {
-      companionProxy.handler.onPromoAction(promoType, promoAction);
+      companionProxy.handler.onPromoAction(
+          promoType, promoAction, expsPromoUrl);
     }
   } else if (methodType === MethodType.kOnExpsOptInStatusAvailable) {
     companionProxy.handler.onExpsOptInStatusAvailable(
@@ -189,15 +199,26 @@ function onCompanionMessageEvent(event: MessageEvent) {
     openInNewTabUrl.url = data[ParamType.URL_FOR_OPEN_IN_NEW_TAB];
     companionProxy.handler.onOpenInNewTabButtonURLChanged(openInNewTabUrl);
   } else if (methodType === MethodType.kRecordUiSurfaceShown) {
+    const uiSurfacePosition = data[ParamType.UI_SURFACE_POSITION] || -1;
+    const childElementAvailableCount =
+        data[ParamType.CHILD_ELEMENT_AVAILABLE_COUNT] || -1;
+    const childElementShownCount =
+        data[ParamType.CHILD_ELEMENT_SHOWN_COUNT] || -1;
     companionProxy.handler.recordUiSurfaceShown(
-        data[ParamType.UI_SURFACE], data[ParamType.CHILD_ELEMENT_COUNT]);
+        data[ParamType.UI_SURFACE], uiSurfacePosition,
+        childElementAvailableCount, childElementShownCount);
   } else if (methodType === MethodType.kRecordUiSurfaceClicked) {
-    companionProxy.handler.recordUiSurfaceClicked(data[ParamType.UI_SURFACE]);
+    const clickPosition = data[ParamType.CLICK_POSITION] || -1;
+    companionProxy.handler.recordUiSurfaceClicked(
+        data[ParamType.UI_SURFACE], clickPosition);
   } else if (methodType === MethodType.kOnCqCandidatesAvailable) {
     companionProxy.handler.onCqCandidatesAvailable(
         data[ParamType.CQ_TEXT_DIRECTIVES]);
   } else if (methodType === MethodType.kOnPhFeedback) {
-    companionProxy.handler.onPhFeedback(data[ParamType.PH_FEEDBACK]);
+    const reportingUrl = new Url();
+    reportingUrl.url = data[ParamType.REPORTING_URL] || '';
+    companionProxy.handler.onPhFeedback(
+        data[ParamType.PH_FEEDBACK], reportingUrl);
   } else if (methodType === MethodType.kOnCqJumptagClicked) {
     companionProxy.handler.onCqJumptagClicked(data[ParamType.CQ_JUMPTAG_TEXT]);
   }

@@ -332,10 +332,6 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
   translate_driver_->PrepareToTranslatePage(page_seq_no_, original_source_lang,
                                             target_lang, triggered_from_menu);
 
-  // Log the source and target languages of the translate request.
-  TranslateBrowserMetrics::ReportTranslateSourceLanguage(original_source_lang);
-  TranslateBrowserMetrics::ReportTranslateTargetLanguage(target_lang);
-
   // If the source language matches the UI language, it means the translation
   // prompt is being forced by an experiment. Report this so the count of how
   // often it happens can be decremented (meaning the user didn't decline or
@@ -1193,26 +1189,6 @@ void TranslateManager::RecordDecisionMetrics(
       TranslateBrowserMetrics::ReportTranslateHrefHintStatus(
           TranslateBrowserMetrics::HrefTranslateStatus::
               kNoUiShownNotAutoTranslated);
-    }
-
-    if (decision.is_in_language_blocklist()) {
-      if (decision.is_in_site_blocklist()) {
-        TranslateBrowserMetrics::ReportTranslateHrefHintPrefsFilterStatus(
-            TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                kBothLanguageAndSiteInBlocklist);
-      } else {
-        TranslateBrowserMetrics::ReportTranslateHrefHintPrefsFilterStatus(
-            TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                kLanguageInBlocklist);
-      }
-    } else if (decision.is_in_site_blocklist()) {
-      TranslateBrowserMetrics::ReportTranslateHrefHintPrefsFilterStatus(
-          TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-              kSiteInBlocklist);
-    } else {
-      TranslateBrowserMetrics::ReportTranslateHrefHintPrefsFilterStatus(
-          TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-              kNotInBlocklists);
     }
   }
 

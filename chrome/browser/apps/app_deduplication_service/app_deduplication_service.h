@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/functional/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -39,8 +40,12 @@ class AppDeduplicationService : public KeyedService,
   AppDeduplicationService(const AppDeduplicationService&) = delete;
   AppDeduplicationService& operator=(const AppDeduplicationService&) = delete;
 
-  std::vector<Entry> GetDuplicates(const EntryId& entry_id);
-  bool AreDuplicates(const EntryId& entry_id_1, const EntryId& entry_id_2);
+  // Call this function before using any other function.
+  // This function returns true if the Deduplication Service has been
+  // properly initialised, ensuring the correctness of method responses.
+  bool IsServiceOn();
+  std::vector<Entry> GetDuplicates(const Entry& entry);
+  bool AreDuplicates(const Entry& entry_1, const Entry& entry_2);
 
   // Registers prefs used for the App Deduplication Service.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -53,12 +58,22 @@ class AppDeduplicationService : public KeyedService,
                            ExactDuplicateAllInstalled);
   FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest, Installation);
   FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest, Websites);
-  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest,
+
+  friend class AppDeduplicationServiceAlmanacTest;
+  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
                            DeduplicateDataToEntries);
-  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
+                           DeduplicateDataToEntriesInvalidAppType);
+  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
+                           DeduplicateDataToEntriesInvalidAppId);
+  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
                            PrefUnchangedAfterServerError);
-  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
                            PrefSetAfterServerSuccess);
+  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
+                           ValidServiceNoDuplicates);
+  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
+                           ValidServiceWithDuplicates);
 
   enum class EntryStatus {
     // This entry is not an app entry (could be website, phonehub, etc.).
@@ -87,11 +102,11 @@ class AppDeduplicationService : public KeyedService,
   // Returns the map key of the duplicate group in the duplication map if a
   // group is found, and return nullptr if the entry id doesn't belong to
   // and duplicate group.
-  absl::optional<uint32_t> FindDuplicationIndex(const EntryId& entry_id);
+  absl::optional<uint32_t> FindDuplicationIndex(const Entry& entry);
 
   // Calls server connector to make a request to the Fondue server to retrieve
   // duplicate app group data.
-  void GetDeduplicateDataFromServer();
+  void GetDeduplicateDataFromServer(DeviceInfo device_info);
 
   // Processes data retrieved by server connector and stores in disk.
   void OnGetDeduplicateDataFromServerCompleted(
@@ -119,8 +134,8 @@ class AppDeduplicationService : public KeyedService,
   }
 
   std::map<uint32_t, DuplicateGroup> duplication_map_;
-  std::map<EntryId, uint32_t> entry_to_group_map_;
-  std::map<EntryId, EntryStatus> entry_status_;
+  std::map<Entry, uint32_t> entry_to_group_map_;
+  std::map<Entry, EntryStatus> entry_status_;
   raw_ptr<Profile, ExperimentalAsh> profile_;
 
   base::ScopedObservation<AppProvisioningDataManager,
@@ -131,6 +146,7 @@ class AppDeduplicationService : public KeyedService,
       app_registry_cache_observation_{this};
 
   std::unique_ptr<AppDeduplicationServerConnector> server_connector_;
+  std::unique_ptr<DeviceInfoManager> device_info_manager_;
   std::unique_ptr<AppDeduplicationCache> cache_;
 
   // For testing

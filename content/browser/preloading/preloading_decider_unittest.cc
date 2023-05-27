@@ -6,11 +6,13 @@
 
 #include <vector>
 
+#include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/preloading/prefetch/prefetch_document_manager.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
 #include "content/browser/preloading/prefetch/prefetch_service.h"
 #include "content/browser/preloading/prefetcher.h"
+#include "content/browser/preloading/preloading_data_impl.h"
 #include "content/browser/preloading/prerenderer.h"
 #include "content/public/browser/anchor_element_preconnect_delegate.h"
 #include "content/public/common/content_client.h"
@@ -341,15 +343,19 @@ TEST_P(PreloadingDeciderTest, PrerenderOnPointerEventHeuristics) {
   // Create list of SpeculationCandidatePtrs.
   std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
 
-  auto create_candidate = [&](blink::mojom::SpeculationAction action,
-                              const std::string& url) {
-    auto candidate = blink::mojom::SpeculationCandidate::New();
-    candidate->action = action;
-    candidate->url = GetSameOriginUrl(url);
-    candidate->referrer = blink::mojom::Referrer::New();
-    candidate->eagerness = eagerness;
-    return candidate;
-  };
+  auto create_candidate =
+      [&](blink::mojom::SpeculationAction action, const std::string& url,
+          network::mojom::NoVarySearchPtr&& no_vary_search_hint = nullptr) {
+        auto candidate = blink::mojom::SpeculationCandidate::New();
+        candidate->action = action;
+        candidate->url = GetSameOriginUrl(url);
+        candidate->referrer = blink::mojom::Referrer::New();
+        candidate->eagerness = eagerness;
+        if (no_vary_search_hint) {
+          candidate->no_vary_search_hint = std::move(no_vary_search_hint);
+        }
+        return candidate;
+      };
 
   auto call_pointer_event_handler = [&](const GURL& url) {
     switch (event_type) {
@@ -366,6 +372,10 @@ TEST_P(PreloadingDeciderTest, PrerenderOnPointerEventHeuristics) {
       blink::mojom::SpeculationAction::kPrerender, "/candidate1.html"));
   candidates.push_back(create_candidate(
       blink::mojom::SpeculationAction::kPrefetch, "/candidate2.html"));
+  candidates.push_back(create_candidate(
+      blink::mojom::SpeculationAction::kPrefetch, "/candidate4.html?a=1",
+      network::mojom::NoVarySearch::New(
+          network::mojom::SearchParamsVariance::NewNoVaryParams({"a"}), true)));
 
   preloading_decider->UpdateSpeculationCandidates(candidates);
   // It should not pass kModerate or kConservative candidates directly
@@ -397,11 +407,18 @@ TEST_P(PreloadingDeciderTest, PrerenderOnPointerEventHeuristics) {
     EXPECT_EQ(1u, GetPrefetchService()->prefetches_.size());
     EXPECT_EQ(1u, prerenderer.Get()->prerenders_.size());
 
+    // It should prefetch if there is a prefetch candidate matching by
+    // No-Vary-Search hint.
+    call_pointer_event_handler(GetSameOriginUrl("/candidate4.html"));
+    EXPECT_FALSE(preconnect_delegate->Target().has_value());
+    EXPECT_EQ(2u, GetPrefetchService()->prefetches_.size());
+    EXPECT_EQ(1u, prerenderer.Get()->prerenders_.size());
+
     // It should preconnect if the target is not safe to prerender nor safe to
     // prefetch.
     call_pointer_event_handler(GetSameOriginUrl("/candidate3.html"));
     EXPECT_TRUE(preconnect_delegate->Target().has_value());
-    EXPECT_EQ(1u, GetPrefetchService()->prefetches_.size());
+    EXPECT_EQ(2u, GetPrefetchService()->prefetches_.size());
     EXPECT_EQ(1u, prerenderer.Get()->prerenders_.size());
   } else {
     call_pointer_event_handler(GetSameOriginUrl("/candidate1.html"));
@@ -473,6 +490,45 @@ TEST_F(PreloadingDeciderTest, CanOverridePointerHoverEagerness) {
 
   preloading_decider->OnPointerHover(GetSameOriginUrl("/candidate1.html"));
   EXPECT_EQ(1u, GetPrefetchService()->prefetches_.size());
+}
+
+TEST_F(PreloadingDeciderTest, UmaRecallStats) {
+  base::HistogramTester histogram_tester;
+  auto* preloading_decider =
+      PreloadingDecider::GetOrCreateForCurrentDocument(&GetPrimaryMainFrame());
+  ASSERT_TRUE(preloading_decider != nullptr);
+
+  std::vector<blink::mojom::SpeculationCandidatePtr> candidates;
+  auto candidate = blink::mojom::SpeculationCandidate::New();
+  candidate->action = blink::mojom::SpeculationAction::kPrefetch;
+  candidate->url = GetCrossOriginUrl("/candidate1.html");
+  candidate->referrer = blink::mojom::Referrer::New();
+  candidate->eagerness = blink::mojom::SpeculationEagerness::kEager;
+  candidates.push_back(std::move(candidate));
+
+  preloading_decider->UpdateSpeculationCandidates(candidates);
+
+  PreloadingPredictor pointer_down_predictor{
+      preloading_predictor::kUrlPointerDownOnAnchor};
+  // PreloadingPredictor on_hover_predictor{
+  //     preloading_predictor::kUrlPointerHoverOnAnchor};
+  // Check recall UKM records.
+  auto uma_predictor_recall = [](const PreloadingPredictor& predictor) {
+    return base::StrCat({"Preloading.Predictor.", predictor.name(), ".Recall"});
+  };
+
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(&GetPrimaryMainFrame());
+  web_contents->GetController().LoadURL(
+      GURL("https://www.google.com"), {},
+      ui::PageTransition::PAGE_TRANSITION_LINK, {});
+
+  histogram_tester.ExpectBucketCount(
+      uma_predictor_recall(pointer_down_predictor),
+      PredictorConfusionMatrix::kTruePositive, 0);
+  histogram_tester.ExpectBucketCount(
+      uma_predictor_recall(pointer_down_predictor),
+      PredictorConfusionMatrix::kFalseNegative, 0);
 }
 
 }  // namespace

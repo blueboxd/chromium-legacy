@@ -30,6 +30,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
+#include "base/task/sequence_manager/thread_controller.h"
 #include "base/task/sequence_manager/thread_controller_power_monitor.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/hang_watcher.h"
@@ -216,6 +217,7 @@
 #endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/scoped_add_feature_flags.h"
 #include "chrome/common/chrome_paths_lacros.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"  // nogncheck
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"    // nogncheck
@@ -229,6 +231,7 @@
 #include "content/public/browser/zygote_host/zygote_host_linux.h"
 #include "media/base/media_switches.h"
 #include "ui/base/resource/data_pack_with_resource_sharing_lacros.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 #endif
 
@@ -395,14 +398,14 @@ bool HandleCreditsSwitch(const base::CommandLine& command_line) {
 bool HandleVersionSwitches(const base::CommandLine& command_line) {
 #if !BUILDFLAG(IS_MAC)
   if (command_line.HasSwitch(switches::kProductVersion)) {
-    printf("%s\n", version_info::GetVersionNumber().c_str());
+    printf("%s\n", version_info::GetVersionNumber().data());
     return true;
   }
 #endif
 
   if (command_line.HasSwitch(switches::kVersion)) {
-    printf("%s %s %s\n", version_info::GetProductName().c_str(),
-           version_info::GetVersionNumber().c_str(),
+    printf("%s %s %s\n", version_info::GetProductName().data(),
+           version_info::GetVersionNumber().data(),
            chrome::GetChannelName(chrome::WithExtendedStable(true)).c_str());
     return true;
   }
@@ -841,6 +844,12 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kEnableNativeGpuMemoryBuffers);
     }
+
+    if (init_params->IsVariableRefreshRateEnabled()) {
+      base::ScopedAddFeatureFlags add_feature_flags(
+          base::CommandLine::ForCurrentProcess());
+      add_feature_flags.EnableIfNotSet(::features::kEnableVariableRefreshRate);
+    }
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -956,6 +965,7 @@ void ChromeMainDelegate::CommonEarlyInitialization() {
 
   base::InitializeCpuReductionExperiment();
   base::sequence_manager::internal::SequenceManagerImpl::InitializeFeatures();
+  base::sequence_manager::internal::ThreadController::InitializeFeatures();
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   base::MessagePumpLibevent::InitializeFeatures();
 #elif BUILDFLAG(IS_MAC)

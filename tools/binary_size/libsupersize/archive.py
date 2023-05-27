@@ -217,8 +217,8 @@ def LoadAndPostProcessSizeInfo(path, file_obj=None):
 def LoadAndPostProcessDeltaSizeInfo(path, file_obj=None):
   """Returns a tuple of SizeInfos for the given |path|."""
   logging.debug('Loading results from: %s', path)
-  before_size_info, after_size_info = file_format.LoadDeltaSizeInfo(
-      path, file_obj=file_obj)
+  before_size_info, after_size_info, _, _ = (file_format.LoadDeltaSizeInfo(
+      path, file_obj=file_obj))
   logging.info('Normalizing symbol names')
   _NormalizeNames(before_size_info.raw_symbols)
   _NormalizeNames(after_size_info.raw_symbols)
@@ -405,9 +405,10 @@ def _CreateContainerSymbols(container_spec, apk_file_manager,
     add_syms(arsc_section_ranges, arsc_symbols)
     metrics_by_file.update(arsc_metrics_by_file)
 
-    other_section_ranges, other_symbols, apk_metadata = (
+    other_section_ranges, other_symbols, apk_metadata, apk_metrics_by_file = (
         apk.CreateApkOtherSymbols(apk_spec))
     add_syms(other_section_ranges, other_symbols)
+    metrics_by_file.update(apk_metrics_by_file)
 
   metadata = _CreateMetadata(container_spec, elf_info)
   assert not (metadata.keys() & apk_metadata.keys())

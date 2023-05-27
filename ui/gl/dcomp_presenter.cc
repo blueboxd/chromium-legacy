@@ -53,6 +53,7 @@ DCompPresenter::DCompPresenter(
           settings.disable_nv12_dynamic_textures,
           settings.disable_vp_scaling,
           settings.disable_vp_super_resolution,
+          settings.force_dcomp_triple_buffer_video_swap_chain,
           settings.no_downscaled_overlay_promotion)) {}
 
 DCompPresenter::~DCompPresenter() {
@@ -103,13 +104,7 @@ bool DCompPresenter::Resize(const gfx::Size& size,
     return false;
   }
 
-  // Force a resize and redraw (but not a move, activate, etc.).
-  if (!SetWindowPos(window(), nullptr, 0, 0, size.width(), size.height(),
-                    SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCOPYBITS |
-                        SWP_NOOWNERZORDER | SWP_NOZORDER)) {
-    return false;
-  }
-  return true;
+  return child_window_.Resize(size);
 }
 
 gfx::VSyncProvider* DCompPresenter::GetVSyncProvider() {

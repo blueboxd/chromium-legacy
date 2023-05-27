@@ -9,12 +9,6 @@
 
 #import "ios/chrome/browser/snapshots/snapshot_generator_delegate.h"
 
-namespace web {
-class WebState;
-}
-
-@class CardSideSwipeView;
-@class SideSwipeGestureRecognizer;
 @protocol SideSwipeToolbarInteracting;
 @protocol SideSwipeToolbarSnapshotProviding;
 @protocol TabStripHighlighting;
@@ -33,7 +27,7 @@ extern NSString* const kSideSwipeDidStopNotification;
 // Returns the main content view.
 - (UIView*)sideSwipeContentView;
 // Makes `tab` the currently visible tab, displaying its view.
-- (void)sideSwipeRedisplayWebState:(web::WebState*)webState;
+- (void)sideSwipeRedisplayTabView;
 // Controls the visibility of views such as the findbar, infobar and voice
 // search bar.
 - (void)updateAccessoryViewsForSideSwipeWithVisibility:(BOOL)visible;
@@ -85,7 +79,8 @@ extern NSString* const kSideSwipeDidStopNotification;
 // Returns `NO` if the device should not rotate.
 - (BOOL)shouldAutorotate;
 
-// Resets the swipeDelegate's contentView frame origin x position to zero.
+// Resets the swipeDelegate's contentView frame origin x position to zero if
+// there is an active swipe.
 - (void)resetContentView;
 
 @end

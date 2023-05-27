@@ -7,14 +7,13 @@ package org.chromium.chrome.browser.omnibox.suggestions.tail;
 import android.content.Context;
 
 import org.chromium.chrome.browser.omnibox.R;
-import org.chromium.chrome.browser.omnibox.suggestions.ActionChipsDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
+import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -27,9 +26,8 @@ public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
      * @param context An Android context.
      * @param suggestionHost A handle to the object using the suggestions.
      */
-    public TailSuggestionProcessor(Context context, SuggestionHost suggestionHost,
-            ActionChipsDelegate actionChipsDelegate) {
-        super(context, suggestionHost, actionChipsDelegate, null);
+    public TailSuggestionProcessor(Context context, SuggestionHost suggestionHost) {
+        super(context, suggestionHost, null);
         mAlignTailSuggestions = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
     }
 
@@ -64,7 +62,7 @@ public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
 
         setSuggestionDrawableState(model,
                 SuggestionDrawableState.Builder
-                        .forDrawableRes(getContext(), R.drawable.ic_suggestion_magnifier)
+                        .forDrawableRes(mContext, R.drawable.ic_suggestion_magnifier)
                         .setAllowTint(true)
                         .build());
         setTabSwitchOrRefineAction(model, suggestion, position);

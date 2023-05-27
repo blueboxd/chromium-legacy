@@ -16,12 +16,13 @@
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ash/policy/reporting/metrics_reporting/apps/app_usage_collector.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/apps/app_usage_observer.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_healthd_sampler_handlers/cros_healthd_sampler_handler.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/cros_reporting_settings.h"
 #include "chrome/browser/ash/policy/status_collector/managed_session_service.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/reporting/metric_reporting_manager_delegate_base.h"
+#include "chrome/browser/chromeos/reporting/user_reporting_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "components/reporting/metrics/event_driven_telemetry_collector_pool.h"
@@ -35,9 +36,6 @@ class MetricEventObserverManager;
 class MetricReportQueue;
 class CollectorBase;
 class Sampler;
-
-// Feature flag that can be set to facilitate app metrics reporting.
-BASE_DECLARE_FEATURE(kEnableAppMetricsReporting);
 
 // Class to initialize and start info, event, and telemetry collection and
 // reporting.
@@ -154,6 +152,7 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
   void InitEventObserverManager(
       std::unique_ptr<MetricEventObserver> event_observer,
       MetricReportQueue* report_queue,
+      ReportingSettings* reporting_settings,
       const std::string& enable_setting_path,
       bool setting_enabled_default_value,
       base::TimeDelta init_delay);
@@ -192,6 +191,7 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
       base::StringPiece setting_name);
 
   CrosReportingSettings reporting_settings_;
+  std::unique_ptr<UserReportingSettings> user_reporting_settings_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -236,9 +236,9 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
   std::vector<std::unique_ptr<MetricEventObserverManager>>
       event_observer_managers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  // App usage collector used to collect app usage reports from the
+  // App usage observer used to observe and collect app usage reports from the
   // `AppPlatformMetrics` component.
-  std::unique_ptr<AppUsageCollector> app_usage_collector_
+  std::unique_ptr<AppUsageObserver> app_usage_observer_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   std::unique_ptr<Delegate> delegate_;

@@ -5,8 +5,8 @@
 #import "ios/chrome/app/app_startup_parameters.h"
 
 #import "base/feature_list.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "net/base/mac/url_conversions.h"
 #import "net/base/url_util.h"
 #import "url/gurl.h"
@@ -78,7 +78,8 @@
     case START_QR_CODE_SCANNER:
       [description appendString:@", should launch QR scanner"];
       break;
-    case START_LENS:
+    case START_LENS_FROM_APP_ICON_LONG_PRESS:
+    case START_LENS_FROM_HOME_SCREEN_WIDGET:
       [description appendString:@", should launch Lens"];
       break;
     case START_VOICE_SEARCH:

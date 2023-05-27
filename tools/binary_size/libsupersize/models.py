@@ -21,8 +21,12 @@ BUILD_CONFIG_TITLE = 'title'
 BUILD_CONFIG_URL = 'url'
 BUILD_CONFIG_OUT_DIRECTORY = 'out_directory'
 
+METRICS_COUNT = 'COUNT'
+METRICS_COUNT_RELOCATIONS = 'Relocations'
+METRICS_SIZE = 'SIZE'
+METRICS_SIZE_APK_FILE = 'APK File'
+
 METADATA_APK_FILENAME = 'apk_file_name'  # Path relative to output_directory.
-METADATA_APK_SIZE = 'apk_size'  # File size of apk in bytes.
 METADATA_APK_SPLIT_NAME = 'apk_split_name'  # Name of the split if applicable.
 METADATA_ZIPALIGN_OVERHEAD = 'zipalign_padding'  # Overhead from zipalign.
 METADATA_SIGNING_BLOCK_SIZE = 'apk_signature_block_size'  # Size in bytes.
@@ -33,7 +37,6 @@ METADATA_ELF_ARCHITECTURE = 'elf_arch'  # "arm", "arm64", "x86", or "x64".
 METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
 METADATA_ELF_BUILD_ID = 'elf_build_id'
-METADATA_ELF_RELOCATIONS_COUNT = 'elf_relocations_count'
 METADATA_PROGUARD_MAPPING_FILENAME = 'proguard_mapping_file_name'
 
 # New sections should also be added to the SuperSize UI.
@@ -368,9 +371,11 @@ class SizeInfo(BaseSizeInfo):
 
   Fields:
     size_path: Path to .size file this was loaded from (or None).
+    is_sparse: Whether the list of symbols is sparse.
   """
   __slots__ = (
       'size_path',
+      'is_sparse',
   )
 
   def __init__(self,
@@ -378,9 +383,11 @@ class SizeInfo(BaseSizeInfo):
                containers,
                raw_symbols,
                symbols=None,
-               size_path=None):
+               size_path=None,
+               is_sparse=False):
     super().__init__(build_config, containers, raw_symbols, symbols=symbols)
     self.size_path = size_path
+    self.is_sparse = is_sparse
 
   @property
   def metadata_legacy(self):
@@ -402,16 +409,32 @@ class DeltaSizeInfo(BaseSizeInfo):
   Fields:
     before: SizeInfo for "before".
     after: SizeInfo for "after".
+    removed_sources: List of removed source files from "before".
+    added_sources: List of added source files from "after".
   """
   __slots__ = (
       'before',
       'after',
+      'removed_sources',
+      'added_sources',
   )
 
-  def __init__(self, before, after, containers, raw_symbols):
+  def __init__(self,
+               before,
+               after,
+               containers,
+               raw_symbols,
+               removed_sources=None,
+               added_sources=None):
     super().__init__(None, containers, raw_symbols)
     self.before = before
     self.after = after
+    self.removed_sources = removed_sources or []
+    self.added_sources = added_sources or []
+
+  @property
+  def is_sparse(self):
+    return self.before.is_sparse and self.after.is_sparse
 
 
 class BaseSymbol:
@@ -1465,6 +1488,16 @@ class DeltaSymbolGroup(SymbolGroup):
 
   def WhereDiffStatusIs(self, diff_status):
     return self.Filter(lambda s: s.diff_status == diff_status)
+
+  def GetEntireAddOrRemoveSources(self):
+    """Return source paths with entirely added or removed symbols."""
+    source_flags = collections.defaultdict(int)
+    for sym in self:
+      source_flags[sym.source_path] |= 1 << sym.diff_status
+    add_flag = 1 << DIFF_STATUS_ADDED
+    remove_flag = 1 << DIFF_STATUS_REMOVED
+    return (sorted(k for k, v in source_flags.items() if v == remove_flag),
+            sorted(k for k, v in source_flags.items() if v == add_flag))
 
 
 def _ExtractPrefixBeforeSeparator(string, separator, count):

@@ -1574,6 +1574,20 @@ void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
   input_handler->ExtendSelectionAndDelete(before, after);
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+void RenderWidgetHostViewAura::ExtendSelectionAndReplace(
+    size_t before,
+    size_t after,
+    const base::StringPiece16 replacement_text) {
+  auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
+  if (!input_handler) {
+    return;
+  }
+  input_handler->ExtendSelectionAndReplace(before, after,
+                                           std::u16string(replacement_text));
+}
+#endif
+
 void RenderWidgetHostViewAura::EnsureCaretNotInRect(
     const gfx::Rect& rect_in_screen) {
   keyboard_occluded_bounds_ = rect_in_screen;
@@ -1915,8 +1929,11 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   if (!window_->GetRootWindow())
     return;
 
-  if (needs_to_update_display_metrics_)
+  // TODO(crbug.com/1446142): Add unittest for lacros.
+  if (needs_to_update_display_metrics_ ||
+      old_device_scale_factor != new_device_scale_factor) {
     ProcessDisplayMetricsChanged();
+  }
 
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
                               window_->GetLocalSurfaceId());

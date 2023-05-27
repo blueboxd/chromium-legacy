@@ -45,6 +45,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
+import org.chromium.chrome.browser.omnibox.OmniboxMetrics;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteMediator.EditSessionState;
 import org.chromium.chrome.browser.omnibox.suggestions.base.HistoryClustersProcessor;
@@ -62,6 +63,9 @@ import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
+import org.chromium.components.omnibox.action.OmniboxActionDelegate;
+import org.chromium.components.omnibox.action.OmniboxActionFactoryJni;
+import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -101,10 +105,10 @@ public class AutocompleteMediatorUnitTest {
     private @Mock TabModel mTabModel;
     private @Mock TabWindowManager mTabManager;
     private @Mock WindowAndroid mMockWindowAndroid;
-    private @Mock ActionChipsDelegate mActionChipsDelegate;
+    private @Mock OmniboxActionDelegate mOmniboxActionDelegate;
     private @Mock LargeIconBridge.Natives mLargeIconBridgeJniMock;
-    @Mock
-    private HistoryClustersProcessor.OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
+    private @Mock HistoryClustersProcessor.OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
+    private @Mock OmniboxActionFactoryJni mActionFactoryJni;
 
     private PropertyModel mListModel;
     private AutocompleteMediator mMediator;
@@ -116,6 +120,7 @@ public class AutocompleteMediatorUnitTest {
     @Before
     public void setUp() {
         mJniMocker.mock(LargeIconBridgeJni.TEST_HOOKS, mLargeIconBridgeJniMock);
+        mJniMocker.mock(OmniboxActionFactoryJni.TEST_HOOKS, mActionFactoryJni);
 
         doReturn(mAutocompleteController).when(mAutocompleteProvider).get(any());
 
@@ -132,7 +137,7 @@ public class AutocompleteMediatorUnitTest {
                     mAutocompleteDelegate, mTextStateProvider, mListModel,
                     new Handler(), () -> mModalDialogManager, null, null,
                     mLocationBarDataProvider, tab -> {}, mTabWindowManagerSupplier, url -> false,
-                    mActionChipsDelegate, mOpenHistoryClustersDelegate);
+                    mOmniboxActionDelegate, mOpenHistoryClustersDelegate);
             mMediator.setAutocompleteProfile(mProfile);
         });
         // clang-format on
@@ -705,22 +710,22 @@ public class AutocompleteMediatorUnitTest {
             @Nullable Integer lastHistogramTime) {
         Assert.assertEquals(firstHistogramTotalCount,
                 RecordHistogram.getHistogramTotalCountForTesting(
-                        SuggestionsMetrics.HISTOGRAM_SUGGESTIONS_REQUEST_TO_UI_MODEL_FIRST));
+                        OmniboxMetrics.HISTOGRAM_SUGGESTIONS_REQUEST_TO_UI_MODEL_FIRST));
         Assert.assertEquals(lastHistogramTotalCount,
                 RecordHistogram.getHistogramTotalCountForTesting(
-                        SuggestionsMetrics.HISTOGRAM_SUGGESTIONS_REQUEST_TO_UI_MODEL_LAST));
+                        OmniboxMetrics.HISTOGRAM_SUGGESTIONS_REQUEST_TO_UI_MODEL_LAST));
 
         if (firstHistogramTime != null) {
             Assert.assertEquals(1,
                     RecordHistogram.getHistogramValueCountForTesting(
-                            SuggestionsMetrics.HISTOGRAM_SUGGESTIONS_REQUEST_TO_UI_MODEL_FIRST,
+                            OmniboxMetrics.HISTOGRAM_SUGGESTIONS_REQUEST_TO_UI_MODEL_FIRST,
                             firstHistogramTime));
         }
 
         if (lastHistogramTime != null) {
             Assert.assertEquals(1,
                     RecordHistogram.getHistogramValueCountForTesting(
-                            SuggestionsMetrics.HISTOGRAM_SUGGESTIONS_REQUEST_TO_UI_MODEL_LAST,
+                            OmniboxMetrics.HISTOGRAM_SUGGESTIONS_REQUEST_TO_UI_MODEL_LAST,
                             lastHistogramTime));
         }
     }

@@ -16,8 +16,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/glue/sync_transport_data_prefs.h"
-#include "components/sync/driver/sync_service_impl.h"
+#include "components/sync/service/glue/sync_transport_data_prefs.h"
+#include "components/sync/service/sync_service_impl.h"
 #include "content/public/test/browser_test.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -28,16 +28,17 @@
 namespace {
 
 syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
-  static_assert(46 == syncer::GetNumModelTypes(),
+  static_assert(48 == syncer::GetNumModelTypes(),
                 "Add new types below if they run in transport mode");
-  // Only some special allowlisted types (and control types) are allowed in
-  // standalone transport mode.
-  syncer::ModelTypeSet allowed_types(
-      syncer::DEVICE_INFO, syncer::USER_CONSENTS, syncer::SECURITY_EVENTS,
-      syncer::AUTOFILL_WALLET_DATA, syncer::CONTACT_INFO,
-      syncer::SHARING_MESSAGE);
+  // Only some types will run by default in transport mode (i.e. without their
+  // own separate opt-in).
+  syncer::ModelTypeSet allowed_types = {
+      syncer::DEVICE_INFO,     syncer::USER_CONSENTS,
+      syncer::SECURITY_EVENTS, syncer::AUTOFILL_WALLET_DATA,
+      syncer::CONTACT_INFO,    syncer::SHARING_MESSAGE};
   allowed_types.PutAll(syncer::ControlTypes());
   allowed_types.Put(syncer::SEND_TAB_TO_SELF);
+  allowed_types.Put(syncer::READING_LIST);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // OS sync types run in transport mode.
   allowed_types.PutAll(
@@ -56,17 +57,29 @@ base::FilePath GetTestFilePathForCacheGuid() {
   return user_data_path.AppendASCII("SyncTestTmpCacheGuid");
 }
 
-class SyncDisabledByUserChecker : public SingleClientStatusChangeChecker {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class SyncDisabledViaDashboardChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncDisabledByUserChecker(syncer::SyncServiceImpl* service)
+  explicit SyncDisabledViaDashboardChecker(syncer::SyncServiceImpl* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for sync disabled by user";
-    return service()->HasDisableReason(
-        syncer::SyncService::DISABLE_REASON_USER_CHOICE);
+    *os << "Waiting for sync disabled by dashboard";
+    return service()->IsSyncFeatureDisabledViaDashboard();
   }
 };
+#else
+class SyncConsentDisabledChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit SyncConsentDisabledChecker(syncer::SyncServiceImpl* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for sync consent being disabled";
+    return !service()->HasSyncConsent();
+  }
+};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class SingleClientStandaloneTransportSyncTest : public SyncTest {
  public:
@@ -91,14 +104,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  // Both IsSyncRequested and IsFirstSetupComplete should remain false (i.e.
-  // at their default values). They only get set during the Sync setup flow,
-  // either by the Sync confirmation dialog or by the settings page if going
-  // through the advanced settings flow.
-  EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
-  // TODO(crbug.com/906034,crbug.com/973770): Sort out the proper default value
-  // for IsSyncRequested().
-  // EXPECT_FALSE(GetSyncService(0)->GetUserSettings()->IsSyncRequested());
+  // IsInitialSyncFeatureSetupComplete should remain false. It only gets set
+  // during the Sync setup flow, either by the Sync confirmation dialog or by
+  // the settings page if going through the advanced settings flow.
+  EXPECT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsInitialSyncFeatureSetupComplete());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
@@ -165,16 +176,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
   // Trigger a "Reset Sync" from the dashboard and wait for it to apply. This
   // involves clearing the server data so that the birthday gets incremented.
   GetFakeServer()->ClearServerData();
-  EXPECT_TRUE(SyncDisabledByUserChecker(GetSyncService(0)).Wait());
-
-  // On all platforms, Sync-the-feature should now be disabled.
-  EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
-  EXPECT_TRUE(GetSyncService(0)->HasDisableReason(
-      syncer::SyncService::DISABLE_REASON_USER_CHOICE));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On Ash, the primary account should remain, and Sync should start up
-  // again in standalone transport mode.
+  // again in standalone transport mode, but report this specific case via
+  // IsSyncFeatureDisabledViaDashboard().
+  EXPECT_TRUE(SyncDisabledViaDashboardChecker(GetSyncService(0)).Wait());
   EXPECT_TRUE(GetSyncService(0)->HasSyncConsent());
   EXPECT_FALSE(GetSyncService(0)->HasDisableReason(
       syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN));
@@ -188,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
 #else
   // On platforms other than Ash, the "Reset Sync" operation should revoke
   // the Sync consent. On Mobile, "Reset Sync" also clears the primary account.
-  EXPECT_FALSE(GetSyncService(0)->HasSyncConsent());
+  EXPECT_TRUE(SyncConsentDisabledChecker(GetSyncService(0)).Wait());
   // Note: In real life, on platforms other than Ash and Mobile the account
   // would remain as an *unconsented* primary account, and so Sync would start
   // up again in standalone transport mode. However, since we haven't set up
@@ -209,10 +216,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
             GetSyncService(0)->GetTransportState());
 
   // On platforms where Sync starts automatically (in practice, Android and
-  // ChromeOS), IsFirstSetupComplete gets set automatically, and so the full
-  // Sync feature will start upon sign-in to a primary account.
+  // ChromeOS), IsInitialSyncFeatureSetupComplete gets set automatically, and so
+  // the full Sync feature will start upon sign-in to a primary account.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  ASSERT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
+  ASSERT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsInitialSyncFeatureSetupComplete());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -238,10 +247,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientStandaloneTransportSyncTest,
             GetSyncService(0)->GetTransportState());
 
   // On platforms where Sync starts automatically (in practice, Android and
-  // ChromeOS), IsFirstSetupComplete gets set automatically, and so the full
-  // Sync feature will start upon sign-in to a primary account.
+  // ChromeOS), IsInitialSyncFeatureSetupComplete gets set automatically, and so
+  // the full Sync feature will start upon sign-in to a primary account.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  ASSERT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
+  ASSERT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsInitialSyncFeatureSetupComplete());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 

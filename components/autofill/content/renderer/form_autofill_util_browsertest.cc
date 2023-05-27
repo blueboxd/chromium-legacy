@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/content/renderer/test_utils.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -49,6 +50,8 @@ using blink::WebSelectElement;
 using blink::WebString;
 using blink::WebVector;
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
+using ::testing::Pointwise;
 using ::testing::Values;
 
 namespace autofill::form_util {
@@ -1594,7 +1597,7 @@ TEST_P(SelectMenuAutofillParamTest, WebFormElementToFormData) {
   }
 }
 
-// Tests that if the number of iframes exceeds kMaxParseableChildFrames,
+// Tests that if the number of iframes exceeds kMaxExtractableChildFrames,
 // child frames of that form are not extracted.
 TEST_F(FormAutofillUtilsTestWithIframesEnabled,
        ExtractNoFramesIfTooManyIframes) {
@@ -1605,10 +1608,12 @@ TEST_F(FormAutofillUtilsTestWithIframesEnabled,
   };
 
   LoadHTML(R"(<html><body><form id='f'></form>)");
-  for (size_t i = 0; i < kMaxParseableFields - 1; ++i)
+  for (size_t i = 0; i < kMaxExtractableFields - 1; ++i) {
     CreateFormElement("input");
-  for (size_t i = 0; i < kMaxParseableChildFrames; ++i)
+  }
+  for (size_t i = 0; i < kMaxExtractableChildFrames; ++i) {
     CreateFormElement("iframe");
+  }
 
   // Ensure that Android runs at default page scale.
   web_view_->SetPageScaleFactor(1.0);
@@ -1619,24 +1624,24 @@ TEST_F(FormAutofillUtilsTestWithIframesEnabled,
     FormData form_data;
     ASSERT_TRUE(WebFormElementToFormData(form, WebFormControlElement(), nullptr,
                                          EXTRACT_NONE, &form_data, nullptr));
-    EXPECT_EQ(form_data.fields.size(), kMaxParseableFields - 1);
-    EXPECT_EQ(form_data.child_frames.size(), kMaxParseableChildFrames);
+    EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
+    EXPECT_EQ(form_data.child_frames.size(), kMaxExtractableChildFrames);
   }
 
-  // There may be multiple checks (e.g., == kMaxParseableChildFrames, <=
-  // kMaxParseableChildFrames, < kMaxParseableChildFrames), so we test different
-  // numbers of <iframe> elements.
+  // There may be multiple checks (e.g., == kMaxExtractableChildFrames, <=
+  // kMaxExtractableChildFrames, < kMaxExtractableChildFrames), so we test
+  // different numbers of <iframe> elements.
   for (int i = 0; i < 3; ++i) {
     CreateFormElement("iframe");
     FormData form_data;
     ASSERT_TRUE(WebFormElementToFormData(form, WebFormControlElement(), nullptr,
                                          EXTRACT_NONE, &form_data, nullptr));
-    EXPECT_EQ(form_data.fields.size(), kMaxParseableFields - 1);
+    EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
     EXPECT_TRUE(form_data.child_frames.empty());
   }
 }
 
-// Tests that if the number of fields exceeds |kMaxParseableFields|, neither
+// Tests that if the number of fields exceeds |kMaxExtractableFields|, neither
 // fields nor child frames of that form are extracted.
 TEST_F(FormAutofillUtilsTestWithIframesEnabled,
        ExtractNoFieldsOrFramesIfTooManyFields) {
@@ -1647,10 +1652,12 @@ TEST_F(FormAutofillUtilsTestWithIframesEnabled,
   };
 
   LoadHTML(R"(<html><body><form id='f'></form>)");
-  for (size_t i = 0; i < kMaxParseableFields - 1; ++i)
+  for (size_t i = 0; i < kMaxExtractableFields - 1; ++i) {
     CreateFormElement("input");
-  for (size_t i = 0; i < kMaxParseableChildFrames; ++i)
+  }
+  for (size_t i = 0; i < kMaxExtractableChildFrames; ++i) {
     CreateFormElement("iframe");
+  }
 
   // Ensure that Android runs at default page scale.
   web_view_->SetPageScaleFactor(1.0);
@@ -1661,13 +1668,13 @@ TEST_F(FormAutofillUtilsTestWithIframesEnabled,
     FormData form_data;
     ASSERT_TRUE(WebFormElementToFormData(form, WebFormControlElement(), nullptr,
                                          EXTRACT_NONE, &form_data, nullptr));
-    EXPECT_EQ(form_data.fields.size(), kMaxParseableFields - 1);
-    EXPECT_EQ(form_data.child_frames.size(), kMaxParseableChildFrames);
+    EXPECT_EQ(form_data.fields.size(), kMaxExtractableFields - 1);
+    EXPECT_EQ(form_data.child_frames.size(), kMaxExtractableChildFrames);
   }
 
-  // There may be multiple checks (e.g., == kMaxParseableFields, <=
-  // kMaxParseableFields, < kMaxParseableFields), so we test different numbers
-  // of <input> elements.
+  // There may be multiple checks (e.g., == kMaxExtractableFields, <=
+  // kMaxExtractableFields, < kMaxExtractableFields), so we test different
+  // numbers of <input> elements.
   for (int i = 0; i < 3; ++i) {
     SCOPED_TRACE(base::NumberToString(i));
     CreateFormElement("input");
@@ -1752,6 +1759,238 @@ TEST_F(FormAutofillUtilsTest, FillAndResetAndFillAgainForm) {
   EXPECT_EQ(textfield.Value().Ascii(), "Foo");
   EXPECT_EQ(select.Value().Ascii(), "Foo");
   EXPECT_EQ(selectmenu.Value().Ascii(), "Foo");
+}
+
+// Verifies that the callback happens even if no sequences of 4 digits are
+// found.
+TEST_F(FormAutofillUtilsTest, TraverseDomForFourDigitCombinations_NoMatches) {
+  std::vector<std::string> matches = {"dummy data"};
+  LoadHTML(R"(123 444)");
+  WebDocument document = GetMainFrame()->GetDocument();
+  autofill::form_util::TraverseDomForFourDigitCombinations(
+      document, base::BindLambdaForTesting(
+                    [&](const std::vector<std::string>& regex_search) {
+                      matches = regex_search;
+                    }));
+  EXPECT_THAT(matches, IsEmpty());
+}
+
+// Verifies that the matches correctly returns all four digit combinations.
+TEST_F(FormAutofillUtilsTest,
+       TraverseDomForFourDigitCombinations_MatchesFound) {
+  std::vector<std::string> matches;
+  LoadHTML(R"(
+    <body>
+      <p>1234 ****2345 **3456 **** 4567 ●●●●5678 </p>
+      <form>
+        <input>
+      </form>
+    </body>)");
+  WebDocument document = GetMainFrame()->GetDocument();
+  autofill::form_util::TraverseDomForFourDigitCombinations(
+      document, base::BindLambdaForTesting(
+                    [&](const std::vector<std::string>& regex_search) {
+                      matches = regex_search;
+                    }));
+  EXPECT_THAT(matches, ElementsAre("1234", "2345", "3456", "4567", "5678"));
+
+  LoadHTML(R"(
+    <form>Enter your CVC for card 2345:
+      <input type="text">
+    </form>)");
+  document = GetMainFrame()->GetDocument();
+  autofill::form_util::TraverseDomForFourDigitCombinations(
+      document, base::BindLambdaForTesting(
+                    [&](const std::vector<std::string>& regex_search) {
+                      matches = regex_search;
+                    }));
+  EXPECT_THAT(matches, ElementsAre("2345"));
+
+  LoadHTML(R"(
+    <table>
+      <tr>
+        <td>Enter your CVC for card 2345</td>
+        <td>
+            <form><input type="text"></form>
+        </td>
+      </tr>
+    </table>)");
+  document = GetMainFrame()->GetDocument();
+  autofill::form_util::TraverseDomForFourDigitCombinations(
+      document, base::BindLambdaForTesting(
+                    [&](const std::vector<std::string>& regex_search) {
+                      matches = regex_search;
+                    }));
+  EXPECT_THAT(matches, ElementsAre("2345"));
+}
+
+// Ensure that we don't return duplicate values.
+TEST_F(FormAutofillUtilsTest,
+       TraverseDomForFourDigitCombinations_MatchesFoundWithDuplicates) {
+  std::vector<std::string> matches;
+  LoadHTML(R"(
+    <body>
+      <p>1234 ****1234 **1234 **** 1234 ····1234 ●●●●1234</p>
+      <form>
+          <input></input>
+      </form>
+    </body>)");
+  WebDocument document = GetMainFrame()->GetDocument();
+  autofill::form_util::TraverseDomForFourDigitCombinations(
+      document, base::BindLambdaForTesting(
+                    [&](const std::vector<std::string>& regex_search) {
+                      matches = regex_search;
+                    }));
+  // After deduping, we only have one final match.
+  EXPECT_THAT(matches, ElementsAre("1234"));
+}
+
+// Ensures that we correctly perform checks on the last four digit combinations
+// for year values.
+TEST_F(FormAutofillUtilsTest,
+       TraverseDomForFourDigitCombinations_YearsRemoved) {
+  std::vector<std::string> matches = {"dummy_data"};
+  LoadHTML(R"(
+    <body>
+      <form>
+          <p>1999 2000 1234 2001 2002 2003 2004</p>
+      </form>
+    </body>)");
+  WebDocument document = GetMainFrame()->GetDocument();
+  autofill::form_util::TraverseDomForFourDigitCombinations(
+      document, base::BindLambdaForTesting(
+                    [&](const std::vector<std::string>& regex_search) {
+                      matches = regex_search;
+                    }));
+  // We have no matches as they are years.
+  EXPECT_THAT(matches, IsEmpty());
+
+  LoadHTML(R"(
+    <body>
+      <form>
+        <select>
+          <option value="1998">1998</option>
+          <option value="1999">1999</option>
+          <option value="2000">2000</option>
+          <option value="2001">2001</option>
+          <option value="2002">2002</option>
+        </select>
+      </form>
+    </body>)");
+  document = GetMainFrame()->GetDocument();
+  autofill::form_util::TraverseDomForFourDigitCombinations(
+      document, base::BindLambdaForTesting(
+                    [&](const std::vector<std::string>& regex_search) {
+                      matches = regex_search;
+                    }));
+  // We have no matches as there are more than two years.
+  EXPECT_THAT(matches, IsEmpty());
+
+  LoadHTML(R"(
+    <body>
+      <form>
+        <select>
+          <option value="1999">1999</option>
+          <option value="2000">2000</option>
+          <option value="4545">4545</option>
+          <option value="6782">6782</option>
+        </select>
+      </form>
+    </body>)");
+  document = GetMainFrame()->GetDocument();
+  autofill::form_util::TraverseDomForFourDigitCombinations(
+      document, base::BindLambdaForTesting(
+                    [&](const std::vector<std::string>& regex_search) {
+                      matches = regex_search;
+                    }));
+  // We keep all four matches as there are potential years but not enough to
+  // disqualify.
+  EXPECT_THAT(matches, ElementsAre("1999", "2000", "4545", "6782"));
+}
+
+MATCHER(SameNode, "") {
+  return std::get<0>(arg).Equals(std::get<1>(arg));
+}
+
+void PrefixTraverseAndAppend(WebNode node, std::vector<WebNode>& out) {
+  out.push_back(node);
+  for (WebNode child = node.FirstChild(); !child.IsNull();
+       child = child.NextSibling()) {
+    PrefixTraverseAndAppend(child, out);
+  }
+}
+
+// Tests that the appropriate web node is returned when iterating through the
+// web DOM in forward direction.
+TEST_F(FormAutofillUtilsTest, NextWebNode_Forward) {
+  LoadHTML(R"(
+    <html>
+      <head></head>
+      <body>
+        <div>
+          <div>
+            <div>A</div>
+            <div>B</div>
+          </div>
+          <div>
+            <div>C</div>
+            <div>D</div>
+            <div>E</div>
+          </div>
+          <div>
+            <div>F</div>
+            <div>G</div>
+          </div>
+        </div>
+      </body>
+    </html>)");
+  std::vector<WebNode> expected_elements;
+  PrefixTraverseAndAppend(GetMainFrame()->GetDocument(), expected_elements);
+
+  std::vector<WebNode> found_elements;
+  for (WebNode node = GetMainFrame()->GetDocument(); !node.IsNull();
+       node = autofill::form_util::NextWebNode(node, /*forward=*/true)) {
+    found_elements.push_back(node);
+  }
+
+  EXPECT_THAT(found_elements, Pointwise(SameNode(), expected_elements));
+}
+
+// Tests that the appropriate web node is returned when iterating through the
+// web DOM in backwards direction.
+TEST_F(FormAutofillUtilsTest, NextWebNode_Backward) {
+  LoadHTML(R"(
+    <html>
+      <head></head>
+      <body>
+        <div>
+          <div>
+            <div>A</div>
+            <div>B</div>
+          </div>
+          <div>
+            <div>C</div>
+            <div>D</div>
+            <div>E</div>
+          </div>
+          <div>
+            <div>F</div>
+            <div>G</div>
+          </div>
+        </div>
+      </body>
+    </html>)");
+  std::vector<WebNode> expected_elements;
+  PrefixTraverseAndAppend(GetMainFrame()->GetDocument(), expected_elements);
+  std::reverse(expected_elements.begin(), expected_elements.end());
+
+  std::vector<WebNode> found_elements;
+  for (WebNode node = expected_elements[0]; !node.IsNull();
+       node = autofill::form_util::NextWebNode(node, /*forward=*/false)) {
+    found_elements.push_back(node);
+  }
+
+  EXPECT_THAT(found_elements, Pointwise(SameNode(), expected_elements));
 }
 
 }  // namespace

@@ -15,8 +15,7 @@
               "execution_mode": "COMPILE_AND_TEST",
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "mb",
-                  "goma_use_local"
+                  "mb"
                 ],
                 "build_config": "Release",
                 "config": "chromium",
@@ -50,6 +49,9 @@
     },
     "instance": "rbe-chromium-trusted",
     "metrics_project": "chromium-reclient-metrics",
+    "rewrapper_env": {
+      "RBE_exec_timeout": "15m"
+    },
     "scandeps_server": true
   },
   "$recipe_engine/resultdb/test_presentation": {

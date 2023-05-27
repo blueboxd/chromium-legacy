@@ -10,9 +10,8 @@
 
 import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../../settings_shared.css.js';
+import '../settings_shared.css.js';
 import '/shared/settings/controls/settings_dropdown_menu.js';
-import '../../settings_shared.css.js';
 import '../os_settings_icons.html.js';
 
 import {DropdownMenuOptionList} from '/shared/settings/controls/settings_dropdown_menu.js';
@@ -87,6 +86,11 @@ export class KeyboardRemapModifierKeyRowElement extends
         value: '',
         computed: 'getKeyIcon(key, metaKey)',
       },
+
+      removeTopBorder: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -129,12 +133,12 @@ export class KeyboardRemapModifierKeyRowElement extends
         return this.i18n('perDeviceKeyboardKeyCommand');
       }
       case MetaKey.kExternalMeta: {
-        return this.i18n('keyboardKeyMeta');
+        return this.i18n('perDeviceKeyboardKeyMeta');
       }
       // Launcher and Search key will display icon instead of text.
       case MetaKey.kLauncher:
       case MetaKey.kSearch:
-        return '';
+        return this.i18n('perDeviceKeyboardKeySearch');
     }
   }
 

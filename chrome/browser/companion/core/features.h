@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace companion {
 namespace features {
@@ -17,15 +18,21 @@ extern const base::FeatureParam<std::string> kHomepageURLForCompanion;
 extern const base::FeatureParam<std::string> kImageUploadURLForCompanion;
 extern const base::FeatureParam<bool> kEnableOpenCompanionForImageSearch;
 extern const base::FeatureParam<bool> kEnableOpenCompanionForWebSearch;
+extern const base::FeatureParam<bool> kOpenLinksInCurrentTab;
 
 }  // namespace features
 
 namespace switches {
 extern const char kDisableCheckUserPermissionsForCompanion[];
+extern const char kForceCompanionPinnedState[];
 
 // Returns true if checking of the user's permissions to share page information
 // with the Companion server should be ignored. Returns true only in tests.
 bool ShouldOverrideCheckingUserPermissionsForCompanion();
+
+// Returns whether the Companion pin state should force overridden, regardless
+// of prefs or labs state.
+absl::optional<bool> ShouldForceOverrideCompanionPinState();
 
 }  // namespace switches
 }  // namespace companion

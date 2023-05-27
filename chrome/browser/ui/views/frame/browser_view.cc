@@ -75,6 +75,7 @@
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_view.h"
+#include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate_impl.h"
@@ -85,8 +86,6 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_education/browser_feature_promo_snooze_service.h"
-#include "chrome/browser/ui/user_education/reopen_tab_in_product_help.h"
-#include "chrome/browser/ui/user_education/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/user_education/user_education_service.h"
 #include "chrome/browser/ui/user_education/user_education_service_factory.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -154,6 +153,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/chrome_labs_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_controller.h"
@@ -189,6 +189,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/browser/language_state.h"
@@ -298,6 +299,11 @@
 // To avoid conflicts with the macro from the Windows SDK...
 #undef LoadAccelerators
 #endif
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "chrome/browser/accessibility/pdf_ocr_controller.h"
+#include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
@@ -591,7 +597,7 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     gfx::RectF bounds_f(browser_view_->frame()->GetBoundsForTabStripRegion(
         tabstrip_minimum_size));
     views::View::ConvertRectToTarget(browser_view_->parent(), browser_view_,
-        &bounds_f);
+                                     &bounds_f);
     return gfx::ToEnclosingRect(bounds_f);
   }
 
@@ -763,6 +769,17 @@ class BrowserView::AccessibilityModeObserver : public ui::AXModeObserver {
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE, base::BindOnce(&BrowserView::MaybeInitializeWebUITabStrip,
                                     browser_view_->GetAsWeakPtr()));
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+      // TODO(crbug.com/1442928): Check if PdfOcrController is correctly
+      // created on windows, macOS, and linux when screen reader is on.
+      if (features::IsPdfOcrEnabled()) {
+        screen_ai::PdfOcrControllerFactory::GetForProfile(
+            browser_view_->GetProfile());
+        // TODO(crbug.com/1393069): Destroy `PdfOcrController` when no longer
+        // needed.
+      }
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
     }
   }
 
@@ -897,7 +914,9 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       this, is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft));
   left_aligned_side_panel_separator_ =
       AddChildView(std::make_unique<ContentsSeparator>());
-  side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
+
+  SidePanelUI::SetSidePanelUIForBrowser(
+      browser_.get(), std::make_unique<SidePanelCoordinator>(this));
 
   // InfoBarContainer needs to be added as a child here for drop-shadow, but
   // needs to come after toolbar in focus order (see EnsureFocusOrder()).
@@ -954,8 +973,9 @@ BrowserView::~BrowserView() {
   auto* global_registry =
       extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
   if (global_registry->registry_for_active_window() ==
-          extension_keybinding_registry_.get())
+      extension_keybinding_registry_.get()) {
     global_registry->set_registry_for_active_window(nullptr);
+  }
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
@@ -965,6 +985,8 @@ BrowserView::~BrowserView() {
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews();
+
+  SidePanelUI::RemoveSidePanelUIForBrowser(browser_.get());
 }
 
 // static
@@ -990,9 +1012,9 @@ BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
 BrowserView* BrowserView::GetBrowserViewForNativeWindow(
     gfx::NativeWindow window) {
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  return widget ?
-      reinterpret_cast<BrowserView*>(widget->GetNativeWindowProperty(
-          kBrowserViewKey)) : nullptr;
+  return widget ? reinterpret_cast<BrowserView*>(
+                      widget->GetNativeWindowProperty(kBrowserViewKey))
+                : nullptr;
 }
 
 // static
@@ -1310,8 +1332,6 @@ bool BrowserView::IsOnCurrentWorkspace() const {
 #elif BUILDFLAG(IS_WIN)
   absl::optional<bool> on_current_workspace =
       native_win->GetHost()->on_current_workspace();
-  base::UmaHistogramBoolean("Windows.OnCurrentWorkspaceCached",
-                            on_current_workspace.has_value());
   if (on_current_workspace.has_value())
     return on_current_workspace.value();
 
@@ -1434,22 +1454,22 @@ void BrowserView::UpdateLoadingAnimations(bool is_visible) {
 
   if (should_animate) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      loading_animation_tracker_.emplace(
+    loading_animation_tracker_.emplace(
         GetWidget()->GetCompositor()->RequestNewThroughputTracker());
-      loading_animation_tracker_->Start(ash::metrics_util::ForSmoothness(
+    loading_animation_tracker_->Start(ash::metrics_util::ForSmoothness(
         base::BindRepeating(&RecordTabLoadingSmoothness)));
 #endif
-      // Loads are happening, and the timer isn't running, so start it.
-      loading_animation_start_ = base::TimeTicks::Now();
-      loading_animation_timer_.Start(FROM_HERE, base::Milliseconds(30), this,
-                                     &BrowserView::LoadingAnimationCallback);
+    // Loads are happening, and the timer isn't running, so start it.
+    loading_animation_start_ = base::TimeTicks::Now();
+    loading_animation_timer_.Start(FROM_HERE, base::Milliseconds(30), this,
+                                   &BrowserView::LoadingAnimationCallback);
   } else {
     loading_animation_timer_.Stop();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      loading_animation_tracker_->Stop();
+    loading_animation_tracker_->Stop();
 #endif
-      // Loads are now complete, update the state if a task was scheduled.
-      LoadingAnimationCallback();
+    // Loads are now complete, update the state if a task was scheduled.
+    LoadingAnimationCallback();
   }
 }
 
@@ -1492,8 +1512,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   // some work.  This also prevents extra events from being reported by the
   // Visibility API under Windows, as ChangeWebContents will briefly hide
   // the WebContents window.
-  bool change_tab_contents =
-      contents_web_view_->web_contents() != new_contents;
+  bool change_tab_contents = contents_web_view_->web_contents() != new_contents;
 
 #if BUILDFLAG(IS_MAC)
   // Widget::IsActive is inconsistent between Mac and Aura, so don't check for
@@ -1531,8 +1550,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   // callback to us and trigger layout.
   if (bookmark_bar_view_.get()) {
     bookmark_bar_view_->SetBookmarkBarState(
-        browser_->bookmark_bar_state(),
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+        browser_->bookmark_bar_state(), BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
   }
 
   infobar_container_->ChangeInfoBarManager(
@@ -1631,20 +1649,12 @@ void BrowserView::OnTabDetached(content::WebContents* contents,
   UpdateDevToolsForContents(nullptr, true);
 }
 
-void BrowserView::OnTabRestored(int command_id) {
-  // Ignore if a tab other than the last closed tab was restored.
-  if (command_id != AppMenuModel::kMinRecentTabsCommandId &&
-      command_id != IDC_RESTORE_TAB)
-    return;
-  CloseFeaturePromo(feature_engagement::kIPHReopenTabFeature);
-}
-
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
   const AppMenuButton* app_menu_button =
       toolbar_button_provider()->GetAppMenuButton();
   bool app_menu_showing = app_menu_button && app_menu_button->IsMenuShowing();
-  toolbar_button_provider()
-      ->ZoomChangedForActiveTab(can_show_bubble && !app_menu_showing);
+  toolbar_button_provider()->ZoomChangedForActiveTab(can_show_bubble &&
+                                                     !app_menu_showing);
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {
@@ -1744,14 +1754,10 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
     bool notify_download,
     bool force_update) {
-  DCHECK(!notify_download || exclusive_access_bubble_);
   // Trusted pinned mode does not allow to escape. So do not show the bubble.
   bool is_trusted_pinned =
       platform_util::IsBrowserLockedFullscreen(browser_.get());
 
-  // Immersive mode has no exit bubble because it has a visible strip at the
-  // top that gives the user a hover target. In a public session we show the
-  // bubble.
   // TODO(jamescook): Figure out what to do with mouse-lock.
   if (is_trusted_pinned ||
       (!notify_download && bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) ||
@@ -1788,8 +1794,6 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
     return;
   }
 
-  // Notification about download should only be considered for a bubble that
-  // exists already.
   exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
       this, url, bubble_type, std::move(bubble_first_hide_callback));
 }
@@ -2204,10 +2208,11 @@ bool BrowserView::IsBorderlessModeEnabled() const {
   return borderless_mode_enabled_ && window_management_permission_granted_;
 }
 
-void BrowserView::ShowSidePanel(
-    absl::optional<SidePanelEntry::Id> entry_id,
-    absl::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger) {
-  side_panel_coordinator_->Show(entry_id, open_trigger);
+void BrowserView::ShowChromeLabs() {
+  if (toolbar()->chrome_labs_button() &&
+      toolbar()->chrome_labs_button()->GetVisible()) {
+    toolbar()->chrome_labs_button()->GetChromeLabsCoordinator()->ShowOrHide();
+  }
 }
 
 bool BrowserView::AppUsesBorderlessMode() const {
@@ -2634,8 +2639,8 @@ ShowTranslateBubbleResult BrowserView::ShowTranslateBubble(
     return ShowTranslateBubbleResult::BROWSER_WINDOW_MINIMIZED;
 
   PageActionIconView* translate_icon =
-      toolbar_button_provider()
-          ->GetPageActionIconView(PageActionIconType::kTranslate);
+      toolbar_button_provider()->GetPageActionIconView(
+          PageActionIconType::kTranslate);
   TranslateBubbleController::GetOrCreate(web_contents)
       ->ShowTranslateBubble(toolbar_button_provider()->GetAnchorView(
                                 PageActionIconType::kTranslate),
@@ -3374,8 +3379,8 @@ bool BrowserView::GetSavedWindowPlacement(
       // its desired height, since the toolbar is considered part of the
       // window's client area as far as GetWindowBoundsForClientBounds is
       // concerned...
-      bounds->set_height(
-          bounds->height() + toolbar_->GetPreferredSize().height());
+      bounds->set_height(bounds->height() +
+                         toolbar_->GetPreferredSize().height());
     }
 
     gfx::Rect rect =
@@ -3837,7 +3842,8 @@ void BrowserView::AddedToWidget() {
       toolbar()->side_panel_container()->ObserveSidePanelView(
           unified_side_panel_);
     } else {
-      unified_side_panel_->AddObserver(side_panel_coordinator_.get());
+      unified_side_panel_->AddObserver(
+          SidePanelUtil::GetSidePanelCoordinatorForBrowser((browser_.get())));
     }
   }
 
@@ -4063,8 +4069,7 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
         std::make_unique<BookmarkBarView>(browser_.get(), this);
     bookmark_bar_view_->set_owned_by_client();
     bookmark_bar_view_->SetBookmarkBarState(
-        browser_->bookmark_bar_state(),
-        BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+        browser_->bookmark_bar_state(), BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
     GetBrowserViewLayout()->set_bookmark_bar(bookmark_bar_view_.get());
   }
   // Don't change the visibility of the BookmarkBarView. BrowserViewLayout
@@ -4104,11 +4109,11 @@ bool BrowserView::MaybeShowInfoBar(WebContents* contents) {
   return true;
 }
 
-void BrowserView::UpdateDevToolsForContents(
-    WebContents* web_contents, bool update_devtools_web_contents) {
+void BrowserView::UpdateDevToolsForContents(WebContents* web_contents,
+                                            bool update_devtools_web_contents) {
   DevToolsContentsResizingStrategy strategy;
-  WebContents* devtools = DevToolsWindow::GetInTabWebContents(
-      web_contents, &strategy);
+  WebContents* devtools =
+      DevToolsWindow::GetInTabWebContents(web_contents, &strategy);
 
   if (!devtools_web_view_->web_contents() && devtools &&
       !devtools_focus_tracker_.get()) {
@@ -4355,27 +4360,43 @@ int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
   switch (app_command_id) {
     // NOTE: The order here matches the APPCOMMAND declaration order in the
     // Windows headers.
-    case APPCOMMAND_BROWSER_BACKWARD: return IDC_BACK;
-    case APPCOMMAND_BROWSER_FORWARD:  return IDC_FORWARD;
-    case APPCOMMAND_BROWSER_REFRESH:  return IDC_RELOAD;
-    case APPCOMMAND_BROWSER_HOME:     return IDC_HOME;
-    case APPCOMMAND_BROWSER_STOP:     return IDC_STOP;
-    case APPCOMMAND_BROWSER_SEARCH:   return IDC_FOCUS_SEARCH;
-    case APPCOMMAND_HELP:             return IDC_HELP_PAGE_VIA_KEYBOARD;
-    case APPCOMMAND_NEW:              return IDC_NEW_TAB;
-    case APPCOMMAND_OPEN:             return IDC_OPEN_FILE;
-    case APPCOMMAND_CLOSE:            return IDC_CLOSE_TAB;
-    case APPCOMMAND_SAVE:             return IDC_SAVE_PAGE;
-    case APPCOMMAND_PRINT:            return IDC_PRINT;
-    case APPCOMMAND_COPY:             return IDC_COPY;
-    case APPCOMMAND_CUT:              return IDC_CUT;
-    case APPCOMMAND_PASTE:            return IDC_PASTE;
+    case APPCOMMAND_BROWSER_BACKWARD:
+      return IDC_BACK;
+    case APPCOMMAND_BROWSER_FORWARD:
+      return IDC_FORWARD;
+    case APPCOMMAND_BROWSER_REFRESH:
+      return IDC_RELOAD;
+    case APPCOMMAND_BROWSER_HOME:
+      return IDC_HOME;
+    case APPCOMMAND_BROWSER_STOP:
+      return IDC_STOP;
+    case APPCOMMAND_BROWSER_SEARCH:
+      return IDC_FOCUS_SEARCH;
+    case APPCOMMAND_HELP:
+      return IDC_HELP_PAGE_VIA_KEYBOARD;
+    case APPCOMMAND_NEW:
+      return IDC_NEW_TAB;
+    case APPCOMMAND_OPEN:
+      return IDC_OPEN_FILE;
+    case APPCOMMAND_CLOSE:
+      return IDC_CLOSE_TAB;
+    case APPCOMMAND_SAVE:
+      return IDC_SAVE_PAGE;
+    case APPCOMMAND_PRINT:
+      return IDC_PRINT;
+    case APPCOMMAND_COPY:
+      return IDC_COPY;
+    case APPCOMMAND_CUT:
+      return IDC_CUT;
+    case APPCOMMAND_PASTE:
+      return IDC_PASTE;
 
       // TODO(pkasting): http://b/1113069 Handle these.
     case APPCOMMAND_UNDO:
     case APPCOMMAND_REDO:
     case APPCOMMAND_SPELL_CHECK:
-    default:                          return -1;
+    default:
+      return -1;
   }
 #else
   // App commands are Windows-specific so there's nothing to do here.
@@ -4583,9 +4604,8 @@ void BrowserView::NotifyFeatureEngagementEvent(const char* event_name) {
       event_name);
 }
 
-bool BrowserView::DoCutCopyPasteForWebContents(
-    WebContents* contents,
-    void (WebContents::*method)()) {
+bool BrowserView::DoCutCopyPasteForWebContents(WebContents* contents,
+                                               void (WebContents::*method)()) {
   // It's possible for a non-null WebContents to have a null RWHV if it's
   // crashed or otherwise been killed.
   content::RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView();

@@ -18,6 +18,7 @@ import android.view.View;
 
 import androidx.test.filters.MediumTest;
 
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
@@ -76,12 +77,32 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
             new AddressUiComponent(AddressField.ADMIN_AREA, "State", true, false),
             new AddressUiComponent(AddressField.POSTAL_CODE, "ZIP", true, false));
 
-    private static final AutofillProfile sLocalProfile = new AutofillProfile("", true,
-            Source.LOCAL_OR_SYNCABLE, /*honorific prefix=*/"", "Seb Doe", "Google", "111 First St",
-            "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "first@gmail.com", "en-US");
-    private static final AutofillProfile sAccountProfile = new AutofillProfile("", true,
-            Source.ACCOUNT, /*honorific prefix=*/"", "Seb Doe", "Google", "111 First St", "CA",
-            "Los Angeles", "", "90291", "", "US", "650-253-0000", "first@gmail.com", "en-US");
+    private static final AutofillProfile sLocalProfile = AutofillProfile.builder()
+                                                                 .setFullName("Seb Doe")
+                                                                 .setCompanyName("Google")
+                                                                 .setStreetAddress("111 First St")
+                                                                 .setRegion("CA")
+                                                                 .setLocality("Los Angeles")
+                                                                 .setPostalCode("90291")
+                                                                 .setCountryCode("US")
+                                                                 .setPhoneNumber("650-253-0000")
+                                                                 .setEmailAddress("first@gmail.com")
+                                                                 .setLanguageCode("en-US")
+                                                                 .build();
+    private static final AutofillProfile sAccountProfile =
+            AutofillProfile.builder()
+                    .setSource(Source.ACCOUNT)
+                    .setFullName("Seb Doe")
+                    .setCompanyName("Google")
+                    .setStreetAddress("111 First St")
+                    .setRegion("CA")
+                    .setLocality("Los Angeles")
+                    .setPostalCode("90291")
+                    .setCountryCode("US")
+                    .setPhoneNumber("650-253-0000")
+                    .setEmailAddress("first@gmail.com")
+                    .setLanguageCode("en-US")
+                    .build();
 
     @ParameterAnnotations.ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -113,6 +134,8 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
     private PersonalDataManager mPersonalDataManager;
     @Mock
     private Profile mProfile;
+    @Mock
+    private AddressEditor.Delegate mDelegate;
 
     private final CoreAccountInfo mAccountInfo =
             CoreAccountInfo.createFromEmailAndGaiaId(USER_EMAIL, "gaia_id");
@@ -166,6 +189,13 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
         super.setUpTest();
     }
 
+    @After
+    @Override
+    public void tearDownTest() throws Exception {
+        PersonalDataManager.setInstanceForTesting(null);
+        super.tearDownTest();
+    }
+
     @AfterClass
     public static void tearDownClass() throws Exception {
         runOnUiThreadBlocking(NightModeTestUtils::tearDownNightModeForBlankUiTestActivity);
@@ -198,9 +228,9 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
         View editor = runOnUiThreadBlocking(() -> {
             EditorDialog dialog =
                     new EditorDialog(getActivity(), /*deleteRunnable=*/null, mProfile);
-            AddressEditor addressEditor = new AddressEditor(dialog, /*saveToDisk=*/false,
+            AddressEditor addressEditor = new AddressEditor(dialog, mDelegate, /*saveToDisk=*/false,
                     /*isUpdate=*/false, /*isMigrationToAccount=*/false);
-            addressEditor.edit(null, (unused) -> {});
+            addressEditor.showEditorDialog();
             return dialog.getDataViewForTest();
         });
         mRenderTestRule.render(editor, "edit_new_address_profile");
@@ -214,9 +244,9 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
             when(mPersonalDataManager.isEligibleForAddressAccountStorage()).thenReturn(true);
             EditorDialog dialog =
                     new EditorDialog(getActivity(), /*deleteRunnable=*/null, mProfile);
-            AddressEditor addressEditor = new AddressEditor(dialog, /*saveToDisk=*/false,
+            AddressEditor addressEditor = new AddressEditor(dialog, mDelegate, /*saveToDisk=*/false,
                     /*isUpdate=*/false, /*isMigrationToAccount=*/false);
-            addressEditor.edit(null, (unused) -> {});
+            addressEditor.showEditorDialog();
             return dialog.getDataViewForTest();
         });
         mRenderTestRule.render(editor, "edit_new_account_address_profile");
@@ -230,9 +260,10 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
             when(mPersonalDataManager.isEligibleForAddressAccountStorage()).thenReturn(true);
             EditorDialog dialog =
                     new EditorDialog(getActivity(), /*deleteRunnable=*/null, mProfile);
-            AddressEditor addressEditor = new AddressEditor(dialog, /*saveToDisk=*/false,
+            AddressEditor addressEditor = new AddressEditor(dialog, mDelegate,
+                    new AutofillAddress(getActivity(), sLocalProfile), /*saveToDisk=*/false,
                     /*isUpdate=*/false, /*isMigrationToAccount=*/false);
-            addressEditor.edit(new AutofillAddress(getActivity(), sLocalProfile), (unused) -> {});
+            addressEditor.showEditorDialog();
             return dialog.getDataViewForTest();
         });
         mRenderTestRule.render(editor, "edit_local_or_syncable_address_profile");
@@ -246,9 +277,10 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
             when(mPersonalDataManager.isEligibleForAddressAccountStorage()).thenReturn(true);
             EditorDialog dialog =
                     new EditorDialog(getActivity(), /*deleteRunnable=*/null, mProfile);
-            AddressEditor addressEditor = new AddressEditor(dialog, /*saveToDisk=*/false,
+            AddressEditor addressEditor = new AddressEditor(dialog, mDelegate,
+                    new AutofillAddress(getActivity(), sAccountProfile), /*saveToDisk=*/false,
                     /*isUpdate=*/false, /*isMigrationToAccount=*/false);
-            addressEditor.edit(new AutofillAddress(getActivity(), sAccountProfile), (unused) -> {});
+            addressEditor.showEditorDialog();
             return dialog.getDataViewForTest();
         });
         mRenderTestRule.render(editor, "edit_account_address_profile");
@@ -262,9 +294,10 @@ public class AddressEditorRenderTest extends BlankUiTestActivityTestCase {
             when(mPersonalDataManager.isEligibleForAddressAccountStorage()).thenReturn(true);
             EditorDialog dialog =
                     new EditorDialog(getActivity(), /*deleteRunnable=*/null, mProfile);
-            AddressEditor addressEditor = new AddressEditor(dialog, /*saveToDisk=*/false,
+            AddressEditor addressEditor = new AddressEditor(dialog, mDelegate,
+                    new AutofillAddress(getActivity(), sLocalProfile), /*saveToDisk=*/false,
                     /*isUpdate=*/false, /*isMigrationToAccount=*/true);
-            addressEditor.edit(new AutofillAddress(getActivity(), sLocalProfile), (unused) -> {});
+            addressEditor.showEditorDialog();
             return dialog.getDataViewForTest();
         });
         mRenderTestRule.render(editor, "migrate_local_or_syncable_address_profile");

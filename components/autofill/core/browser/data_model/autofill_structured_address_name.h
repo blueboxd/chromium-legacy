@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
+#include "components/autofill/core/browser/field_types.h"
 
 namespace re2 {
 class RE2;
@@ -36,17 +37,16 @@ class NameMiddle : public AddressComponent {
   explicit NameMiddle(AddressComponent* parent);
   ~NameMiddle() override;
 
-  void GetAdditionalSupportedFieldTypes(
-      ServerFieldTypeSet* supported_types) const override;
+  const ServerFieldTypeSet GetAdditionalSupportedFieldTypes() const override;
 
  protected:
   // Implements support for getting the value for the |MIDDLE_NAME_INITIAL|
   // type.
-  bool GetValueForOtherSupportedType(ServerFieldType field_type,
-                                     std::u16string* value) const override;
+  std::u16string GetValueForOtherSupportedType(
+      ServerFieldType field_type) const override;
 
   // Implements support for setting the |MIDDLE_NAME_INITIAL| type.
-  bool SetValueForOtherSupportedType(ServerFieldType field_type,
+  void SetValueForOtherSupportedType(ServerFieldType field_type,
                                      const std::u16string& value,
                                      const VerificationStatus& status) override;
 };

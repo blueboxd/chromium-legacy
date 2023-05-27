@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble.h"
+#include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
@@ -660,10 +661,17 @@ int TabStripModel::GetIndexOfWebContents(const WebContents* contents) const {
 
 void TabStripModel::UpdateWebContentsStateAt(int index,
                                              TabChangeType change_type) {
-  CHECK(ContainsIndex(index));
+  WebContents* const web_contents = GetWebContentsAtImpl(index);
 
-  for (auto& observer : observers_)
-    observer.TabChangedAt(GetWebContentsAtImpl(index), index, change_type);
+  for (auto& observer : observers_) {
+    observer.TabChangedAt(web_contents, index, change_type);
+  }
+
+  // Maybe trigger side panel companion feature IPH if supported.
+  if (companion::IsSearchInCompanionSidePanelSupported(
+          chrome::FindBrowserWithWebContents(web_contents))) {
+    companion::MaybeTriggerCompanionFeaturePromo(web_contents);
+  }
 }
 
 void TabStripModel::SetTabNeedsAttentionAt(int index, bool attention) {
@@ -1286,9 +1294,10 @@ bool TabStripModel::IsContextMenuCommandEnabled(
 
     case CommandDuplicate: {
       std::vector<int> indices = GetIndicesForCommand(context_index);
-      for (size_t i = 0; i < indices.size(); ++i) {
-        if (delegate()->CanDuplicateContentsAt(indices[i]))
+      for (int index : indices) {
+        if (delegate()->CanDuplicateContentsAt(index)) {
           return true;
+        }
       }
       return false;
     }
@@ -1400,10 +1409,11 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       // Copy the WebContents off as the indices will change as tabs are
       // duplicated.
       std::vector<WebContents*> tabs;
-      for (size_t i = 0; i < indices.size(); ++i)
-        tabs.push_back(GetWebContentsAt(indices[i]));
-      for (size_t i = 0; i < tabs.size(); ++i) {
-        int index = GetIndexOfWebContents(tabs[i]);
+      for (int index : indices) {
+        tabs.push_back(GetWebContentsAt(index));
+      }
+      for (const WebContents* const tab : tabs) {
+        int index = GetIndexOfWebContents(tab);
         if (index != -1 && delegate()->CanDuplicateContentsAt(index))
           delegate()->DuplicateContentsAt(index);
       }

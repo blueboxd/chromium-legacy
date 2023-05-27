@@ -4,6 +4,8 @@
 
 //! Utilities for parsing and generating Cargo.toml and related manifest files.
 
+use crate::crates::Epoch;
+
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
@@ -11,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 /// Set of dependencies for a particular usage: final artifacts, tests, or
 /// build scripts.
-pub type DependencySet = BTreeMap<String, Dependency>;
+pub type DependencySet<Type> = BTreeMap<String, Type>;
 /// Set of patches to replace upstream dependencies with local crates. Maps
 /// arbitrary patch names to `CargoPatch` which includes the actual package name
 /// and the local path.
@@ -29,70 +31,98 @@ pub use semver::Version;
 pub struct VersionConstraint(pub String);
 
 /// Parsed third_party.toml. This is a limited variant of Cargo.toml.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct ThirdPartyManifest {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub workspace: Option<WorkspaceSpec>,
-    #[serde(flatten)]
-    pub dependency_spec: DependencySpec,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub struct WorkspaceSpec {
-    pub members: Vec<String>,
-}
-
-/// The sets of all types of dependencies for a manifest: regular, build script,
-/// and test. This should be included in other structs with `#[serde(flatten)]`
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub struct DependencySpec {
     /// Regular dependencies built into production code.
     #[serde(
         default,
         skip_serializing_if = "DependencySet::is_empty",
         serialize_with = "toml::ser::tables_last"
     )]
-    pub dependencies: DependencySet,
-    /// Test-only dependencies.
+    pub dependencies: ThirdPartyDependencySet,
+    /// Dependencies to allow only in testonly code. These still participate in
+    /// the same dependency resolution.
     #[serde(
         default,
         skip_serializing_if = "DependencySet::is_empty",
         serialize_with = "toml::ser::tables_last"
     )]
-    pub dev_dependencies: DependencySet,
-    /// Build script dependencies.
-    #[serde(
-        default,
-        skip_serializing_if = "DependencySet::is_empty",
-        serialize_with = "toml::ser::tables_last"
-    )]
-    pub build_dependencies: DependencySet,
+    pub testonly_dependencies: ThirdPartyDependencySet,
 }
 
-/// A single crate dependency.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+pub struct WorkspaceSpec {
+    pub members: Vec<String>,
+}
+
+/// A single crate dependency. Cargo.toml and third_party.toml have different
+/// version formats and some different fields. This is generic to share the same
+/// type between them.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
-pub enum Dependency {
+pub enum Dependency<VersionType, DepType> {
     /// A dependency of the form `foo = "1.0.11"`: just the package name as key
     /// and the version as value. The sole field is the crate version.
-    Short(VersionConstraint),
+    Short(VersionType),
     /// A dependency that specifies other fields in the form of `foo = { ... }`
     /// or `[dependencies.foo] ... `.
-    Full(FullDependency),
+    Full(DepType),
+}
+
+/// A single third_party.toml dependency.
+pub type ThirdPartyDependency = Dependency<Epoch, ThirdPartyFullDependency>;
+pub type ThirdPartyDependencySet = DependencySet<ThirdPartyDependency>;
+
+/// A single Cargo.toml dependency.
+pub type CargoDependency = Dependency<String, CargoFullDependency>;
+pub type CargoDependencySet = DependencySet<CargoDependency>;
+
+impl ThirdPartyDependency {
+    /// Expand the short form spec, filling other fields in with their defaults.
+    pub fn into_full(self) -> ThirdPartyFullDependency {
+        match self {
+            Self::Short(version) => ThirdPartyFullDependency {
+                default_features: true,
+                version,
+                features: vec![],
+                allow_first_party_usage: true,
+                build_script_outputs: vec![],
+                gn_variables_lib: None,
+            },
+            Self::Full(full) => full,
+        }
+    }
+
+    /// Generate a Cargo.toml dependency entry with the custom fields stripped
+    /// away.
+    pub fn into_cargo(self) -> CargoDependency {
+        match self {
+            Self::Short(version) => CargoDependency::Short(version.to_version_string()),
+            Self::Full(full) => CargoDependency::Full(CargoFullDependency {
+                default_features: full.default_features,
+                version: Some(VersionConstraint(full.version.to_version_string())),
+                features: full.features,
+            }),
+        }
+    }
 }
 
 /// A single crate dependency with some extra fields from third_party.toml.
+/// Unlike `CargoFullDependency` this will reject unknown fields on
+/// deserialization. This is desirable since we control the third_party.toml
+/// format.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub struct FullDependency {
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+pub struct ThirdPartyFullDependency {
     /// Include the package's default features. Influences Cargo behavior.
     #[serde(default = "get_true", skip_serializing_if = "is_true")]
     pub default_features: bool,
     /// Version constraint on dependency.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub version: Option<VersionConstraint>,
+    pub version: Epoch,
     /// Required features.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub features: Vec<String>,
@@ -109,6 +139,26 @@ pub struct FullDependency {
     pub gn_variables_lib: Option<String>,
 }
 
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub struct CargoFullDependency {
+    /// Include the package's default features. Influences Cargo behavior.
+    #[serde(default = "get_true", skip_serializing_if = "is_true")]
+    pub default_features: bool,
+    /// Version constraint on dependency.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version: Option<VersionConstraint>,
+    /// Required features.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub features: Vec<String>,
+}
+
+impl Default for CargoFullDependency {
+    fn default() -> Self {
+        Self { default_features: true, version: None, features: vec![] }
+    }
+}
+
 /// Representation of a Cargo.toml file.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -116,8 +166,13 @@ pub struct CargoManifest {
     pub package: CargoPackage,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub workspace: Option<WorkspaceSpec>,
-    #[serde(flatten)]
-    pub dependency_spec: DependencySpec,
+    /// Regular dependencies built into production code.
+    #[serde(
+        default,
+        skip_serializing_if = "DependencySet::is_empty",
+        serialize_with = "toml::ser::tables_last"
+    )]
+    pub dependencies: CargoDependencySet,
     #[serde(default, rename = "patch")]
     pub patches: BTreeMap<String, CargoPatchSet>,
 }
@@ -180,22 +235,24 @@ pub fn generate_fake_cargo_toml<Iter: IntoIterator<Item = PatchSpecification>>(
     third_party_manifest: ThirdPartyManifest,
     patches: Iter,
 ) -> CargoManifest {
-    let ThirdPartyManifest { workspace, mut dependency_spec, .. } = third_party_manifest;
+    let ThirdPartyManifest { workspace, mut dependencies, mut testonly_dependencies, .. } =
+        third_party_manifest;
+
+    // The regular and testonly third_party.toml dependencies are treated the
+    // same for Cargo.
+    dependencies.append(&mut testonly_dependencies);
+    drop(testonly_dependencies);
 
     // Hack: set all `allow_first_party_usage` fields to true so they are
     // suppressed in the Cargo.toml.
-    for dep in [
-        dependency_spec.dependencies.values_mut(),
-        dependency_spec.build_dependencies.values_mut(),
-        dependency_spec.dev_dependencies.values_mut(),
-    ]
-    .into_iter()
-    .flatten()
-    {
+    for dep in dependencies.values_mut() {
         if let Dependency::Full(ref mut dep) = dep {
             dep.allow_first_party_usage = true;
         }
     }
+
+    let dependencies: BTreeMap<_, _> =
+        dependencies.into_iter().map(|(pkg, dep)| (pkg, dep.into_cargo())).collect();
 
     let mut patch_sections = CargoPatchSet::new();
     // Generate patch section.
@@ -218,7 +275,7 @@ pub fn generate_fake_cargo_toml<Iter: IntoIterator<Item = PatchSpecification>>(
     CargoManifest {
         package,
         workspace,
-        dependency_spec,
+        dependencies,
         patches: std::iter::once(("crates-io".to_string(), patch_sections)).collect(),
     }
 }

@@ -19,6 +19,9 @@
 #include "url/gurl.h"
 
 namespace web {
+namespace proto {
+class NavigationItemStorage;
+}  // namespace proto
 
 class NavigationItemStorageBuilder;
 enum class NavigationInitiationType;
@@ -29,6 +32,12 @@ class NavigationItemImpl : public web::NavigationItem {
   // Creates a default NavigationItemImpl.
   NavigationItemImpl();
   ~NavigationItemImpl() override;
+
+  // Creates a NavigationItemImpl from serialized representation.
+  explicit NavigationItemImpl(const proto::NavigationItemStorage& storage);
+
+  // Serializes the NavigationItemImpl into `storage`.
+  void SerializeToProto(proto::NavigationItemStorage& storage) const;
 
   // Clones the current object.
   std::unique_ptr<NavigationItemImpl> Clone();
@@ -82,6 +91,10 @@ class NavigationItemImpl : public web::NavigationItem {
   // Whether or not to bypass serializing this item to session storage.  Set to
   // YES to skip saving this page (and therefore restoring this page).
   void SetShouldSkipSerialization(bool skip);
+
+  // Returns whether the page should be skipped when serializing. Will return
+  // true if `SetShouldSkipSerialization(YES)` was called but may return true
+  // in other circumstances (e.g. URL too long, ...).
   bool ShouldSkipSerialization() const;
 
   // Data submitted with a POST request, persisted for resubmits.

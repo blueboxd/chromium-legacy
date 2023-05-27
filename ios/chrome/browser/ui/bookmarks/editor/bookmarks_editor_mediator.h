@@ -11,8 +11,8 @@
 
 @protocol BookmarksEditorConsumer;
 @protocol BookmarksEditorMediatorDelegate;
+class ChromeBrowserState;
 class PrefService;
-class SyncSetupService;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -27,7 +27,7 @@ class SyncService;
 @interface BookmarksEditorMediator : NSObject <BookmarksEditorMutator>
 
 // BookmarkNode to edit.
-@property(nonatomic, assign) const bookmarks::BookmarkNode* bookmark;
+@property(nonatomic, readonly) const bookmarks::BookmarkNode* bookmark;
 // Parent of `_bookmark` if the user tap on "save".
 @property(nonatomic, assign) const bookmarks::BookmarkNode* folder;
 // Delegate to change the view displayed.
@@ -48,8 +48,8 @@ class SyncService;
             accountBookmarkModel:(bookmarks::BookmarkModel*)accountBookmarkModel
                     bookmarkNode:(const bookmarks::BookmarkNode*)bookmarkNode
                            prefs:(PrefService*)prefs
-                syncSetupService:(SyncSetupService*)syncSetupService
                      syncService:(syncer::SyncService*)syncService
+                    browserState:(ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -57,9 +57,12 @@ class SyncService;
 // Disconnects the mediator.
 - (void)disconnect;
 
-// Changes `self.folder` and updates the UI accordingly.
+// Changes `self.folder`, updates the UI accordingly.
 // The change is not committed until the user taps the Save button.
-- (void)changeFolder:(const bookmarks::BookmarkNode*)folder;
+// Save this folder as last used by user in preferences
+// kIosBookmarkLastUsedFolderReceivingBookmarks and
+// kIosBookmarkLastUsedStorageReceivingBookmarks on Save.
+- (void)manuallyChangeFolder:(const bookmarks::BookmarkNode*)folder;
 
 @end
 

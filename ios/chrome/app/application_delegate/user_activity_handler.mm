@@ -32,8 +32,8 @@
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/url_loading/image_search_param_generator.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/common/intents/OpenInChromeIncognitoIntent.h"
@@ -634,8 +634,8 @@ NSArray* CompatibleModeForActivityType(NSString* activityType) {
     // Use a specific action id, as other Lens startup entry points may be added
     // in the future (e.g. Spotlight).
     base::RecordAction(UserMetricsAction(
-        "ApplicationShortcut.LensPressedFromHomeScreenWidget"));
-    startupParams.postOpeningAction = START_LENS;
+        "ApplicationShortcut.LensPressedFromAppIconLongPress"));
+    startupParams.postOpeningAction = START_LENS_FROM_APP_ICON_LONG_PRESS;
     connectionInformation.startupParameters = startupParams;
     return YES;
   }

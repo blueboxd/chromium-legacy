@@ -96,9 +96,8 @@ namespace {
 const char kBackForwardCachePageWithFormStorableHistogramName[] =
     "BackForwardCache.PageWithForm.Storable";
 
-bool IsDataOrAbout(const GURL& url) {
-  return url.IsAboutSrcdoc() || url.IsAboutBlank() ||
-         url.scheme() == url::kDataScheme;
+bool IsAbout(const GURL& url) {
+  return url.IsAboutSrcdoc() || url.IsAboutBlank();
 }
 
 // Helper function to determine whether a navigation from `current_rfh` to
@@ -448,8 +447,9 @@ void RenderFrameHostManager::InitRoot(
               ? static_cast<absl::optional<BrowsingInstanceId>>(absl::nullopt)
               : site_instance->GetBrowsingInstanceId(),
           is_legacy_browsing_context_state_mode
-              ? static_cast<absl::optional<CoopRelatedGroupId>>(absl::nullopt)
-              : site_instance->GetCoopRelatedGroupId());
+              ? static_cast<absl::optional<base::UnguessableToken>>(
+                    absl::nullopt)
+              : site_instance->coop_related_group_token());
   browsing_context_state->CommitFramePolicy(initial_main_frame_policy);
   browsing_context_state->SetFrameName(name, "");
   UpdateProcessReusePolicyForProcessPerSiteWithMainFrameThreshold(
@@ -499,8 +499,9 @@ void RenderFrameHostManager::InitChild(
               ? static_cast<absl::optional<BrowsingInstanceId>>(absl::nullopt)
               : site_instance->GetBrowsingInstanceId(),
           is_legacy_browsing_context_state_mode
-              ? static_cast<absl::optional<CoopRelatedGroupId>>(absl::nullopt)
-              : site_instance->GetCoopRelatedGroupId());
+              ? static_cast<absl::optional<base::UnguessableToken>>(
+                    absl::nullopt)
+              : site_instance->coop_related_group_token());
   browsing_context_state->CommitFramePolicy(frame_policy);
   SetRenderFrameHost(CreateRenderFrameHost(
       CreateFrameCase::kInitChild, site_instance, frame_routing_id,
@@ -1123,7 +1124,8 @@ void RenderFrameHostManager::ActivatePrerender(
   BackForwardCacheMetrics* back_forward_cache_metrics =
       render_frame_host_->GetBackForwardCacheMetrics();
   if (back_forward_cache_metrics)
-    back_forward_cache_metrics->SetBrowsingInstanceSwapResult(absl::nullopt);
+    back_forward_cache_metrics->SetBrowsingInstanceSwapResult(absl::nullopt,
+                                                              nullptr);
 
   RestorePage(std::move(stored_page));
 }
@@ -1567,6 +1569,26 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     navigation_rfh->web_ui()->WebUIRenderFrameCreated(navigation_rfh);
   }
 
+  // The following call is here to make sure that explicit opt-out requests,
+  // made while kOriginKeyedProcessByDefault is enabled, record the opt-out
+  // status before CanAccessDataForOrigin is called below. It allows
+  // CanAccessDataForOrigin to start by assuming default isolation (as stored in
+  // the associated IsolationContext), knowing that it will be changed (during
+  // the construction of the expected ProcessLock) to being explicit opt-out due
+  // to the origin being tracked. The change occurs when we create a SiteInfo
+  // for the ProcessLock and DetermineOriginAgentClusterIsolation is called.
+  //
+  // A similar call to the one below is made in
+  // NavigationRequest::SelectFrameHostForOnResponseStarted() to handle
+  // recording opt-outs when kOriginAgentClusterDefault is enabled, although in
+  // that case process isolation isn't involved, and so the following call to
+  // CanAccessDataForOrigin isn't a problem.
+  // TODO(https://crbug.com/931895): Remove the following block (and the
+  // comments above) when the ProcessLock check below is removed.
+  const IsolationContext& isolation_context =
+      navigation_rfh->GetSiteInstance()->GetIsolationContext();
+  request->AddOriginAgentClusterStateIfNecessary(isolation_context);
+
   // If this function picked an incompatible process for the URL, except for
   // allowed cases such as navigating to an error page reusing the current
   // process, capture a crash dump to diagnose why it is occurring.
@@ -1764,10 +1786,16 @@ RenderFrameHostManager::UnsetSpeculativeRenderFrameHost(
               ->GetRenderFrameProxyHost(
                   speculative_render_frame_host_->GetSiteInstance()->group());
       DCHECK(proxy);
+      // Note: this advances the RenderFrameHost's lifecycle state to
+      // kReadyToBeDeleted.
       speculative_render_frame_host_->UndoCommitNavigation(
           *proxy, frame_tree_node_->IsLoading());
+    } else {
+      speculative_render_frame_host_->SetLifecycleState(
+          LifecycleStateImpl::kReadyToBeDeleted);
     }
   }
+
   return std::move(speculative_render_frame_host_);
 }
 
@@ -2367,7 +2395,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     if (BackForwardCacheMetrics* back_forward_cache_metrics =
             render_frame_host_->GetBackForwardCacheMetrics()) {
       back_forward_cache_metrics->SetBrowsingInstanceSwapResult(
-          should_swap_result->reason());
+          should_swap_result->reason(), render_frame_host_.get());
     }
   }
 
@@ -2627,34 +2655,20 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // SiteInstanceRelation::RELATED_IN_COOP_GROUP relations to `current_instance`
   // iff `browsing_context_group_swap.ShouldSwap()` is true.
 
-  // If this is an error page that must reuse the current process, ensure that
-  // `current_instance` is used. Note that this must be the first check to
-  // avoid picking the destination instance or other instances, to preserve the
-  //  previous behavior where we didn't call this function (or even
-  // `GetFrameHostForNavigation()`) at all and immediately picked the current
-  // SiteInstance (through picking the current RenderFrameHost directly) in
-  // `NavigationRequest::OnRequestFailedInternal()`.
+  // === Error page handling ===
+  // Note that these must be the first checks to avoid picking the destination
+  // instance or other instances.
   if (error_page_process ==
       NavigationRequest::ErrorPageProcess::kCurrentProcess) {
+    // If this is an error page that must reuse the current process, ensure that
+    // `current_instance` is used.
     AppendReason(reason,
                  "DetermineSiteInstanceForURL => error-current-instance");
     return SiteInstanceDescriptor(current_instance);
-  }
-
-  // If the entry has an instance already we should usually use it, unless it is
-  // no longer suitable.
-
-  if (dest_instance && CanUseDestinationInstance(
-                           dest_url_info, current_instance, dest_instance,
-                           error_page_process, browsing_context_group_swap)) {
-    AppendReason(reason, "DetermineSiteInstanceForURL => dest_instance");
-    return SiteInstanceDescriptor(dest_instance);
-  }
-
-  // If error page navigations should be isolated, ensure a dedicated
-  // SiteInstance is used for them.
-  if (error_page_process ==
-      NavigationRequest::ErrorPageProcess::kIsolatedProcess) {
+  } else if (error_page_process ==
+             NavigationRequest::ErrorPageProcess::kIsolatedProcess) {
+    // If error page navigations should be isolated, ensure a dedicated
+    // SiteInstance is used for them.
     CHECK(frame_tree_node_->IsErrorPageIsolationEnabled());
     // If the target URL requires a BrowsingInstance swap, put the error page
     // in a new BrowsingInstance, since the scripting relationships would
@@ -2697,6 +2711,15 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
                                   SiteInstanceRelation::UNRELATED);
   }
 
+  // If the entry has an instance already we should usually use it, unless it is
+  // no longer suitable.
+  if (dest_instance && CanUseDestinationInstance(
+                           dest_url_info, current_instance, dest_instance,
+                           error_page_process, browsing_context_group_swap)) {
+    AppendReason(reason, "DetermineSiteInstanceForURL => dest_instance");
+    return SiteInstanceDescriptor(dest_instance);
+  }
+
   // COOP: restrict-properties requires that we swap BrowsingInstance, but
   // preserve a relation to the previous BrowsingInstance.
   bool can_use_source_instance = CanUseSourceSiteInstance(
@@ -2704,9 +2727,9 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   if (browsing_context_group_swap.type() ==
       BrowsingContextGroupSwapType::kRelatedCoopSwap) {
     // We typically expect `source_instance` to be in the same BrowsingInstance
-    // as `current_instance`. However when an extension uses the
-    // chrome.tabs.update API to navigate to about:blank, `source_instance` is
-    // set to the extension's SiteInstance, which should be in a different
+    // as `current_instance`. However when extensions use the chrome.tabs.update
+    // API to navigate to about:blank, `source_instance` is set to the
+    // extension's SiteInstance, which should be in a different
     // BrowsingInstance. In that case, `source_instance` should not be in a
     // different BrowsingInstance in the same CoopRelatedGroup as
     // `current_instance`, but use its own extension's CoopRelatedGroup. Note
@@ -2978,7 +3001,9 @@ bool RenderFrameHostManager::CanUseDestinationInstance(
   // skip the IsSuitableForUrlInfo() check. Note that it's impossible to
   // have a sandboxed parent but unsandboxed child.
   bool is_data_or_about_and_not_sandboxed =
-      IsDataOrAbout(dest_url_info.url) && !dest_url_info.is_sandboxed;
+      (dest_url_info.url.SchemeIs(url::kDataScheme) ||
+       IsAbout(dest_url_info.url)) &&
+      !dest_url_info.is_sandboxed;
   if (is_data_or_about_and_not_sandboxed)
     return true;
 
@@ -3098,8 +3123,10 @@ bool RenderFrameHostManager::CanUseSourceSiteInstance(
   // We use the source SiteInstance in case of data URLs, about:srcdoc pages and
   // about:blank pages because the content is then controlled and/or scriptable
   // by the initiator and therefore needs to stay in the `source_instance`.
-  if (!IsDataOrAbout(dest_url_info.url))
+  if (!dest_url_info.url.SchemeIs(url::kDataScheme) &&
+      !IsAbout(dest_url_info.url)) {
     return false;
+  }
 
   // If `dest_url_info` is sandboxed, then we can't assign it to a SiteInstance
   // that isn't sandboxed. But if the `source_instance` is also sandboxed, then
@@ -3443,7 +3470,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
                 ->current_replication_state()
                 .Clone(),
             frame_tree_node_->parent(), new_instance->GetBrowsingInstanceId(),
-            new_instance->GetCoopRelatedGroupId());
+            new_instance->coop_related_group_token());
 
         // Add a proxy to the outer delegate if one exists, as this is not
         // copied over to the new BrowsingContextState otherwise.
@@ -3562,7 +3589,7 @@ void RenderFrameHostManager::CreateRenderFrameProxy(
     const scoped_refptr<BrowsingContextState>& browsing_context_state,
     BatchedProxyIPCSender* batched_proxy_ipc_sender) {
   CHECK(instance);
-  TRACE_EVENT_INSTANT("navigation",
+  TRACE_EVENT_INSTANT("navigation.debug",
                       "RenderFrameHostManager::CreateRenderFrameProxy",
                       ChromeTrackEvent::kSiteInstance, *instance,
                       ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_);
@@ -3733,7 +3760,7 @@ void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
     }
 
     child->render_manager()->CreateRenderFrameProxy(
-        pair.second->GetSiteInstance(),
+        pair.second->GetSiteInstanceDeprecated(),
         child->current_frame_host()->browsing_context_state());
   }
 }
@@ -4577,16 +4604,18 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
     old_render_frame_host->SetHasPendingLifecycleStateUpdate();
   }
 
-  if (frame_tree_node_->IsMainFrame()) {
-    // Update the count of top-level frames using this SiteInstance.  All
-    // subframes are in the same BrowsingInstance as the main frame, so we only
-    // count top-level ones.  This makes the value easier for consumers to
-    // interpret.
-    if (render_frame_host_) {
+  // Update the count of active documents using this SiteInstance, both for
+  // active document tracking and related active contents tracking.
+  if (render_frame_host_) {
+    render_frame_host_->GetSiteInstance()->increment_active_document_count();
+    if (frame_tree_node_->IsMainFrame()) {
       render_frame_host_->GetSiteInstance()
           ->IncrementRelatedActiveContentsCount();
     }
-    if (old_render_frame_host) {
+  }
+  if (old_render_frame_host) {
+    old_render_frame_host->GetSiteInstance()->decrement_active_document_count();
+    if (frame_tree_node_->IsMainFrame()) {
       old_render_frame_host->GetSiteInstance()
           ->DecrementRelatedActiveContentsCount();
     }
@@ -4761,7 +4790,7 @@ absl::optional<blink::FrameToken> RenderFrameHostManager::GetOpenerFrameToken(
 
 void RenderFrameHostManager::ExecutePageBroadcastMethod(
     PageBroadcastMethodCallback callback,
-    SiteInstanceImpl* instance_to_skip) {
+    SiteInstanceGroup* group_to_skip) {
   DCHECK(!frame_tree_node_->parent());
 
   // When calling a PageBroadcast Mojo method for an inner WebContents, we don't
@@ -4772,17 +4801,19 @@ void RenderFrameHostManager::ExecutePageBroadcastMethod(
        render_frame_host_->browsing_context_state()->proxy_hosts()) {
     if (outer_delegate_proxy == pair.second.get())
       continue;
-    if (pair.second->GetSiteInstance() == instance_to_skip)
+    if (pair.second->site_instance_group() == group_to_skip) {
       continue;
+    }
     callback.Run(pair.second->GetRenderViewHost());
   }
 
   if (speculative_render_frame_host_ &&
-      speculative_render_frame_host_->GetSiteInstance() != instance_to_skip) {
+      speculative_render_frame_host_->GetSiteInstance()->group() !=
+          group_to_skip) {
     callback.Run(speculative_render_frame_host_->render_view_host());
   }
 
-  if (render_frame_host_->GetSiteInstance() != instance_to_skip) {
+  if (render_frame_host_->GetSiteInstance()->group() != group_to_skip) {
     callback.Run(render_frame_host_->render_view_host());
   }
 }

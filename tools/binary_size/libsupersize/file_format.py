@@ -391,13 +391,15 @@ def _ReadValuesFromLine(file_iter, split):
   return _ReadLine(file_iter).split(split)
 
 
-def _LoadSizeInfoFromFile(file_obj, size_path):
+def _LoadSizeInfoFromFile(file_obj, size_path, is_sparse):
   """Loads a size_info from the given file.
 
   See _SaveSizeInfoToFile() for details on the .size file format.
 
   Args:
-    file_obj: File to read, should be a GzipFile
+    file_obj: File to read, should be a GzipFile.
+    size_path: Path to the file to read.
+    is_sparse: Whether the size file is a sparse, e.g., created from diff.
   """
   # Split lines on '\n', since '\r' can appear in some lines!
   lines = io.TextIOWrapper(file_obj, newline='\n')
@@ -463,7 +465,10 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
 
   if num_path_tuples == 0:
     logging.warning('File contains no symbols: %s', size_path)
-    return models.SizeInfo(build_config, containers, [], size_path=size_path)
+    return models.SizeInfo(build_config,
+                           containers, [],
+                           size_path=size_path,
+                           is_sparse=is_sparse)
 
   # Component list.
   if has_components:
@@ -599,7 +604,8 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   return models.SizeInfo(build_config,
                          containers,
                          raw_symbols,
-                         size_path=size_path)
+                         size_path=size_path,
+                         is_sparse=is_sparse)
 
 
 @contextlib.contextmanager
@@ -612,6 +618,24 @@ def _OpenGzipForWrite(path, file_obj=None):
     with open(path, 'wb') as f:
       with gzip.GzipFile(filename='', mode='wb', fileobj=f, mtime=0) as fz:
         yield fz
+
+
+def _SaveCompressedStringList(string_list, file_obj):
+  with _OpenGzipForWrite('', file_obj=file_obj) as f:
+    w = _Writer(f)
+    w.WriteLine(str(len(string_list)))
+    for s in string_list:
+      w.WriteLine(s)
+
+
+def _LoadCompressedStringList(file_obj, size):
+  bytesio = io.BytesIO()
+  bytesio.write(file_obj.read(size))
+  bytesio.seek(0)
+  with gzip.GzipFile(filename='', fileobj=bytesio) as f:
+    toks = f.read().decode('utf-8', errors='surrogatepass').splitlines()
+    assert int(toks[0]) == len(toks) - 1
+    return toks[1:]
 
 
 def SaveSizeInfo(size_info,
@@ -641,10 +665,10 @@ def SaveSizeInfo(size_info,
       f.write(bytesio.getvalue())
 
 
-def LoadSizeInfo(filename, file_obj=None):
+def LoadSizeInfo(filename, file_obj=None, is_sparse=False):
   """Returns a SizeInfo loaded from |filename|."""
   with gzip.GzipFile(filename=filename, fileobj=file_obj) as f:
-    return _LoadSizeInfoFromFile(f, filename)
+    return _LoadSizeInfoFromFile(f, filename, is_sparse)
 
 
 def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
@@ -677,6 +701,17 @@ def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
       include_padding=True,
       sparse_symbols=before_symbols)
 
+  removed_sources_file = None
+  if delta_size_info.removed_sources:
+    removed_sources_file = io.BytesIO()
+    _SaveCompressedStringList(delta_size_info.removed_sources,
+                              removed_sources_file)
+
+  added_sources_file = None
+  if delta_size_info.added_sources:
+    added_sources_file = io.BytesIO()
+    _SaveCompressedStringList(delta_size_info.added_sources, added_sources_file)
+
   w = _Writer(file_obj)
   w.WriteBytes(_COMMON_HEADER + _SIZEDIFF_HEADER)
   # JSON header fields
@@ -684,10 +719,20 @@ def SaveDeltaSizeInfo(delta_size_info, path, file_obj=None):
       'version': _SIZEDIFF_VERSION,
       'before_length': before_size_file.tell(),
   }
+  if removed_sources_file:
+    fields['removed_sources_length'] = removed_sources_file.tell()
+  if added_sources_file:
+    fields['added_sources_length'] = added_sources_file.tell()
+
   fields_str = json.dumps(fields, indent=2, sort_keys=True)
 
   w.WriteLine(str(len(fields_str)))
   w.WriteLine(fields_str)
+
+  if removed_sources_file:
+    w.WriteBytes(removed_sources_file.getvalue())
+  if added_sources_file:
+    w.WriteBytes(added_sources_file.getvalue())
 
   w.WriteBytes(before_size_file.getvalue())
   after_promise.get()
@@ -711,14 +756,27 @@ def LoadDeltaSizeInfo(path, file_obj=None):
     raise Exception('Bad file header.')
 
   json_len = int(file_obj.readline())
-  json_str = file_obj.read(json_len + 1)  # + 1 for \n
+  json_str = file_obj.read(1 + json_len)  # + 1 for \n
   fields = json.loads(json_str)
-
   assert fields['version'] == _SIZEDIFF_VERSION
-  after_pos = file_obj.tell() + fields['before_length']
+  pos = file_obj.tell()
 
-  before_size_info = LoadSizeInfo(path, file_obj)
-  file_obj.seek(after_pos)
-  after_size_info = LoadSizeInfo(path, file_obj)
+  removed_sources = []
+  removed_sources_length = fields.get('removed_sources_length', 0)
+  if removed_sources_length:
+    removed_sources = _LoadCompressedStringList(file_obj,
+                                                removed_sources_length)
+    pos += removed_sources_length
 
-  return before_size_info, after_size_info
+  added_sources = []
+  added_sources_length = fields.get('added_sources_length', 0)
+  if added_sources_length:
+    added_sources = _LoadCompressedStringList(file_obj, added_sources_length)
+    pos += added_sources_length
+
+  before_size_info = LoadSizeInfo(path, file_obj, is_sparse=True)
+  pos += fields['before_length']
+  file_obj.seek(pos)
+  after_size_info = LoadSizeInfo(path, file_obj, is_sparse=True)
+
+  return before_size_info, after_size_info, removed_sources, added_sources

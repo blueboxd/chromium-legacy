@@ -26,6 +26,9 @@ class SavedTabGroupModelObserver {
   virtual void SavedTabGroupRemovedLocally(const SavedTabGroup* removed_group) {
   }
 
+  // Called when the saved tab group is opened or closed locally.
+  virtual void SavedTabGroupLocalIdChanged(const base::Uuid& saved_group_id) {}
+
   // Called when the title, tabs, or color change. `group_guid` denotes the
   // group that is currently being updated. `tab_guid` denotes if a tab in this
   // group was changed (added, removed, updated). Otherwise, only the group is
@@ -35,9 +38,10 @@ class SavedTabGroupModelObserver {
       const absl::optional<base::Uuid>& tab_guid = absl::nullopt) {}
 
   // Called when the order of saved tab groups in the bookmark bar are changed.
-  // TODO(crbug/1372052): Figure out if we can maintain ordering of groups and
-  // tabs in sync.
   virtual void SavedTabGroupReorderedLocally() {}
+
+  // Happens when a group is reordered from sync.
+  virtual void SavedTabGroupReorderedFromSync() {}
 
   // Called when sync / ModelTypeStore updates data.
   virtual void SavedTabGroupAddedFromSync(const base::Uuid& guid) {}

@@ -65,6 +65,8 @@ class PasswordAccessoryControllerImpl
       bool is_manual_generation_available) override;
   void OnGenerationRequested(
       autofill::password_generation::PasswordGenerationType type) override;
+  void UpdateCredManReentryUi(
+      autofill::mojom::FocusedFieldType focused_field_type) override;
 
   // Like |CreateForWebContents|, it creates the controller and attaches it to
   // the given |web_contents|. Upon creation, a |credential_cache| is required
@@ -79,7 +81,7 @@ class PasswordAccessoryControllerImpl
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
       password_manager::CredentialCache* credential_cache,
-      base::WeakPtr<ManualFillingController> mf_controller,
+      base::WeakPtr<ManualFillingController> manual_filling_controller,
       password_manager::PasswordManagerClient* password_client,
       PasswordDriverSupplierForFocusedFrame driver_supplier);
 
@@ -101,7 +103,7 @@ class PasswordAccessoryControllerImpl
   PasswordAccessoryControllerImpl(
       content::WebContents* web_contents,
       password_manager::CredentialCache* credential_cache,
-      base::WeakPtr<ManualFillingController> mf_controller,
+      base::WeakPtr<ManualFillingController> manual_filling_controller,
       password_manager::PasswordManagerClient* password_client,
       PasswordDriverSupplierForFocusedFrame driver_supplier);
 
@@ -175,7 +177,7 @@ class PasswordAccessoryControllerImpl
       credential_cache_ = nullptr;
 
   // The password accessory controller object to forward client requests to.
-  base::WeakPtr<ManualFillingController> mf_controller_;
+  base::WeakPtr<ManualFillingController> manual_filling_controller_;
 
   // The password manager client is used to update the save passwords status
   // for the currently focused origin.

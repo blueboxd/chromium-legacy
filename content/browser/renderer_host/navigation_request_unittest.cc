@@ -31,6 +31,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/navigation/navigation_params.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_feature.h"
 #include "third_party/blink/public/common/origin_trials/scoped_test_origin_trial_policy.h"
 #include "third_party/blink/public/common/runtime_feature_state/runtime_feature_state_context.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -230,8 +231,6 @@ class NavigationRequestTest : public RenderViewHostImplTestHarness {
     auto request = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), std::move(common_params),
         std::move(commit_params), false /* was_opener_suppressed */,
-        nullptr /* initiator_frame_token */,
-        ChildProcessHost::kInvalidUniqueID /* initiator_process_id */,
         std::string() /* extra_headers */, nullptr /* frame_entry */,
         nullptr /* entry */, false /* is_form_submission */,
         nullptr /* navigation_ui_data */, absl::nullopt /* impression */,
@@ -917,7 +916,7 @@ TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   EXPECT_EQ("'self'", csp->raw_directives[Directive::DefaultSrc]);
   EXPECT_EQ("'self' https: blob: data:",
             csp->raw_directives[Directive::FrameSrc]);
-  EXPECT_EQ("'self' https:", csp->raw_directives[Directive::ConnectSrc]);
+  EXPECT_EQ("'self' https: wss:", csp->raw_directives[Directive::ConnectSrc]);
   EXPECT_EQ("'self' 'wasm-unsafe-eval'",
             csp->raw_directives[Directive::ScriptSrc]);
   EXPECT_EQ("'self' https: blob: data:",
@@ -1207,10 +1206,10 @@ class OriginTrialsControllerDelegateMock
       const base::Time current_time) override {
     NOTREACHED() << "not used by test";
   }
-  bool IsTrialPersistedForOrigin(const url::Origin& origin,
-                                 const url::Origin& partition_origin,
-                                 const base::StringPiece trial_name,
-                                 const base::Time current_time) override {
+  bool IsFeaturePersistedForOrigin(const url::Origin& origin,
+                                   const url::Origin& partition_origin,
+                                   blink::OriginTrialFeature feature,
+                                   const base::Time current_time) override {
     DCHECK(false) << "Method not implemented for test.";
     return false;
   }

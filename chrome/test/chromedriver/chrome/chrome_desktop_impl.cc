@@ -78,7 +78,6 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     std::vector<std::unique_ptr<DevToolsEventListener>>
         devtools_event_listeners,
     absl::optional<MobileDevice> mobile_device,
-    SyncWebSocketFactory socket_factory,
     std::string page_load_strategy,
     base::Process process,
     const base::CommandLine& command,
@@ -89,7 +88,6 @@ ChromeDesktopImpl::ChromeDesktopImpl(
                  std::move(websocket_client),
                  std::move(devtools_event_listeners),
                  std::move(mobile_device),
-                 std::move(socket_factory),
                  page_load_strategy),
       process_(std::move(process)),
       command_(command),
@@ -211,16 +209,12 @@ Status ChromeDesktopImpl::QuitImpl() {
   // to allow Chrome to write out all the net logs to the log path.
   kill_gracefully = kill_gracefully || command_.HasSwitch("log-net-log");
   if (kill_gracefully) {
-    Status status{kOk};
-    if (!devtools_websocket_client_->IsConnected())
-      status = devtools_websocket_client_->Connect();
-    if (status.IsOk()) {
-      status = devtools_websocket_client_->SendCommandAndIgnoreResponse(
-          "Browser.close", base::Value::Dict());
-      // If status is not okay, we will try the old method of KillProcess
-      if (status.IsOk() &&
-          process_.WaitForExitWithTimeout(base::Seconds(10), nullptr))
-        return status;
+    Status status = devtools_websocket_client_->SendCommandAndIgnoreResponse(
+        "Browser.close", base::Value::Dict());
+    // If status is not okay, we will try the old method of KillProcess
+    if (status.IsOk() &&
+        process_.WaitForExitWithTimeout(base::Seconds(10), nullptr)) {
+      return status;
     }
   }
 

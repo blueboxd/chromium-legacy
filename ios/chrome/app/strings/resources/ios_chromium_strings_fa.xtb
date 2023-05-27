@@ -14,7 +14,6 @@
 <translation id="1617663976202781617">‏داده‌های مربوط به همگام‌سازی Chromium</translation>
 <translation id="1722370509450468186">گذرواژه در «حسابتان» (<ph name="EMAIL" />) ذخیره خواهد شد.</translation>
 <translation id="1736662517232558588">‏داده‌های Chromium پاک شد</translation>
-<translation id="177102542580335555">‏برای این نمایه Chromium محافظت امنیتی استاندارد را دریافت می‌کنید</translation>
 <translation id="1838412507805038478">‏Chromium تأیید کرد که <ph name="ISSUER" /> گواهینامه این وب‌سایت را صادر کرده است.</translation>
 <translation id="1843424232666537147">‏Chromium دارای قابلیت‌هایی است که به شما کمک می‌کند داده‌های اینترنت و سرعت بارگیری صفحه‌های‌ وبتان را مدیریت کنید.
 <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
@@ -47,8 +46,11 @@
 <translation id="3567399274263440288">‏برای اینکه بیشترین بهره را از Chromium ببرید، با «حساب Google» به سیستم Chromium وارد شوید.</translation>
 <translation id="3639997914391704523">‏Chromium زمانی می‌تواند گذرواژه‌هایتان را بررسی کند که با «حساب Google» خود به سیستم وارد شوید.</translation>
 <translation id="3650632991272923014">‏<ph name="USER_EMAIL1" /> از Chromium استفاده می‌کرده است و نشانک‌ها، گذرواژه‌ها، و تنظیمات دیگری در این دستگاه ذخیره کرده است.</translation>
+<translation id="3661862315467204831">‏تنظیمات Chromium را در iOS باز کنید، سپس روی «برنامه پیش‌فرض مرورگر» ضربه بزنید و Chromium را انتخاب کنید.</translation>
 <translation id="372658070733623520">‏برای استفاده از داده‌های Chromium و ذخیره کردن این داده‌ها در «حساب Google»، هویت خود را به‌تأیید برسانید.</translation>
 <translation id="3805899903892079518">‏Chromium به عکس‌ها یا ویدیوهای شما دسترسی ندارد. با رفتن به تنظیمات iOS &gt; حریم خصوصی &gt; عکس‌ها دسترسی را فعال کنید.</translation>
+<translation id="3827545470516145620">محافظت امنیتی استاندارد را در این دستگاه دریافت می‌کنید</translation>
+<translation id="3955621079070267756">‏باز کردن Chromium از هر برنامه‌ای</translation>
 <translation id="4043291146360695975">گذرواژه‌ها فقط در «مدیر گذرواژه» در این دستگاه ذخیره می‌شوند.</translation>
 <translation id="4099085513035183040">‏در «Chromium بتا» پشتیبانی نمی‌شود</translation>
 <translation id="4432744876818348753">‏برای اینکه بیشترین بهره را از Chromium ببرید، به سیستم وارد شوید.</translation>
@@ -82,6 +84,7 @@
 ۱. «تنظیمات» را باز کنید
 ۲. روی «برنامه مرورگر پیش‌فرض» ضربه بزنید
 ۳. Chromium را انتخاب کنید.</translation>
+<translation id="6247557882553405851">‏مدیر گذرواژه Google</translation>
 <translation id="6268381023930128611">‏از Chromium خارج می‌شوید؟</translation>
 <translation id="632825460376924298">‏مجاز کردن ورود به سیستم Chromium</translation>
 <translation id="6337530241089703714">‏انتخاب کنید داده‌های Chromium شما از این دستگاه پاک شود یا نگه داشته شود</translation>
@@ -100,7 +103,6 @@
 <translation id="7192111075364461693">‏اعلان‌های Chromium درحال‌حاضر در تنظیمات دستگاهتان خاموش است.</translation>
 <translation id="7208566199746267865">‏Chromium با آوردن حساب‌هایتان به وب، در وقت شما صرفه‌جویی می‌کند. در «تنظیمات» می‌توانید حساب‌ها را اضافه یا حذف کنید.</translation>
 <translation id="725427773388857052">‏Chromium می‌تواند به محافظت از شما دربرابر نقض داده، وب‌سایت‌های ناامن، و موارد دیگر کمک کند.</translation>
-<translation id="7255976941681861701">‏با منوی جدید Chromium آشنا شوید</translation>
 <translation id="7269362888766543920">‏برخی از افزونه‌ها باعث خرابی Chromium می‌شوند. لطفاً آن‌ها را حذف نصب کنید.</translation>
 <translation id="7313655110045230863">‏برای تنظیم کردن Chromium به‌عنوان مرورگر پیش‌فرض، «تنظیمات» را باز کنید. روی «برنامه مرورگر پیش‌فرض» ضربه بزنید، سپس Chromium را انتخاب کنید.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -143,5 +145,6 @@
 <translation id="9089354809943900324">‏نسخه Chromium قدیمی است</translation>
 <translation id="9110075932708282655">‏استفاده از Chromium به‌طور پیش‌فرض</translation>
 <translation id="921174536258924340">‏Chromium نمی‌تواند همه گذرواژه‌هایتان را بررسی کند. فردا دوباره امتحان کنید یا <ph name="BEGIN_LINK" />گذرواژه‌ها را در «حساب Google» خود بررسی کنید<ph name="END_LINK" />.</translation>
+<translation id="971488683725792095">‏وقتی روی پیوندهای موجود در پیام‌ها، اسناد، و دیگر برنامه‌ها ضربه بزنید، به‌طور خودکار از Chromebook استفاده می‌شود</translation>
 <translation id="985602178874221306">Chromium Authors</translation>
 </translationbundle>

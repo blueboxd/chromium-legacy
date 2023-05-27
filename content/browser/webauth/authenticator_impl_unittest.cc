@@ -116,6 +116,7 @@
 #if BUILDFLAG(IS_MAC)
 #include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/credential_store.h"
+#include "device/fido/mac/scoped_icloud_keychain_test_environment.h"
 #include "device/fido/mac/scoped_touch_id_test_environment.h"
 #endif
 
@@ -6346,6 +6347,33 @@ TEST_F(PINAuthenticatorImplTest, RemoveSecondAuthenticator) {
   EXPECT_EQ(AuthenticatorMakeCredential().status, AuthenticatorStatus::SUCCESS);
 }
 
+TEST_F(PINAuthenticatorImplTest, AppIdExcludeExtensionWithPinRequiredError) {
+  // Some alwaysUv authenticators apply the alwaysUv logic even when up=false.
+  // That causes them to return `kCtap2ErrPinRequired` to appIdExclude probes
+  // which broke makeCredential at one point. See crbug.com/1443039.
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  device::VirtualCtap2Device::Config config;
+  config.always_uv = true;
+  config.always_uv_for_up_false = true;
+  config.pin_support = true;
+  config.pin_uv_auth_token_support = true;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
+  virtual_device_factory_->SetCtap2Config(config);
+
+  test_client_.expected = {{PINReason::kSet, kTestPIN16}};
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->authenticator_selection->user_verification_requirement =
+      device::UserVerificationRequirement::kRequired;
+  options->appid_exclude = kTestOrigin1;
+  options->exclude_credentials = GetTestCredentials();
+
+  EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
+            AuthenticatorStatus::SUCCESS);
+}
+
 class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {
  public:
   struct TestCase {
@@ -8953,6 +8981,128 @@ TEST_F(TouchIdAuthenticatorImplTest, MakeCredential_Eviction) {
   EXPECT_EQ(GetCredentials(kTestRelyingPartyId).size(), 2u);
 }
 
+class ICloudKeychainAuthenticatorImplTest : public AuthenticatorImplTest {
+ protected:
+  class InspectTAIAuthenticatorRequestDelegate
+      : public AuthenticatorRequestClientDelegate {
+   public:
+    using Callback = base::RepeatingCallback<void(
+        const device::FidoRequestHandlerBase::TransportAvailabilityInfo&)>;
+    explicit InspectTAIAuthenticatorRequestDelegate(Callback callback)
+        : callback_(std::move(callback)) {}
+
+    void OnTransportAvailabilityEnumerated(
+        device::FidoRequestHandlerBase::TransportAvailabilityInfo tai)
+        override {
+      callback_.Run(tai);
+    }
+
+   private:
+    Callback callback_;
+  };
+
+  class InspectTAIContentBrowserClient : public ContentBrowserClient {
+   public:
+    explicit InspectTAIContentBrowserClient(
+        InspectTAIAuthenticatorRequestDelegate::Callback callback)
+        : callback_(std::move(callback)) {}
+
+    std::unique_ptr<AuthenticatorRequestClientDelegate>
+    GetWebAuthenticationRequestDelegate(
+        RenderFrameHost* render_frame_host) override {
+      return std::make_unique<InspectTAIAuthenticatorRequestDelegate>(
+          callback_);
+    }
+
+   private:
+    InspectTAIAuthenticatorRequestDelegate::Callback callback_;
+  };
+
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+    // This test uses the real discoveries and sets the transports on an
+    // allowlist entry to limit it to kInternal.
+    AuthenticatorEnvironment::GetInstance()->Reset();
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+  void OnTransportAvailabilityEnumerated(
+      const device::FidoRequestHandlerBase::TransportAvailabilityInfo& tai) {
+    if (tai_callback_) {
+      std::move(tai_callback_).Run(tai);
+    }
+  }
+
+  static std::vector<device::DiscoverableCredentialMetadata> GetCredentials() {
+    device::DiscoverableCredentialMetadata metadata(
+        device::AuthenticatorType::kICloudKeychain, kTestRelyingPartyId,
+        {1, 2, 3, 4}, {{5, 6, 7, 8}, "name", "displayName"});
+    return {std::move(metadata)};
+  }
+
+  InspectTAIContentBrowserClient test_client_{base::BindRepeating(
+      &ICloudKeychainAuthenticatorImplTest::OnTransportAvailabilityEnumerated,
+      base::Unretained(this))};
+  raw_ptr<ContentBrowserClient> old_client_ = nullptr;
+  InspectTAIAuthenticatorRequestDelegate::Callback tai_callback_;
+};
+
+TEST_F(ICloudKeychainAuthenticatorImplTest, Discovery) {
+  if (__builtin_available(macOS 13.3, *)) {
+    for (const bool feature_enabled : {false, true}) {
+      SCOPED_TRACE(feature_enabled);
+
+      absl::optional<base::test::ScopedFeatureList> scoped_feature_list;
+      if (feature_enabled) {
+        scoped_feature_list.emplace(device::kWebAuthnICloudKeychain);
+      }
+
+      NavigateAndCommit(GURL(kTestOrigin1));
+      device::fido::icloud_keychain::ScopedTestEnvironment test_environment(
+          GetCredentials());
+      bool tai_seen = false;
+      tai_callback_ = base::BindLambdaForTesting(
+          [&tai_seen, feature_enabled](
+              const device::FidoRequestHandlerBase::TransportAvailabilityInfo&
+                  tai) {
+            tai_seen = true;
+            CHECK_EQ(tai.has_icloud_keychain, feature_enabled);
+            CHECK_EQ(tai.recognized_platform_authenticator_credentials.size(),
+                     feature_enabled ? 1u : 0u);
+            CHECK_EQ(tai.has_icloud_keychain_credential,
+                     feature_enabled
+                         ? device::FidoRequestHandlerBase::
+                               RecognizedCredential::kHasRecognizedCredential
+                         : device::FidoRequestHandlerBase::
+                               RecognizedCredential::kNoRecognizedCredential);
+
+            if (feature_enabled) {
+              CHECK_EQ(tai.recognized_platform_authenticator_credentials[0]
+                           .user.name.value(),
+                       "name");
+            }
+          });
+
+      auto options = GetTestPublicKeyCredentialRequestOptions();
+      options->allow_credentials.clear();
+      options->allow_credentials.push_back(
+          device::PublicKeyCredentialDescriptor(
+              device::CredentialType::kPublicKey, {1, 2, 3, 4},
+              {device::FidoTransportProtocol::kInternal}));
+      const auto result = AuthenticatorGetAssertion(std::move(options));
+      EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      EXPECT_TRUE(tai_seen);
+    }
+  } else {
+    GTEST_SKIP() << "Need macOS 13.3 for this test";
+  }
+}
+
 #endif  // BUILDFLAG(IS_MAC)
 
 // AuthenticatorCableV2Test tests features of the caBLEv2 transport and
@@ -9469,8 +9619,6 @@ class AuthenticatorCableV2AuthenticatorTest
   std::unique_ptr<device::cablev2::authenticator::Transaction> transaction_;
   bool did_complete_ = false;
   absl::optional<device::cablev2::authenticator::Platform::Error> error_;
-  base::test::ScopedFeatureList scoped_feature_list_{
-      device::kWebAuthnPRFAsAuthenticator};
 };
 
 TEST_F(AuthenticatorCableV2AuthenticatorTest, GetAssertion) {

@@ -55,11 +55,13 @@ ResolvedPassData& ResolvedPassData::operator=(ResolvedPassData&& other) =
 
 ResolvedFrameData::ResolvedFrameData(DisplayResourceProvider* resource_provider,
                                      Surface* surface,
-                                     uint64_t previous_frame_index)
+                                     uint64_t previous_frame_index,
+                                     AggregatedRenderPassId prev_root_pass_id)
     : resource_provider_(resource_provider),
       surface_id_(surface->surface_id()),
       surface_(surface),
-      previous_frame_index_(previous_frame_index) {
+      previous_frame_index_(previous_frame_index),
+      prev_root_pass_id_(prev_root_pass_id) {
   DCHECK(resource_provider_);
   DCHECK(surface_);
 
@@ -115,6 +117,7 @@ void ResolvedFrameData::UpdateForActiveFrame(
   // remapped display resource ids.
   for (size_t i = 0; i < num_render_pass; ++i) {
     auto& render_pass = render_passes[i];
+    const bool is_root = i == num_render_pass - 1;
 
     FixedPassData fixed;
 
@@ -122,10 +125,14 @@ void ResolvedFrameData::UpdateForActiveFrame(
 
     AggregatedRenderPassId& remapped_id = aggregated_id_map_[render_pass->id];
     if (remapped_id.is_null()) {
-      remapped_id = render_pass_id_generator.GenerateNextId();
+      if (is_root && !prev_root_pass_id_.is_null()) {
+        remapped_id = prev_root_pass_id_;
+      } else {
+        remapped_id = render_pass_id_generator.GenerateNextId();
+      }
     }
     fixed.remapped_id = remapped_id;
-    fixed.is_root = i == num_render_pass - 1;
+    fixed.is_root = is_root;
 
     // Loop through the quads, remapping resource ids and storing them.
     auto& draw_quads = fixed.draw_quads;
@@ -261,17 +268,6 @@ const ResolvedPassData& ResolvedFrameData::GetRootRenderPassData() const {
 FrameDamageType ResolvedFrameData::GetFrameDamageType() const {
   DCHECK(valid_);
   DCHECK(used_in_aggregation_);
-
-  // The |damage_rect| set in |SurfaceAnimationManager| is the |output_rect|.
-  // However, we dont use |damage_rect| because when we transition from
-  // interpolated frame we would end up using the |damage_rect| from the
-  // original non interpolated frame.
-  // TODO(vmpstr): This damage may be too large, but I think it's hard to figure
-  // out a small bounds on the damage given an animation that happens in
-  // SurfaceAnimationManager.
-  if (surface_->HasSurfaceAnimationDamage()) {
-    return FrameDamageType::kFull;
-  }
 
   if (previous_frame_index_ == frame_index_) {
     // This is the same frame as the one used last aggregation.

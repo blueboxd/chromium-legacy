@@ -107,6 +107,9 @@ declare_args() {
 
   # When true, seed corpora archives are built.
   archive_seed_corpus = true
+
+  # When true, sanitizer warnings will cause test case failures.
+  fail_on_san_warnings = false
 }
 
 declare_args() {
@@ -122,8 +125,9 @@ declare_args() {
 assert(!is_hwasan || (target_os == "android" && target_cpu == "arm64"),
        "HWASan only supported on Android ARM64 builds.")
 
-# Disable sanitizers for non-target toolchains.
-if (!is_a_target_toolchain || toolchain_disables_sanitizers) {
+# Disable sanitizers for non-target toolchains, and for the toolchain using
+# the prebuilt Rust stdlib which has no sanitizer support with it.
+if (!is_a_target_toolchain || toolchain_for_rust_host_build_tools) {
   is_asan = false
   is_cfi = false
   is_hwasan = false
@@ -134,6 +138,7 @@ if (!is_a_target_toolchain || toolchain_disables_sanitizers) {
   is_ubsan_no_recover = false
   is_ubsan_security = false
   is_ubsan_vptr = false
+  fail_on_san_warnings = false
   msan_track_origins = 0
   sanitizer_coverage_flags = ""
   use_afl = false

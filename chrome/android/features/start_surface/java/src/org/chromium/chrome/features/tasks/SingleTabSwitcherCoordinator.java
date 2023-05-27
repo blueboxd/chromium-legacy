@@ -18,7 +18,9 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -44,7 +46,10 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher {
     private Tab mLastActiveTab;
 
     public SingleTabSwitcherCoordinator(@NonNull Activity activity, @NonNull ViewGroup container,
-            @NonNull TabModelSelector tabModelSelector, boolean isTablet, Tab mostRecentTab) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            @NonNull TabModelSelector tabModelSelector, boolean isTablet,
+            boolean isScrollableMvtEnabled, Tab mostRecentTab,
+            @Nullable Runnable singleTabCardClickedCallback) {
         mTabModelSelector = tabModelSelector;
         mIsTablet = isTablet;
         mLastActiveTab = mostRecentTab;
@@ -61,8 +66,11 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher {
                     activity, propertyModel, tabModelSelector, mTabListFaviconProvider);
             mMediatorOnTablet = null;
         } else {
-            mMediatorOnTablet = new SingleTabSwitcherOnTabletMediator(
-                    propertyModel, tabModelSelector, mTabListFaviconProvider, mostRecentTab);
+            mMediatorOnTablet =
+                    new SingleTabSwitcherOnTabletMediator(propertyModel, activity.getResources(),
+                            activityLifecycleDispatcher, tabModelSelector, mTabListFaviconProvider,
+                            mostRecentTab, FeedFeatures.isMultiColumnFeedEnabled(activity),
+                            isScrollableMvtEnabled, singleTabCardClickedCallback);
             mMediator = null;
         }
         if (ChromeFeatureList.sInstantStart.isEnabled()) {
@@ -131,7 +139,7 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher {
             public void postHiding() {}
 
             @Override
-            public Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate) {
+            public Rect getThumbnailLocationOfCurrentTab() {
                 assert false : "should not reach here";
                 return null;
             }
@@ -223,6 +231,9 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher {
             mLastActiveTab.removeObserver(mLastActiveTabObserver);
             mLastActiveTab = null;
             mLastActiveTabObserver = null;
+        }
+        if (mMediatorOnTablet != null) {
+            mMediatorOnTablet.destroy();
         }
     }
 

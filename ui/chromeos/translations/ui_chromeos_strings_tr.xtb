@@ -59,7 +59,6 @@
 <translation id="1499943022354839699">Dvorak klavye ile İngilizce (ABD)</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - Ana Makine</translation>
 <translation id="1521655867290435174">Google E-Tablolar</translation>
-<translation id="1538729222189715449">Linux dosyaları açılıyor...</translation>
 <translation id="1547964879613821194">Kanada İngilizcesi</translation>
 <translation id="1556189134700913550">Tümüne uygula</translation>
 <translation id="1561842594491319104">Chrome cihazlar</translation>
@@ -147,7 +146,6 @@
 <translation id="2208919847696382164">Linux ile yükle</translation>
 <translation id="2225536596944493418"><ph name="NUMBER_OF_ITEMS" /> öğeyi silmek istediğiniz emin misiniz?</translation>
 <translation id="2230062665678605299">"<ph name="FOLDER_NAME" />" klasörü oluşturulamıyor. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="2236732657580416950">Google Drive önbelleğiniz temizlendi.</translation>
 <translation id="2239068707900391003">Elinde kahve tutan bir kişi</translation>
 <translation id="2251368349685848079">Çöp kutusundan geri yükle</translation>
 <translation id="2278133026967558505">Tüm web siteleri ve URL'ler tarafından dosya erişimi</translation>
@@ -166,7 +164,6 @@
 <translation id="23721837607121582">Mobil profili indir, <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /> ağı</translation>
 <translation id="2377319039870049694">Liste görünümüne geç</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> klasör Linux ile paylaşıldı</translation>
-<translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> dosya seçildi</translation>
 <translation id="2383454254762599978">Çöp kutusuna taşı</translation>
 <translation id="2387458720915042159">Proxy bağlantısı türü</translation>
 <translation id="2389832672041313158">Birmanca/Myanmar</translation>
@@ -321,6 +318,7 @@
 <translation id="3619593063686672873">Yakın tarihli video yok</translation>
 <translation id="3634507049637220048">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Yöneticiniz tarafından yönetiliyor, Ayrıntılar</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> öğe taşındı.</translation>
+<translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> dosya seçildi</translation>
 <translation id="3685122418104378273">Mobil veriler kullanılırken Google Drive senkronizasyonu varsayılan olarak devre dışıdır.</translation>
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> işlemi iptal edilecek.</translation>
 <translation id="3690128548376345212"><ph name="NETWORK_COUNT" /> ağdan <ph name="NETWORK_INDEX" />., <ph name="NETWORK_NAME" />, Etkinleştirilmemiş, <ph name="CONNECTION_STATUS" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Ayrıntılar</translation>
@@ -330,7 +328,6 @@
 <translation id="3727148787322499904">Bu ayarı değiştirmek tüm paylaşılan ağları etkiler</translation>
 <translation id="3737576078404241332">Kenar çubuğundan kaldır</translation>
 <translation id="3749289110408117711">Dosya adı</translation>
-<translation id="3780536599611287598">Dosyaları "<ph name="FOLDER_NAME" />" klasörüne taşıma izniniz yok.</translation>
 <translation id="3786301125658655746">Çevrimdışısınız</translation>
 <translation id="3789841737615482174">Yükle</translation>
 <translation id="3793469551756281394">Yaklaşık <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> kaldı</translation>
@@ -419,6 +416,7 @@
 <translation id="4462159676511157176">Özel ad sunucuları</translation>
 <translation id="4465725236958772856">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Yöneticiniz tarafından yönetiliyor, Bağlan</translation>
 <translation id="4470564870223067757">Hangul 2 Grubu</translation>
+<translation id="4472575034687746823">Başlayın</translation>
 <translation id="4474142134969976028">Eşleşen sonuç yok</translation>
 <translation id="4477002475007461989">Romence</translation>
 <translation id="4477219268485577442">Bulgarca fonetik</translation>
@@ -468,10 +466,8 @@
 <translation id="4804827417948292437">Avokado</translation>
 <translation id="4805966553127040832"><ph name="COUNT" /> öğe geri yükleniyor</translation>
 <translation id="4816695657735045067">{COUNT,plural, =1{Gizli modu kullanmak için kuruluşunuzun bir uzantıya ihtiyacı var}other{Gizli modu kullanmak için kuruluşunuzun bazı uzantılara ihtiyacı var}}</translation>
-<translation id="4823651846660089135">Cihaz salt okunur</translation>
 <translation id="4826849268470072925">Tamilce ITRANS</translation>
 <translation id="482932175346970750">Tarayıcınıza <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" /> yazın</translation>
-<translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> öğe seçildi</translation>
 <translation id="4843566743023903107">Chromebase'ler</translation>
 <translation id="4850886885716139402">Görüntüle</translation>
 <translation id="485316830061041779">Almanca</translation>
@@ -579,6 +575,7 @@
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> resmi</translation>
 <translation id="5534520101572674276">Boyut hesaplanıyor</translation>
 <translation id="554153475311314364">Yunanca Harf Çevirisi</translation>
+<translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> klasör seçildi</translation>
 <translation id="5580591966435005537">sanal makine</translation>
 <translation id="5583640892426849032">Geri al tuşu</translation>
 <translation id="5583664733673201137">Noktalama genişliği Tam</translation>
@@ -601,6 +598,7 @@
 <translation id="5724172041621205163">Pattachote klavye ile Tayca</translation>
 <translation id="57383366388012121">Geçen ay</translation>
 <translation id="5756666464756035725">Macarca QWERTY</translation>
+<translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" /> öğe seçildi</translation>
 <translation id="5763377084591234761">Almanca (İsviçre)</translation>
 <translation id="5769519078756170258">Hariç tutulacak ana makine veya alan adı</translation>
 <translation id="5775750595919327203">Urduca</translation>
@@ -618,6 +616,7 @@
 <translation id="5838451609423551646">Tüm girişler seçimden kaldırıldı.</translation>
 <translation id="5838825566232597749">ABD Workman uluslararası</translation>
 <translation id="5845721951356578987">Hemşire</translation>
+<translation id="5860491529813859533">Etkinleştir</translation>
 <translation id="5861477046012235702">Oyuncu</translation>
 <translation id="5864471791310927901">DHCP araması başarısız oldu</translation>
 <translation id="5896749729057314184"><ph name="NETWORK_COUNT" /> ağdan <ph name="NETWORK_INDEX" />., <ph name="NETWORK_NAME" />, Etkinleştirilmemiş, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Ayrıntılar</translation>
@@ -675,7 +674,6 @@
 <translation id="6327785803543103246">Web proxy otomatik keşfi</translation>
 <translation id="6337014272874260727">Hızlı dosyalardaki sabitlemeyi kaldır</translation>
 <translation id="6339145975392024142">ABD uluslararası (PC)</translation>
-<translation id="6346310558342052870">Erişim kısıtlı</translation>
 <translation id="6356685157277930264">Dosya geri bildirim penceresi</translation>
 <translation id="6358884629796491903">Ejderha</translation>
 <translation id="636254897931573416">Alan adı son eki eşleşme değeri geçersiz</translation>
@@ -756,7 +754,6 @@
 <translation id="6989942356279143254">İsveççe</translation>
 <translation id="6990081529015358884">Boş yeriniz kalmadı</translation>
 <translation id="6993826899923627728">Bu öğeler çöp kutunuzda</translation>
-<translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> klasör seçildi</translation>
 <translation id="7008426324576352165">Kuruluşunuzun, yükleme işlemini tamamlamak için daha fazla depolama alanına ihtiyacı var.</translation>
 <translation id="7009985720488544166"><ph name="COUNT" /> dosyanın taşınması yönetici politikası tarafından engellendi</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -920,6 +917,7 @@
 <translation id="8264024885325823677">Bu ayar, yöneticiniz tarafından yönetilir.</translation>
 <translation id="8269755669432358899">Dosyalar geri bildirim panellerini daralt</translation>
 <translation id="8280151743281770066">Ermenice Fonetik</translation>
+<translation id="8285791779547722821">Şifreli <ph name="ORIGINAL_MIME_TYPE" /></translation>
 <translation id="8294431847097064396">Kaynak</translation>
 <translation id="8297012244086013755">Hangul 3 Grubu (Üst Karakter Yok)</translation>
 <translation id="8299269255470343364">Japonca</translation>

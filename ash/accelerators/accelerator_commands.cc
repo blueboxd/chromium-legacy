@@ -74,6 +74,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
+#include "chromeos/ash/components/dbus/biod/fake_biod_client.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/ui/base/display_util.h"
@@ -415,6 +416,23 @@ aura::Window* GetTargetWindow() {
   return window->IsVisible() ? window : nullptr;
 }
 
+// Returns the window pair that is eligle to form a snap group.
+aura::Window::Windows GetTargetWindowPairForSnapGroup() {
+  aura::Window::Windows window_pair;
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildAppWindowList(kActiveDesk);
+  auto* overview_controller = Shell::Get()->overview_controller();
+  OverviewSession* overview_session = overview_controller->overview_session();
+  if (!overview_session && windows.size() >= 2) {
+    aura::Window* window1 = windows[0];
+    aura::Window* window2 = windows[1];
+    window_pair.push_back(window2);
+    window_pair.push_back(window1);
+  }
+
+  return window_pair;
+}
+
 }  // namespace
 
 bool CanActivateTouchHud() {
@@ -474,6 +492,55 @@ bool CanLock() {
   return Shell::Get()->session_controller()->CanLockScreen();
 }
 
+bool CanGroupOrUngroupWindows() {
+  aura::Window::Windows window_pair = GetTargetWindowPairForSnapGroup();
+  if (!Shell::Get()->snap_group_controller() || window_pair.size() != 2) {
+    return false;
+  }
+
+  aura::Window* window1 = window_pair[0];
+  aura::Window* window2 = window_pair[1];
+  WindowStateType window1_state_type =
+      WindowState::Get(window1)->GetStateType();
+  WindowStateType window2_state_type =
+      WindowState::Get(window2)->GetStateType();
+  return (window1_state_type == WindowStateType::kPrimarySnapped &&
+          window2_state_type == WindowStateType::kSecondarySnapped) ||
+         (window1_state_type == WindowStateType::kSecondarySnapped &&
+          window2_state_type == WindowStateType::kPrimarySnapped);
+}
+
+void GroupOrUngroupWindowsInSnapGroup() {
+  SnapGroupController* snap_group_controller =
+      Shell::Get()->snap_group_controller();
+  CHECK(snap_group_controller);
+  aura::Window::Windows window_pair = GetTargetWindowPairForSnapGroup();
+  if (window_pair.size() != 2) {
+    return;
+  }
+
+  aura::Window* window1 = window_pair[0];
+  aura::Window* window2 = window_pair[1];
+  WindowStateType window1_state_type =
+      WindowState::Get(window1)->GetStateType();
+  WindowStateType window2_state_type =
+      WindowState::Get(window2)->GetStateType();
+  CHECK((window1_state_type == WindowStateType::kPrimarySnapped &&
+         window2_state_type == WindowStateType::kSecondarySnapped) ||
+        (window1_state_type == WindowStateType::kSecondarySnapped &&
+         window2_state_type == WindowStateType::kPrimarySnapped));
+
+  // TODO(michelefan): Trigger a11y alert if there are no eligible windows.
+
+  if (!snap_group_controller->AreWindowsInSnapGroup(window1, window2)) {
+    snap_group_controller->AddSnapGroup(window1, window2);
+    CHECK(snap_group_controller->AreWindowsInSnapGroup(window1, window2));
+  } else {
+    snap_group_controller->RemoveSnapGroupContainingWindow(window1);
+    CHECK(!snap_group_controller->AreWindowsInSnapGroup(window1, window2));
+  }
+}
+
 bool CanMinimizeSnapGroupWindows() {
   return Shell::Get()->snap_group_controller();
 }
@@ -519,6 +586,10 @@ bool CanShowStylusTools() {
   return GetPaletteTray()->ShouldShowPalette();
 }
 
+bool CanStopScreenRecording() {
+  return CaptureModeController::Get()->is_recording_in_progress();
+}
+
 bool CanSwapPrimaryDisplay() {
   return display::Screen::GetScreen()->GetNumDisplays() > 1;
 }
@@ -539,7 +610,7 @@ bool CanToggleGameDashboard() {
     return false;
   }
   aura::Window* window = GetTargetWindow();
-  return window && chromeos::wm::IsGameWindow(window);
+  return window && GameDashboardController::IsGameWindow(window);
 }
 
 bool CanToggleMultitaskMenu() {
@@ -1074,6 +1145,12 @@ void ShowTaskManager() {
   NewWindowDelegate::GetInstance()->ShowTaskManager();
 }
 
+void StopScreenRecording() {
+  CaptureModeController* controller = CaptureModeController::Get();
+  CHECK(controller->is_recording_in_progress());
+  controller->EndVideoRecording(EndRecordingReason::kKeyboardShortcut);
+}
+
 void Suspend() {
   chromeos::PowerManagerClient::Get()->RequestSuspend();
 }
@@ -1352,7 +1429,10 @@ void ToggleGameDashboard() {
   DCHECK(features::IsGameDashboardEnabled());
   aura::Window* window = GetTargetWindow();
   DCHECK(window);
-  // TODO(phshah): Connect to Game Dashboard.
+  if (auto* context =
+          GameDashboardController::Get()->GetGameDashboardContext(window)) {
+    context->ToggleMainMenu();
+  }
 }
 
 void ToggleHighContrast() {
@@ -1682,6 +1762,19 @@ bool ZoomDisplay(bool up) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestPoint(point);
   return display_manager->ZoomDisplay(display.id(), up);
+}
+
+void TouchFingerprintSensor(int finger_id) {
+  // This function only called with [1,3]. If the range is changed in
+  // the caller AcceleratorControllerImpl::PerformAction function then
+  // this should be changed accordingly.
+  DCHECK(1 <= finger_id && finger_id <= 3);
+  FakeBiodClient* client = FakeBiodClient::Get();
+  if (!client) {
+    LOG(ERROR) << "FakeBiod is not initialized.";
+    return;
+  }
+  client->TouchFingerprintSensor(finger_id);
 }
 
 }  // namespace accelerators

@@ -258,8 +258,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableLazyInitializeMediaControls,
      raw_ref(features::kLazyInitializeMediaControls)},
     {wf::EnableLazyFrameLoading, raw_ref(features::kLazyFrameLoading)},
-    {wf::EnableLazyImageVisibleLoadTimeMetrics,
-     raw_ref(features::kLazyImageVisibleLoadTimeMetrics)},
     {wf::EnableMediaCastOverlayButton, raw_ref(media::kMediaCastOverlayButton)},
     {wf::EnableMediaEngagementBypassAutoplayPolicies,
      raw_ref(media::kMediaEngagementBypassAutoplayPolicies)},
@@ -323,9 +321,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #endif
     {wf::EnableRemoveMobileViewportDoubleTap,
      raw_ref(features::kRemoveMobileViewportDoubleTap)},
-    {wf::EnableGetDisplayMediaSet, raw_ref(features::kGetDisplayMediaSet)},
-    {wf::EnableGetDisplayMediaSetAutoSelectAllScreens,
-     raw_ref(features::kGetDisplayMediaSetAutoSelectAllScreens)},
     {wf::EnableServiceWorkerBypassFetchHandler,
      raw_ref(features::kServiceWorkerBypassFetchHandler)},
   };
@@ -340,6 +335,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
       runtimeFeatureNameToChromiumFeatureMapping[] = {
           {"AllowContentInitiatedDataUrlNavigations",
            raw_ref(features::kAllowContentInitiatedDataUrlNavigations)},
+          {"AllowURNsInIframes", raw_ref(blink::features::kAllowURNsInIframes)},
+          {"AllowURNsInIframes",
+           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+           kSetOnlyIfOverridden},
           {"AttributionReporting",
            raw_ref(features::kPrivacySandboxAdsAPIsOverride),
            kSetOnlyIfOverridden},
@@ -350,6 +349,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            raw_ref(features::kAndroidDownloadableFontsMatching)},
           {"Fledge", raw_ref(blink::features::kFledge), kSetOnlyIfOverridden},
           {"Fledge", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
+           kSetOnlyIfOverridden},
+          {"FledgeBiddingAndAuctionServer",
+           raw_ref(features::kPrivacySandboxAdsAPIsOverride),
            kSetOnlyIfOverridden},
           {"FontSrcLocalMatching", raw_ref(features::kFontSrcLocalMatching)},
           {"LegacyWindowsDWriteFontFallback",
@@ -363,6 +365,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kSetOnlyIfOverridden},
           {"TopicsXHR", raw_ref(features::kPrivacySandboxAdsAPIsOverride),
            kSetOnlyIfOverridden},
+          {"TouchTextEditingRedesign",
+           raw_ref(features::kTouchTextEditingRedesign)},
           {"TrustedTypesFromLiteral",
            raw_ref(features::kTrustedTypesFromLiteral)},
           {"WebAppTabStrip", raw_ref(features::kDesktopPWAsTabStrip)},
@@ -370,6 +374,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            raw_ref(blink::features::kDesktopPWAsTabStripCustomizations)},
           {"WebEnvironmentIntegrity",
            raw_ref(features::kWebEnvironmentIntegrity)},
+          {"WebSerialBluetooth",
+           raw_ref(features::kEnableBluetoothSerialPortProfileInSerialApi)},
           {"WGIGamepadTriggerRumble",
            raw_ref(features::kEnableWindowsGamingInputDataFetcher)},
           {"UserAgentFull", raw_ref(blink::features::kFullUserAgent)},
@@ -522,6 +528,24 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
       WebRuntimeFeatures::EnableSendMouseEventsDisabledFormControls(false);
     }
   }
+
+  // Enable or disable BeforeunloadEventCancelByPreventDefault for Enterprise
+  // Policy. This overrides any existing settings via base::Feature.
+  if (command_line.HasSwitch(
+          blink::switches::kBeforeunloadEventCancelByPreventDefaultPolicy)) {
+    const std::string value = command_line.GetSwitchValueASCII(
+        blink::switches::kBeforeunloadEventCancelByPreventDefaultPolicy);
+    if (value ==
+        blink::switches::
+            kBeforeunloadEventCancelByPreventDefaultPolicy_ForceEnable) {
+      WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(true);
+    }
+    if (value ==
+        blink::switches::
+            kBeforeunloadEventCancelByPreventDefaultPolicy_ForceDisable) {
+      WebRuntimeFeatures::EnableOffsetParentNewSpecBehavior(false);
+    }
+  }
 }
 
 // Sets blink runtime features that depend on a combination
@@ -662,6 +686,20 @@ void ResolveInvalidConfigurations() {
         << switches::kEnableFeatures << "="
         << blink::features::kBrowsingTopicsXHR.name << " in addition.";
     WebRuntimeFeatures::EnableTopicsXHR(false);
+  }
+
+  if (!base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage) ||
+      !base::FeatureList::IsEnabled(
+          blink::features::kFledgeBiddingAndAuctionServer)) {
+    LOG_IF(WARNING,
+           WebRuntimeFeatures::IsFledgeBiddingAndAuctionServerEnabled())
+        << "FledgeBiddingAndAuctionServer cannot be enabled in this "
+           "configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << blink::features::kInterestGroupStorage.name << ","
+        << blink::features::kFledgeBiddingAndAuctionServer.name
+        << " in addition.";
+    WebRuntimeFeatures::EnableFledgeBiddingAndAuctionServer(false);
   }
 }
 

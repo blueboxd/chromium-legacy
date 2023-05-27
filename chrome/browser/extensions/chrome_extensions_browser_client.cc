@@ -62,6 +62,8 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -76,6 +78,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/api/content_settings/content_settings_service.h"
 #include "extensions/browser/api/core_extensions_browser_api_provider.h"
@@ -237,9 +240,16 @@ ChromeExtensionsBrowserClient::GetRedirectedContextInIncognito(
     content::BrowserContext* context,
     bool force_guest_profile,
     bool force_system_profile) {
-  const ProfileSelections selections =
-      ProfileSelections::BuildRedirectedInIncognito(force_guest_profile,
-                                                    force_system_profile);
+  ProfileSelections::Builder builder;
+  builder.WithRegular(ProfileSelection::kRedirectedToOriginal);
+  if (force_guest_profile) {
+    builder.WithGuest(ProfileSelection::kRedirectedToOriginal);
+  }
+  if (force_system_profile) {
+    builder.WithSystem(ProfileSelection::kRedirectedToOriginal);
+  }
+
+  const ProfileSelections selections = builder.Build();
   return selections.ApplyProfileSelection(Profile::FromBrowserContext(context));
 }
 
@@ -248,9 +258,16 @@ ChromeExtensionsBrowserClient::GetContextForRegularAndIncognito(
     content::BrowserContext* context,
     bool force_guest_profile,
     bool force_system_profile) {
-  const ProfileSelections selections =
-      ProfileSelections::BuildForRegularAndIncognito(force_guest_profile,
-                                                     force_system_profile);
+  ProfileSelections::Builder builder;
+  builder.WithRegular(ProfileSelection::kOwnInstance);
+  if (force_guest_profile) {
+    builder.WithGuest(ProfileSelection::kOwnInstance);
+  }
+  if (force_system_profile) {
+    builder.WithSystem(ProfileSelection::kOwnInstance);
+  }
+
+  const ProfileSelections selections = builder.Build();
   return selections.ApplyProfileSelection(Profile::FromBrowserContext(context));
 }
 
@@ -258,8 +275,15 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetRegularProfile(
     content::BrowserContext* context,
     bool force_guest_profile,
     bool force_system_profile) {
-  const ProfileSelections selections = ProfileSelections::BuildDefault(
-      force_guest_profile, force_system_profile);
+  ProfileSelections::Builder builder;
+  if (force_guest_profile) {
+    builder.WithGuest(ProfileSelection::kOriginalOnly);
+  }
+  if (force_system_profile) {
+    builder.WithSystem(ProfileSelection::kOriginalOnly);
+  }
+
+  ProfileSelections selections = builder.Build();
   return selections.ApplyProfileSelection(Profile::FromBrowserContext(context));
 }
 
@@ -382,7 +406,7 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
     last_version = base::Version(last_version_str);
   }
 
-  std::string current_version_str = version_info::GetVersionNumber();
+  std::string current_version_str(version_info::GetVersionNumber());
   const base::Version& current_version = version_info::GetVersion();
   pref_service->SetString(pref_names::kLastChromeVersion, current_version_str);
 
@@ -916,23 +940,30 @@ void ChromeExtensionsBrowserClient::AddAPIActionOrEventToActivityLog(
   AddActionToExtensionActivityLog(browser_context, action);
 }
 
-content::StoragePartitionConfig
-ChromeExtensionsBrowserClient::GetWebViewStoragePartitionConfig(
+void ChromeExtensionsBrowserClient::GetWebViewStoragePartitionConfig(
     content::BrowserContext* browser_context,
     content::SiteInstance* owner_site_instance,
     const std::string& partition_name,
-    bool in_memory) {
+    bool in_memory,
+    base::OnceCallback<void(absl::optional<content::StoragePartitionConfig>)>
+        callback) {
   const GURL& owner_site_url = owner_site_instance->GetSiteURL();
   if (owner_site_url.SchemeIs(chrome::kIsolatedAppScheme)) {
     base::expected<web_app::IsolatedWebAppUrlInfo, std::string> url_info =
         web_app::IsolatedWebAppUrlInfo::Create(owner_site_url);
     DCHECK(url_info.has_value()) << url_info.error();
-    return url_info->GetStoragePartitionConfigForControlledFrame(
-        browser_context, partition_name, in_memory);
+
+    auto* profile = Profile::FromBrowserContext(browser_context);
+    auto* web_app_provider = web_app::WebAppProvider::GetForWebApps(profile);
+    CHECK(web_app_provider);
+    web_app_provider->scheduler().GetControlledFramePartition(
+        *url_info, partition_name, in_memory, std::move(callback));
+    return;
   }
 
-  return ExtensionsBrowserClient::GetWebViewStoragePartitionConfig(
-      browser_context, owner_site_instance, partition_name, in_memory);
+  ExtensionsBrowserClient::GetWebViewStoragePartitionConfig(
+      browser_context, owner_site_instance, partition_name, in_memory,
+      std::move(callback));
 }
 
 void ChromeExtensionsBrowserClient::CreatePasswordReuseDetectionManager(

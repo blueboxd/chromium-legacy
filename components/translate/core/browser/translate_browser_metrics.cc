@@ -20,11 +20,7 @@ const char kTranslateLanguageDetectionContentLength[] =
     "Translate.LanguageDetection.ContentLength";
 const char kTranslateUnsupportedLanguageAtInitiation[] =
     "Translate.UnsupportedLanguageAtInitiation";
-const char kTranslateSourceLanguage[] = "Translate.SourceLanguage";
-const char kTranslateTargetLanguage[] = "Translate.TargetLanguage";
 const char kTranslateHrefHintStatus[] = "Translate.HrefHint.Status";
-const char kTranslateHrefHintPrefsFilterStatus[] =
-    "Translate.HrefHint.PrefsFilterStatus";
 const char kTranslateMenuTranslationUnavailableReasons[] =
     "Translate.MenuTranslation.UnavailableReasons";
 
@@ -55,23 +51,8 @@ void ReportUnsupportedLanguageAtInitiation(base::StringPiece language) {
                            language_code);
 }
 
-void ReportTranslateSourceLanguage(base::StringPiece language) {
-  base::UmaHistogramSparse(kTranslateSourceLanguage,
-                           base::HashMetricName(language));
-}
-
-void ReportTranslateTargetLanguage(base::StringPiece language) {
-  base::UmaHistogramSparse(kTranslateTargetLanguage,
-                           base::HashMetricName(language));
-}
-
 void ReportTranslateHrefHintStatus(HrefTranslateStatus status) {
   base::UmaHistogramEnumeration(kTranslateHrefHintStatus, status);
-}
-
-void ReportTranslateHrefHintPrefsFilterStatus(
-    HrefTranslatePrefsFilterStatus status) {
-  base::UmaHistogramEnumeration(kTranslateHrefHintPrefsFilterStatus, status);
 }
 
 }  // namespace TranslateBrowserMetrics

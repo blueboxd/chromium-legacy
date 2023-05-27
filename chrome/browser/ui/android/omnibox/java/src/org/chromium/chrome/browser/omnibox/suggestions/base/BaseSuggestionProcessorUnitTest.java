@@ -30,11 +30,11 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher;
 import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher.FaviconFetchCompleteListener;
 import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher.FaviconType;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
+import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -50,7 +50,7 @@ public class BaseSuggestionProcessorUnitTest {
         private final Context mContext;
         public TestBaseSuggestionProcessor(
                 Context context, SuggestionHost suggestionHost, FaviconFetcher faviconFetcher) {
-            super(context, suggestionHost, null, faviconFetcher);
+            super(context, suggestionHost, faviconFetcher);
             mContext = context;
         }
 

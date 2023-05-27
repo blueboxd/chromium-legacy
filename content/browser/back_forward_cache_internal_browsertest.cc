@@ -873,10 +873,11 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheEntryTimeoutBrowserTest,
                     FROM_HERE);
 
   // Make sure that the tree reasons match the flattened reasons.
-  EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
-              MatchesDocumentResult(
-                  NotRestoredReasons(NotRestoredReason::kTimeoutPuttingInCache),
-                  BlockListedFeatures()));
+  EXPECT_THAT(
+      GetTreeResult()->GetDocumentResult(),
+      MatchesDocumentResult(
+          NotRestoredReasons({NotRestoredReason::kTimeoutPuttingInCache}),
+          BlockListedFeatures()));
 }
 
 // Test the race condition where a document is evicted from the BackForwardCache
@@ -1148,7 +1149,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   // Make sure that the tree reasons match the flattened reasons.
   EXPECT_THAT(
       GetTreeResult()->GetDocumentResult(),
-      MatchesDocumentResult(NotRestoredReasons(NotRestoredReason::kTimeout),
+      MatchesDocumentResult(NotRestoredReasons({NotRestoredReason::kTimeout}),
                             BlockListedFeatures()));
 }
 
@@ -3342,7 +3343,7 @@ class InjectCreateChildFrame : public DidCommitNavigationInterceptor {
       override {
     if (!was_called_ && navigation_request &&
         navigation_request->GetURL() == url_) {
-      EXPECT_TRUE(ExecuteScript(
+      EXPECT_TRUE(ExecJs(
           web_contents(),
           "document.body.appendChild(document.createElement('iframe'));"));
     }
@@ -3411,14 +3412,14 @@ IN_PROC_BROWSER_TEST_F(
 
   // 4) Add a grandchild frame to `rfh_a`.  This shouldn't crash.
   RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 1);
-  EXPECT_TRUE(ExecuteScript(
-      rfh_a->child_at(0),
-      "document.body.appendChild(document.createElement('iframe'));"));
+  EXPECT_TRUE(
+      ExecJs(rfh_a->child_at(0),
+             "document.body.appendChild(document.createElement('iframe'));"));
   frame_observer.Wait();
   EXPECT_EQ(1U, rfh_a->child_at(0)->child_count());
 
   // Make sure the grandchild is live.
-  EXPECT_TRUE(ExecuteScript(rfh_a->child_at(0)->child_at(0), "true"));
+  EXPECT_TRUE(ExecJs(rfh_a->child_at(0)->child_at(0), "true"));
 }
 
 class BackForwardCacheBrowserTestWithFlagForScreenReader
@@ -4195,9 +4196,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithFencedFrames,
   // 6. Check the blocked reasons are set correctly on the fenced frame.
   EXPECT_THAT(child_c_results->GetDocumentResult(),
               MatchesDocumentResult(
-                  NotRestoredReasons(NotRestoredReason::kBlocklistedFeatures),
+                  NotRestoredReasons({NotRestoredReason::kBlocklistedFeatures}),
                   BlockListedFeatures(
-                      blink::scheduler::WebSchedulerTrackedFeature::kDummy)));
+                      {blink::scheduler::WebSchedulerTrackedFeature::kDummy})));
 
   // 7. Ensure that the web exposed reasons do not replicate any of
   // fenced frame results.

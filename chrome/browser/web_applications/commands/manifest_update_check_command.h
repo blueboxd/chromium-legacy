@@ -59,7 +59,8 @@ class ManifestUpdateCheckCommand : public WebAppCommandTemplate<AppLock> {
       base::Time check_time,
       base::WeakPtr<content::WebContents> web_contents,
       CompletedCallback callback,
-      std::unique_ptr<WebAppDataRetriever> data_retriever);
+      std::unique_ptr<WebAppDataRetriever> data_retriever,
+      std::unique_ptr<WebAppIconDownloader> icon_downloader);
 
   ~ManifestUpdateCheckCommand() override;
 
@@ -145,11 +146,11 @@ class ManifestUpdateCheckCommand : public WebAppCommandTemplate<AppLock> {
   std::unique_ptr<AppLock> lock_;
   base::WeakPtr<content::WebContents> web_contents_;
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
-  absl::optional<WebAppIconDownloader> icon_downloader_;
+  std::unique_ptr<WebAppIconDownloader> icon_downloader_;
 
   // Temporary variables stored here while the update check progresses
   // asynchronously.
-  WebAppInstallInfo new_install_info_;
+  std::unique_ptr<WebAppInstallInfo> new_install_info_;
   IconBitmaps existing_app_icon_bitmaps_;
   ShortcutsMenuIconBitmaps existing_shortcuts_menu_icon_bitmaps_;
   ManifestDataChanges manifest_data_changes_;

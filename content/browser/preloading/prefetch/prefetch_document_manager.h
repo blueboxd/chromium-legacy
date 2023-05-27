@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/preloading/prefetch/no_vary_search_helper.h"
 #include "content/browser/preloading/prefetch/prefetch_type.h"
@@ -90,7 +91,7 @@ class CONTENT_EXPORT PrefetchDocumentManager
 
   // Updates metrics when the response for a prefetch requested by this page
   // load is received.
-  void OnPrefetchSuccessful();
+  void OnPrefetchSuccessful(PrefetchContainer* prefetch);
 
   // Whether the prefetch attempt for target |url| failed or discarded
   bool IsPrefetchAttemptFailedOrDiscarded(const GURL& url);
@@ -99,6 +100,13 @@ class CONTENT_EXPORT PrefetchDocumentManager
   const NoVarySearchHelper& GetNoVarySearchHelper() const;
 
   void EnableNoVarySearchSupport();
+
+  // Returns true if we can prefetch |next_prefetch| based on the number of
+  // existing completed prefetches. This method will make room for
+  // another prefetch by evicting an existing prefetch if possible. The
+  // eagerness of |next_prefetch| is taken into account when making the
+  // decision.
+  bool CanPrefetchNow(PrefetchContainer* next_prefetch);
 
   base::WeakPtr<PrefetchDocumentManager> GetWeakPtr() {
     return weak_method_factory_.GetWeakPtr();
@@ -129,6 +137,14 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // The number of prefetch requests that have been attempted for prefetches
   // requested by this page.
   int number_prefetch_request_attempted_{0};
+
+  // The number of eager prefetch requests (from this page) that have completed.
+  // An 'eager' prefetch is a prefetch whose eagerness is kEager.
+  size_t number_eager_prefetches_completed_{0};
+  // A list of non-eager prefetch requests (from this page) that have completed
+  // (oldest to newest).
+  base::circular_deque<base::WeakPtr<PrefetchContainer>>
+      completed_non_eager_prefetches_;
 
   // Metrics related to the prefetches requested by this page load.
   PrefetchReferringPageMetrics referring_page_metrics_;

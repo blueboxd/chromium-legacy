@@ -55,11 +55,13 @@ class PermissionPromptBubbleBaseView : public views::BubbleDialogDelegateView {
       const PermissionPromptBubbleBaseView&) = delete;
   ~PermissionPromptBubbleBaseView() override;
 
-  void Show();
+  virtual void Show();
 
   // Anchors the bubble to the view or rectangle returned from
   // bubble_anchor_util::GetPageInfoAnchorConfiguration.
   void UpdateAnchorPosition();
+
+  void ShowWidget();
 
   void SetPromptStyle(PermissionPromptStyle prompt_style);
 
@@ -69,13 +71,23 @@ class PermissionPromptBubbleBaseView : public views::BubbleDialogDelegateView {
   std::u16string GetAccessibleWindowTitle() const override;
   std::u16string GetWindowTitle() const override;
 
+  // views::DialogDelegate:
+  bool ShouldIgnoreButtonPressedEventHandling(
+      View* button,
+      const ui::Event& event) const override;
+
   void AcceptPermission();
   void AcceptPermissionThisTime();
   void DenyPermission();
   void ClosingPermission();
 
  protected:
+  void CreateWidget();
+
   UrlIdentity GetUrlIdentityObject() { return url_identity_; }
+  base::WeakPtr<permissions::PermissionPrompt::Delegate> GetDelegate() {
+    return delegate_;
+  }
 
   // Determines whether the current request should also display an
   // "Allow only this time" option in addition to the "Allow on every visit"

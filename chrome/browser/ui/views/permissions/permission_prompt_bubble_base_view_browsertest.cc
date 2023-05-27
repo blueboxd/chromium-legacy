@@ -35,6 +35,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/custom_handlers/register_protocol_handler_permission_request.h"
+#include "components/permissions/constants.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_ui_selector.h"
@@ -51,8 +52,16 @@
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/test/ax_event_counter.h"
 #include "ui/views/test/button_test_api.h"
+
+// To run the pixel tests of this file run: browser_tests
+// --gtest_filter=BrowserUiTest.Invoke --test-launcher-interactive
+// --enable-pixel-output-in-tests --ui=<test name e.g.
+// PermissionPromptBubbleBaseViewBrowserTest>.*
+//
+// Check go/brapp-desktop-pixel-tests for more info.
 
 namespace {
 // Test implementation of PermissionUiSelector that always returns a canned
@@ -88,11 +97,13 @@ class PermissionPromptBubbleBaseViewBrowserTest
  public:
   PermissionPromptBubbleBaseViewBrowserTest() {
     if (GetParam()) {
-      feature_list_.InitWithFeatures({permissions::features::kPermissionChip},
-                                     {});
+      feature_list_.InitWithFeatures(
+          {permissions::features::kPermissionChip},
+          {permissions::features::kPermissionStorageAccessAPI});
     } else {
-      feature_list_.InitWithFeatures({},
-                                     {permissions::features::kPermissionChip});
+      feature_list_.InitWithFeatures(
+          {}, {permissions::features::kPermissionChip,
+               permissions::features::kPermissionStorageAccessAPI});
     }
   }
 
@@ -201,6 +212,17 @@ class PermissionPromptBubbleBaseViewBrowserTest
     }
     permissions::PermissionRequestManager* manager = test_api_->manager();
     content::RenderFrameHost* source_frame = GetActiveMainFrame();
+
+    // Pixel verification for storage_access test checks a permission
+    // request prompt that has an origin and port. Because these tests run
+    // on localhost, the port changes, and the test pixel verification
+    // fails. We need a fixed URL, so the Gold image used in the pixel test
+    // always matches with the output of the test.
+    if (it->type == ContentSettingsType::STORAGE_ACCESS) {
+      test_api_->manager()->set_embedding_origin_for_testing(
+          GURL("https://test.com"));
+    }
+
     switch (it->type) {
       case ContentSettingsType::PROTOCOL_HANDLERS:
         manager->AddRequest(source_frame, MakeRegisterProtocolHandlerRequest());
@@ -392,14 +414,9 @@ IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleBaseViewBrowserTest,
   ShowAndVerifyUi();
 }
 
-// TODO(crbug.com/1232028): Pixel verification for storage_access test checks
-// permission request prompt that has origin and port. Because these tests run
-// on localhost, the port constantly changes its value and hence test pixel
-// verification fails. Host wants to access storage from the site in which it's
-// embedded.
 // Host wants to access storage from the site in which it's embedded.
 IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleBaseViewBrowserTest,
-                       DISABLED_InvokeUi_storage_access) {
+                       InvokeUi_storage_access) {
   ShowAndVerifyUi();
 }
 
@@ -419,6 +436,62 @@ IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleBaseViewBrowserTest,
 IN_PROC_BROWSER_TEST_P(PermissionPromptBubbleBaseViewBrowserTest,
                        InvokeUi_multiple) {
   ShowAndVerifyUi();
+}
+
+// Test fixture to test the Storage Access prompt with the new Google UI.
+//
+// We have created a new test fixture for the new Google UI so we can have a
+// test for the new and old prompt UI and avoid adding unnecessary Gold images.
+// If were to add a new parameter to |PermissionPromptBubbleBaseViewBrowserTest|
+// to toggle the PermissionStorageAccessAPI, we would have to add extra Gold
+// images for each of the other eleven tests, even though this flag only affects
+// the Storage Access prompt.
+class StorageAccessEnabledPermissionPromptBubbleViewBrowserTest
+    : public PermissionPromptBubbleBaseViewBrowserTest {
+ public:
+  StorageAccessEnabledPermissionPromptBubbleViewBrowserTest() {
+    if (GetParam()) {
+      feature_list_.InitWithFeatures(
+          {permissions::features::kPermissionStorageAccessAPI,
+           permissions::features::kPermissionChip},
+          {});
+    } else {
+      feature_list_.InitWithFeatures(
+          {permissions::features::kPermissionStorageAccessAPI},
+          {permissions::features::kPermissionChip});
+    }
+  }
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Host wants to access storage from the site in which it's embedded. Prompt
+// with new Google UI.
+IN_PROC_BROWSER_TEST_P(
+    StorageAccessEnabledPermissionPromptBubbleViewBrowserTest,
+    InvokeUi_storage_access) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_P(
+    StorageAccessEnabledPermissionPromptBubbleViewBrowserTest,
+    OpenHelpCenterLinkInNewTab) {
+  ShowUi("storage_access");
+
+  // Get link widget from the prompt.
+  views::Widget* prompt = test_api_->GetPromptWindow();
+  EXPECT_TRUE(prompt);
+  auto* label_with_link =
+      static_cast<views::StyledLabel*>(prompt->GetRootView()->GetViewByID(
+          permissions::PermissionPromptViewID::
+              VIEW_ID_PERMISSION_PROMPT_DESCRIPTION_WITH_LINK));
+  EXPECT_TRUE(label_with_link);
+
+  // Click on the help center link and check that it opens on a new tab.
+  content::WebContentsAddedObserver new_tab_observer;
+  label_with_link->ClickFirstLinkForTesting();
+  GURL url = GURL(permissions::kEmbeddedContentHelpCenterURL);
+
+  EXPECT_EQ(new_tab_observer.GetWebContents()->GetVisibleURL(), url);
 }
 
 class QuietUIPromoBrowserTest
@@ -990,6 +1063,10 @@ IN_PROC_BROWSER_TEST_P(OneTimePermissionPromptBubbleBaseViewBrowserTest,
 INSTANTIATE_TEST_SUITE_P(All,
                          PermissionPromptBubbleBaseViewBrowserTest,
                          ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    StorageAccessEnabledPermissionPromptBubbleViewBrowserTest,
+    ::testing::Values(false, true));
 INSTANTIATE_TEST_SUITE_P(All,
                          PermissionPromptBubbleBaseViewQuietUiBrowserTest,
                          ::testing::Values(false, true));

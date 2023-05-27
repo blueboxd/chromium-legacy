@@ -84,9 +84,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/base/features.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_utils.h"
-#include "components/sync/driver/sync_user_settings.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_service_utils.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "components/zoom/page_zoom_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -103,6 +103,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -242,6 +243,12 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddBoolean(
       "allowDeletingBrowserHistory",
       profile->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+#if BUILDFLAG(IS_LINUX)
+  bool allow_qt_theme = base::FeatureList::IsEnabled(ui::kAllowQt);
+#else
+  bool allow_qt_theme = false;
+#endif
+  html_source->AddBoolean("allowQtTheme", allow_qt_theme);
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
@@ -645,6 +652,12 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING},
       {"highEfficiencyModeDescription",
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING_DESCRIPTION},
+      {"highEfficiencyModeHeuristicsLabel",
+       IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_HEURISTICS_LABEL},
+      {"highEfficiencyModeOnTimerLabel",
+       IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_ON_TIMER_LABEL},
+      {"highEfficiencyModeRadioGroupAriaLabel",
+       IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_RADIO_GROUP_ARIA_LABEL},
       {"batteryPageTitle", IDS_SETTINGS_BATTERY_PAGE_TITLE},
       {"batterySaverModeLabel",
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING},
@@ -662,8 +675,49 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_HEADER},
       {"tabDiscardingExceptionsAdditionalSites",
        IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADDITIONAL_SITES},
+      {"tabDiscardingExceptionsAddDialogCurrentTabs",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_DIALOG_CURRENT_TABS},
+      {"tabDiscardingExceptionsAddDialogManual",
+       IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_DIALOG_MANUAL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
+
+  html_source->AddString(
+      "tabDiscardTimerFiveMinutes",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Minutes(5)));
+  html_source->AddString(
+      "tabDiscardTimerFifteenMinutes",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Minutes(15)));
+  html_source->AddString(
+      "tabDiscardTimerThirtyMinutes",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Minutes(30)));
+  html_source->AddString(
+      "tabDiscardTimerOneHour",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Hours(1)));
+  html_source->AddString(
+      "tabDiscardTimerTwoHours",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Hours(2)));
+  html_source->AddString(
+      "tabDiscardTimerFourHours",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Hours(4)));
+  html_source->AddString(
+      "tabDiscardTimerEightHours",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Hours(8)));
+  html_source->AddString(
+      "tabDiscardTimerSixteenHours",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Hours(16)));
+  html_source->AddString(
+      "tabDiscardTimerTwentyFourHours",
+      ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                             ui::TimeFormat::LENGTH_LONG, base::Hours(24)));
 
   html_source->AddString(
       "batterySaverModeEnabledBelowThresholdLabel",
@@ -672,6 +726,11 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
           base::NumberToString16(
               performance_manager::user_tuning::UserPerformanceTuningManager::
                   kLowBatteryThresholdPercent)));
+  html_source->AddString(
+      "tabDiscardingExceptionsAddDialogHelp",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PERFORMANCE_TAB_DISCARDING_EXCEPTIONS_ADD_DIALOG_HELP,
+          base::ASCIIToUTF16(chrome::kHighEfficiencyModeTabDiscardingHelpUrl)));
 
   html_source->AddString("highEfficiencyLearnMoreUrl",
                          chrome::kHighEfficiencyModeLearnMoreUrl);
@@ -917,11 +976,13 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"addressPhone", IDS_SETTINGS_AUTOFILL_ADDRESSES_PHONE},
     {"addressEmail", IDS_SETTINGS_AUTOFILL_ADDRESSES_EMAIL},
     {"honorificLabel", IDS_SETTINGS_AUTOFILL_ADDRESS_HONORIFIC_LABEL},
+    {"creditCardDescription", IDS_SETTINGS_AUTOFILL_CARD_DESCRIPTION},
+    {"creditCardA11yLabeled", IDS_SETTINGS_AUTOFILL_CARD_A11Y_LABELED},
+    {"creditCardExpDateA11yLabeled",
+     IDS_SETTINGS_AUTOFILL_CARD_EXP_DATE_A11Y_LABELED},
     {"moreActionsForAddress", IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_FOR_ADDRESS},
     {"moreActionsForCreditCard",
      IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_FOR_CREDIT_CARD},
-    {"moreActionsCreditCardDescription",
-     IDS_SETTINGS_AUTOFILL_MORE_ACTIONS_CARD_DESCRIPTION},
     {"removeAddress", IDS_SETTINGS_ADDRESS_REMOVE},
     {"removeAddressConfirmationTitle",
      IDS_SETTINGS_ADDRESS_REMOVE_CONFIRMATION_TITLE},
@@ -2368,7 +2429,6 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
 
 void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"searchEnginesPageTitle", IDS_SETTINGS_SEARCH_ENGINES},
       {"searchEnginesPageExplanation",
        IDS_SETTINGS_SEARCH_ENGINES_PAGE_EXPLANATION},
       {"searchEnginesAddSearchEngine",
@@ -2380,7 +2440,6 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
       {"searchEnginesDeleteConfirmationDescription",
        IDS_SETTINGS_SEARCH_ENGINES_DELETE_CONFIRMATION_DESCRIPTION},
       {"searchEngines", IDS_SETTINGS_SEARCH_ENGINES},
-      {"searchEnginesDefault", IDS_SETTINGS_SEARCH_ENGINES_DEFAULT_ENGINES},
       {"searchEnginesSearchEngines",
        IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINES},
       {"searchEnginesSearchEnginesExplanation",
@@ -2391,8 +2450,6 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
       {"searchEnginesNoSitesAdded", IDS_SETTINGS_SEARCH_ENGINES_NO_SITES_ADDED},
       {"searchEnginesInactiveShortcuts",
        IDS_SETTINGS_SEARCH_ENGINES_INACTIVE_SHORTCUTS},
-      {"searchEnginesNoInactiveShortcuts",
-       IDS_SETTINGS_SEARCH_ENGINES_NO_INACTIVE_SHORTCUTS},
       {"searchEnginesNoOtherEngines",
        IDS_SETTINGS_SEARCH_ENGINES_NO_OTHER_ENGINES},
       {"searchEnginesExtension", IDS_SETTINGS_SEARCH_ENGINES_EXTENSION_ENGINES},
@@ -2401,7 +2458,6 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
       {"searchEnginesSearch", IDS_SETTINGS_SEARCH_ENGINES_SEARCH},
       {"searchEnginesSearchEngine", IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINE},
       {"searchEnginesSiteOrPage", IDS_SETTINGS_SEARCH_ENGINES_SITE_OR_PAGE},
-      {"searchEnginesInactiveSite", IDS_SETTINGS_SEARCH_ENGINES_INACTIVE_SITE},
       {"searchEnginesShortcut", IDS_SETTINGS_SEARCH_ENGINES_SHORTCUT},
       {"searchEnginesQueryURL", IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL},
       {"searchEnginesQueryURLExplanation",
@@ -2409,8 +2465,6 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
       {"searchEnginesMakeDefault", IDS_SETTINGS_SEARCH_ENGINES_MAKE_DEFAULT},
       {"searchEnginesActivate", IDS_SETTINGS_SEARCH_ENGINES_ACTIVATE},
       {"searchEnginesDeactivate", IDS_SETTINGS_SEARCH_ENGINES_DEACTIVATE},
-      {"searchEnginesRemoveFromList",
-       IDS_SETTINGS_SEARCH_ENGINES_REMOVE_FROM_LIST},
       {"searchEnginesManageExtension",
        IDS_SETTINGS_SEARCH_ENGINES_MANAGE_EXTENSION},
       {"searchEnginesKeyboardShortcutsTitle",
@@ -2425,8 +2479,6 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SEARCH_ENGINES_ADDITIONAL_SITES},
       {"searchEnginesAdditionalInactiveSites",
        IDS_SETTINGS_SEARCH_ENGINES_ADDITIONAL_INACTIVE_SITES},
-      {"searchEnginesAdditionalExtensions",
-       IDS_SETTINGS_SEARCH_ENGINES_ADDITIONAL_EXTENSIONS},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -3233,6 +3285,18 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");
 }
 
+void AddStorageAccessStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"siteSettingsStorageAccess", IDS_SITE_SETTINGS_TYPE_STORAGE_ACCESS},
+      {"siteSettingsStorageAccessMidSentence",
+       IDS_SITE_SETTINGS_TYPE_STORAGE_ACCESS_MID_SENTENCE},
+      {"storageAccessDescription", IDS_SETTINGS_STORAGE_ACCESS_DESCRIPTION},
+      {"storageAccessAllowed", IDS_SETTINGS_STORAGE_ACCESS_ALLOWED},
+      {"storageAccessBlocked", IDS_SETTINGS_STORAGE_ACCESS_BLOCKED},
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+
 void AddSiteDataPageStrings(content::WebUIDataSource* html_source,
                             Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
@@ -3486,6 +3550,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source, profile);
   AddSiteDataPageStrings(html_source, profile);
+  AddStorageAccessStrings(html_source);
 
 #if !BUILDFLAG(IS_CHROMEOS)
   AddDefaultBrowserStrings(html_source);

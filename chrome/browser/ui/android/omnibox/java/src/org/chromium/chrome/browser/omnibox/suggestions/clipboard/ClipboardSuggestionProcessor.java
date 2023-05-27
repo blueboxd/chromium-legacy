@@ -16,7 +16,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.omnibox.R;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties.Action;
@@ -25,6 +24,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties;
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
+import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Arrays;
@@ -38,7 +38,7 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
      */
     public ClipboardSuggestionProcessor(
             Context context, SuggestionHost suggestionHost, FaviconFetcher faviconFetcher) {
-        super(context, suggestionHost, null, faviconFetcher);
+        super(context, suggestionHost, faviconFetcher);
     }
 
     @Override
@@ -69,6 +69,11 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
                 new SuggestionSpannable(suggestion.getDescription()));
 
         setupContentField(suggestion, model, /* showContent = */ false);
+    }
+
+    @Override
+    public boolean allowOmniboxActions() {
+        return false;
     }
 
     /**
@@ -103,7 +108,7 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
         final int icon =
                 isUrlSuggestion ? R.drawable.ic_globe_24dp : R.drawable.ic_suggestion_magnifier;
         setSuggestionDrawableState(model,
-                SuggestionDrawableState.Builder.forDrawableRes(getContext(), icon)
+                SuggestionDrawableState.Builder.forDrawableRes(mContext, icon)
                         .setAllowTint(true)
                         .build());
 
@@ -131,7 +136,7 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
                                 (int) Math.round(scale * height), true);
                     }
                     setSuggestionDrawableState(model,
-                            SuggestionDrawableState.Builder.forBitmap(getContext(), bitmap)
+                            SuggestionDrawableState.Builder.forBitmap(mContext, bitmap)
                                     .setUseRoundedCorners(true)
                                     .setLarge(true)
                                     .build());
@@ -156,22 +161,22 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
             @NonNull PropertyModel model, boolean showContent) {
         int icon =
                 showContent ? R.drawable.ic_visibility_off_black : R.drawable.ic_visibility_black;
-        String iconString = OmniboxResourceProvider.getString(getContext(),
+        String iconString = OmniboxResourceProvider.getString(mContext,
                 showContent ? R.string.accessibility_omnibox_conceal_clipboard_contents
                             : R.string.accessibility_omnibox_reveal_clipboard_contents);
-        String announcementString = OmniboxResourceProvider.getString(getContext(),
+        String announcementString = OmniboxResourceProvider.getString(mContext,
                 showContent ? R.string.accessibility_omnibox_conceal_button_announcement
                             : R.string.accessibility_omnibox_reveal_button_announcement);
         Runnable action = showContent ? ()
                 -> concealButtonClickHandler(suggestion, model)
                 : () -> revealButtonClickHandler(suggestion, model);
         setActionButtons(model,
-                Arrays.asList(new Action(
-                        SuggestionDrawableState.Builder.forDrawableRes(getContext(), icon)
-                                .setLarge(true)
-                                .setAllowTint(true)
-                                .build(),
-                        iconString, announcementString, action)));
+                Arrays.asList(
+                        new Action(SuggestionDrawableState.Builder.forDrawableRes(mContext, icon)
+                                           .setLarge(true)
+                                           .setAllowTint(true)
+                                           .build(),
+                                iconString, announcementString, action)));
     }
 
     @Override

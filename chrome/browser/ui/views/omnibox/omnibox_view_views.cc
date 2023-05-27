@@ -102,6 +102,7 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -174,6 +175,8 @@ OmniboxViewViews::OmniboxViewViews(
     const gfx::FontList& font_list)
     : OmniboxView(edit_model_delegate, std::move(client)),
       popup_window_mode_(popup_window_mode),
+      popup_is_webui_(
+          base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)),
       location_bar_view_(location_bar),
       latency_histogram_state_(NOT_ACTIVE),
       friendly_suggestion_text_prefix_length_(0) {
@@ -190,6 +193,12 @@ OmniboxViewViews::OmniboxViewViews(
     pref_change_registrar_.Add(
         omnibox::kPreventUrlElisionsInOmnibox,
         base::BindRepeating(&OmniboxViewViews::Update, base::Unretained(this)));
+  }
+
+  if (features::IsChromeRefresh2023()) {
+    // Remove the default textfield hover effect. Omnibox has a custom hover
+    // effect over the entire location bar.
+    RemoveHoverEffect();
   }
 
   // Sometimes there are additional ignored views, such as a View representing
@@ -219,13 +228,15 @@ void OmniboxViewViews::Init() {
   scoped_template_url_service_observation_.Observe(
       model()->client()->GetTemplateURLService());
 
-  if (popup_window_mode_)
+  if (popup_window_mode_) {
     SetReadOnly(true);
+  }
 
   if (location_bar_view_) {
-    // Initialize the popup view using the same font.
-    popup_view_ = std::make_unique<OmniboxPopupViewViews>(this, model(),
-                                                          location_bar_view_);
+    popup_view_ = popup_is_webui_ ? std::make_unique<OmniboxPopupViewWebUI>(
+                                        this, model(), location_bar_view_)
+                                  : std::make_unique<OmniboxPopupViewViews>(
+                                        this, model(), location_bar_view_);
 
     // Set whether the text should be used to improve typing suggestions.
     SetShouldDoLearning(!location_bar_view_->profile()->IsOffTheRecord());
@@ -1282,23 +1293,8 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
   node_data->html_attributes.push_back(std::make_pair("type", "url"));
 
-  // Establish a "CONTROLS" relationship between the omnibox and the
-  // the popup. This allows a screen reader to understand the relationship
-  // between the omnibox and the list of suggestions, and determine which
-  // suggestion is currently selected, even though focus remains here on
-  // the omnibox.
   if (model()->PopupIsOpen()) {
-    int32_t popup_view_id =
-        popup_view_->GetViewAccessibility().GetUniqueId().Get();
-    node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
-                                   {popup_view_id});
-    OmniboxResultView* selected_result_view =
-        popup_view_->GetSelectedResultView();
-    if (selected_result_view) {
-      node_data->AddIntAttribute(
-          ax::mojom::IntAttribute::kActivedescendantId,
-          selected_result_view->GetViewAccessibility().GetUniqueId().Get());
-    }
+    popup_view_->AddPopupAccessibleNodeData(node_data);
   }
 
   std::u16string::size_type entry_start;
@@ -1483,6 +1479,10 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   return Textfield::IsCommandIdEnabled(command_id) ||
          (location_bar_view_ &&
           location_bar_view_->command_updater()->IsCommandEnabled(command_id));
+}
+
+OmniboxPopupView* OmniboxViewViews::GetPopupViewForTesting() const {
+  return popup_view_.get();
 }
 
 std::u16string OmniboxViewViews::GetSelectionClipboardText() const {
@@ -1954,10 +1954,9 @@ void OmniboxViewViews::MaybeAddSendTabToSelfItem(
 
   menu_contents->InsertItemAt(
       index, IDC_SEND_TAB_TO_SELF,
-      l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF));
+      l10n_util::GetStringUTF16(IDS_MENU_SEND_TAB_TO_SELF));
 #if !BUILDFLAG(IS_MAC)
-  menu_contents->SetIcon(
-      index, ui::ImageModel::FromVectorIcon(kLaptopAndSmartphoneIcon));
+  menu_contents->SetIcon(index, ui::ImageModel::FromVectorIcon(kDevicesIcon));
 #endif
   menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
 }

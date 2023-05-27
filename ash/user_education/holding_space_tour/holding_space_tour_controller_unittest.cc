@@ -21,28 +21,44 @@
 #include "ash/public/cpp/holding_space/mock_holding_space_client.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/test_widget_builder.h"
+#include "ash/user_education/mock_user_education_delegate.h"
 #include "ash/user_education/user_education_ash_test_base.h"
+#include "ash/user_education/user_education_constants.h"
+#include "ash/user_education/user_education_help_bubble_controller.h"
+#include "ash/user_education/user_education_ping_controller.h"
 #include "ash/user_education/user_education_types.h"
+#include "ash/user_education/user_education_util.h"
+#include "ash/user_education/views/help_bubble_factory_views_ash.h"
+#include "ash/wallpaper/wallpaper_view.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "base/pickle.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "components/account_id/account_id.h"
 #include "components/user_education/common/tutorial_description.h"
+#include "components/user_education/views/help_bubble_views_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
+#include "ui/base/interaction/element_tracker.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -51,6 +67,7 @@ namespace {
 
 // Aliases.
 using ::testing::_;
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Invoke;
@@ -70,6 +87,12 @@ aura::Window* GetRootWindowForDisplayId(int64_t display_id) {
 
 Shelf* GetShelfForDisplayId(int64_t display_id) {
   return Shelf::ForWindow(GetRootWindowForDisplayId(display_id));
+}
+
+WallpaperView* GetWallpaperViewForDisplayId(int64_t display_id) {
+  return RootWindowController::ForWindow(GetRootWindowForDisplayId(display_id))
+      ->wallpaper_widget_controller()
+      ->wallpaper_view();
 }
 
 std::unique_ptr<HoldingSpaceImage> CreateHoldingSpaceImage(
@@ -105,6 +128,62 @@ std::unique_ptr<views::Widget> CreateTestWidgetForDisplayId(
       .SetWidgetType(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS)
       .SetContext(GetRootWindowForDisplayId(display_id))
       .BuildOwnsNativeWidget();
+}
+
+bool HasHelpBubble(HoldingSpaceTray* tray) {
+  absl::optional<HelpBubbleId> help_bubble_id =
+      UserEducationHelpBubbleController::Get()->GetHelpBubbleId(
+          kHoldingSpaceTrayElementId,
+          views::ElementTrackerViews::GetContextForView(tray));
+
+  // Add failures if the help bubble is not the one that's expected.
+  EXPECT_EQ(help_bubble_id.value_or(HelpBubbleId::kHoldingSpaceTour),
+            HelpBubbleId::kHoldingSpaceTour);
+
+  return help_bubble_id.has_value();
+}
+
+bool HasPing(HoldingSpaceTray* tray) {
+  absl::optional<PingId> ping_id =
+      UserEducationPingController::Get()->GetPingId(tray);
+
+  // Add failures if the ping is not the one that's expected.
+  EXPECT_EQ(ping_id.value_or(PingId::kHoldingSpaceTour),
+            PingId::kHoldingSpaceTour);
+
+  return ping_id.has_value();
+}
+
+bool HasWallpaperHighlight(int64_t display_id) {
+  auto* const wallpaper_view = GetWallpaperViewForDisplayId(display_id);
+
+  bool has_wallpaper_highlight = false;
+  bool below_wallpaper_view_layer = true;
+
+  for (const auto* wallpaper_layer : wallpaper_view->GetLayersInOrder()) {
+    if (wallpaper_layer == wallpaper_view->layer()) {
+      below_wallpaper_view_layer = false;
+      continue;
+    }
+
+    if (wallpaper_layer->name() !=
+        HoldingSpaceTourController::kHighlightLayerName) {
+      continue;
+    }
+
+    has_wallpaper_highlight = true;
+
+    // Add failures if the highlight layer is not configured as expected.
+    EXPECT_FALSE(below_wallpaper_view_layer);
+    EXPECT_EQ(wallpaper_layer->type(), ui::LAYER_SOLID_COLOR);
+    EXPECT_EQ(wallpaper_layer->bounds(), wallpaper_view->layer()->bounds());
+    EXPECT_EQ(wallpaper_layer->background_color(),
+              SkColorSetA(wallpaper_view->GetColorProvider()->GetColor(
+                              cros_tokens::kCrosSysPrimaryLight),
+                          0.4f * SK_AlphaOPAQUE));
+  }
+
+  return has_wallpaper_highlight;
 }
 
 void FlushMessageLoop() {
@@ -227,6 +306,26 @@ class HoldingSpaceTourControllerDragAndDropTest
   void PressLeftButton() { GetEventGenerator()->PressLeftButton(); }
   void ReleaseLeftButton() { GetEventGenerator()->ReleaseLeftButton(); }
 
+  // Sets a duration multiplier for animations.
+  void SetAnimationDurationMultiplier(float duration_multiplier) {
+    scoped_animation_duration_scale_mode_ =
+        std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+            duration_multiplier);
+  }
+
+  // Runs the message loop until the cached `help_bubble_` has closed. If no
+  // `help_bubble_` is cached, this method returns immediately.
+  void WaitForHelpBubbleClose() {
+    if (!help_bubble_) {
+      return;
+    }
+    base::RunLoop run_loop;
+    base::CallbackListSubscription help_bubble_close_subscription =
+        help_bubble_->AddOnCloseCallback(base::BindLambdaForTesting(
+            [&](user_education::HelpBubble* help_bubble) { run_loop.Quit(); }));
+    run_loop.Run();
+  }
+
  private:
   // HoldingSpaceTourControllerTest:
   void SetUp() override {
@@ -234,7 +333,59 @@ class HoldingSpaceTourControllerDragAndDropTest
 
     // Prevent blocking during drag-and-drop sequences.
     ShellTestApi().drag_drop_controller()->SetDisableNestedLoopForTesting(true);
+
+    // Mock `UserEducationDelegate::CreateHelpBubble()`.
+    ON_CALL(*user_education_delegate(), CreateHelpBubble)
+        .WillByDefault(
+            Invoke([&](const AccountId& account_id, HelpBubbleId help_bubble_id,
+                       user_education::HelpBubbleParams help_bubble_params,
+                       ui::ElementIdentifier element_id,
+                       ui::ElementContext element_context) {
+              // Set `help_bubble_id` in extended properties.
+              help_bubble_params.extended_properties.values().Merge(std::move(
+                  user_education_util::CreateExtendedProperties(help_bubble_id)
+                      .values()));
+
+              // Attempt to create the `help_bubble`.
+              auto help_bubble = help_bubble_factory_.CreateBubble(
+                  ui::ElementTracker::GetElementTracker()
+                      ->GetFirstMatchingElement(element_id, element_context),
+                  std::move(help_bubble_params));
+
+              // Cache the `help_bubble`, if one was created, and subscribe to
+              // be notified when it closes in order to reset the cache.
+              help_bubble_ = help_bubble.get();
+              help_bubble_close_subscription_ =
+                  help_bubble_
+                      ? help_bubble_->AddOnCloseCallback(
+                            base::BindLambdaForTesting(
+                                [&](user_education::HelpBubble* help_bubble) {
+                                  if (help_bubble == help_bubble_) {
+                                    help_bubble_ = nullptr;
+                                    help_bubble_close_subscription_ =
+                                        base::CallbackListSubscription();
+                                  }
+                                }))
+                      : base::CallbackListSubscription();
+
+              // NOTE: May be `nullptr`.
+              return help_bubble;
+            }));
   }
+
+  // Used to mock help bubble creation given that user education services in
+  // the browser are non-existent for unit tests in Ash.
+  user_education::test::TestHelpBubbleDelegate help_bubble_delegate_;
+  HelpBubbleFactoryViewsAsh help_bubble_factory_{&help_bubble_delegate_};
+
+  // The last help bubble created by `UserEducationDelegate::CreateHelpBubble()`
+  // which is still open. Will be `nullptr` if no help bubble is currently open.
+  raw_ptr<user_education::HelpBubble> help_bubble_ = nullptr;
+  base::CallbackListSubscription help_bubble_close_subscription_;
+
+  // Used to scale animation durations.
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode>
+      scoped_animation_duration_scale_mode_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -319,10 +470,23 @@ TEST_P(HoldingSpaceTourControllerDragAndDropTest, DragAndDrop) {
   EXPECT_FALSE(primary_tray->GetVisible());
   EXPECT_FALSE(secondary_tray->GetVisible());
 
+  // Ensure a non-zero animation duration so there is sufficient time to detect
+  // pings before they are automatically destroyed on animation completion.
+  SetAnimationDurationMultiplier(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   // Drag data from the `primary_widget` to the wallpaper.
   MoveMouseTo(primary_widget.get());
   PressLeftButton();
   MoveMouseBy(/*x=*/primary_widget->GetWindowBoundsInScreen().width(), /*y=*/0);
+
+  // Expect the holding space tray on the primary display to have a help bubble
+  // and a ping if and only if Files app data was dragged. The holding space
+  // tray on the secondary display should have neither.
+  EXPECT_EQ(HasHelpBubble(primary_tray), drag_files_app_data());
+  EXPECT_EQ(HasPing(primary_tray), drag_files_app_data());
+  EXPECT_FALSE(HasHelpBubble(secondary_tray));
+  EXPECT_FALSE(HasPing(secondary_tray));
 
   // Expect the primary shelf and both holding space trays to be visible if
   // and only if Files app data was dragged.
@@ -331,18 +495,39 @@ TEST_P(HoldingSpaceTourControllerDragAndDropTest, DragAndDrop) {
   EXPECT_EQ(secondary_tray->GetVisible(), drag_files_app_data());
   EXPECT_FALSE(secondary_shelf->IsVisible());
 
+  // Expect the wallpaper on the primary display to be highlighted if and only
+  // if Files app data was dragged. The wallpaper on the secondary display
+  // should not be highlighted.
+  EXPECT_EQ(HasWallpaperHighlight(primary_display_id), drag_files_app_data());
+  EXPECT_FALSE(HasWallpaperHighlight(secondary_display_id));
+
   // Drag the data to a position just outside the `secondary_widget` so that the
   // cursor is over the wallpaper on the secondary display.
   MoveMouseTo(secondary_widget.get());
   MoveMouseBy(/*x=*/secondary_widget->GetWindowBoundsInScreen().width(),
               /*y=*/0);
 
+  // Expect the holding space tray on the primary display to have a help bubble
+  // and a ping if and only if Files app data was dragged. The holding space
+  // tray on the secondary display should have neither.
+  EXPECT_EQ(HasHelpBubble(primary_tray), drag_files_app_data());
+  EXPECT_EQ(HasPing(primary_tray), drag_files_app_data());
+  EXPECT_FALSE(HasHelpBubble(secondary_tray));
+  EXPECT_FALSE(HasPing(secondary_tray));
+
   // Expect the secondary shelf and both holding space trays to be visible if
-  // and only if Files app data was dragged.
+  // and only if Files app data was dragged. The primary shelf should be visible
+  // iff the holding space tray on the primary display has a help bubble.
   EXPECT_EQ(secondary_shelf->IsVisible(), drag_files_app_data());
-  EXPECT_EQ(primary_tray->GetVisible(), drag_files_app_data());
   EXPECT_EQ(secondary_tray->GetVisible(), drag_files_app_data());
-  EXPECT_FALSE(primary_shelf->IsVisible());
+  EXPECT_EQ(primary_tray->GetVisible(), drag_files_app_data());
+  EXPECT_EQ(primary_shelf->IsVisible(), HasHelpBubble(primary_tray));
+
+  // Expect the wallpaper on the secondary display to be highlighted if and only
+  // if Files app data was dragged. The wallpaper on the primary display should
+  // not be highlighted.
+  EXPECT_EQ(HasWallpaperHighlight(secondary_display_id), drag_files_app_data());
+  EXPECT_FALSE(HasWallpaperHighlight(primary_display_id));
 
   // Conditionally cancel the drop depending on test parameterization.
   if (!complete_drop()) {
@@ -371,6 +556,46 @@ TEST_P(HoldingSpaceTourControllerDragAndDropTest, DragAndDrop) {
   ReleaseLeftButton();
   FlushMessageLoop();
 
+  // Expect the holding space tray on the primary display to have a help bubble
+  // and a ping if and only if Files app data was dragged. The holding space
+  // tray on the secondary display should have neither.
+  EXPECT_EQ(HasHelpBubble(primary_tray), drag_files_app_data());
+  EXPECT_EQ(HasPing(primary_tray), drag_files_app_data());
+  EXPECT_FALSE(HasHelpBubble(secondary_tray));
+  EXPECT_FALSE(HasPing(secondary_tray));
+
+  // Expect the primary shelf to be visible if and only if the holding space
+  // tray on the primary display has a help bubble. The secondary shelf and both
+  // holding space trays should be visible if and only if either:
+  // (a) the holding space tray on the primary display has a help bubble, or
+  // (b) Files app data was dropped.
+  EXPECT_EQ(primary_shelf->IsVisible(), HasHelpBubble(primary_tray));
+  EXPECT_EQ(secondary_shelf->IsVisible(), complete_drop_of_files_app_data);
+  EXPECT_THAT(primary_tray->GetVisible(),
+              AnyOf(Eq(HasHelpBubble(primary_tray)),
+                    Eq(complete_drop_of_files_app_data)));
+  EXPECT_THAT(secondary_tray->GetVisible(),
+              AnyOf(Eq(HasHelpBubble(primary_tray)),
+                    Eq(complete_drop_of_files_app_data)));
+
+  // Expect no wallpaper to be highlighted.
+  EXPECT_FALSE(HasWallpaperHighlight(primary_display_id));
+  EXPECT_FALSE(HasWallpaperHighlight(secondary_display_id));
+
+  // Wait for the help bubble to close, if one exists. Note that animation
+  // durations are first scaled to zero to prevent having to wait for shelf/
+  // tray animations to complete before checking state.
+  SetAnimationDurationMultiplier(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  WaitForHelpBubbleClose();
+  FlushMessageLoop();
+
+  // Expect no help bubbles or pings.
+  EXPECT_FALSE(HasHelpBubble(primary_tray));
+  EXPECT_FALSE(HasPing(primary_tray));
+  EXPECT_FALSE(HasHelpBubble(secondary_tray));
+  EXPECT_FALSE(HasPing(secondary_tray));
+
   // Expect the primary shelf to no longer be visible, but the secondary shelf
   // and both holding space trays should be visible if and only if Files app
   // data was dropped.
@@ -378,6 +603,10 @@ TEST_P(HoldingSpaceTourControllerDragAndDropTest, DragAndDrop) {
   EXPECT_EQ(secondary_shelf->IsVisible(), complete_drop_of_files_app_data);
   EXPECT_EQ(primary_tray->GetVisible(), complete_drop_of_files_app_data);
   EXPECT_EQ(secondary_tray->GetVisible(), complete_drop_of_files_app_data);
+
+  // Expect no wallpaper to be highlighted.
+  EXPECT_FALSE(HasWallpaperHighlight(primary_display_id));
+  EXPECT_FALSE(HasWallpaperHighlight(secondary_display_id));
 
   // If Files app data was dropped, the holding space bubble should be visible
   // on the secondary display.

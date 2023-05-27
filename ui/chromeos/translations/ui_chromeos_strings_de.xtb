@@ -59,7 +59,6 @@
 <translation id="1499943022354839699">Englisch (USA) mit Dvorak-Tastatur</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Host</translation>
 <translation id="1521655867290435174">Google Tabellen</translation>
-<translation id="1538729222189715449">Linux-Dateien werden geöffnet…</translation>
 <translation id="1547964879613821194">Kanadisches Englisch</translation>
 <translation id="1556189134700913550">Auf alle anwenden</translation>
 <translation id="1561842594491319104">Chrome-Geräte</translation>
@@ -147,7 +146,6 @@
 <translation id="2208919847696382164">Mit Linux installieren</translation>
 <translation id="2225536596944493418">Möchtest du wirklich <ph name="NUMBER_OF_ITEMS" /> Elemente löschen?</translation>
 <translation id="2230062665678605299">Ordner "<ph name="FOLDER_NAME" />" kann nicht erstellt werden. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="2236732657580416950">Dein Google Drive-Cache wurde geleert.</translation>
 <translation id="2239068707900391003">Person mit Kaffee</translation>
 <translation id="2251368349685848079">Aus Papierkorb wiederherstellen</translation>
 <translation id="2278133026967558505">Dateizugriff durch alle Websites und URLs</translation>
@@ -166,7 +164,6 @@
 <translation id="23721837607121582">Mobiles Profil herunterladen, Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Zur Listenansicht wechseln</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> Ordner für Linux freigegeben</translation>
-<translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> Dateien ausgewählt</translation>
 <translation id="2383454254762599978">In Papierkorb verschieben</translation>
 <translation id="2387458720915042159">Proxy-Verbindungstyp</translation>
 <translation id="2389832672041313158">Burmesisch (Myanmar)</translation>
@@ -321,6 +318,7 @@
 <translation id="3619593063686672873">Keine zuletzt angesehenen Videos</translation>
 <translation id="3634507049637220048">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, von deinem Administrator verwaltet, Details</translation>
 <translation id="3645233063072417428"><ph name="NUMBER_OF_ITEMS" /> Elemente verschoben.</translation>
+<translation id="3658269352872031728"><ph name="SELECTED_FILE_COUNT" /> Dateien ausgewählt</translation>
 <translation id="3685122418104378273">Die Google Drive-Synchronisierung ist bei der mobilen Datennutzung standardmäßig deaktiviert.</translation>
 <translation id="3689865792480713551"><ph name="ACTIVITY_DESCRIPTION" /> abbrechen.</translation>
 <translation id="3690128548376345212">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, nicht aktiviert, <ph name="CONNECTION_STATUS" />, Signalstärke <ph name="SIGNAL_STRENGTH" /> %, Details</translation>
@@ -330,7 +328,6 @@
 <translation id="3727148787322499904">Änderungen dieser Einstellung wirken sich auf alle freigegebenen Netzwerke aus</translation>
 <translation id="3737576078404241332">Aus der Seitenleiste entfernen</translation>
 <translation id="3749289110408117711">Dateiname</translation>
-<translation id="3780536599611287598">Du bist nicht dazu berechtigt, Dateien in "<ph name="FOLDER_NAME" />" zu verschieben.</translation>
 <translation id="3786301125658655746">Du bist offline</translation>
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="3793469551756281394">Noch ungefähr <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
@@ -419,6 +416,7 @@
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4465725236958772856">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, von deinem Administrator verwaltet, Verbinden</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4472575034687746823">Jetzt starten</translation>
 <translation id="4474142134969976028">Keine passenden Ergebnisse</translation>
 <translation id="4477002475007461989">Rumänisch</translation>
 <translation id="4477219268485577442">Bulgarisch – phonetisch</translation>
@@ -468,10 +466,8 @@
 <translation id="4804827417948292437">Avocado</translation>
 <translation id="4805966553127040832"><ph name="COUNT" /> Elemente werden wiederhergestellt…</translation>
 <translation id="4816695657735045067">{COUNT,plural, =1{Für die Verwendung des Inkognitomodus ist in deiner Organisation eine Erweiterung erforderlich}other{Für die Verwendung des Inkognitomodus sind in deiner Organisation einige Erweiterungen erforderlich}}</translation>
-<translation id="4823651846660089135">Gerät ist schreibgeschützt</translation>
 <translation id="4826849268470072925">Tamil (ITRANS)</translation>
 <translation id="482932175346970750">Gib <ph name="BEGIN_BOLD" />chrome://extensions<ph name="END_BOLD" /> in deinen Browser ein</translation>
-<translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> Elemente ausgewählt</translation>
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="485316830061041779">Deutsch</translation>
@@ -579,6 +575,7 @@
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" />-Bild</translation>
 <translation id="5534520101572674276">Größe wird berechnet.</translation>
 <translation id="554153475311314364">Griechisch (Transliteration)</translation>
+<translation id="5554171655917412781"><ph name="SELECTED_FOLDERS_COUNT" /> Ordner ausgewählt</translation>
 <translation id="5580591966435005537">virtuelle Maschine</translation>
 <translation id="5583640892426849032">Rücktaste</translation>
 <translation id="5583664733673201137">Punktbreite ist „Voll“</translation>
@@ -601,6 +598,7 @@
 <translation id="5724172041621205163">Thai mit Pattachote-Tastatur</translation>
 <translation id="57383366388012121">Letzter Monat</translation>
 <translation id="5756666464756035725">Ungarisch – QWERTY</translation>
+<translation id="5760252553414789727"><ph name="SELECTED_FILES_COUNT" /> Elemente ausgewählt</translation>
 <translation id="5763377084591234761">Deutsch (Schweiz)</translation>
 <translation id="5769519078756170258">Auszuschließende Host oder Domain</translation>
 <translation id="5775750595919327203">Urdu</translation>
@@ -618,6 +616,7 @@
 <translation id="5838451609423551646">Auswahl aller Einträge wurde aufgehoben.</translation>
 <translation id="5838825566232597749">Internationale US-amerikanische Workman-Tastatur</translation>
 <translation id="5845721951356578987">Pflegekraft</translation>
+<translation id="5860491529813859533">Aktivieren</translation>
 <translation id="5861477046012235702">Gamer</translation>
 <translation id="5864471791310927901">DHCP-Suche fehlgeschlagen</translation>
 <translation id="5896749729057314184">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, nicht aktiviert, Signalstärke <ph name="SIGNAL_STRENGTH" /> %, Details</translation>
@@ -675,7 +674,6 @@
 <translation id="6327785803543103246">Web-Proxy Autodiscovery</translation>
 <translation id="6337014272874260727">Von Schnellzugriff loslösen</translation>
 <translation id="6339145975392024142">US-amerikanisch (PC)</translation>
-<translation id="6346310558342052870">Zugriff eingeschränkt</translation>
 <translation id="6356685157277930264">Feedbackfenster für "Meine Dateien"</translation>
 <translation id="6358884629796491903">Drache</translation>
 <translation id="636254897931573416">Ungültige Übereinstimmung für das Domain-Suffix</translation>
@@ -756,7 +754,6 @@
 <translation id="6989942356279143254">Schwedisch</translation>
 <translation id="6990081529015358884">Du hast keinen freien Speicherplatz mehr.</translation>
 <translation id="6993826899923627728">Diese Elemente befinden sich im Papierkorb</translation>
-<translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> Ordner ausgewählt</translation>
 <translation id="7008426324576352165">Deine Organisation benötigt mehr Speicherplatz, um den Upload abzuschließen.</translation>
 <translation id="7009985720488544166">Die Administratorrichtlinie blockiert das Verschieben von <ph name="COUNT" /> Dateien</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -920,6 +917,7 @@
 <translation id="8264024885325823677">Diese Einstellung wird von deinem Administrator verwaltet.</translation>
 <translation id="8269755669432358899">Erweiterte Dateiinformationen minimieren</translation>
 <translation id="8280151743281770066">Armenisch – phonetisch</translation>
+<translation id="8285791779547722821"><ph name="ORIGINAL_MIME_TYPE" />, verschlüsselt</translation>
 <translation id="8294431847097064396">Quelle</translation>
 <translation id="8297012244086013755">Hangul 3 Set (Kein Umschalttaste)</translation>
 <translation id="8299269255470343364">Japanisch</translation>

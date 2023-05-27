@@ -40,6 +40,23 @@ namespace {
 constexpr char kBlockedTopicsTopicKey[] = "topic";
 constexpr char kBlockedTopicsBlockTimeKey[] = "blockedOn";
 
+constexpr char kIsTopicsAllowedHistogram[] = "PrivacySandbox.IsTopicsAllowed";
+constexpr char kIsTopicsAllowedForContextHistogram[] =
+    "PrivacySandbox.IsTopicsAllowedForContext";
+constexpr char kIsAttributionReportingEverAllowedHistogram[] =
+    "PrivacySandbox.IsAttributionReportingEverAllowed";
+constexpr char kIsAttributionReportingAllowedHistogram[] =
+    "PrivacySandbox.IsAttributionReportingAllowed";
+constexpr char kMaySendAttributionReportHistogram[] =
+    "PrivacySandbox.MaySendAttributionReport";
+constexpr char kIsFledgeAllowedHistogram[] = "PrivacySandbox.IsFledgeAllowed";
+constexpr char kIsSharedStorageAllowedHistogram[] =
+    "PrivacySandbox.IsSharedStorageAllowed";
+constexpr char kIsSharedStorageSelectURLAllowedHistogram[] =
+    "PrivacySandbox.IsSharedStorageSelectURLAllowed";
+constexpr char kIsPrivateAggregationAllowedHistogram[] =
+    "PrivacySandbox.IsPrivateAggregationAllowed";
+
 bool IsCookiesClearOnExitEnabled(HostContentSettingsMap* map) {
   return map->GetDefaultContentSetting(ContentSettingsType::COOKIES,
                                        /*provider_id=*/nullptr) ==
@@ -58,14 +75,12 @@ std::vector<ContentSettingsPattern> FledgeBlockToContentSettingsPatterns(
           ContentSettingsPattern::FromString(entry)};
 }
 
-// Returns a base::Value for storage in prefs that represents |topic| blocked
-// at the current time.
-base::Value CreateBlockedTopicEntry(const CanonicalTopic& topic) {
-  base::Value entry(base::Value::Type::DICT);
-  entry.SetKey(kBlockedTopicsTopicKey, topic.ToValue());
-  entry.SetKey(kBlockedTopicsBlockTimeKey,
-               base::TimeToValue(base::Time::Now()));
-  return entry;
+// Returns a base::Value::Dict for storage in prefs that represents |topic|
+// blocked at the current time.
+base::Value::Dict CreateBlockedTopicEntry(const CanonicalTopic& topic) {
+  return base::Value::Dict()
+      .Set(kBlockedTopicsTopicKey, topic.ToValue())
+      .Set(kBlockedTopicsBlockTimeKey, base::TimeToValue(base::Time::Now()));
 }
 
 }  // namespace
@@ -73,6 +88,12 @@ base::Value CreateBlockedTopicEntry(const CanonicalTopic& topic) {
 // static
 bool PrivacySandboxSettingsImpl::IsAllowed(Status status) {
   return status == Status::kAllowed;
+}
+
+// static
+void PrivacySandboxSettingsImpl::JoinHistogram(const char* name,
+                                               Status status) {
+  base::UmaHistogramEnumeration(name, status);
 }
 
 PrivacySandboxSettingsImpl::PrivacySandboxSettingsImpl(
@@ -149,7 +170,7 @@ bool PrivacySandboxSettingsImpl::IsTopicsAllowed() const {
   // M1 specific
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
     Status status = GetM1TopicAllowedStatus();
-    base::UmaHistogramEnumeration("PrivacySandbox.IsTopicsAllowed", status);
+    JoinHistogram(kIsTopicsAllowedHistogram, status);
     return IsAllowed(status);
   }
 
@@ -175,8 +196,8 @@ bool PrivacySandboxSettingsImpl::IsTopicsAllowedForContext(
   if (!attestations_.IsSiteAttested(
           net::SchemefulSite(url),
           PrivacySandboxAttestationsGatedAPI::kTopics)) {
-    base::UmaHistogramEnumeration("PrivacySandbox.IsTopicsAllowedForContext",
-                                  Status::kAttestationFailed);
+    JoinHistogram(kIsTopicsAllowedForContextHistogram,
+                  Status::kAttestationFailed);
     return false;
   }
 
@@ -186,8 +207,7 @@ bool PrivacySandboxSettingsImpl::IsTopicsAllowedForContext(
     if (IsAllowed(status)) {
       status = GetSiteAccessAllowedStatus(top_frame_origin, url);
     }
-    base::UmaHistogramEnumeration("PrivacySandbox.IsTopicsAllowedForContext",
-                                  status);
+    JoinHistogram(kIsTopicsAllowedForContextHistogram, status);
     return IsAllowed(status);
   }
 
@@ -295,8 +315,7 @@ bool PrivacySandboxSettingsImpl::IsAttributionReportingEverAllowed() const {
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
     Status status = GetM1PrivacySandboxApiEnabledStatus(
         prefs::kPrivacySandboxM1AdMeasurementEnabled);
-    base::UmaHistogramEnumeration(
-        "PrivacySandbox.IsAttributionReportingEverAllowed", status);
+    JoinHistogram(kIsAttributionReportingEverAllowedHistogram, status);
     return IsAllowed(status);
   }
 
@@ -306,12 +325,20 @@ bool PrivacySandboxSettingsImpl::IsAttributionReportingEverAllowed() const {
 bool PrivacySandboxSettingsImpl::IsAttributionReportingAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& reporting_origin) const {
+  // Check for attestation on the reporting origin.
+  if (!attestations_.IsSiteAttested(
+          net::SchemefulSite(reporting_origin),
+          PrivacySandboxAttestationsGatedAPI::kAttributionReporting)) {
+    JoinHistogram(kIsAttributionReportingAllowedHistogram,
+                  Status::kAttestationFailed);
+    return false;
+  }
+
   // M1 specific
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
     Status status = GetM1AttributionReportingAllowedStatus(top_frame_origin,
                                                            reporting_origin);
-    base::UmaHistogramEnumeration(
-        "PrivacySandbox.IsAttributionReportingAllowed", status);
+    JoinHistogram(kIsAttributionReportingAllowedHistogram, status);
     return IsAllowed(status);
   }
 
@@ -323,6 +350,15 @@ bool PrivacySandboxSettingsImpl::MaySendAttributionReport(
     const url::Origin& source_origin,
     const url::Origin& destination_origin,
     const url::Origin& reporting_origin) const {
+  // Check for attestation on the reporting origin.
+  if (!attestations_.IsSiteAttested(
+          net::SchemefulSite(reporting_origin),
+          PrivacySandboxAttestationsGatedAPI::kAttributionReporting)) {
+    JoinHistogram(kMaySendAttributionReportHistogram,
+                  Status::kAttestationFailed);
+    return false;
+  }
+
   // M1 specific
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
     Status status = GetM1AttributionReportingAllowedStatus(
@@ -333,8 +369,7 @@ bool PrivacySandboxSettingsImpl::MaySendAttributionReport(
           /*top_frame_origin=*/destination_origin,
           /*reporting_origin=*/reporting_origin);
     }
-    base::UmaHistogramEnumeration("PrivacySandbox.MaySendAttributionReport",
-                                  status);
+    JoinHistogram(kMaySendAttributionReportHistogram, status);
     return IsAllowed(status);
   }
 
@@ -454,9 +489,18 @@ PrivacySandboxSettingsImpl::GetM1FledgeAllowedStatus(
 bool PrivacySandboxSettingsImpl::IsFledgeAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& auction_party) const {
+  // Check for attestation on the auction party's site. The auction party is a
+  // variety of entities during the auction, all of which need to be attested.
+  if (!attestations_.IsSiteAttested(
+          net::SchemefulSite(auction_party),
+          PrivacySandboxAttestationsGatedAPI::kProtectedAudience)) {
+    JoinHistogram(kIsFledgeAllowedHistogram, Status::kAttestationFailed);
+    return false;
+  }
+
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
     Status status = GetM1FledgeAllowedStatus(top_frame_origin, auction_party);
-    base::UmaHistogramEnumeration("PrivacySandbox.IsFledgeAllowed", status);
+    JoinHistogram(kIsFledgeAllowedHistogram, status);
     return IsAllowed(status);
   }
 
@@ -467,14 +511,21 @@ bool PrivacySandboxSettingsImpl::IsFledgeAllowed(
 bool PrivacySandboxSettingsImpl::IsSharedStorageAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) const {
+  // Check for attestation on the caller's site.
+  if (!attestations_.IsSiteAttested(
+          net::SchemefulSite(accessing_origin),
+          PrivacySandboxAttestationsGatedAPI::kSharedStorage)) {
+    JoinHistogram(kIsSharedStorageAllowedHistogram, Status::kAttestationFailed);
+    return false;
+  }
+
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
     Status status = GetPrivacySandboxAllowedStatus();
     if (IsAllowed(status)) {
       status = GetSiteAccessAllowedStatus(top_frame_origin,
                                           accessing_origin.GetURL());
     }
-    base::UmaHistogramEnumeration("PrivacySandbox.IsSharedStorageAllowed",
-                                  status);
+    JoinHistogram(kIsSharedStorageAllowedHistogram, status);
     return IsAllowed(status);
   }
 
@@ -490,8 +541,7 @@ bool PrivacySandboxSettingsImpl::IsSharedStorageSelectURLAllowed(
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
     Status status =
         GetM1FledgeAllowedStatus(top_frame_origin, accessing_origin);
-    base::UmaHistogramEnumeration(
-        "PrivacySandbox.IsSharedStorageSelectURLAllowed", status);
+    JoinHistogram(kIsSharedStorageSelectURLAllowedHistogram, status);
     return IsAllowed(status);
   }
 
@@ -501,11 +551,19 @@ bool PrivacySandboxSettingsImpl::IsSharedStorageSelectURLAllowed(
 bool PrivacySandboxSettingsImpl::IsPrivateAggregationAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& reporting_origin) const {
+  // Check for attestation on the worklet's site.
+  if (!attestations_.IsSiteAttested(
+          net::SchemefulSite(reporting_origin),
+          PrivacySandboxAttestationsGatedAPI::kPrivateAggregation)) {
+    JoinHistogram(kIsPrivateAggregationAllowedHistogram,
+                  Status::kAttestationFailed);
+    return false;
+  }
+
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
     Status status = GetM1AttributionReportingAllowedStatus(top_frame_origin,
                                                            reporting_origin);
-    base::UmaHistogramEnumeration("PrivacySandbox.IsPrivateAggregationAllowed",
-                                  status);
+    JoinHistogram(kIsPrivateAggregationAllowedHistogram, status);
     return IsAllowed(status);
   }
 
@@ -559,6 +617,10 @@ bool PrivacySandboxSettingsImpl::IsPrivacySandboxRestricted() const {
   return delegate_->IsPrivacySandboxRestricted();
 }
 
+bool PrivacySandboxSettingsImpl::IsPrivacySandboxCurrentlyUnrestricted() const {
+  return delegate_->IsPrivacySandboxCurrentlyUnrestricted();
+}
+
 bool PrivacySandboxSettingsImpl::IsSubjectToM1NoticeRestricted() const {
   return delegate_->IsSubjectToM1NoticeRestricted();
 }
@@ -598,6 +660,16 @@ void PrivacySandboxSettingsImpl::SetDelegateForTesting(
 void PrivacySandboxSettingsImpl::SetPrivacySandboxAttestationsMapForTesting(
     const PrivacySandboxAttestationsMap& attestations_map) {
   attestations_ = PrivacySandboxAttestations(attestations_map);
+}
+
+void PrivacySandboxSettingsImpl::AddPrivacySandboxAttestationOverride(
+    const GURL& url) {
+  attestations_.AddOverride(net::SchemefulSite(url));
+}
+
+const std::vector<net::SchemefulSite>
+PrivacySandboxSettingsImpl::GetAttestationOverridesForTesting() const {
+  return attestations_.GetOverridesForTesting();  // IN-TEST
 }
 
 bool PrivacySandboxSettingsImpl::IsPrivacySandboxEnabledForContext(

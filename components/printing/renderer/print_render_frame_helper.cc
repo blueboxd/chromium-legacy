@@ -51,6 +51,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/css/page_orientation.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/common/page/browsing_context_group_info.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
@@ -384,20 +385,35 @@ bool IsPrintToPdfRequested(const base::Value::Dict& job_settings) {
   return type == mojom::PrinterType::kPdf;
 }
 
-bool PrintingFrameHasPageSizeStyle(blink::WebLocalFrame* frame,
-                                   uint32_t total_page_count) {
-  if (!frame)
-    return false;
-  bool frame_has_custom_page_size_style = false;
+void GetPageSizeAndOrientationInfo(blink::WebLocalFrame* frame,
+                                   uint32_t total_page_count,
+                                   bool* all_pages_have_custom_size,
+                                   bool* all_pages_have_custom_orientation) {
+  *all_pages_have_custom_size = true;
+  *all_pages_have_custom_orientation = true;
+  if (!frame) {
+    return;
+  }
+  // See if there are pages in the document whose size or orientation may be
+  // controlled by the UI. If all pages specify size or orientation (via CSS),
+  // the respective options in the print preview UI should be hidden (since they
+  // will have no effect).
   for (uint32_t i = 0; i < total_page_count; ++i) {
-    if (frame->GetPageSizeType(i) != blink::PageSizeType::kAuto) {
-      // TODO(crbug.com/1016235): We should propagate the page size type all the
-      // way to the UI. See the crbug issue for details.
-      frame_has_custom_page_size_style = true;
-      break;
+    auto page_size_type = frame->GetPageSizeType(i);
+    // A "fixed" page size implies that both page size and orientation are set,
+    // also when well-known page sizes (such as A4) are specified.
+    if (page_size_type != blink::PageSizeType::kFixed) {
+      // We found a page that doesn't specify the size.
+      *all_pages_have_custom_size = false;
+      if (page_size_type == blink::PageSizeType::kAuto) {
+        // We found a page that also doesn't specify the orientation. We can
+        // stop searching. This document has at least one page that should be
+        // fully customizable by the user via the print preview UI.
+        *all_pages_have_custom_orientation = false;
+        break;
+      }
     }
   }
-  return frame_has_custom_page_size_style;
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -749,7 +765,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
       *source_frame.GetAgentGroupScheduler(),
       /*session_storage_namespace_id=*/base::EmptyString(),
-      /*page_base_background_color=*/absl::nullopt);
+      /*page_base_background_color=*/absl::nullopt,
+      blink::BrowsingContextGroupInfo::CreateUnique());
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
   class HeaderAndFooterClient final : public blink::WebLocalFrameClient {
@@ -831,19 +848,19 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 }
 
 // static - Not anonymous so that platform implementations can use it.
-float PrintRenderFrameHelper::RenderPageContent(blink::WebLocalFrame* frame,
-                                                uint32_t page_number,
-                                                const gfx::Rect& canvas_area,
-                                                const gfx::Rect& content_area,
-                                                double scale_factor,
-                                                cc::PaintCanvas* canvas) {
+void PrintRenderFrameHelper::RenderPageContent(blink::WebLocalFrame* frame,
+                                               uint32_t page_number,
+                                               const gfx::Rect& canvas_area,
+                                               const gfx::Rect& content_area,
+                                               double scale_factor,
+                                               cc::PaintCanvas* canvas) {
   TRACE_EVENT1("print", "PrintRenderFrameHelper::RenderPageContent",
                "page_number", page_number);
 
   cc::PaintCanvasAutoRestore auto_restore(canvas, true);
   canvas->translate((content_area.x() - canvas_area.x()) / scale_factor,
                     (content_area.y() - canvas_area.y()) / scale_factor);
-  return frame->PrintPage(page_number, canvas);
+  frame->PrintPage(page_number, canvas);
 }
 
 // Class that calls the Begin and End print functions on the frame and changes
@@ -1043,7 +1060,8 @@ void PrepareFrameAndViewForPrint::CopySelection(
       /*opener=*/nullptr, mojo::NullAssociatedReceiver(),
       agent_group_scheduler_,
       /*session_storage_namespace_id=*/base::EmptyString(),
-      /*page_base_background_color=*/absl::nullopt);
+      /*page_base_background_color=*/absl::nullopt,
+      blink::BrowsingContextGroupInfo::CreateUnique());
   blink::WebView::ApplyWebPreferences(prefs, web_view);
   blink::WebLocalFrame* main_frame = blink::WebLocalFrame::CreateMainFrame(
       web_view, this, nullptr, blink::LocalFrameToken(), blink::DocumentToken(),
@@ -1816,9 +1834,12 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
       ComputePageLayoutInPointsForCss(print_preview_context_.prepared_frame(),
                                       0, print_params, ignore_css_margins_,
                                       &scale_factor);
-  bool has_page_size_style =
-      PrintingFrameHasPageSizeStyle(print_preview_context_.prepared_frame(),
-                                    print_preview_context_.total_page_count());
+  bool all_pages_have_custom_size;
+  bool all_pages_have_custom_orientation;
+  GetPageSizeAndOrientationInfo(print_preview_context_.prepared_frame(),
+                                print_preview_context_.total_page_count(),
+                                &all_pages_have_custom_size,
+                                &all_pages_have_custom_orientation);
   int dpi = GetDPI(print_params);
 
   gfx::Rect printable_area_in_points(
@@ -1830,7 +1851,8 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
   // Margins: Send default page layout to browser process.
   preview_ui_->DidGetDefaultPageLayout(
       std::move(default_page_layout), printable_area_in_points,
-      has_page_size_style, print_params.preview_request_id);
+      all_pages_have_custom_size, all_pages_have_custom_orientation,
+      print_params.preview_request_id);
 
   preview_ui_->DidStartPreview(
       mojom::DidStartPreviewParams::New(
@@ -2326,11 +2348,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(
   page_params->content_area = gfx::Rect(print_params.page_size);
   bool is_pdf =
       IsPrintingPdfFrame(prep_frame_view_->frame(), prep_frame_view_->node());
-  PrintPageInternal(print_params, printed_pages[0], page_count,
-                    GetScaleFactor(print_params.scale_factor, is_pdf), frame,
-                    &metafile);
-  for (size_t i = 1; i < printed_pages.size(); ++i) {
-    PrintPageInternal(print_params, printed_pages[i], page_count,
+  for (uint32_t printed_page : printed_pages) {
+    PrintPageInternal(print_params, printed_page, page_count,
                       GetScaleFactor(print_params.scale_factor, is_pdf), frame,
                       &metafile);
   }
@@ -2603,10 +2622,8 @@ void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
                          final_scale_factor, *page_layout_in_points, params);
   }
 
-  float webkit_scale_factor =
-      RenderPageContent(frame, page_number, canvas_area, content_area,
-                        final_scale_factor, canvas);
-  DCHECK_GT(webkit_scale_factor, 0.0f);
+  RenderPageContent(frame, page_number, canvas_area, content_area,
+                    final_scale_factor, canvas);
 
   // Done printing. Close the canvas to retrieve the compiled metafile.
   bool ret = metafile->FinishPage();

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.omnibox.GroupsProto.GroupSection;
 import org.chromium.components.omnibox.GroupsProto.GroupsInfo;
+import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -110,11 +111,14 @@ class DropdownItemViewInfoListManager {
                 ? SuggestionCommonProperties.FormFactor.TABLET
                 : SuggestionCommonProperties.FormFactor.PHONE;
         DropdownItemViewInfo previousItem = null;
+        boolean useSmallestMargins = OmniboxFeatures.shouldShowSmallestMargins();
         int groupTopMargin = OmniboxResourceProvider.getSuggestionGroupTopMargin(mContext);
         int groupBottomMargin = mContext.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_group_vertical_smallest_margin);
-        int suggestionVerticalMargin = mContext.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_vertical_margin);
+        int suggestionVerticalMargin = useSmallestMargins
+                ? 0
+                : mContext.getResources().getDimensionPixelSize(
+                        R.dimen.omnibox_suggestion_vertical_margin);
 
         GroupSection previousSection = null;
         GroupSection currentSection;
@@ -155,6 +159,7 @@ class DropdownItemViewInfoListManager {
                     previousItem.model.set(
                             DropdownCommonProperties.BG_BOTTOM_CORNER_ROUNDED, applyRounding);
                     previousItem.model.set(DropdownCommonProperties.BOTTOM_MARGIN, bottomMargin);
+                    previousItem.model.set(DropdownCommonProperties.SHOW_DIVIDER, !applyRounding);
                 }
 
                 previousItem = item;
@@ -163,8 +168,7 @@ class DropdownItemViewInfoListManager {
 
             previousItemWasHeader = item.processor.getViewTypeId() == OmniboxSuggestionUiType.HEADER
                     && shouldShowModernizeVisualUpdate
-                    && (OmniboxFeatures.shouldShowSmallestMargins()
-                            || OmniboxFeatures.shouldShowSmallerMargins());
+                    && (useSmallestMargins || OmniboxFeatures.shouldShowSmallerMargins());
 
             suggestionsList.add(item);
         }

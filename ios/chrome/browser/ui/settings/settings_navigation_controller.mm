@@ -697,7 +697,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                                browser:self.browser
                             credential:credential
                           reauthModule:[[ReauthenticationModule alloc] init]
-                               context:DetailsContext::kGeneral];
+                               context:DetailsContext::kOutsideSettings];
   self.passwordDetailsCoordinator.delegate = self;
   self.passwordDetailsCoordinator.showCancelButton = showCancelButton;
   [self.passwordDetailsCoordinator start];
@@ -762,11 +762,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 - (void)passwordDetailsCoordinatorDidRemove:
     (PasswordDetailsCoordinator*)coordinator {
-  [self closeSettings];
   DCHECK_EQ(self.passwordDetailsCoordinator, coordinator);
   [self.passwordDetailsCoordinator stop];
   self.passwordDetailsCoordinator.delegate = nil;
   self.passwordDetailsCoordinator = nil;
+}
+
+- (void)passwordDetailsCancelButtonWasTapped {
+  [self closeSettings];
 }
 
 #pragma mark - ClearBrowsingDataCoordinatorDelegate

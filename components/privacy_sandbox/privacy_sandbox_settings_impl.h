@@ -75,6 +75,7 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings {
   void SetTopicsBlockedForTesting() override;
   void SetPrivacySandboxEnabled(bool enabled) override;
   bool IsPrivacySandboxRestricted() const override;
+  bool IsPrivacySandboxCurrentlyUnrestricted() const override;
   bool IsSubjectToM1NoticeRestricted() const override;
   bool IsRestrictedNoticeEnabled() const override;
   void OnCookiesCleared() override;
@@ -83,6 +84,9 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings {
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate) override;
   void SetPrivacySandboxAttestationsMapForTesting(
       const PrivacySandboxAttestationsMap& attestations_map) override;
+  void AddPrivacySandboxAttestationOverride(const GURL& url) override;
+  const std::vector<net::SchemefulSite> GetAttestationOverridesForTesting()
+      const override;
 
  private:
   friend class PrivacySandboxSettingsTest;
@@ -114,6 +118,8 @@ class PrivacySandboxSettingsImpl : public PrivacySandboxSettings {
   };
 
   static bool IsAllowed(Status status);
+
+  static void JoinHistogram(const char* name, Status status);
 
   // Get the Topics that are disabled by Finch.
   const std::vector<browsing_topics::Topic>& GetFinchDisabledTopics();

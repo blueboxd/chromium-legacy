@@ -724,7 +724,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MainFrameHitWithReferrer) {
 
 // TODO(https://crbug.com/1399454): Test is flaky.
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
-                       DISABLED_SubResourceHitWithMainFrameReferrer) {
+                       SubResourceHitWithMainFrameReferrer) {
   GURL first_url = embedded_test_server()->GetURL(kEmptyPage);
   GURL second_url = embedded_test_server()->GetURL(kMalwarePage);
   GURL bad_url = embedded_test_server()->GetURL(kMalwareImg);
@@ -836,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest,
   // respond.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), third_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      ui_test_utils::BROWSER_TEST_NO_WAIT);
 
   // While the top-level navigation is pending, run javascript
   // function in the page which loads the malware image.

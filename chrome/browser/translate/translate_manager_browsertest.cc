@@ -219,8 +219,6 @@ static const char kTestScriptLoadError[] =
 
 static const char kTranslateHrefHintStatusHistogram[] =
     "Translate.HrefHint.Status";
-static const char kTranslateHrefHintPrefsFilterStatusHistogram[] =
-    "Translate.HrefHint.PrefsFilterStatus";
 
 class TranslateManagerBrowserTest : public InProcessBrowserTest {
  public:
@@ -314,7 +312,7 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
 
     const std::string click_link_js =
         "(function() { document.getElementById('test').click(); })();";
-    ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+    ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
     // Detect language on the new page
     // TODO(crbug.com/1258185): Migrate to better mechanism for testing around
@@ -538,11 +536,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSuccess) {
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
       1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
-      1);
 }
 
 // Test that hrefTranslate doesn't auto-translate if the originator of the
@@ -574,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 
   const std::string click_link_js =
       "(function() { document.getElementById('test').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page.
   // TODO(crbug.com/1258185): Migrate to better mechanism for testing around
@@ -588,7 +581,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   EXPECT_EQ("", chrome_translate_client->GetLanguageState().AutoTranslateTo());
 
   histograms.ExpectTotalCount(kTranslateHrefHintStatusHistogram, 0);
-  histograms.ExpectTotalCount(kTranslateHrefHintPrefsFilterStatusHistogram, 0);
 }
 
 // Test that hrefTranslate with an unsupported language doesn't trigger.
@@ -623,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateUnsupported) {
   const std::string click_link_js =
       "(function() { "
       "document.getElementById('test-unsupported-language').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page.
   // TODO(crbug.com/1258185): Migrate to better mechanism for testing around
@@ -640,11 +632,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateUnsupported) {
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(TranslateBrowserMetrics::HrefTranslateStatus::
                            kNoUiShownNotAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -678,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateConflict) {
 
   const std::string click_link_js =
       "(function() { document.getElementById('test-conflict').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page.
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -694,11 +681,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateConflict) {
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -732,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateNoHrefLang) {
   const std::string click_link_js =
       "(function() { document.getElementById('test-no-hrefLang').click(); "
       "})();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -748,11 +730,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateNoHrefLang) {
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -780,11 +757,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(TranslateBrowserMetrics::HrefTranslateStatus::
                            kAutoTranslatedDifferentTargetLanguage),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -816,11 +788,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
       1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kLanguageInBlocklist),
-      1);
 }
 
 // Test that hrefTranslate doesn't translate if the website is in the user's
@@ -840,11 +807,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, HrefTranslateSiteBlocked) {
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(TranslateBrowserMetrics::HrefTranslateStatus::
                            kNoUiShownNotAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kSiteInBlocklist),
       1);
 }
 
@@ -868,11 +830,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(TranslateBrowserMetrics::HrefTranslateStatus::
                            kNoUiShownNotAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kBothLanguageAndSiteInBlocklist),
       1);
 }
 
@@ -1153,7 +1110,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 
   const std::string click_link_js =
       "(function() { document.getElementById('test').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -1343,7 +1300,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   const std::string click_link_js =
       "(function() { document.getElementById('test').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -1364,11 +1321,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -1399,7 +1351,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   const std::string click_link_js =
       "(function() { document.getElementById('test').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -1409,7 +1361,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
   EXPECT_EQ("", chrome_translate_client->GetLanguageState().AutoTranslateTo());
 
   histograms.ExpectTotalCount(kTranslateHrefHintStatusHistogram, 0);
-  histograms.ExpectTotalCount(kTranslateHrefHintPrefsFilterStatusHistogram, 0);
 }
 
 // Test that hrefTranslate with an unsupported language doesn't trigger.
@@ -1442,7 +1393,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
   const std::string click_link_js =
       "(function() { "
       "document.getElementById('test-unsupported-language').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -1455,11 +1406,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(TranslateBrowserMetrics::HrefTranslateStatus::
                            kNoUiShownNotAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -1491,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   const std::string click_link_js =
       "(function() { document.getElementById('test-conflict').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -1507,11 +1453,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -1543,7 +1484,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
   const std::string click_link_js =
       "(function() { document.getElementById('test-no-hrefLang').click(); "
       "})();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -1559,11 +1500,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(
           TranslateBrowserMetrics::HrefTranslateStatus::kAutoTranslated),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -1598,7 +1534,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   const std::string click_link_js =
       "(function() { document.getElementById('test').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);
@@ -1614,11 +1550,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
       kTranslateHrefHintStatusHistogram,
       static_cast<int>(TranslateBrowserMetrics::HrefTranslateStatus::
                            kAutoTranslatedDifferentTargetLanguage),
-      1);
-  histograms.ExpectUniqueSample(
-      kTranslateHrefHintPrefsFilterStatusHistogram,
-      static_cast<int>(TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                           kNotInBlocklists),
       1);
 }
 
@@ -1926,7 +1857,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   const std::string click_link_js =
       "(function() { document.getElementById('test').click(); })();";
-  ASSERT_TRUE(content::ExecuteScript(web_contents, click_link_js));
+  ASSERT_TRUE(content::ExecJs(web_contents, click_link_js));
 
   // Detect language on the new page
   WaitUntilLanguageDetermined(chrome_translate_client);

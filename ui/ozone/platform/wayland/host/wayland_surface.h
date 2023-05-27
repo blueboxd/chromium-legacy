@@ -12,6 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/functional/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -233,6 +234,11 @@ class WaylandSurface {
   // inhibition for this surface. i.e: to receive key events even if they match
   // compositor accelerators, e.g: Alt+Tab, etc.
   void SetKeyboardShortcutsInhibition(bool enabled);
+
+  // Set the trusted damage flag on this surface to be active, if the surface
+  // augmenter protocol is available. This only needs to be set on the root
+  // surface for a window.
+  void EnableTrustedDamageIfPossible();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandWindowTest,

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//ios/build/config.gni")
-import("//ios/web/public/js_messaging/optimize_js.gni")
+import("//ios/web/public/js_messaging/optimize_ts.gni")
 
 source_set("js_messaging") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -14,6 +14,7 @@ source_set("js_messaging") {
     ":java_script_feature_manager_header",
     ":scoped_wk_script_message_handler",
     ":setup_frame_js",
+    ":web_view_js_utils",
     "//base",
     "//ios/web/common:features",
     "//ios/web/navigation:wk_navigation_util",
@@ -37,8 +38,6 @@ source_set("js_messaging") {
     "web_frames_manager_java_script_feature.h",
     "web_frames_manager_java_script_feature.mm",
     "web_frames_manager_observer_bridge.mm",
-    "web_view_js_utils.h",
-    "web_view_js_utils.mm",
     "web_view_web_state_map.h",
     "web_view_web_state_map.mm",
   ]
@@ -53,6 +52,7 @@ source_set("java_script_feature") {
   deps = [
     ":js_messaging",
     ":scoped_wk_script_message_handler",
+    ":web_view_js_utils",
     "//base",
     "//ios/web/public",
     "//ios/web/public/js_messaging",
@@ -138,7 +138,10 @@ source_set("java_script_feature_util") {
 source_set("scoped_wk_script_message_handler") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  deps = [ "//base" ]
+  deps = [
+    ":web_view_js_utils",
+    "//base",
+  ]
 
   sources = [
     "scoped_wk_script_message_handler.h",
@@ -146,18 +149,39 @@ source_set("scoped_wk_script_message_handler") {
   ]
 }
 
-optimize_js("setup_frame_js") {
-  visibility = [ ":js_messaging" ]
+source_set("web_view_js_utils") {
+  configs += [ "//build/config/compiler:enable_arc" ]
 
-  primary_script = "resources/setup_frame.js"
-  sources = [ "resources/setup_frame.js" ]
+  deps = [ "//base" ]
+
+  sources = [
+    "web_view_js_utils.h",
+    "web_view_js_utils.mm",
+  ]
 }
 
-optimize_js("frame_listeners_js") {
+optimize_ts("setup_frame_js") {
   visibility = [ ":js_messaging" ]
 
-  primary_script = "resources/frame_listeners.js"
-  sources = [ "resources/frame_listeners.js" ]
+  sources = [ "resources/setup_frame.ts" ]
+
+  deps = [
+    "//ios/web/public/js_messaging:frame_id",
+    "//ios/web/public/js_messaging:gcrweb",
+    "//ios/web/public/js_messaging:util_scripts",
+  ]
+}
+
+optimize_ts("frame_listeners_js") {
+  visibility = [ ":js_messaging" ]
+
+  sources = [ "resources/frame_listeners.ts" ]
+
+  deps = [
+    "//ios/web/public/js_messaging:frame_id",
+    "//ios/web/public/js_messaging:gcrweb",
+    "//ios/web/public/js_messaging:util_scripts",
+  ]
 }
 
 source_set("unittests") {
@@ -169,6 +193,7 @@ source_set("unittests") {
     ":java_script_feature_util",
     ":js_messaging",
     ":scoped_wk_script_message_handler",
+    ":web_view_js_utils",
     "//base",
     "//base/test:test_support",
     "//ios/web/common:web_view_creation_util",

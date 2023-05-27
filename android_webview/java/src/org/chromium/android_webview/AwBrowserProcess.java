@@ -513,14 +513,13 @@ public final class AwBrowserProcess {
      * Initialize the metrics uploader.
      */
     public static void initializeMetricsLogUploader() {
-        boolean useDefaultUploadQos = AwFeatureList.isEnabled(
+        boolean useDefaultUploadQos = AwFeatureMap.getInstance().isEnabled(
                 AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT);
 
-        if (AwFeatureList.isEnabled(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE)) {
-            boolean waitForResults = AwFeatureList.isEnabled(
+        if (AwFeatureMap.getInstance().isEnabled(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE)) {
+            boolean isAsync = AwFeatureMap.getInstance().isEnabled(
                     AndroidMetricsFeatures.ANDROID_METRICS_ASYNC_METRIC_LOGGING);
-            AwMetricsLogUploader uploader =
-                    new AwMetricsLogUploader(waitForResults, useDefaultUploadQos);
+            AwMetricsLogUploader uploader = new AwMetricsLogUploader(isAsync, useDefaultUploadQos);
             // Open a connection during startup while connecting to other services such as
             // ComponentsProviderService and VariationSeedServer to try to avoid spinning the
             // nonembedded ":webview_service" twice.

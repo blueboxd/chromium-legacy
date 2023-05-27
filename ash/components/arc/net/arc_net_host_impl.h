@@ -27,6 +27,7 @@
 #include "chromeos/ash/components/network/network_profile_handler.h"
 #include "chromeos/ash/components/network/network_state_handler_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "ui/aura/window.h"
 
 namespace content {
 class BrowserContext;
@@ -99,6 +100,7 @@ class ArcNetHostImpl : public KeyedService,
   void RequestPasspointAppApproval(
       mojom::PasspointApprovalRequestPtr request,
       RequestPasspointAppApprovalCallback callback) override;
+  void NotifyAndroidWifiMulticastLockChange(bool is_held) override;
 
   // Overridden from ash::NetworkStateHandlerObserver.
   void ScanCompleted(const ash::DeviceState* /*unused*/) override;
@@ -224,6 +226,11 @@ class ArcNetHostImpl : public KeyedService,
   // Synchronously calls Chrome OS to add passpoint credentials from ARC with
   // the properties values translated taken from mojo.
   void AddPasspointCredentialsWithProperties(base::Value::Dict properties);
+
+  // Get the app window with |package_name|. This is necessary to start the
+  // user approval Passpoint dialog above the app. The app window is fetched by
+  // doing BFS over the device's root windows and its children.
+  aura::Window* GetAppWindow(const std::string& package_name);
 
   // Pass any Chrome flags into ARC.
   void SetUpFlags();

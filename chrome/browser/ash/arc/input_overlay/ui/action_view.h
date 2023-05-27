@@ -8,7 +8,6 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
-#include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_edit_button.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/reposition_controller.h"
@@ -21,6 +20,7 @@ namespace arc::input_overlay {
 
 class Action;
 class ActionEditButton;
+class DisplayOverlayController;
 
 // Represents the default label index. Default -1 means all the index.
 constexpr int kDefaultLabelIndex = -1;
@@ -149,6 +149,8 @@ class ActionView : public views::View {
 
  private:
   friend class ActionViewTest;
+
+  void ShowButtonOptionsMenu();
 
   void AddEditButton();
   void RemoveEditButton();

@@ -50,8 +50,9 @@ class SavedTabGroupKeyedService : public KeyedService,
       const base::Uuid& saved_group_guid,
       const tab_groups::TabGroupId& group_id) override;
   void DisconnectLocalTabGroup(const tab_groups::TabGroupId& group_id) override;
-  void ConnectLocalTabGroup(const tab_groups::TabGroupId& group_id,
-                            const base::Uuid& saved_group_guid) override;
+  void ConnectLocalTabGroupIfPossible(
+      const tab_groups::TabGroupId& group_id,
+      const base::Uuid& saved_group_guid) override;
 
   // SavedTabGroupModelObserver
   void SavedTabGroupModelLoaded() override;
@@ -61,6 +62,10 @@ class SavedTabGroupKeyedService : public KeyedService,
       const absl::optional<base::Uuid>& tab_guid) override;
 
  private:
+  // Activates the first tab in saved group that is already opened when its
+  // button is pressed.
+  void FocusFirstTabInOpenGroup(tab_groups::TabGroupId local_group_id);
+
   // Returns a pointer to the TabStripModel which contains `local_group_id`.
   const TabStripModel* GetTabStripModelWithTabGroupId(
       const tab_groups::TabGroupId& local_group_id);

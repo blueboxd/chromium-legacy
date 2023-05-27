@@ -8,8 +8,8 @@
 #import "base/strings/string_number_conversions.h"
 #import "base/time/time.h"
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,6 +31,8 @@ const char kTabInactivityThresholdThreeWeeksParam[] =
     "tab-inactivity-threshold-three-weeks";
 const char kTabInactivityThresholdOneMinuteDemoParam[] =
     "tab-inactivity-threshold-one-minute-demo";
+const char kTabInactivityThresholdImmediateDemoParam[] =
+    "tab-inactivity-threshold-immediate-demo";
 
 bool IsInactiveTabsAvailable() {
   if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
@@ -76,6 +78,8 @@ const base::TimeDelta InactiveTabsTimeThreshold() {
     return base::Days(21);
   } else if (feature_param == kTabInactivityThresholdOneMinuteDemoParam) {
     return base::Minutes(1);
+  } else if (feature_param == kTabInactivityThresholdImmediateDemoParam) {
+    return base::Seconds(0);
   }
   return base::Days(14);
 }

@@ -25,6 +25,7 @@
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom-blink.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -108,8 +109,12 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
     return trigger_verification_;
   }
 
-  const Vector<KURL>& os_sources() const { return os_sources_; }
-  const Vector<KURL>& os_triggers() const { return os_triggers_; }
+  const std::vector<std::vector<GURL>>& os_sources() const {
+    return os_sources_;
+  }
+  const std::vector<std::vector<GURL>>& os_triggers() const {
+    return os_triggers_;
+  }
 
   size_t disconnects() const { return disconnects_; }
 
@@ -133,12 +138,12 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
     trigger_verification_.push_back(std::move(verification));
   }
 
-  void OsSourceDataAvailable(const KURL& registration_url) override {
-    os_sources_.push_back(registration_url);
+  void OsSourceDataAvailable(std::vector<GURL> registration_urls) override {
+    os_sources_.emplace_back(std::move(registration_urls));
   }
 
-  void OsTriggerDataAvailable(const KURL& registration_url) override {
-    os_triggers_.push_back(registration_url);
+  void OsTriggerDataAvailable(std::vector<GURL> registration_urls) override {
+    os_triggers_.emplace_back(std::move(registration_urls));
   }
 
   Vector<attribution_reporting::SourceRegistration> source_data_;
@@ -147,8 +152,8 @@ class MockDataHost : public mojom::blink::AttributionDataHost {
 
   Vector<absl::optional<network::TriggerVerification>> trigger_verification_;
 
-  Vector<KURL> os_sources_;
-  Vector<KURL> os_triggers_;
+  std::vector<std::vector<GURL>> os_sources_;
+  std::vector<std::vector<GURL>> os_triggers_;
 
   size_t disconnects_ = 0;
   mojo::Receiver<mojom::blink::AttributionDataHost> receiver_{this};
@@ -570,10 +575,45 @@ TEST_F(AttributionSrcLoaderTest, WebDisabled_TriggerNotRegistered) {
   }
 }
 
+class AttributionSrcLoaderCrossAppWebRuntimeDisabledTest
+    : public AttributionSrcLoaderTest {
+ public:
+  AttributionSrcLoaderCrossAppWebRuntimeDisabledTest() = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_{
+      network::features::kAttributionReportingCrossAppWeb};
+
+ protected:
+  ScopedTestingPlatformSupport<AttributionTestingPlatformSupport> platform_;
+};
+
+TEST_F(AttributionSrcLoaderCrossAppWebRuntimeDisabledTest,
+       OsTriggerNotRegistered) {
+  platform_->attribution_support =
+      network::mojom::AttributionSupport::kWebAndOs;
+
+  KURL test_url = ToKURL("https://example1.com/foo.html");
+
+  ResourceRequest request(test_url);
+  auto* resource = MakeGarbageCollected<MockResource>(test_url);
+  ResourceResponse response(test_url);
+  response.SetHttpStatusCode(200);
+  response.SetHttpHeaderField(
+      http_names::kAttributionReportingRegisterOSTrigger,
+      R"("https://r.test/x")");
+
+  EXPECT_FALSE(attribution_src_loader_->MaybeRegisterAttributionHeaders(
+      request, response, resource));
+}
+
 class AttributionSrcLoaderCrossAppWebEnabledTest
     : public AttributionSrcLoaderTest {
  public:
-  AttributionSrcLoaderCrossAppWebEnabledTest() = default;
+  AttributionSrcLoaderCrossAppWebEnabledTest() {
+    WebRuntimeFeatures::EnableFeatureFromString(
+        /*name=*/"AttributionReportingCrossAppWeb", /*enable=*/true);
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
@@ -642,8 +682,9 @@ TEST_F(AttributionSrcLoaderCrossAppWebEnabledTest, RegisterOsTrigger) {
   ASSERT_TRUE(mock_data_host);
 
   mock_data_host->Flush();
-  EXPECT_THAT(mock_data_host->os_triggers(),
-              ::testing::ElementsAre(KURL("https://r.test/x")));
+  EXPECT_THAT(
+      mock_data_host->os_triggers(),
+      ::testing::ElementsAre(::testing::ElementsAre(GURL("https://r.test/x"))));
 }
 
 }  // namespace

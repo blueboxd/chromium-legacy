@@ -12,6 +12,7 @@
 #include <dlfcn.h>
 
 #include "apps/app_lifetime_monitor_factory.h"
+#include "base/apple/bundle_locations.h"
 #include "base/barrier_closure.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
@@ -21,7 +22,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/hash/sha1.h"
 #include "base/logging.h"
-#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/memory/raw_ptr.h"
@@ -111,7 +111,7 @@ CreateAppShimRequirement() {
   // validating. We are only interested in discovering if the framework bundle
   // is code-signed, and if so what the designated requirement is.
   base::ScopedCFTypeRef<CFURLRef> framework_url =
-      base::mac::FilePathToCFURL(base::mac::FrameworkBundlePath());
+      base::mac::FilePathToCFURL(base::apple::FrameworkBundlePath());
   base::ScopedCFTypeRef<SecStaticCodeRef> framework_code;
   OSStatus status = SecStaticCodeCreateWithPath(
       framework_url, kSecCSDefaultFlags, framework_code.InitializeInto());
@@ -531,6 +531,19 @@ void AppShimManager::OnShimLaunchRequested(
       profile = ProfileForPath(host->GetProfilePath());
     }
   }
+
+  // If `recreate_shims` is true, it is possible that the app got uninstalled
+  // while an initial launch attempt took place (and failed). So check first
+  // if the app is still installed.
+  // TODO(mek): Rather than this workaround, we should make sure to destroy
+  // AppShimHost and terminate app shims when an app is uninstalled.
+  if (recreate_shims && !delegate_->AppIsInstalled(profile, host->GetAppId())) {
+    LOG(ERROR)
+        << "Attempting to launch shim for an app that is no longer installed.";
+    std::move(terminated_callback).Run();
+    return;
+  }
+
   delegate_->LaunchShim(profile, host->GetAppId(), recreate_shims,
                         std::move(launched_callback),
                         std::move(terminated_callback));

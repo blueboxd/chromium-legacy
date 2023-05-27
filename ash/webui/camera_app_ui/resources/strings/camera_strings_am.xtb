@@ -65,9 +65,10 @@
 <translation id="4118525110028899586">ቀረጻን ለአፍታ አቁም</translation>
 <translation id="4121305183798804752">ሰነድ ተገኝቷል</translation>
 <translation id="414641094616694804">ይህ ካሜራ ጥራትን መቀየር አይችልም</translation>
+<translation id="4176463684765177261">ተሰናክሏል</translation>
 <translation id="4269820728363426813">የአገናኝ አድራሻ ቅዳ</translation>
-<translation id="4281620174117014503">መካከለኛ ጥራት</translation>
 <translation id="428234092390943511">የገጽ ጥፍር አከል</translation>
+<translation id="4349714250734879769">በChrome የተመጣጠኑ ክፈፎች</translation>
 <translation id="4383571725254449280">የህትመት አፈጻጸም መዝገቦች</translation>
 <translation id="4445542136948522167">ፎቶን ማንሳት አቁም</translation>
 <translation id="4570032796877367747">የፊት ካሜራ</translation>
@@ -93,6 +94,7 @@
 <translation id="5374917190292010970">4ኪ (2160p)</translation>
 <translation id="5662366948659129155">ገፅ <ph name="COUNT" />ን በመቃኘት ላይ</translation>
 <translation id="5671277269877808209">ካሬ</translation>
+<translation id="574392208103952083">መካከለኛ</translation>
 <translation id="5746169159649715125">እንደ PDF አስቀምጥ</translation>
 <translation id="5753488212459587150">የባለሙያ ሁነታን ያንቁ</translation>
 <translation id="5759254179196327752">ሰነድ ቃኝ</translation>
@@ -120,7 +122,7 @@
 <translation id="6888362557094394345">ወደ ታች አቅጣጫ በመንቀሳቀስ ላይ</translation>
 <translation id="695140971690006676">ሁሉንም ዳግም አስጀምር</translation>
 <translation id="6965382102122355670">እሺ</translation>
-<translation id="6965830616442491568">የቁም ፎቶ</translation>
+<translation id="6965830616442491568">የአግድም ፎቶ</translation>
 <translation id="698156982839284926">3 ሰከንዶች</translation>
 <translation id="7134221860976209830">10 ሰከንዶች መቁጠሪያ</translation>
 <translation id="7191890674911603392">የቀረጻ ዓይነት</translation>
@@ -148,6 +150,7 @@
 <translation id="8145038249676204903">ፎቶ ለማንሳት ይቀይሩ</translation>
 <translation id="8167081290930651932">እንደ ፎቶ አስቀምጥ</translation>
 <translation id="8239780215768881278">የቪዲዮ ቅፅበተ ፎቶን ያንሱ</translation>
+<translation id="8346544573713510785">በካሜራ ኤችኤኤል የተመጣጠኑ ክፈፎች</translation>
 <translation id="8425673304802773841">ወደ ታች አጋድል</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8629662593426079630">360p</translation>

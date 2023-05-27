@@ -56,7 +56,9 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void SetRestoreInfoWithWindowIdSource(int32_t, const std::string&) override;
   void SetSystemModal(bool modal) override;
   bool SupportsScreenCoordinates() const override;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   void EnableScreenCoordinates() override;
+#endif
   void SetFloat() override;
   void UnSetFloat() override;
   void SetZOrder(ZOrderLevel z_order) override;
@@ -69,6 +71,7 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
   void ShowSnapPreview(WaylandWindowSnapDirection snap_direction,
                        bool allow_haptic_feedback) override;
   void SetPersistable(bool persistable) const override;
+  void SetShape(std::unique_ptr<ShapeRects> shape_rects) override;
 
   XDGToplevelWrapperImpl* AsXDGToplevelWrapper() override;
 
@@ -122,6 +125,9 @@ class XDGToplevelWrapperImpl : public ShellToplevelWrapper {
 
   // Called when raster scale is changed.
   void OnConfigureRasterScale(double scale);
+
+  // Creates a wl_region from `shape_rects`.
+  wl::Object<wl_region> CreateAndAddRegion(const ShapeRects& shape_rects);
 
   // Ground surface for this toplevel wrapper.
   std::unique_ptr<XDGSurfaceWrapperImpl> xdg_surface_wrapper_;

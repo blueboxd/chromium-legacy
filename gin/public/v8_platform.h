@@ -11,6 +11,7 @@
 #include "gin/gin_export.h"
 #include "gin/time_clamper.h"
 #include "gin/v8_platform_page_allocator.h"
+#include "gin/v8_platform_thread_isolated_allocator.h"
 #include "v8/include/v8-platform.h"
 
 namespace gin {
@@ -31,6 +32,9 @@ class GIN_EXPORT V8Platform : public v8::Platform {
   // enabling Arm's Branch Target Instructions for executable pages. This is
   // verified in the tests for gin::PageAllocator.
   PageAllocator* GetPageAllocator() override;
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+  ThreadIsolatedAllocator* GetThreadIsolatedAllocator() override;
+#endif
   void OnCriticalMemoryPressure() override;
   v8::ZoneBackingAllocator* GetZoneBackingAllocator() override;
 #endif
@@ -38,15 +42,18 @@ class GIN_EXPORT V8Platform : public v8::Platform {
   std::shared_ptr<v8::TaskRunner> GetForegroundTaskRunner(
       v8::Isolate*) override;
   int NumberOfWorkerThreads() override;
-  void CallOnWorkerThread(std::unique_ptr<v8::Task> task) override;
-  void CallBlockingTaskOnWorkerThread(std::unique_ptr<v8::Task> task) override;
-  void CallLowPriorityTaskOnWorkerThread(
-      std::unique_ptr<v8::Task> task) override;
-  void CallDelayedOnWorkerThread(std::unique_ptr<v8::Task> task,
-                                 double delay_in_seconds) override;
-  std::unique_ptr<v8::JobHandle> CreateJob(
+  void PostTaskOnWorkerThreadImpl(v8::TaskPriority priority,
+                                  std::unique_ptr<v8::Task> task,
+                                  const v8::SourceLocation& location) override;
+  void PostDelayedTaskOnWorkerThreadImpl(
       v8::TaskPriority priority,
-      std::unique_ptr<v8::JobTask> job_task) override;
+      std::unique_ptr<v8::Task> task,
+      double delay_in_seconds,
+      const v8::SourceLocation& location) override;
+  std::unique_ptr<v8::JobHandle> CreateJobImpl(
+      v8::TaskPriority priority,
+      std::unique_ptr<v8::JobTask> job_task,
+      const v8::SourceLocation& location) override;
   std::unique_ptr<v8::ScopedBlockingCall> CreateBlockingScope(
       v8::BlockingType blocking_type) override;
   bool IdleTasksEnabled(v8::Isolate* isolate) override;

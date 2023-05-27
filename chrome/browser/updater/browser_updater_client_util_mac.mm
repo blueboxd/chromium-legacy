@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "base/apple/bridging.h"
+#include "base/apple/bundle_locations.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -20,7 +22,6 @@
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/mac/authorization_util.h"
-#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "base/memory/scoped_refptr.h"
@@ -42,6 +43,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 constexpr char kInstallCommand[] = "install";
@@ -54,7 +59,7 @@ base::FilePath GetUpdaterExecutablePath() {
 }
 
 bool BundleOwnedByUser(uid_t user_uid) {
-  const base::FilePath path = base::mac::OuterBundlePath();
+  const base::FilePath path = base::apple::OuterBundlePath();
   base::stat_wrapper_t stat_info = {};
   if (base::File::Lstat(path.value().c_str(), &stat_info) != 0) {
     VPLOG(2) << "Failed to get information on path " << path.value();
@@ -169,7 +174,7 @@ void InstallUpdaterAndRegisterBrowser(base::OnceClosure complete) {
         // BRANDING.app/Contents/Frameworks/BRANDING.framework/Versions/V/
         // Helpers/Updater.app/Contents/MacOS/Updater
         const base::FilePath updater_executable_path =
-            base::mac::FrameworkBundlePath()
+            base::apple::FrameworkBundlePath()
                 .Append(FILE_PATH_LITERAL("Helpers"))
                 .Append(GetUpdaterExecutablePath());
 
@@ -199,7 +204,7 @@ void InstallUpdaterAndRegisterBrowser(base::OnceClosure complete) {
 }  // namespace
 
 std::string CurrentlyInstalledVersion() {
-  base::FilePath outer_bundle = base::mac::OuterBundlePath();
+  base::FilePath outer_bundle = base::apple::OuterBundlePath();
   base::FilePath plist_path =
       outer_bundle.Append("Contents").Append("Info.plist");
   NSDictionary* info_plist = [NSDictionary
@@ -267,7 +272,8 @@ void SetupSystemUpdater() {
       IDS_PROMOTE_AUTHENTICATION_PROMPT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   base::mac::ScopedAuthorizationRef authorization =
-      base::mac::AuthorizationCreateToRunAsRoot(base::mac::NSToCFCast(prompt));
+      base::mac::AuthorizationCreateToRunAsRoot(
+          base::apple::NSToCFPtrCast(prompt));
   if (!authorization.get()) {
     VLOG(0) << "Could not get authorization to run as root.";
     return;

@@ -43,15 +43,18 @@
 #include "chrome/browser/reading_list/reading_list_model_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_base.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_lookup.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/browser/ui/autofill/payments/iban_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
+#include "chrome/browser/ui/autofill/payments/mandatory_reauth_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
@@ -91,10 +94,7 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
-#include "chrome/browser/ui/translate/translate_bubble_ui_action_logger.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/browser/ui/user_education/reopen_tab_in_product_help.h"
-#include "chrome/browser/ui/user_education/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -206,23 +206,6 @@ const char kOsOverrideForTabletSite[] = "Linux; Android 9; Chrome tablet";
 const char kChPlatformOverrideForTabletSite[] = "Android";
 const char kBackForwardNavigationIsTriggered[] =
     "back_forward_navigation_is_triggered";
-
-translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
-    ShowTranslateBubbleResult result) {
-  switch (result) {
-    default:
-      NOTREACHED();
-      [[fallthrough]];
-    case ShowTranslateBubbleResult::SUCCESS:
-      return translate::TranslateBubbleUiEvent::BUBBLE_SHOWN;
-    case ShowTranslateBubbleResult::BROWSER_WINDOW_MINIMIZED:
-      return translate::TranslateBubbleUiEvent::
-          BUBBLE_NOT_SHOWN_WINDOW_MINIMIZED;
-    case ShowTranslateBubbleResult::EDITABLE_FIELD_IS_ACTIVE:
-      return translate::TranslateBubbleUiEvent::
-          BUBBLE_NOT_SHOWN_EDITABLE_FIELD_IS_ACTIVE;
-  }
-}
 
 // Creates a new tabbed browser window, with the same size, type and profile as
 // |original_browser|'s window, inserts |contents| into it, and shows it.
@@ -793,6 +776,8 @@ base::WeakPtr<content::NavigationHandle> OpenCurrentURL(Browser* browser) {
   params.input_start = location_bar->GetMatchSelectionTimestamp();
   params.is_using_https_as_default_scheme =
       location_bar->IsInputTypedUrlWithoutScheme();
+  params.url_typed_with_http_scheme =
+      location_bar->IsInputTypedUrlWithHttpScheme();
   auto result = Navigate(&params);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -874,11 +859,6 @@ void NewTab(Browser* browser) {
   // user-initiated commands.
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", NewTabTypes::NEW_TAB_COMMAND,
                             NewTabTypes::NEW_TAB_ENUM_COUNT);
-
-  // Notify IPH that new tab was opened.
-  auto* reopen_tab_iph =
-      ReopenTabInProductHelpFactory::GetForProfile(browser->profile());
-  reopen_tab_iph->NewTabOpened();
 
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)) {
     AddTabAt(browser, GURL(), -1, true);
@@ -1383,6 +1363,15 @@ void SaveIBAN(Browser* browser) {
   controller->ReshowBubble();
 }
 
+void ShowMandatoryReauthOptInPrompt(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  autofill::MandatoryReauthBubbleControllerImpl* controller =
+      autofill::MandatoryReauthBubbleControllerImpl::FromWebContents(
+          web_contents);
+  controller->ReshowBubble();
+}
+
 void MigrateLocalCards(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
@@ -1444,12 +1433,9 @@ void Translate(Browser* browser) {
     else if (chrome_translate_client->GetLanguageState().IsPageTranslated())
       step = translate::TRANSLATE_STEP_AFTER_TRANSLATE;
   }
-  ShowTranslateBubbleResult result = browser->window()->ShowTranslateBubble(
+  browser->window()->ShowTranslateBubble(
       web_contents, step, source_language, target_language,
       translate::TranslateErrors::NONE, true);
-  if (result != ShowTranslateBubbleResult::SUCCESS)
-    translate::ReportTranslateBubbleUiAction(
-        TranslateBubbleResultToUiEvent(result));
 }
 
 void ManagePasswordsForPage(Browser* browser) {
@@ -1465,10 +1451,25 @@ void ManagePasswordsForPage(Browser* browser) {
       ->ShowManagePasswordsBubble(!controller->IsAutomaticallyOpeningBubble());
 }
 
+bool CanSendTabToSelf(const Browser* browser) {
+  return send_tab_to_self::ShouldDisplayEntryPoint(
+      browser->tab_strip_model()->GetActiveWebContents());
+}
+
 void SendTabToSelfFromPageAction(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   send_tab_to_self::ShowBubble(web_contents);
+}
+
+bool CanGenerateQrCode(const Browser* browser) {
+  return !sharing_hub::SharingIsDisabledByPolicy(browser->profile()) &&
+         qrcode_generator::QRCodeGeneratorBubbleController::
+             IsGeneratorAvailable(browser->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetController()
+                                      .GetLastCommittedEntry()
+                                      ->GetURL());
 }
 
 void GenerateQRCodeFromPageAction(Browser* browser) {

@@ -68,6 +68,7 @@ class ClipPathOperation;
 class CSSToLengthConversionData;
 class Font;
 class FontBuilder;
+class OffsetPathOperation;
 class RotateTransformOperation;
 class ScaleTransformOperation;
 class ScopedCSSName;
@@ -99,6 +100,8 @@ class StyleBuilderConverterBase {
       const CSSToLengthConversionData&,
       FontDescription::Size parent_size,
       const Document*);
+  static FontSizeAdjust ConvertFontSizeAdjust(const CSSValue&);
+  static scoped_refptr<FontPalette> ConvertFontPalette(const CSSValue&);
 };
 
 // Note that we assume the parser only allows valid CSSValue types.
@@ -203,10 +206,14 @@ class StyleBuilderConverter {
   static TabSize ConvertLengthOrTabSpaces(StyleResolverState&, const CSSValue&);
   static Length ConvertLineHeight(StyleResolverState&, const CSSValue&);
   static float ConvertNumberOrPercentage(StyleResolverState&, const CSSValue&);
+  static ScrollStartData ConvertScrollStart(const StyleResolverState&,
+                                            const CSSValue&);
   static float ConvertAlpha(StyleResolverState&,
                             const CSSValue&);  // clamps to [0,1]
   static ScopedCSSName* ConvertNoneOrCustomIdent(StyleResolverState&,
                                                  const CSSValue&);
+  static ScopedCSSName* ConvertCustomIdent(StyleResolverState&,
+                                           const CSSValue&);
   static ScopedCSSName* ConvertAnchorDefault(StyleResolverState&,
                                              const CSSValue&);
   static AnchorSpecifierValue* ConvertAnchorScroll(StyleResolverState&,
@@ -291,8 +298,9 @@ class StyleBuilderConverter {
                                                     const CSSValue&);
   static scoped_refptr<BasicShape> ConvertObjectViewBox(StyleResolverState&,
                                                         const CSSValue&);
-  static scoped_refptr<BasicShape> ConvertOffsetPath(StyleResolverState&,
-                                                     const CSSValue&);
+  static scoped_refptr<OffsetPathOperation> ConvertOffsetPath(
+      StyleResolverState&,
+      const CSSValue&);
   static StyleOffsetRotation ConvertOffsetRotate(const CSSValue&);
   template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
   static Length ConvertPositionLength(StyleResolverState&, const CSSValue&);
@@ -323,6 +331,10 @@ class StyleBuilderConverter {
 
   static RubyPosition ConvertRubyPosition(StyleResolverState& state,
                                           const CSSValue& value);
+
+  static absl::optional<StyleScrollbarColor> ConvertScrollbarColor(
+      StyleResolverState& state,
+      const CSSValue& value);
 
   static ScrollbarGutter ConvertScrollbarGutter(StyleResolverState& state,
                                                 const CSSValue& value);
@@ -374,6 +386,8 @@ class StyleBuilderConverter {
                                                         const CSSValue&);
   static ScopedCSSNameList* ConvertViewTimelineName(StyleResolverState&,
                                                     const CSSValue&);
+  static ScopedCSSNameList* ConvertTimelineScope(StyleResolverState&,
+                                                 const CSSValue&);
 };
 
 template <typename T>

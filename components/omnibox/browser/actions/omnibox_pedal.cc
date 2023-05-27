@@ -25,7 +25,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
-#include "components/omnibox/browser/actions/omnibox_pedal_jni_wrapper.h"
+#include "components/omnibox/browser/actions/omnibox_action_factory_android.h"
 #endif
 
 OmniboxPedal::TokenSequence::TokenSequence(size_t reserve_size) {
@@ -321,7 +321,8 @@ OmniboxActionId OmniboxPedal::ActionId() const {
 base::android::ScopedJavaLocalRef<jobject> OmniboxPedal::GetOrCreateJavaObject(
     JNIEnv* env) const {
   if (!j_omnibox_action_) {
-    j_omnibox_action_.Reset(BuildOmniboxPedal(env, strings_.hint, PedalId()));
+    j_omnibox_action_.Reset(BuildOmniboxPedal(
+        env, reinterpret_cast<intptr_t>(this), strings_.hint, PedalId()));
   }
   return base::android::ScopedJavaLocalRef<jobject>(j_omnibox_action_);
 }

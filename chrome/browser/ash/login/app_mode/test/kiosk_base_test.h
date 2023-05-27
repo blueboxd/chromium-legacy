@@ -38,6 +38,12 @@ extern const char kTestEnterpriseKioskApp[];
 
 extern const char kTestEnterpriseAccountId[];
 
+// This is a simple test chrome app that does not have `kiosk_enabled` flag in
+// manifest. Webstore data json is in
+//   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
+//       detail/gbcgichpbeeimejckkpgnaighpndpped
+constexpr char kTestNonKioskEnabledApp[] = "gbcgichpbeeimejckkpgnaighpndpped";
+
 extern const test::UIPath kConfigNetwork;
 extern const char kSizeChangedMessage[];
 
@@ -118,6 +124,13 @@ class KioskBaseTest : public OobeBaseTest {
   void SimulateNetworkOffline();
 
   void BlockAppLaunch(bool block);
+
+  // TODO(b/280777751): update usages of `set_test_app_id` with
+  // `SetTestApp`.
+  // If `crx_file` is empty string, sets `test_crx_file_` to `app_id` + ".crx".
+  void SetTestApp(const std::string& app_id,
+                  const std::string& crx_file = "",
+                  const std::string& version = "1.0.0");
 
   void set_test_app_id(const std::string& test_app_id) {
     test_app_id_ = test_app_id;

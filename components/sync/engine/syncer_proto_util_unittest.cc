@@ -77,7 +77,7 @@ TEST(SyncerProtoUtil, GetTypesToMigrate) {
   response.add_migrated_data_type_id(
       GetSpecificsFieldNumberFromModelType(HISTORY_DELETE_DIRECTIVES));
   response.add_migrated_data_type_id(-1);
-  EXPECT_EQ(ModelTypeSet(BOOKMARKS, HISTORY_DELETE_DIRECTIVES),
+  EXPECT_EQ(ModelTypeSet({BOOKMARKS, HISTORY_DELETE_DIRECTIVES}),
             GetTypesToMigrate(response));
 }
 
@@ -93,7 +93,7 @@ TEST(SyncerProtoUtil, ConvertErrorPBToSyncProtocolError) {
       GetSpecificsFieldNumberFromModelType(HISTORY_DELETE_DIRECTIVES));
   error_pb.add_error_data_type_ids(-1);
   SyncProtocolError error = ConvertErrorPBToSyncProtocolError(error_pb);
-  EXPECT_EQ(ModelTypeSet(BOOKMARKS, HISTORY_DELETE_DIRECTIVES),
+  EXPECT_EQ(ModelTypeSet({BOOKMARKS, HISTORY_DELETE_DIRECTIVES}),
             error.error_data_types);
 }
 
@@ -224,7 +224,6 @@ class DummyConnectionManager : public ServerConnectionManager {
 
   HttpResponse PostBuffer(const std::string& buffer_in,
                           const std::string& access_token,
-                          bool allow_batching,
                           std::string* buffer_out) override {
     if (send_error_) {
       return HttpResponse::ForIoErrorForTest();

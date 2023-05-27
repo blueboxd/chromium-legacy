@@ -367,7 +367,6 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
   WebPictureInPictureWindowOptions web_options;
   web_options.width = options->width();
   web_options.height = options->height();
-  web_options.initial_aspect_ratio = options->initialAspectRatio();
 
   // If either width or height is specified, then both must be specified.
   if (web_options.width > 0 && web_options.height == 0) {
@@ -414,7 +413,8 @@ void PictureInPictureControllerImpl::CreateDocumentPictureInPictureWindow(
         continue;
       }
       CSSStyleSheet* css = To<CSSStyleSheet>(sheet);
-      StyleSheetContents* contents = css->Contents();
+      StyleSheetContents* contents =
+          MakeGarbageCollected<StyleSheetContents>(*css->Contents());
 
       // Inject the style sheet. It will not stay in sync with the opener.
       //

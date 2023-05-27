@@ -212,8 +212,7 @@ public class BookmarkAddEditFolderActivity
         } else if (item == mSaveButton) {
             assert mIsAddMode;
 
-            if (mFolderTitle.isEmpty()) {
-                mFolderTitle.validate();
+            if (!mFolderTitle.validate()) {
                 mFolderTitle.requestFocus();
                 return true;
             }
@@ -260,11 +259,6 @@ public class BookmarkAddEditFolderActivity
     protected void onDestroy() {
         super.onDestroy();
         mModel.removeObserver(mBookmarkModelObserver);
-    }
-
-    @Override
-    protected boolean shouldUseActionBarForAutomotiveToolbar() {
-        return false;
     }
 
     private void updateParent(BookmarkId newParent) {

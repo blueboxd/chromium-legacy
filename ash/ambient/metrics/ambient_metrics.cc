@@ -5,20 +5,30 @@
 #include "ash/ambient/metrics/ambient_metrics.h"
 
 #include <string>
+#include <utility>
 
 #include "ash/ambient/ambient_ui_settings.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
+#include "ash/public/cpp/ash_web_view.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/functional/bind.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/values.h"
+#include "net/base/url_util.h"
+#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 namespace ash {
 namespace ambient {
@@ -32,6 +42,21 @@ namespace {
 // many hours. So the histogram's highest resolution should occupy the smaller
 // engagement times.
 constexpr int kAmbientModeElapsedTimeHistogramBuckets = 144;
+
+// Fields of the JSON dictionary that the ambient video HTML sends to C++ to
+// communicate playback metrics.
+//
+// Whether or not playback started successfully.
+constexpr base::StringPiece kVideoFieldPlaybackStarted = "playback_started";
+//
+// These reflect the VideoPlaybackQuality JS API:
+// https://developer.mozilla.org/en-US/docs/Web/API/VideoPlaybackQuality
+//
+// Total number of video frames dropped since playback started.
+constexpr base::StringPiece kVideoFieldDroppedFrames = "dropped_frames";
+// Total number of video frames expected since playback started (frames
+// created + frames dropped).
+constexpr base::StringPiece kVideoFieldTotalFrames = "total_frames";
 
 std::string GetHistogramName(const char* prefix, bool tablet_mode) {
   std::string histogram = prefix;
@@ -56,6 +81,121 @@ void RecordEngagementTime(base::StringPiece histogram_name,
       /*min=*/base::Seconds(1),
       /*max=*/base::Hours(24),
       /*buckets=*/kAmbientModeElapsedTimeHistogramBuckets);
+}
+
+// After the JSON in the URL fragment has been decoded in `result`:
+void OnAmbientVideoPlaybackMetricsParsed(
+    base::OnceCallback<void(base::Value::Dict)> completion_cb,
+    data_decoder::DataDecoder::ValueOrError result) {
+  CHECK(completion_cb);
+  // These errors really shouldn't ever happen, but they're not significant
+  // enough to crash the whole process over.
+  if (!result.has_value()) {
+    LOG(ERROR) << "JSON parsing failed with error: " << result.error();
+    std::move(completion_cb).Run(base::Value::Dict());
+    return;
+  }
+  if (!result->is_dict()) {
+    LOG(ERROR) << "Expected JSON dictionary for metrics";
+    std::move(completion_cb).Run(base::Value::Dict());
+    return;
+  }
+  std::move(completion_cb).Run(std::move(*result).TakeDict());
+}
+
+// Retrieves the the JSON dictionary in the `web_view`'s URL fragment.
+void GetAmbientVideoPlaybackMetrics(
+    AshWebView* web_view,
+    base::OnceCallback<void(base::Value::Dict)> completion_cb) {
+  CHECK(web_view);
+  CHECK(completion_cb);
+  // The URL fragment identifier is used as a way of communicating the playback
+  // metrics data without using any elaborate frameworks or permissions
+  // (ex: a WebUI).
+  std::string serialized_playback_metrics =
+      net::UnescapePercentEncodedUrl(web_view->GetVisibleURL().ref());
+  if (serialized_playback_metrics.empty()) {
+    // This can legitimately happen if the ambient video is still being loaded
+    // and it's still unclear whether playback has started successfully or
+    // failed.
+    DVLOG(2) << "Ambient video still loading";
+    std::move(completion_cb).Run(base::Value::Dict());
+    return;
+  }
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      serialized_playback_metrics,
+      base::BindOnce(&OnAmbientVideoPlaybackMetricsParsed,
+                     std::move(completion_cb)));
+}
+
+AmbientVideoSessionStatus ParseAmbientVideoSessionStatus(
+    const base::Value::Dict& playback_metrics) {
+  absl::optional<bool> playback_started =
+      playback_metrics.FindBool(kVideoFieldPlaybackStarted);
+  if (playback_started.has_value()) {
+    return *playback_started ? AmbientVideoSessionStatus::kSuccess
+                             : AmbientVideoSessionStatus::kFailed;
+  } else {
+    // `playback_started` is not set in the URL fragment identifier until it's
+    // clear that playback has definitely started successfully or failed.
+    return AmbientVideoSessionStatus::kLoading;
+  }
+}
+
+// `GetAmbientModeVideoSessionStatus()` continued:
+// After the `playback_metrics` have been parsed from the URL fragment:
+void CompleteGetAmbientVideoSessionStatus(
+    base::OnceCallback<void(AmbientVideoSessionStatus)> completion_cb,
+    base::Value::Dict playback_metrics) {
+  CHECK(completion_cb);
+  std::move(completion_cb)
+      .Run(ParseAmbientVideoSessionStatus(playback_metrics));
+}
+
+// `RecordAmbientModeVideoSessionStatus()` continued:
+// After the `AmbientVideoSessionStatus` has been parsed from the URL fragment:
+void RecordAmbientModeVideoSessionStatusInternal(
+    const AmbientUiSettings& ui_settings,
+    AmbientVideoSessionStatus status) {
+  base::UmaHistogramEnumeration(
+      /*name=*/base::StrCat(
+          {"Ash.AmbientMode.VideoPlaybackStatus.", ui_settings.ToString()}),
+      status);
+}
+
+// `RecordAmbientModeVideoSmoothness()` continued:
+// After the `playback_metrics` have been parsed from the URL fragment:
+void RecordAmbientModeVideoSmoothnessInternal(
+    const AmbientUiSettings& ui_settings,
+    base::Value::Dict playback_metrics) {
+  CHECK_EQ(ui_settings.theme(), AmbientTheme::kVideo);
+  if (ParseAmbientVideoSessionStatus(playback_metrics) !=
+      AmbientVideoSessionStatus::kSuccess) {
+    // Just to prevent error log spam below. If playback failed completely,
+    // `RecordAmbientModeVideoSessionStatus()` should cover that.
+    return;
+  }
+  absl::optional<int> dropped_frames =
+      playback_metrics.FindInt(kVideoFieldDroppedFrames);
+  // Assuming 24 fps, the ambient session would have to last ~2.83 years before
+  // the int overflows. For all intensive purposes, this should not happen.
+  absl::optional<int> expected_frames =
+      playback_metrics.FindInt(kVideoFieldTotalFrames);
+  if (!dropped_frames || !expected_frames) {
+    LOG(ERROR) << "Received invalid metrics dictionary: " << playback_metrics;
+    return;
+  }
+  if (*dropped_frames < 0 || *expected_frames <= 0 ||
+      *dropped_frames > *expected_frames) {
+    LOG(ERROR) << "Frame statistics are invalid: " << playback_metrics;
+    return;
+  }
+  int created_frames = *expected_frames - *dropped_frames;
+  int smoothness = base::ClampRound(
+      100.f * (static_cast<float>(created_frames) / *expected_frames));
+  base::UmaHistogramPercentage(base::StrCat({"Ash.AmbientMode.VideoSmoothness.",
+                                             ui_settings.ToString()}),
+                               smoothness);
 }
 
 }  // namespace
@@ -141,6 +281,34 @@ void RecordAmbientModeStartupTime(base::TimeDelta startup_time,
       /*min=*/base::Seconds(0),
       /*max=*/kMetricsStartupTimeMax,
       /*buckets=*/50);
+}
+
+void GetAmbientModeVideoSessionStatus(
+    AshWebView* web_view,
+    base::OnceCallback<void(AmbientVideoSessionStatus)> completion_cb) {
+  CHECK(completion_cb);
+  if (web_view->IsErrorDocument()) {
+    // There was an issue loading the actual html.
+    std::move(completion_cb).Run(AmbientVideoSessionStatus::kFailed);
+    return;
+  }
+  GetAmbientVideoPlaybackMetrics(
+      web_view, base::BindOnce(&CompleteGetAmbientVideoSessionStatus,
+                               std::move(completion_cb)));
+}
+
+void RecordAmbientModeVideoSessionStatus(AshWebView* web_view,
+                                         const AmbientUiSettings& ui_settings) {
+  GetAmbientModeVideoSessionStatus(
+      web_view, base::BindOnce(&RecordAmbientModeVideoSessionStatusInternal,
+                               ui_settings));
+}
+
+void RecordAmbientModeVideoSmoothness(AshWebView* web_view,
+                                      const AmbientUiSettings& ui_settings) {
+  GetAmbientVideoPlaybackMetrics(
+      web_view,
+      base::BindOnce(&RecordAmbientModeVideoSmoothnessInternal, ui_settings));
 }
 
 AmbientOrientationMetricsRecorder::AmbientOrientationMetricsRecorder(

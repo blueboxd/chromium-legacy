@@ -207,14 +207,6 @@
     "label": "//android_webview/support_library/boundary_interfaces:boundary_interface_example_apk",
     "type": "additional_compile_target",
   },
-  "devtools_web_tests": {
-    "label": "//:devtools_web_tests",
-    "type": "generated_script",
-    "args": [
-      "--results-directory",
-      "${ISOLATED_OUTDIR}",
-    ],
-  },
   "boringssl_crypto_tests": {
     "label": "//third_party/boringssl:boringssl_crypto_tests",
     "type": "console_test_launcher",
@@ -340,6 +332,13 @@
   "chrome_app_unittests": {
     "label": "//chrome/test:chrome_app_unittests",
     "type": "console_test_launcher",
+  },
+  "chrome_criticalstaging_tast_tests": {
+    "label": "//chromeos:chrome_criticalstaging_tast_tests",
+    "type": "generated_script",
+    "args": [
+      "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
   },
   "chrome_elf_unittests": {
     "label": "//chrome/chrome_elf:chrome_elf_unittests",
@@ -528,6 +527,10 @@
   "chromedriver_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_unittests",
     "type": "windowed_test_launcher",
+  },
+  "chrome_finch_smoke_tests": {
+    "label": "//clank/java:chrome_finch_smoke_tests",
+    "type": "generated_script",
   },
   "chromeos_components_unittests": {
     "label": "//chromeos/components:chromeos_components_unittests",
@@ -983,10 +986,6 @@
     "label": "//ios/showcase:ios_showcase_eg2tests_module",
     "type": "generated_script",
   },
-  "ios_swift_interop_xcuitests_module": {
-    "label": "//ios/chrome/test/swift_interop:ios_swift_interop_xcuitests_module",
-    "type": "generated_script",
-  },
   "ios_testing_unittests": {
     "label": "//ios/testing:ios_testing_unittests",
     "type": "generated_script",
@@ -1072,13 +1071,6 @@
   },
   "lacros_fyi_tast_tests": {
     "label": "//chromeos/lacros:lacros_fyi_tast_tests",
-    "type": "generated_script",
-    "args": [
-      "--logs-dir=${ISOLATED_OUTDIR}",
-    ],
-  },
-  "lacros_variations_tast_tests": {
-    "label": "//chromeos/lacros:lacros_variations_tast_tests",
     "type": "generated_script",
     "args": [
       "--logs-dir=${ISOLATED_OUTDIR}",

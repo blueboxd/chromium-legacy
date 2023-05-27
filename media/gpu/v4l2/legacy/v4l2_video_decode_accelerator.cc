@@ -84,9 +84,10 @@ bool IsVp9KSVCStream(uint32_t input_format_fourcc,
 
 }  // namespace
 
-// static
-const uint32_t V4L2VideoDecodeAccelerator::supported_input_fourccs_[] = {
-    V4L2_PIX_FMT_H264, V4L2_PIX_FMT_VP8, V4L2_PIX_FMT_VP9,
+static const std::vector<uint32_t> kSupportedInputFourCCs = {
+    V4L2_PIX_FMT_H264,
+    V4L2_PIX_FMT_VP8,
+    V4L2_PIX_FMT_VP9,
 };
 
 // static
@@ -316,7 +317,7 @@ bool V4L2VideoDecodeAccelerator::CheckConfig(const Config& config) {
   input_format_fourcc_ =
       V4L2Device::VideoCodecProfileToV4L2PixFmt(config.profile, false);
 
-  if (!input_format_fourcc_ ||
+  if (input_format_fourcc_ == V4L2_PIX_FMT_INVALID ||
       !device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc_)) {
     VLOGF(1) << "Failed to open device for profile: " << config.profile
              << " fourcc: " << FourccToString(input_format_fourcc_);
@@ -854,8 +855,7 @@ V4L2VideoDecodeAccelerator::GetSupportedProfiles() {
   if (!device)
     return SupportedProfiles();
 
-  return device->GetSupportedDecodeProfiles(std::size(supported_input_fourccs_),
-                                            supported_input_fourccs_);
+  return device->GetSupportedDecodeProfiles(kSupportedInputFourCCs);
 }
 
 void V4L2VideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
@@ -2242,8 +2242,9 @@ bool V4L2VideoDecodeAccelerator::SetupFormats() {
 
   size_t input_size;
   gfx::Size max_resolution, min_resolution;
-  device_->GetSupportedResolution(input_format_fourcc_, &min_resolution,
-                                  &max_resolution);
+  GetSupportedResolution(base::BindRepeating(&V4L2Device::Ioctl, device_),
+                         input_format_fourcc_, &min_resolution,
+                         &max_resolution);
   if (max_resolution.width() > 1920 && max_resolution.height() > 1088)
     input_size = kInputBufferMaxSizeFor4k;
   else

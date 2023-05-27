@@ -30,8 +30,10 @@
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_ukm.h"
 #include "ui/base/ime/ash/text_input_target.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace ash::input_method {
@@ -41,6 +43,7 @@ namespace {
 using ime::AssistiveSuggestion;
 using ime::AssistiveSuggestionMode;
 using ime::AssistiveSuggestionType;
+using ime::SuggestionsTextContext;
 
 constexpr int kModifierKeysMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
                                   ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
@@ -161,6 +164,24 @@ bool IsLongpressEnabledControlV(const ui::KeyEvent& event) {
          (event.flags() & kModifierKeysMask) == ui::EF_CONTROL_DOWN;
 }
 
+// Returns the location to which the clipboard history menu should anchor. When
+// possible, this anchor is where a clipboard history item would be pasted if
+// the user made a selection; otherwise, this function returns a point at (0,0).
+gfx::Rect GetClipboardHistoryMenuAnchor() {
+  TextInputTarget* input_context = IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context) {
+    return gfx::Rect();
+  }
+
+  ui::TextInputClient* input_client =
+      input_context->GetInputMethod()->GetTextInputClient();
+  if (!input_client) {
+    return gfx::Rect();
+  }
+
+  return input_client->GetCaretBounds();
+}
+
 void RecordMultiWordTextInputState(
     PrefService* pref_service,
     const std::string& engine_id,
@@ -228,7 +249,7 @@ bool AssistiveSuggester::IsEnhancedEmojiSuggestEnabled() {
 }
 
 bool AssistiveSuggester::IsMultiWordSuggestEnabled() {
-  return features::IsAssistiveMultiWordEnabled() &&
+  return base::FeatureList::IsEnabled(features::kAssistMultiWord) &&
          IsPredictiveWritingPrefEnabled(profile_->GetPrefs(),
                                         active_engine_id_);
 }
@@ -263,7 +284,7 @@ DisabledReason AssistiveSuggester::GetDisabledReasonForEmoji(
 
 DisabledReason AssistiveSuggester::GetDisabledReasonForMultiWord(
     const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
-  if (!features::IsAssistiveMultiWordEnabled()) {
+  if (!base::FeatureList::IsEnabled(features::kAssistMultiWord)) {
     return DisabledReason::kFeatureFlagOff;
   }
   if (!profile_->GetPrefs()->GetBoolean(
@@ -463,10 +484,9 @@ void AssistiveSuggester::OnLongpressDetected() {
   }
 
   if (IsLongpressEnabledControlV(current_longpress_keydown_.value())) {
-    const auto anchor_rect =
-        IMEBridge::Get()->GetInputContextHandler()->GetTextFieldBounds();
     if (Shell::Get()->clipboard_history_controller()->ShowMenu(
-            anchor_rect, ui::MenuSourceType::MENU_SOURCE_KEYBOARD,
+            GetClipboardHistoryMenuAnchor(),
+            ui::MenuSourceType::MENU_SOURCE_KEYBOARD,
             crosapi::mojom::ClipboardHistoryControllerShowSource::
                 kControlVLongpress,
             base::BindOnce(&AssistiveSuggester::OnClipboardHistoryMenuClosing,
@@ -492,18 +512,20 @@ void AssistiveSuggester::OnClipboardHistoryMenuClosing(bool will_paste_item) {
 }
 
 void AssistiveSuggester::OnExternalSuggestionsUpdated(
-    const std::vector<AssistiveSuggestion>& suggestions) {
+    const std::vector<AssistiveSuggestion>& suggestions,
+    const absl::optional<SuggestionsTextContext>& context) {
   if (!IsMultiWordSuggestEnabled())
     return;
 
   suggester_switch_->FetchEnabledSuggestionsThen(
       base::BindOnce(&AssistiveSuggester::ProcessExternalSuggestions,
-                     weak_ptr_factory_.GetWeakPtr(), suggestions),
+                     weak_ptr_factory_.GetWeakPtr(), suggestions, context),
       context_);
 }
 
 void AssistiveSuggester::ProcessExternalSuggestions(
     const std::vector<AssistiveSuggestion>& suggestions,
+    const absl::optional<SuggestionsTextContext>& context,
     const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
   RecordSuggestionsMatch(suggestions);
 
@@ -516,20 +538,20 @@ void AssistiveSuggester::ProcessExternalSuggestions(
   }
 
   if (current_suggester_) {
-    current_suggester_->OnExternalSuggestionsUpdated(suggestions);
+    current_suggester_->OnExternalSuggestionsUpdated(suggestions, context);
     return;
   }
 
   if (IsTopResultMultiWord(suggestions)) {
     current_suggester_ = &multi_word_suggester_;
-    current_suggester_->OnExternalSuggestionsUpdated(suggestions);
+    current_suggester_->OnExternalSuggestionsUpdated(suggestions, context);
     RecordAssistiveCoverage(current_suggester_->GetProposeActionType());
   }
 }
 
 void AssistiveSuggester::RecordTextInputStateMetrics(
     const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
-  if (features::IsAssistiveMultiWordEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kAssistMultiWord)) {
     RecordMultiWordTextInputState(profile_->GetPrefs(), active_engine_id_,
                                   enabled_suggestions);
   }
@@ -667,7 +689,7 @@ void AssistiveSuggester::OnActivate(const std::string& engine_id) {
   active_engine_id_ = engine_id;
   longpress_diacritics_suggester_.SetEngineId(engine_id);
 
-  if (features::IsAssistiveMultiWordEnabled()) {
+  if (base::FeatureList::IsEnabled(features::kAssistMultiWord)) {
     RecordAssistiveUserPrefForMultiWord(
         IsPredictiveWritingPrefEnabled(profile_->GetPrefs(), engine_id));
   }

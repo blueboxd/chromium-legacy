@@ -11,6 +11,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.Callback;
@@ -176,7 +177,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                 snackbarManagerSupplier, activityType,
                 isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
                 statusBarColorProvider, intentRequestTracker, new OneshotSupplierImpl<>(),
-                ephemeralTabCoordinatorSupplier, false, backPressManager);
+                ephemeralTabCoordinatorSupplier, false, backPressManager, ()->null);
         // clang-format on
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;
@@ -391,5 +392,10 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
                     getToolbarManager().getMenuButtonView(),
                     mAppMenuCoordinator.getAppMenuHandler(), getPrimaryDisplaySizeInInches());
         }
+    }
+
+    @VisibleForTesting
+    CustomTabHeightStrategy getCustomTabSizeStrategyForTesting() {
+        return mCustomTabHeightStrategy;
     }
 }

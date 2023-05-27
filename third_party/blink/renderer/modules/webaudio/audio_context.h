@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_CONTEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_CONTEXT_H_
 
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-blink.h"
@@ -28,9 +29,10 @@ namespace blink {
 
 class AudioContextOptions;
 class AudioTimestamp;
-class Document;
+class ExecutionContext;
 class ExceptionState;
 class HTMLMediaElement;
+class LocalDOMWindow;
 class MediaElementAudioSourceNode;
 class MediaStream;
 class MediaStreamAudioDestinationNode;
@@ -46,11 +48,11 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioContext* Create(Document&,
+  static AudioContext* Create(ExecutionContext*,
                               const AudioContextOptions*,
                               ExceptionState&);
 
-  AudioContext(Document&,
+  AudioContext(LocalDOMWindow&,
                const WebAudioLatencyHint&,
                absl::optional<float> sample_rate,
                WebAudioSinkDescriptor sink_descriptor);

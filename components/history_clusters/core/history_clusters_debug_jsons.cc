@@ -87,6 +87,10 @@ base::Value::Dict GetDebugJSONDictForAnnotatedVisit(
   debug_visit.Set("visibility",
                   visit.content_annotations.model_annotations.visibility_score);
   debug_visit.Set("searchTerms", visit.content_annotations.search_terms);
+  if (!visit.content_annotations.search_terms.empty()) {
+    debug_visit.Set("hasRelatedSearches",
+                    !visit.content_annotations.related_searches.empty());
+  }
   debug_visit.Set("hasUrlKeyedImage",
                   visit.content_annotations.has_url_keyed_image);
   return debug_visit;
@@ -122,7 +126,7 @@ std::string GetDebugJSONForClusters(
   base::Value::List debug_clusters_list;
   for (const auto& cluster : clusters) {
     base::Value::Dict debug_cluster;
-
+    debug_cluster.Set("id", static_cast<int>(cluster.cluster_id));
     debug_cluster.Set("label", cluster.label.value_or(u""));
     base::Value::Dict debug_keyword_to_data_map;
     for (const auto& keyword_data_p : cluster.keyword_to_data_map) {
@@ -147,6 +151,9 @@ std::string GetDebugJSONForClusters(
       base::Value::Dict debug_visit =
           GetDebugJSONDictForAnnotatedVisit(visit.annotated_visit);
       debug_visit.Set("score", visit.score);
+      debug_visit.Set("interaction_state",
+                      history::ClusterVisit::InteractionStateToInt(
+                          visit.interaction_state));
       debug_visit.Set("site_engagement_score", visit.engagement_score);
 
       base::Value::List debug_duplicate_visits;

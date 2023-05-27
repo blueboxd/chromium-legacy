@@ -13,7 +13,7 @@
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
-#import "components/sync/driver/sync_service.h"
+#import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
@@ -91,6 +91,7 @@ NSString* const kDisplayedPromoCount = @"displayedPromoCount";
 NSString* const kRemindMeLaterPromoActionInteraction =
     @"remindMeLaterPromoActionInteraction";
 
+// TODO(crbug.com/1445240): Remove in M116+.
 // Key in storage containing a bool indicating if the user tapped on
 // button to open settings.
 NSString* const kOpenSettingsActionInteraction =
@@ -104,6 +105,11 @@ NSString* const kTimestampAppLastOpenedViaFirstPartyIntent =
 // Key in storage containing the timestamp of the last time the user pasted a
 // valid URL into the omnibox.
 NSString* const kTimestampLastValidURLPasted = @"TimestampLastValidURLPasted";
+
+// Key in storage containing the timestamp of the last time the user opened the
+// app via first-party intent.
+NSString* const kTimestampAppLaunchOnColdStart =
+    @"TimestampAppLaunchedOnColdStart";
 
 const char kDefaultBrowserFullscreenPromoExperimentChangeStringsGroupParam[] =
     "show_switch_description";
@@ -130,6 +136,10 @@ constexpr base::TimeDelta kPromosShortCoolDown = base::Days(3);
 
 // Maximum time range between first-party app launches to notify the FET.
 constexpr base::TimeDelta kMaximumTimeBetweenFirstPartyAppLaunches =
+    base::Days(7);
+
+// Maximum time range between app launches on cold start to notify the FET.
+constexpr base::TimeDelta kMaximumTimeBetweenAppColdStartLaunches =
     base::Days(7);
 
 // Maximum time range between valid user URL pastes to notify the FET.
@@ -318,8 +328,7 @@ base::TimeDelta ComputeCooldown() {
   // "No thanks" button in first run default browser screen. Short cool down
   // should be set only one time, so after the first run promo there is a short
   // cool down before the next promo and after it goes back to normal.
-  if (DisplayedPromoCount() < 2 && HasUserInteractedWithFirstRunPromoBefore() &&
-      !HasUserOpenedSettingsFromFirstRunPromo()) {
+  if (DisplayedPromoCount() < 2 && HasUserInteractedWithFirstRunPromoBefore()) {
     return kPromosShortCoolDown;
   }
   return kFullscreenPromoCoolDown;
@@ -366,6 +375,11 @@ void LogToFETUserPastedURLIntoOmnibox(feature_engagement::Tracker* tracker) {
 
   if (HasRecentValidURLPastesAndRecordsCurrentPaste()) {
     tracker->NotifyEvent(feature_engagement::events::kBlueDotPromoCriterionMet);
+
+    if (IsDefaultBrowserVideoPromoEnabled()) {
+      tracker->NotifyEvent(
+          feature_engagement::events::kDefaultBrowserVideoPromoConditionsMet);
+    }
   }
 }
 
@@ -466,12 +480,6 @@ bool HasUserInteractedWithFullscreenPromoBefore() {
 bool HasUserInteractedWithTailoredFullscreenPromoBefore() {
   NSNumber* number = GetObjectFromStorageForKey<NSNumber>(
       kUserHasInteractedWithTailoredFullscreenPromo);
-  return number.boolValue;
-}
-
-bool HasUserOpenedSettingsFromFirstRunPromo() {
-  NSNumber* number =
-      GetObjectFromStorageForKey<NSNumber>(kOpenSettingsActionInteraction);
   return number.boolValue;
 }
 
@@ -636,22 +644,33 @@ const NSArray<NSString*>* DefaultBrowserUtilsLegacyKeysForTesting() {
     kUserInteractedWithNonModalPromoCount,
     kDisplayedPromoCount,
     kRemindMeLaterPromoActionInteraction,
-    kOpenSettingsActionInteraction,
     // clang-format on
   ];
 
   return keysForTesting;
 }
 
+bool HasAppLaunchedOnColdStartAndRecordsLaunch() {
+  if (HasRecordedEventForKeyLessThanDelay(
+          kTimestampAppLaunchOnColdStart,
+          kMaximumTimeBetweenAppColdStartLaunches)) {
+    SetObjectIntoStorageForKey(kTimestampAppLaunchOnColdStart, [NSDate date]);
+    return YES;
+  }
+
+  // Add a new timestamp if the timestamp was never recorded or if it was
+  // recorded more than the maximum time between app cold starts.
+  SetObjectIntoStorageForKey(kTimestampAppLaunchOnColdStart, [NSDate date]);
+  return NO;
+}
+
 bool ShouldRegisterPromoWithPromoManager(bool is_signed_in) {
   // Consider showing the default browser promo if (1) launch is not after a
-  // crash, (2) chrome is not likely set as default browser, (3) the user
-  // skipped first run, (4) the user is not going through the First Run
-  // screens or first run was not recent, and (5) the user has not seen any
-  // default browser promo outside of the First Run screens.
+  // crash, (2) chrome is not likely set as default browser, (3) the user has
+  // not seen a default browser promo too recently, (4) the user is eligible
+  // for either the tailored or generic default browser promo.
   return GetApplicationContext()->WasLastShutdownClean() &&
-         !IsChromeLikelyDefaultBrowser() &&
-         !HasUserOpenedSettingsFromFirstRunPromo() && !UserInPromoCooldown() &&
+         !IsChromeLikelyDefaultBrowser() && !UserInPromoCooldown() &&
          (IsTailoredPromoEligibleUser(is_signed_in) ||
           IsGeneralPromoEligibleUser(is_signed_in));
 }
@@ -676,4 +695,25 @@ bool IsGeneralPromoEligibleUser(bool is_signed_in) {
        is_signed_in);
   return isGeneralPromoEligibleUser ||
          ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo();
+}
+
+bool IsVideoPromoEligibleUser(feature_engagement::Tracker* tracker) {
+  if (!IsDefaultBrowserVideoPromoEnabled()) {
+    return false;
+  }
+
+  if (!tracker ||
+      !tracker->WouldTriggerHelpUI(
+          feature_engagement::kIPHiOSDefaultBrowserVideoPromoTriggerFeature)) {
+    return false;
+  }
+
+  return true;
+}
+
+void CleanupUnusedStorage() {
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+
+  // TODO(crbug.com/1445240): Remove in M116+.
+  [defaults removeObjectForKey:kOpenSettingsActionInteraction];
 }

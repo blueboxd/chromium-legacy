@@ -16,6 +16,7 @@
 #include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory_test_api.h"
@@ -59,10 +60,12 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Field;
 using ::testing::Gt;
+using ::testing::Invoke;
 using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SizeIs;
+using ::testing::WithArg;
 
 namespace {
 
@@ -166,8 +169,13 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   // mojom::AutofillAgent:
   MOCK_METHOD(void,
-              TriggerReparseWithResponse,
+              TriggerFormExtractionWithResponse,
               (base::OnceCallback<void(bool)>),
+              (override));
+
+  MOCK_METHOD(void,
+              GetPotentialLastFourCombinationsForStandaloneCvc,
+              (base::OnceCallback<void(const std::vector<std::string>&)>),
               (override));
 
  private:
@@ -177,7 +185,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   }
 
   // mojom::AutofillAgent:
-  void TriggerReparse() override {}
+  void TriggerFormExtraction() override {}
 
   void FillOrPreviewForm(const FormData& form,
                          mojom::RendererFormDataAction action) override {
@@ -740,20 +748,60 @@ TEST_P(ContentAutofillDriverTest, SetShouldSuppressKeyboard) {
   EXPECT_TRUE(test_api(driver()).should_suppress_keyboard());
 }
 
-TEST_P(ContentAutofillDriverTest, TriggerReparseInAllFrames) {
+TEST_P(ContentAutofillDriverTest, TriggerFormExtractionInAllFrames) {
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  base::OnceCallback<void(bool)> trigger_reparse_finished_callback;
+  base::OnceCallback<void(bool)> form_extraction_finished_callback;
 
-  EXPECT_CALL(fake_agent_, TriggerReparseWithResponse)
-      .WillOnce(MoveArg<0>(&trigger_reparse_finished_callback));
-  driver()->browser_events().TriggerReparseInAllFrames(base::BindOnce(
+  EXPECT_CALL(fake_agent_, TriggerFormExtractionWithResponse)
+      .WillOnce(MoveArg<0>(&form_extraction_finished_callback));
+  driver()->browser_events().TriggerFormExtractionInAllFrames(base::BindOnce(
       [](base::RunLoop* run_loop, bool success) { run_loop->Quit(); },
       &run_loop));
   run_loop.RunUntilIdle();
 
-  EXPECT_FALSE(trigger_reparse_finished_callback.is_null());
-  std::move(trigger_reparse_finished_callback).Run(true);
+  EXPECT_FALSE(form_extraction_finished_callback.is_null());
+  std::move(form_extraction_finished_callback).Run(true);
+}
+
+TEST_P(ContentAutofillDriverTest, GetFourDigitCombinationsFromDOM_NoMatches) {
+  base::RunLoop run_loop;
+  auto cb =
+      [](base::OnceCallback<void(const std::vector<std::string>&)> callback) {
+        std::vector<std::string> matches;
+        std::move(callback).Run(matches);
+      };
+  EXPECT_CALL(fake_agent_, GetPotentialLastFourCombinationsForStandaloneCvc)
+      .WillOnce(WithArg<0>(Invoke(cb)));
+
+  std::vector<std::string> matches = {"dummy data"};
+  driver()->browser_events().GetFourDigitCombinationsFromDOM(
+      base::BindLambdaForTesting([&](const std::vector<std::string>& result) {
+        matches = result;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_TRUE(matches.empty());
+}
+
+TEST_P(ContentAutofillDriverTest,
+       GetFourDigitCombinationsFromDOM_SuccessfulMatches) {
+  base::RunLoop run_loop;
+  auto cb =
+      [](base::OnceCallback<void(const std::vector<std::string>&)> callback) {
+        std::vector<std::string> matches = {"1234"};
+        std::move(callback).Run(matches);
+      };
+  EXPECT_CALL(fake_agent_, GetPotentialLastFourCombinationsForStandaloneCvc)
+      .WillOnce(WithArg<0>(Invoke(cb)));
+  std::vector<std::string> matches;
+  driver()->browser_events().GetFourDigitCombinationsFromDOM(
+      base::BindLambdaForTesting([&](const std::vector<std::string>& result) {
+        matches = result;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_THAT(matches, ElementsAre("1234"));
 }
 
 INSTANTIATE_TEST_SUITE_P(ContentAutofillDriverTest,

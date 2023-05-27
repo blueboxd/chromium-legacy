@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MOJO_MEDIA_ROUTER_DEBUGGER_IMPL_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MOJO_MEDIA_ROUTER_DEBUGGER_IMPL_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -50,10 +51,12 @@ class MediaRouterDebuggerImpl : public MediaRouterDebugger,
                            OnMirroringStatsRtcpReportsDisabled);
 
   void NotifyGetMirroringStats(const base::Value::Dict& json_logs);
+  void LogMirroringStats();
 
   base::ObserverList<MirroringStatsObserver> observers_;
   bool is_rtcp_reports_enabled_ = false;
   mojo::ReceiverSet<mojom::Debugger> receivers_;
+  base::Value::Dict most_recent_mirroring_stats_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

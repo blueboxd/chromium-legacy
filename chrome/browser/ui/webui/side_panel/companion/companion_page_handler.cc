@@ -8,8 +8,8 @@
 #include "chrome/browser/companion/core/companion_metrics_logger.h"
 #include "chrome/browser/companion/core/companion_permission_utils.h"
 #include "chrome/browser/companion/core/companion_url_builder.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/companion/core/promo_handler.h"
-#include "chrome/browser/companion/core/signin_delegate.h"
 #include "chrome/browser/companion/text_finder/text_finder_manager.h"
 #include "chrome/browser/companion/text_finder/text_highlighter_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,7 +19,9 @@
 #include "chrome/browser/ui/side_panel/companion/companion_side_panel_controller_utils.h"
 #include "chrome/browser/ui/side_panel/companion/companion_tab_helper.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/webui/side_panel/companion/companion_side_panel_untrusted_ui.h"
+#include "chrome/browser/ui/webui/side_panel/companion/signin_delegate_impl.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/lens/buildflags.h"
@@ -41,20 +43,59 @@ CompanionPageHandler::CompanionPageHandler(
     : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
       companion_untrusted_ui_(companion_untrusted_ui),
-      signin_delegate_(SigninDelegate::Create(GetProfile())),
+      signin_delegate_(std::make_unique<SigninDelegateImpl>(
+          companion_untrusted_ui_->web_ui()->GetWebContents())),
       url_builder_(
           std::make_unique<CompanionUrlBuilder>(GetProfile()->GetPrefs(),
                                                 signin_delegate_.get())),
       promo_handler_(std::make_unique<PromoHandler>(GetProfile()->GetPrefs(),
-                                                    signin_delegate_.get(),
-                                                    this)) {}
+                                                    signin_delegate_.get())),
+      consent_helper_(unified_consent::UrlKeyedDataCollectionConsentHelper::
+                          NewAnonymizedDataCollectionConsentHelper(
+                              GetProfile()->GetPrefs())) {
+  consent_helper_->AddObserver(this);
+}
 
-CompanionPageHandler::~CompanionPageHandler() = default;
+CompanionPageHandler::~CompanionPageHandler() {
+  consent_helper_->RemoveObserver(this);
+}
 
-void CompanionPageHandler::PrimaryPageChanged(content::Page& page) {
+void CompanionPageHandler::OnUrlKeyedDataCollectionConsentStateChanged(
+    unified_consent::UrlKeyedDataCollectionConsentHelper* consent_helper) {
+  NotifyURLChanged(/*is_full_reload=*/true);
+}
+
+void CompanionPageHandler::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
+      !navigation_handle->HasCommitted()) {
+    return;
+  }
+
+  bool is_reload_or_explicit_navigation =
+      (navigation_handle->GetReloadType() != content::ReloadType::NONE) ||
+      (navigation_handle->GetPageTransition() &
+       ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+
+  // If the URL didn't change and it's not a manual reload, no need to refresh
+  // the companion.
+  if (page_url_.GetWithoutRef() ==
+          web_contents()->GetLastCommittedURL().GetWithoutRef() &&
+      !is_reload_or_explicit_navigation) {
+    return;
+  }
+
+  page_url_ = web_contents()->GetLastCommittedURL();
+
   ukm::SourceId ukm_source_id =
       web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
   metrics_logger_ = std::make_unique<CompanionMetricsLogger>(ukm_source_id);
+  auto* tab_helper =
+      companion::CompanionTabHelper::FromWebContents(web_contents());
+  auto open_trigger = tab_helper->GetAndResetMostRecentSidePanelOpenTrigger();
+  if (open_trigger.has_value()) {
+    metrics_logger_->RecordOpenTrigger(open_trigger);
+  }
 
   // Only notify the companion UI the page changed if we can share
   // information about the page by user consent.
@@ -62,6 +103,16 @@ void CompanionPageHandler::PrimaryPageChanged(content::Page& page) {
     return;
   }
   NotifyURLChanged(/*is_full_reload=*/false);
+}
+
+void CompanionPageHandler::OnVisibilityChanged(content::Visibility visibility) {
+  // Refresh companion whenever the tab is back to foreground state.
+  // Do this only when the user didn't have all the access permissions to begin
+  // with.
+  if (visibility == content::Visibility::VISIBLE &&
+      !MeetsAllAccessRequirements()) {
+    NotifyURLChanged(/*is_full_reload=*/true);
+  }
 }
 
 void CompanionPageHandler::ShowUI() {
@@ -74,16 +125,18 @@ void CompanionPageHandler::ShowUI() {
     auto* active_web_contents =
         GetBrowser()->tab_strip_model()->GetActiveWebContents();
     Observe(active_web_contents);
+    page_url_ = active_web_contents->GetLastCommittedURL();
     ukm::SourceId ukm_source_id =
         web_contents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
     metrics_logger_ = std::make_unique<CompanionMetricsLogger>(ukm_source_id);
     auto* helper =
         companion::CompanionTabHelper::FromWebContents(active_web_contents);
     helper->SetCompanionPageHandler(weak_ptr_factory_.GetWeakPtr());
+    metrics_logger_->RecordOpenTrigger(
+        helper->GetAndResetMostRecentSidePanelOpenTrigger());
+
     std::string initial_text_query = helper->GetTextQuery();
     if (!initial_text_query.empty()) {
-      metrics_logger_->RecordOpenTrigger(
-          companion::OpenTrigger::kContextMenuTextSearch);
       OnSearchTextQuery(initial_text_query);
       return;
     }
@@ -91,13 +144,10 @@ void CompanionPageHandler::ShowUI() {
     std::unique_ptr<side_panel::mojom::ImageQuery> image_query =
         helper->GetImageQuery();
     if (image_query) {
-      metrics_logger_->RecordOpenTrigger(
-          companion::OpenTrigger::kContextMenuImageSearch);
       OnImageQuery(*image_query);
       return;
     }
 
-    metrics_logger_->RecordOpenTrigger(companion::OpenTrigger::kOther);
     NotifyURLChanged(/*is_full_reload=*/true);
   }
 }
@@ -126,6 +176,14 @@ void CompanionPageHandler::NotifyURLChanged(bool is_full_reload) {
   }
 }
 
+bool CompanionPageHandler::MeetsAllAccessRequirements() {
+  auto* pref_service = GetProfile()->GetPrefs();
+  bool is_exps_opted_in = pref_service->GetBoolean(kExpsOptInStatusGrantedPref);
+  bool is_msbb_enabled =
+      IsUserPermittedToSharePageInfoWithCompanion(pref_service);
+  return signin_delegate_->IsSignedIn() && is_msbb_enabled && is_exps_opted_in;
+}
+
 void CompanionPageHandler::OnImageQuery(
     side_panel::mojom::ImageQuery image_query) {
   GURL modified_upload_url = url_builder_->AppendCompanionParamsToURL(
@@ -135,14 +193,11 @@ void CompanionPageHandler::OnImageQuery(
   page_->OnImageQuery(image_query.Clone());
 }
 
-GURL CompanionPageHandler::GetNewTabButtonUrl() {
-  return open_in_new_tab_url_;
-}
-
 void CompanionPageHandler::OnPromoAction(
     side_panel::mojom::PromoType promo_type,
-    side_panel::mojom::PromoAction promo_action) {
-  promo_handler_->OnPromoAction(promo_type, promo_action);
+    side_panel::mojom::PromoAction promo_action,
+    const absl::optional<GURL>& exps_promo_url) {
+  promo_handler_->OnPromoAction(promo_type, promo_action, exps_promo_url);
   metrics_logger_->OnPromoAction(promo_type, promo_action);
 }
 
@@ -151,10 +206,11 @@ void CompanionPageHandler::OnRegionSearchClicked() {
   CHECK(helper);
   helper->StartRegionSearch(web_contents(), /*use_fullscreen_capture=*/false);
   metrics_logger_->RecordUiSurfaceClicked(
-      side_panel::mojom::UiSurface::kRegionSearch);
+      side_panel::mojom::UiSurface::kRegionSearch, kInvalidPosition);
 }
 
 void CompanionPageHandler::OnExpsOptInStatusAvailable(bool is_exps_opted_in) {
+  metrics_logger_->OnExpsOptInStatusAvailable(is_exps_opted_in);
   auto* pref_service = GetProfile()->GetPrefs();
   pref_service->SetBoolean(kExpsOptInStatusGrantedPref, is_exps_opted_in);
   // Update default value for pref indicating whether companion should be
@@ -163,23 +219,27 @@ void CompanionPageHandler::OnExpsOptInStatusAvailable(bool is_exps_opted_in) {
 }
 
 void CompanionPageHandler::OnOpenInNewTabButtonURLChanged(
-    const ::GURL& url_to_open) {
+    const GURL& url_to_open) {
   auto* companion_helper =
       companion::CompanionTabHelper::FromWebContents(web_contents());
   DCHECK(companion_helper);
-  open_in_new_tab_url_ = url_to_open;
-  companion_helper->UpdateNewTabButtonState();
+  companion_helper->UpdateNewTabButton(url_to_open);
 }
 
 void CompanionPageHandler::RecordUiSurfaceShown(
     side_panel::mojom::UiSurface ui_surface,
-    uint32_t child_element_count) {
-  metrics_logger_->RecordUiSurfaceShown(ui_surface, child_element_count);
+    uint32_t ui_surface_position,
+    uint32_t child_element_available_count,
+    uint32_t child_element_shown_count) {
+  metrics_logger_->RecordUiSurfaceShown(ui_surface, ui_surface_position,
+                                        child_element_available_count,
+                                        child_element_shown_count);
 }
 
 void CompanionPageHandler::RecordUiSurfaceClicked(
-    side_panel::mojom::UiSurface ui_surface) {
-  metrics_logger_->RecordUiSurfaceClicked(ui_surface);
+    side_panel::mojom::UiSurface ui_surface,
+    int32_t click_position) {
+  metrics_logger_->RecordUiSurfaceClicked(ui_surface, click_position);
 }
 
 void CompanionPageHandler::OnCqCandidatesAvailable(
@@ -194,7 +254,9 @@ void CompanionPageHandler::OnCqCandidatesAvailable(
 }
 
 void CompanionPageHandler::OnPhFeedback(
-    side_panel::mojom::PhFeedback ph_feedback) {
+    side_panel::mojom::PhFeedback ph_feedback,
+    const absl::optional<GURL>& reporting_url) {
+  signin_delegate_->LoadUrlInNewTab(reporting_url.value());
   metrics_logger_->OnPhFeedback(ph_feedback);
 }
 
@@ -204,12 +266,6 @@ void CompanionPageHandler::OnCqJumptagClicked(
       web_contents()->GetPrimaryPage());
   text_highlighter_manager->CreateTextHighlighterAndRemoveExistingInstance(
       text_directive);
-}
-
-void CompanionPageHandler::EnableMsbb(bool enable_msbb) {
-  auto* consent_service =
-      UnifiedConsentServiceFactory::GetForProfile(GetProfile());
-  consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(enable_msbb);
 }
 
 Browser* CompanionPageHandler::GetBrowser() {

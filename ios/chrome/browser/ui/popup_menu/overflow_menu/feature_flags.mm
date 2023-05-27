@@ -22,8 +22,8 @@ BASE_FEATURE(kNewOverflowMenuShareChromeAction,
              "kNewOverflowMenuShareChromeAction",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kNewOverflowMenuAlternateIPH,
-             "NewOverflowMenuAlternateIPH",
+BASE_FEATURE(kOverflowMenuCustomization,
+             "OverflowMenuCustomization",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsNewOverflowMenuEnabled() {
@@ -44,7 +44,7 @@ bool IsNewOverflowMenuShareChromeActionEnabled() {
          base::FeatureList::IsEnabled(kNewOverflowMenuShareChromeAction);
 }
 
-bool IsNewOverflowMenuAlternateIPHEnabled() {
+bool IsOverflowMenuCustomizationEnabled() {
   return IsNewOverflowMenuEnabled() &&
-         base::FeatureList::IsEnabled(kNewOverflowMenuAlternateIPH);
+         base::FeatureList::IsEnabled(kOverflowMenuCustomization);
 }

@@ -29,6 +29,7 @@ static_library("power_metrics") {
       "smc_mac.h",
       "smc_mac.mm",
     ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
@@ -47,6 +48,13 @@ static_library("power_metrics") {
       "energy_metrics_provider_linux.h",
     ]
   }
+
+  if (is_win || is_linux) {
+    sources += [
+      "system_power_monitor.cc",
+      "system_power_monitor.h",
+    ]
+  }
 }
 
 source_set("unit_tests") {
@@ -56,6 +64,7 @@ source_set("unit_tests") {
 
   deps = [
     ":power_metrics",
+    "//base",
     "//testing/gtest",
   ]
 
@@ -64,9 +73,14 @@ source_set("unit_tests") {
       "energy_impact_mac_unittest.mm",
       "resource_coalition_mac_unittest.mm",
     ]
+    configs += [ "//build/config/compiler:enable_arc" ]
 
     data = [ "test/data/" ]
+  }
 
-    deps += [ "//base" ]
+  if (is_win || is_linux) {
+    sources += [ "system_power_monitor_unittest.cc" ]
+
+    deps += [ "//base/test:test_support" ]
   }
 }

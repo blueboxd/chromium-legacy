@@ -377,11 +377,12 @@ export class SettingsPaymentsSectionElement extends
   /**
    * Handles clicking on the "Edit" credit card button.
    */
-  private onMenuEditCreditCardClick_(e: Event) {
+  private async onMenuEditCreditCardClick_(e: Event) {
     e.preventDefault();
 
     if (this.activeCreditCard_!.metadata!.isLocal) {
-      this.showCreditCardDialog_ = true;
+      this.showCreditCardDialog_ =
+          await this.paymentsManager_.authenticateUserToEditLocalCard();
     } else {
       this.onRemoteEditCreditCardClick_();
     }
@@ -619,6 +620,18 @@ export class SettingsPaymentsSectionElement extends
     if (element) {
       focusWithoutInk(element);
     }
+  }
+
+  /**
+   * Checks for user auth before flipping the mandatory auth toggle.
+   */
+  private onMandatoryAuthToggleChange_(e: Event) {
+    const mandatoryAuthToggle = e.target as SettingsToggleButtonElement;
+    assert(mandatoryAuthToggle);
+    // The toggle is reset to the value when it was clicked.
+    // It will be flipped afterwards if the user auth is successful.
+    mandatoryAuthToggle.checked = !mandatoryAuthToggle.checked;
+    this.paymentsManager_.authenticateUserAndFlipMandatoryAuthToggle();
   }
 }
 

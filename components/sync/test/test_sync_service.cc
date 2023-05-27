@@ -10,9 +10,9 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/sync/base/progress_marker_map.h"
-#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/model/type_entities_count.h"
+#include "components/sync/service/sync_token_status.h"
 
 namespace syncer {
 
@@ -61,6 +61,11 @@ void TestSyncService::SetHasSyncConsent(bool has_sync_consent) {
   has_sync_consent_ = has_sync_consent;
 }
 
+void TestSyncService::SetSyncFeatureDisabledViaDashboard(
+    bool disabled_via_dashboard) {
+  sync_feature_disabled_via_dashboard_ = disabled_via_dashboard;
+}
+
 void TestSyncService::SetPersistentAuthError() {
   transport_state_ = TransportState::PAUSED;
 }
@@ -71,11 +76,13 @@ void TestSyncService::ClearAuthError() {
   }
 }
 
-void TestSyncService::SetFirstSetupComplete(bool first_setup_complete) {
-  if (first_setup_complete)
-    user_settings_.SetFirstSetupComplete();
-  else
-    user_settings_.ClearFirstSetupComplete();
+void TestSyncService::SetInitialSyncFeatureSetupComplete(
+    bool initial_sync_feature_setup_complete) {
+  if (initial_sync_feature_setup_complete) {
+    user_settings_.SetInitialSyncFeatureSetupComplete();
+  } else {
+    user_settings_.ClearInitialSyncFeatureSetupComplete();
+  }
 }
 
 void TestSyncService::SetFailedDataTypes(const ModelTypeSet& types) {
@@ -137,7 +144,7 @@ void TestSyncService::FireSyncCycleCompleted() {
 }
 
 void TestSyncService::SetSyncFeatureRequested() {
-  disable_reasons_.Remove(SyncService::DISABLE_REASON_USER_CHOICE);
+  sync_feature_disabled_via_dashboard_ = false;
 }
 
 TestSyncUserSettings* TestSyncService::GetUserSettings() {
@@ -190,6 +197,10 @@ base::Time TestSyncService::GetAuthErrorTime() const {
 bool TestSyncService::RequiresClientUpgrade() const {
   return detailed_sync_status_.sync_protocol_error.action ==
          syncer::UPGRADE_CLIENT;
+}
+
+bool TestSyncService::IsSyncFeatureDisabledViaDashboard() const {
+  return sync_feature_disabled_via_dashboard_;
 }
 
 std::unique_ptr<SyncSetupInProgressHandle>
@@ -290,6 +301,11 @@ void TestSyncService::RemoveProtocolEventObserver(
 void TestSyncService::GetAllNodesForDebugging(
     base::OnceCallback<void(base::Value::List)> callback) {}
 
+SyncService::ModelTypeDownloadStatus TestSyncService::GetDownloadStatusFor(
+    ModelType type) const {
+  return ModelTypeDownloadStatus::kUpToDate;
+}
+
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
 void TestSyncService::AddTrustedVaultDecryptionKeysFromWeb(
@@ -302,6 +318,10 @@ void TestSyncService::AddTrustedVaultRecoveryMethodFromWeb(
     const std::vector<uint8_t>& public_key,
     int method_type_hint,
     base::OnceClosure callback) {}
+
+bool TestSyncService::IsSyncFeatureConsideredRequested() const {
+  return HasSyncConsent();
+}
 
 void TestSyncService::Shutdown() {
   for (SyncServiceObserver& observer : observers_)

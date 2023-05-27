@@ -18,6 +18,10 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace bookmarks {
 
 NSString* const kUTTypeChromiumBookmarkDictionaryList =
@@ -100,7 +104,7 @@ void ConvertNSArrayToElements(
     NSNumber* node_id =
         base::mac::ObjCCast<NSNumber>(bookmark_dict[kChromiumBookmarkIdKey]);
     if (node_id)
-      new_node->set_id([node_id longLongValue]);
+      new_node->set_id(node_id.longLongValue);
 
     NSDictionary* meta_info = base::mac::ObjCCast<NSDictionary>(
         bookmark_dict[kChromiumBookmarkMetaInfoKey]);

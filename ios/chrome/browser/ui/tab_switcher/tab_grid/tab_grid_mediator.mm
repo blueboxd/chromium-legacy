@@ -33,10 +33,11 @@
 #import "ios/chrome/browser/shared/model/browser/browser_list.h"
 #import "ios/chrome/browser/shared/model/browser/browser_list_factory.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
+#import "ios/chrome/browser/shared/model/url/url_util.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
-#import "ios/chrome/browser/shared/public/commands/bookmark_add_command.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
@@ -55,8 +56,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
-#import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
@@ -875,13 +874,16 @@ void RecordTabGridCloseTabsCount(int count) {
 #pragma mark - TabCollectionDragDropHandler
 
 - (UIDragItem*)dragItemForItemWithID:(NSString*)itemID {
-  _dragItemID = itemID;
   web::WebState* webState = GetWebState(
       self.webStateList, WebStateSearchCriteria{
                              .identifier = itemID,
                              .pinned_state = PinnedState::kNonPinned,
                          });
   return CreateTabDragItem(webState);
+}
+
+- (void)dragWillBeginForItemWithID:(NSString*)itemID {
+  _dragItemID = [itemID copy];
 }
 
 - (void)dragSessionDidEnd {
@@ -1087,8 +1089,7 @@ void RecordTabGridCloseTabsCount(int count) {
 
   NSArray<URLWithTitle*>* URLs = [self urlsWithTitleFromItemIDs:items];
 
-  BookmarkAddCommand* command = [[BookmarkAddCommand alloc] initWithURLs:URLs];
-  [bookmarkHandler bookmark:command];
+  [bookmarkHandler bookmarkWithFolderChooser:URLs];
 }
 
 - (NSArray<URLWithTitle*>*)urlsWithTitleFromItemIDs:(NSArray<NSString*>*)items {

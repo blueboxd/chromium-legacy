@@ -123,6 +123,17 @@ TEST_F(AttributionReportNetworkSenderTest, LoadFlags) {
   EXPECT_TRUE(load_flags & net::LOAD_DISABLE_CACHE);
 }
 
+TEST_F(AttributionReportNetworkSenderTest, SameSite) {
+  auto report = DefaultEventLevelReport();
+  network_sender_->SendReport(report, /*is_debug_report=*/false,
+                              base::DoNothing());
+  EXPECT_EQ(test_url_loader_factory_.GetPendingRequest(0)->request.mode,
+            network::mojom::RequestMode::kSameOrigin);
+  EXPECT_EQ(
+      test_url_loader_factory_.GetPendingRequest(0)->request.request_initiator,
+      report.GetReportingOrigin());
+}
+
 TEST_F(AttributionReportNetworkSenderTest, Isolation) {
   auto report = DefaultEventLevelReport();
   network_sender_->SendReport(report, /*is_debug_report=*/false,
@@ -795,7 +806,7 @@ TEST_F(AttributionReportNetworkSenderTest,
           StoreSourceResult(
               StorableSource::Result::kInsufficientUniqueDestinationCapacity,
               /*min_fake_report_time=*/absl::nullopt,
-              /*max_destinations_per_source_site_reporting_origin=*/3));
+              /*max_destinations_per_source_site_reporting_site=*/3));
   ASSERT_TRUE(report);
 
   base::MockCallback<AttributionReportSender::DebugReportSentCallback> callback;
@@ -828,7 +839,7 @@ TEST_F(AttributionReportNetworkSenderTest,
           StoreSourceResult(
               StorableSource::Result::kInsufficientUniqueDestinationCapacity,
               /*min_fake_report_time=*/absl::nullopt,
-              /*max_destinations_per_source_site_reporting_origin=*/3));
+              /*max_destinations_per_source_site_reporting_site=*/3));
   ASSERT_TRUE(report);
 
   base::MockCallback<AttributionReportSender::DebugReportSentCallback> callback;

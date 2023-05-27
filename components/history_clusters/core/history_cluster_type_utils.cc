@@ -76,6 +76,8 @@ mojom::URLVisitPtr VisitToMojom(const TemplateURLService* template_url_service,
     visit_mojom->debug_info["visit_id"] =
         base::NumberToString(annotated_visit.visit_row.visit_id);
     visit_mojom->debug_info["score"] = base::NumberToString(visit.score);
+    visit_mojom->debug_info["interaction_state"] = base::NumberToString(
+        history::ClusterVisit::InteractionStateToInt(visit.interaction_state));
     visit_mojom->debug_info["visit_time"] =
         base::TimeToISO8601(visit.annotated_visit.visit_row.visit_time);
     visit_mojom->debug_info["foreground_duration"] =
@@ -123,6 +125,13 @@ mojom::ClusterPtr ClusterToMojom(const TemplateURLService* template_url_service,
       match_mojom->begin = match.first;
       match_mojom->end = match.second;
       cluster_mojom->label_match_positions.push_back(std::move(match_mojom));
+    }
+
+    if (GetConfig().named_new_tab_groups && cluster.raw_label &&
+        (cluster.label_source == history::Cluster::LabelSource::kSearch ||
+         cluster.label_source ==
+             history::Cluster::LabelSource::kContentDerivedEntity)) {
+      cluster_mojom->tab_group_name = base::UTF16ToUTF8(*cluster.raw_label);
     }
   }
 

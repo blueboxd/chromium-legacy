@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view.h"
 
 #import "base/notreached.h"
+#import "base/task/sequenced_task_runner.h"
 #import "base/time/time.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
 #import "ios/chrome/browser/shared/ui/elements/crossfade_label.h"
@@ -29,6 +30,7 @@ constexpr CGFloat kPadding = 15;
 
 // The spacing between the title and description labels.
 constexpr CGFloat kTextSpacing = 5;
+constexpr CGFloat kCompactTextSpacing = 0;
 
 // The duration of the icon / label crossfade animation.
 constexpr base::TimeDelta kAnimationDuration = base::Seconds(0.5);
@@ -45,6 +47,7 @@ constexpr NSString* const kSetUpListItemDefaultBrowserID =
     @"kSetUpListItemDefaultBrowserID";
 constexpr NSString* const kSetUpListItemAutofillID =
     @"kSetUpListItemAutofillID";
+constexpr NSString* const kSetUpListItemAllSetID = @"kSetUpListItemAllSetID";
 constexpr NSString* const kSetUpListItemFollowID = @"kSetUpListItemFollowID";
 
 // Returns an NSAttributedString with strikethrough.
@@ -54,6 +57,17 @@ NSAttributedString* Strikethrough(NSString* text) {
   return [[NSAttributedString alloc] initWithString:text attributes:attrs];
 }
 
+// Holds all the configurable attributes of this view.
+struct ViewConfig {
+  BOOL compact_layout;
+  int signin_sync_description;
+  int default_browser_description;
+  int autofill_description;
+  NSString* title_font;
+  NSString* description_font;
+  CGFloat text_spacing;
+};
+
 }  // namespace
 
 @implementation SetUpListItemView {
@@ -62,6 +76,7 @@ NSAttributedString* Strikethrough(NSString* text) {
   CrossfadeLabel* _description;
   UIStackView* _contentStack;
   UITapGestureRecognizer* _tapGestureRecognizer;
+  ViewConfig _config;
 }
 
 - (instancetype)initWithData:(SetUpListItemViewData*)data {
@@ -69,6 +84,29 @@ NSAttributedString* Strikethrough(NSString* text) {
   if (self) {
     _type = data.type;
     _complete = data.complete;
+    if (!data.compactLayout) {
+      // Normal ViewConfig.
+      _config = {
+          NO,
+          IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_DESCRIPTION,
+          IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_DESCRIPTION,
+          IDS_IOS_SET_UP_LIST_AUTOFILL_DESCRIPTION,
+          UIFontTextStyleSubheadline,
+          UIFontTextStyleFootnote,
+          kTextSpacing,
+      };
+    } else {
+      // ViewConfig for a compact layout.
+      _config = {
+          YES,
+          IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SHORT_DESCRIPTION,
+          IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_SHORT_DESCRIPTION,
+          IDS_IOS_SET_UP_LIST_AUTOFILL_SHORT_DESCRIPTION,
+          UIFontTextStyleFootnote,
+          UIFontTextStyleCaption2,
+          kCompactTextSpacing,
+      };
+    }
   }
   return self;
 }
@@ -94,11 +132,17 @@ NSAttributedString* Strikethrough(NSString* text) {
   }
 }
 
-- (void)markComplete {
+- (void)markCompleteWithCompletion:(ProceduralBlock)completion {
   if (_complete) {
     return;
   }
   _complete = YES;
+
+  // If this is called before the view is moved to superview, then we don't
+  // need to update / animate here.
+  if (self.subviews.count == 0) {
+    return;
+  }
   self.accessibilityTraits += UIAccessibilityTraitNotEnabled;
 
   // Set up the label crossfades.
@@ -110,6 +154,12 @@ NSAttributedString* Strikethrough(NSString* text) {
 
   [_icon playSparkleWithDuration:kAnimationSparkleDuration
                            delay:kAnimationSparkleDelay];
+
+  if (completion) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE, base::BindOnce(completion),
+        kAnimationSparkleDuration + kAnimationSparkleDelay);
+  }
 
   // Set up the main animation.
   __weak __typeof(self) weakSelf = self;
@@ -139,7 +189,9 @@ NSAttributedString* Strikethrough(NSString* text) {
     self.accessibilityTraits += UIAccessibilityTraitNotEnabled;
   }
 
-  _icon = [[SetUpListItemIcon alloc] initWithType:_type complete:_complete];
+  _icon = [[SetUpListItemIcon alloc] initWithType:_type
+                                         complete:_complete
+                                    compactLayout:_config.compact_layout];
   _title = [self createTitle];
   _description = [self createDescription];
 
@@ -148,7 +200,7 @@ NSAttributedString* Strikethrough(NSString* text) {
       [[UIStackView alloc] initWithArrangedSubviews:@[ _title, _description ]];
   textStack.axis = UILayoutConstraintAxisVertical;
   textStack.translatesAutoresizingMaskIntoConstraints = NO;
-  textStack.spacing = kTextSpacing;
+  textStack.spacing = _config.text_spacing;
 
   // Add a horizontal stack to contain the icon(s) and the text stack.
   _contentStack =
@@ -159,11 +211,13 @@ NSAttributedString* Strikethrough(NSString* text) {
   [self addSubview:_contentStack];
   AddSameConstraints(_contentStack, self);
 
-  // Set up the tap gesture recognizer.
-  _tapGestureRecognizer =
-      [[UITapGestureRecognizer alloc] initWithTarget:self
-                                              action:@selector(handleTap:)];
-  [self addGestureRecognizer:_tapGestureRecognizer];
+  if (_type != SetUpListItemType::kAllSet) {
+    // Set up the tap gesture recognizer.
+    _tapGestureRecognizer =
+        [[UITapGestureRecognizer alloc] initWithTarget:self
+                                                action:@selector(handleTap:)];
+    [self addGestureRecognizer:_tapGestureRecognizer];
+  }
 }
 
 // Creates the title label.
@@ -171,7 +225,7 @@ NSAttributedString* Strikethrough(NSString* text) {
   CrossfadeLabel* label = [[CrossfadeLabel alloc] init];
   label.text = [self titleText];
   label.translatesAutoresizingMaskIntoConstraints = NO;
-  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+  label.font = [UIFont preferredFontForTextStyle:_config.title_font];
   if (_complete) {
     label.textColor = [UIColor colorNamed:kTextQuaternaryColor];
     label.attributedText = Strikethrough(label.text);
@@ -189,7 +243,7 @@ NSAttributedString* Strikethrough(NSString* text) {
   label.numberOfLines = 0;
   label.lineBreakMode = NSLineBreakByWordWrapping;
   label.translatesAutoresizingMaskIntoConstraints = NO;
-  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  label.font = [UIFont preferredFontForTextStyle:_config.description_font];
   if (_complete) {
     label.textColor = [UIColor colorNamed:kTextQuaternaryColor];
     label.attributedText = Strikethrough(label.text);
@@ -208,10 +262,11 @@ NSAttributedString* Strikethrough(NSString* text) {
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE);
     case SetUpListItemType::kAutofill:
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_AUTOFILL_TITLE);
+    case SetUpListItemType::kAllSet:
+      return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_ALL_SET_TITLE);
     case SetUpListItemType::kFollow:
       // TODO(crbug.com/1428070): Add a Follow item to the Set Up List.
-      NOTREACHED();
-      return @"";
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -219,17 +274,16 @@ NSAttributedString* Strikethrough(NSString* text) {
 - (NSString*)descriptionText {
   switch (_type) {
     case SetUpListItemType::kSignInSync:
-      return l10n_util::GetNSString(
-          IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_DESCRIPTION);
+      return l10n_util::GetNSString(_config.signin_sync_description);
     case SetUpListItemType::kDefaultBrowser:
-      return l10n_util::GetNSString(
-          IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_DESCRIPTION);
+      return l10n_util::GetNSString(_config.default_browser_description);
     case SetUpListItemType::kAutofill:
-      return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_AUTOFILL_DESCRIPTION);
+      return l10n_util::GetNSString(_config.autofill_description);
+    case SetUpListItemType::kAllSet:
+      return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_ALL_SET_DESCRIPTION);
     case SetUpListItemType::kFollow:
       // TODO(crbug.com/1428070): Add a Follow item to the Set Up List.
-      NOTREACHED();
-      return @"";
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -241,6 +295,8 @@ NSAttributedString* Strikethrough(NSString* text) {
       return kSetUpListItemDefaultBrowserID;
     case SetUpListItemType::kAutofill:
       return kSetUpListItemAutofillID;
+    case SetUpListItemType::kAllSet:
+      return kSetUpListItemAllSetID;
     case SetUpListItemType::kFollow:
       return kSetUpListItemFollowID;
   }

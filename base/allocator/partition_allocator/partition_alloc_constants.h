@@ -270,10 +270,10 @@ enum pool_handle : unsigned {
 
 // New pool_handles will be added here.
 
-#if BUILDFLAG(ENABLE_PKEYS)
-  // The pkey pool must come last since we pkey_mprotect its entry in the
-  // metadata tables, e.g. AddressPoolManager::aligned_pools_
-  kPkeyPoolHandle,
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+  // The thread isolated pool must come last since we write-protect its entry in
+  // the metadata tables, e.g. AddressPoolManager::aligned_pools_
+  kThreadIsolatedPoolHandle,
 #endif
   kMaxPoolHandle
 };
@@ -293,7 +293,8 @@ constexpr size_t kNumPools = kMaxPoolHandle - 1;
 // When pointer compression is enabled, we cannot use large pools (at most
 // 8GB for each of the glued pools).
 #if BUILDFLAG(HAS_64_BIT_POINTERS)
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || PA_CONFIG(POINTER_COMPRESSION)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS) || \
+    BUILDFLAG(ENABLE_POINTER_COMPRESSION)
 constexpr size_t kPoolMaxSize = 8 * kGiB;
 #else
 constexpr size_t kPoolMaxSize = 16 * kGiB;
@@ -303,18 +304,16 @@ constexpr size_t kPoolMaxSize = 4 * kGiB;
 #endif
 constexpr size_t kMaxSuperPagesInPool = kPoolMaxSize / kSuperPageSize;
 
-#if BUILDFLAG(ENABLE_PKEYS)
-static_assert(
-    kPkeyPoolHandle == kNumPools,
-    "The pkey pool must come last since we pkey_mprotect its metadata.");
+#if BUILDFLAG(ENABLE_THREAD_ISOLATION)
+static_assert(kThreadIsolatedPoolHandle == kNumPools,
+              "The thread isolated pool must come last since we write-protect "
+              "its metadata.");
 #endif
 
 // Slots larger than this size will not receive MTE protection. Pages intended
 // for allocations larger than this constant should not be backed with PROT_MTE
 // (which saves shadow tag memory). We also save CPU cycles by skipping tagging
 // of large areas which are less likely to benefit from MTE protection.
-// TODO(Richard.Townsend@arm.com): adjust RecommitSystemPagesForData to skip
-// PROT_MTE.
 constexpr size_t kMaxMemoryTaggingSize = 1024;
 
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
@@ -476,17 +475,6 @@ constexpr size_t kInvalidBucketSize = 1;
 #if PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 // Requested size that require the hack.
 constexpr size_t kMac11MallocSizeHackRequestedSize = 32;
-// Usable size for allocations that require the hack.
-constexpr size_t kMac11MallocSizeHackUsableSize =
-#if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) || \
-    PA_CONFIG(REF_COUNT_STORE_REQUESTED_SIZE) || \
-    PA_CONFIG(REF_COUNT_CHECK_COOKIE)
-    40;
-#else
-    44;
-#endif  // BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) ||
-        // PA_CONFIG(REF_COUNT_STORE_REQUESTED_SIZE) ||
-        // PA_CONFIG(REF_COUNT_CHECK_COOKIE)
 #endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 }  // namespace internal
 

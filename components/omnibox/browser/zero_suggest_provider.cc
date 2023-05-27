@@ -249,20 +249,9 @@ bool StoreRemoteResponse(const std::string& response_json,
   const std::string page_url = result_type != ResultType::kRemoteNoURL
                                    ? input.current_url().spec()
                                    : std::string();
-
-  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestInMemoryCaching)) {
-    auto* zero_suggest_cache_service = client->GetZeroSuggestCacheService();
-    if (zero_suggest_cache_service != nullptr) {
-      zero_suggest_cache_service->StoreZeroSuggestResponse(page_url,
-                                                           response_json);
-      LogEvent(Event::kRemoteResponseCached, result_type, is_prefetch);
-    }
-  } else {
-    omnibox::SetUserPreferenceForZeroSuggestCachedResponse(
-        client->GetPrefs(), page_url, response_json);
-    LogEvent(Event::kRemoteResponseCached, result_type, is_prefetch);
-  }
-
+  client->GetZeroSuggestCacheService()->StoreZeroSuggestResponse(page_url,
+                                                                 response_json);
+  LogEvent(Event::kRemoteResponseCached, result_type, is_prefetch);
   return true;
 }
 
@@ -283,24 +272,13 @@ bool ReadStoredResponse(const AutocompleteProviderClient* client,
     return false;
   }
 
-  std::string response_json;
   // Force use of empty page URL when given an input with "No URL" result type.
   const std::string page_url = result_type != ResultType::kRemoteNoURL
                                    ? input.current_url().spec()
                                    : std::string();
-
-  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestInMemoryCaching)) {
-    auto* zero_suggest_cache_service = client->GetZeroSuggestCacheService();
-    if (zero_suggest_cache_service != nullptr) {
-      ZeroSuggestCacheService::CacheEntry entry =
-          zero_suggest_cache_service->ReadZeroSuggestResponse(page_url);
-      response_json = entry.response_json;
-    }
-  } else {
-    response_json = omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
-        client->GetPrefs(), page_url);
-  }
-
+  std::string response_json = client->GetZeroSuggestCacheService()
+                                  ->ReadZeroSuggestResponse(page_url)
+                                  .response_json;
   if (response_json.empty()) {
     return false;
   }
@@ -397,8 +375,7 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
 void ZeroSuggestProvider::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(omnibox::kZeroSuggestCachedResults,
                                std::string());
-  registry->RegisterDictionaryPref(omnibox::kZeroSuggestCachedResultsWithURL,
-                                   base::Value::Dict());
+  registry->RegisterDictionaryPref(omnibox::kZeroSuggestCachedResultsWithURL);
 }
 
 bool ZeroSuggestProvider::AllowZeroPrefixSuggestions(
@@ -554,17 +531,7 @@ void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
   // Remove the deleted match from the cache, so it is not shown to the user
   // again. Since the deleted result might have been surfaced as a suggestion on
   // both NTP and SRP/Web, blow away the entire cache.
-  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestInMemoryCaching)) {
-    auto* zero_suggest_cache_service = client()->GetZeroSuggestCacheService();
-    if (zero_suggest_cache_service) {
-      zero_suggest_cache_service->ClearCache();
-    }
-  } else {
-    client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
-                                    std::string());
-    client()->GetPrefs()->SetDict(omnibox::kZeroSuggestCachedResultsWithURL,
-                                  base::Value::Dict());
-  }
+  client()->GetZeroSuggestCacheService()->ClearCache();
 
   BaseSearchProvider::DeleteMatch(match);
 }
@@ -696,6 +663,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
       AutocompleteMatch::SanitizeString(navigation.description());
   match.description_class = ClassifyTermMatches({}, match.description.length(),
                                                 0, ACMatchClassification::NONE);
+  match.suggest_type = navigation.suggest_type();
   for (const int subtype : navigation.subtypes()) {
     match.subtypes.insert(SuggestSubtypeForNumber(subtype));
   }

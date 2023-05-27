@@ -62,8 +62,7 @@ class PasswordManagerFeaturesUtilTestBase {
     sync_service_.SetHasSyncConsent(false);
     sync_service_.SetTransportState(
         syncer::SyncService::TransportState::ACTIVE);
-    sync_service_.SetDisableReasons(
-        {syncer::SyncService::DisableReason::DISABLE_REASON_USER_CHOICE});
+    sync_service_.SetDisableReasons({});
     ASSERT_FALSE(sync_service_.IsSyncFeatureEnabled());
   }
 
@@ -75,7 +74,7 @@ class PasswordManagerFeaturesUtilTestBase {
     sync_service_.SetTransportState(
         syncer::SyncService::TransportState::ACTIVE);
     sync_service_.SetDisableReasons({});
-    sync_service_.SetFirstSetupComplete(true);
+    sync_service_.SetInitialSyncFeatureSetupComplete(true);
     ASSERT_TRUE(sync_service_.IsSyncFeatureEnabled());
   }
 

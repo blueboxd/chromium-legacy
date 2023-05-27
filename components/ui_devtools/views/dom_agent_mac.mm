@@ -6,27 +6,33 @@
 
 #import <AppKit/AppKit.h>
 
+#include "base/functional/bind.h"
 #include "base/ranges/algorithm.h"
 #include "components/ui_devtools/views/widget_element.h"
 #include "ui/views/widget/native_widget_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ui_devtools {
 
-DOMAgentMac::DOMAgentMac() {}
+DOMAgentMac::DOMAgentMac() = default;
 
 DOMAgentMac::~DOMAgentMac() {
   CHECK(!IsInObserverList());
 }
 
 protocol::Response DOMAgentMac::enable() {
-  views::NativeWidgetMac::SetInitNativeWidgetCallback(base::BindRepeating(
-      &DOMAgentMac::OnNativeWidgetAdded, base::Unretained(this)));
+  init_native_widget_subscription_ =
+      views::NativeWidgetMac::RegisterInitNativeWidgetCallback(
+          base::BindRepeating(&DOMAgentMac::OnNativeWidgetAdded,
+                              base::Unretained(this)));
   return DOMAgent::enable();
 }
 
 protocol::Response DOMAgentMac::disable() {
-  views::NativeWidgetMac::SetInitNativeWidgetCallback(
-      base::RepeatingCallback<void(views::NativeWidgetMac*)>());
+  init_native_widget_subscription_ = {};
   for (views::Widget* widget : roots_)
     widget->RemoveObserver(this);
   roots_.clear();
@@ -67,7 +73,7 @@ std::unique_ptr<protocol::DOM::Node> DOMAgentMac::BuildTreeForWindow(
 }
 
 void DOMAgentMac::InitializeRootsFromOpenWindows() {
-  for (NSWindow* window : [NSApp windows]) {
+  for (NSWindow* window in NSApp.windows) {
     if (views::Widget* widget =
             views::Widget::GetWidgetForNativeWindow(window)) {
       widget->AddObserver(this);

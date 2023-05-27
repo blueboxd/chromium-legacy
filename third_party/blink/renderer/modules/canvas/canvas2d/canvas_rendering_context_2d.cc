@@ -167,24 +167,6 @@ NoAllocDirectCallHost* CanvasRenderingContext2D::AsNoAllocDirectCallHost() {
 
 CanvasRenderingContext2D::~CanvasRenderingContext2D() = default;
 
-void CanvasRenderingContext2D::ValidateStateStackWithCanvas(
-    const cc::PaintCanvas* canvas) const {
-#if DCHECK_IS_ON()
-  if (canvas) {
-    // The canvas should always have an initial save frame, to support
-    // resetting the top level matrix and clip.
-    DCHECK_GT(canvas->getSaveCount(), 1);
-
-    if (context_lost_mode_ == kNotLostContext) {
-      DCHECK_EQ(static_cast<size_t>(canvas->getSaveCount()),
-                state_stack_.size() + 1);
-    }
-  }
-#endif
-  CHECK(state_stack_.front()
-            .Get());  // Temporary for investigating crbug.com/648510
-}
-
 bool CanvasRenderingContext2D::IsAccelerated() const {
   Canvas2DLayerBridge* layer_bridge = canvas()->GetCanvas2DLayerBridge();
   if (!layer_bridge)
@@ -513,7 +495,8 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
         CanvasOps::kSetFont, IdentifiabilityBenignStringToken(new_font));
   }
 
-  canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
+  canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(
+      canvas(), DocumentUpdateReason::kCanvas);
 
   // The following early exit is dependent on the cache not being empty
   // because an empty cache may indicate that a style change has occured
@@ -743,8 +726,10 @@ static inline TextDirection ToTextDirection(
 
 String CanvasRenderingContext2D::direction() const {
   if (GetState().GetDirection() ==
-      CanvasRenderingContext2DState::kDirectionInherit)
-    canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
+      CanvasRenderingContext2DState::kDirectionInherit) {
+    canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(
+        canvas(), DocumentUpdateReason::kCanvas);
+  }
   return ToTextDirection(GetState().GetDirection(), canvas()) ==
                  TextDirection::kRtl
              ? kRtlDirectionString
@@ -949,7 +934,8 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   if (!canvas()->GetDocument().GetFrame())
     return MakeGarbageCollected<TextMetrics>();
 
-  canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
+  canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(
+      canvas(), DocumentUpdateReason::kCanvas);
 
   const Font& font = AccessFont();
 
@@ -1004,7 +990,8 @@ void CanvasRenderingContext2D::DrawTextInternal(
   // accessFont needs the style to be up to date, but updating style can cause
   // script to run, (e.g. due to autofocus) which can free the canvas (set size
   // to 0, for example), so update style before grabbing the PaintCanvas.
-  canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
+  canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(
+      canvas(), DocumentUpdateReason::kCanvas);
 
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
@@ -1250,6 +1237,11 @@ void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
 // once always accelerate fully lands.
 void CanvasRenderingContext2D::DisableAcceleration() {
   canvas()->DisableAcceleration();
+}
+
+bool CanvasRenderingContext2D::ShouldDisableAccelerationBecauseOfReadback()
+    const {
+  return canvas()->ShouldDisableAccelerationBecauseOfReadback();
 }
 
 bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {

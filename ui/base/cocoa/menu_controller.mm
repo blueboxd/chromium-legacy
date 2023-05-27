@@ -4,6 +4,7 @@
 
 #import "ui/base/cocoa/menu_controller.h"
 
+#include "base/apple/owned_objc.h"
 #include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/mac/foundation_util.h"
@@ -259,12 +260,10 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
     if (_useWithPopUpButtonCell) {
       ui::Accelerator accelerator;
       if (model->GetAcceleratorAt(index, &accelerator)) {
-        NSString* key_equivalent;
-        NSUInteger modifier_mask;
-        GetKeyEquivalentAndModifierMaskFromAccelerator(
-            accelerator, &key_equivalent, &modifier_mask);
-        [item setKeyEquivalent:key_equivalent];
-        [item setKeyEquivalentModifierMask:modifier_mask];
+        KeyEquivalentAndModifierMask* equivalent =
+            GetKeyEquivalentAndModifierMaskFromAccelerator(accelerator);
+        [item setKeyEquivalent:equivalent.keyEquivalent];
+        [item setKeyEquivalentModifierMask:equivalent.modifierMask];
       }
     }
   }
@@ -327,8 +326,9 @@ bool MenuHasVisibleItems(const ui::MenuModel* model) {
     ui::ElementTrackerMac::GetInstance()->NotifyMenuItemActivated([sender menu],
                                                                   identifier);
   }
-  model->ActivatedAt(modelIndex,
-                     ui::EventFlagsFromNative([NSApp currentEvent]));
+  model->ActivatedAt(
+      modelIndex,
+      ui::EventFlagsFromNative(base::apple::OwnedNSEvent(NSApp.currentEvent)));
   // Note: |self| may be destroyed by the call to ActivatedAt().
 }
 

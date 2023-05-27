@@ -49,8 +49,7 @@ using user_manager::User;
 using user_manager::UserManager;
 using version_info::Channel;
 
-namespace crosapi {
-namespace browser_util {
+namespace crosapi::browser_util {
 namespace {
 
 bool g_profile_migration_completed_for_test = false;
@@ -136,6 +135,28 @@ LacrosAvailability GetCachedLacrosAvailability() {
   // It could happen in some browser tests that value is not cached. Return
   // default in that case.
   return LacrosAvailability::kUserChoice;
+}
+
+// Returns appropriate LacrosAvailability.
+LacrosAvailability GetLacrosAvailability(const user_manager::User* user,
+                                         PolicyInitState policy_init_state) {
+  switch (policy_init_state) {
+    case PolicyInitState::kBeforeInit:
+      // If the value is needed before policy initialization, actually,
+      // this should be the case where ash process was restarted, and so
+      // the calculated value in the previous session should be carried
+      // via command line flag.
+      // See also LacrosAvailabilityPolicyObserver how it will be propergated.
+      return ash::standalone_browser::
+          DetermineLacrosAvailabilityFromPolicyValue(
+              user, base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                        kLacrosAvailabilityPolicySwitch));
+
+    case PolicyInitState::kAfterInit:
+      // If policy initialization is done, the calculated value should be
+      // cached.
+      return GetCachedLacrosAvailability();
+  }
 }
 
 // Gets called from IsLacrosAllowedToBeEnabled with primary user or from
@@ -302,15 +323,12 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kDataVerPref);
-  registry->RegisterDictionaryPref(kProfileMigrationCompletedForUserPref,
-                                   base::Value::Dict());
-  registry->RegisterDictionaryPref(kProfileMoveMigrationCompletedForUserPref,
-                                   base::Value::Dict());
+  registry->RegisterDictionaryPref(kProfileMigrationCompletedForUserPref);
+  registry->RegisterDictionaryPref(kProfileMoveMigrationCompletedForUserPref);
   registry->RegisterDictionaryPref(
-      kProfileDataBackwardMigrationCompletedForUserPref, base::Value::Dict());
+      kProfileDataBackwardMigrationCompletedForUserPref);
   registry->RegisterListPref(kGotoFilesPref);
-  registry->RegisterDictionaryPref(kProfileMigrationCompletionTimeForUserPref,
-                                   base::Value::Dict());
+  registry->RegisterDictionaryPref(kProfileMigrationCompletionTimeForUserPref);
 }
 
 base::FilePath GetUserDataDir() {
@@ -395,19 +413,8 @@ bool IsLacrosEnabledForMigration(const User* user,
     return true;
   }
 
-  LacrosAvailability lacros_availability;
-  if (policy_init_state == PolicyInitState::kBeforeInit) {
-    // Before Policy is initialized, the value won't be available.
-    // So, we'll use the value preserved in the feature flags.
-    // See also LacrosAvailabilityPolicyObserver how it will be propergated.
-    lacros_availability =
-        ash::standalone_browser::DetermineLacrosAvailabilityFromPolicyValue(
-            user, base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                      kLacrosAvailabilityPolicySwitch));
-  } else {
-    DCHECK_EQ(policy_init_state, PolicyInitState::kAfterInit);
-    lacros_availability = GetCachedLacrosAvailability();
-  }
+  LacrosAvailability lacros_availability =
+      GetLacrosAvailability(user, policy_init_state);
 
   if (!IsLacrosAllowedToBeEnabledWithUser(user, lacros_availability))
     return false;
@@ -504,19 +511,8 @@ bool IsAshWebBrowserEnabledForMigration(const user_manager::User* user,
   if (!IsLacrosPrimaryBrowserForMigration(user, policy_init_state))
     return true;
 
-  LacrosAvailability lacros_availability;
-  if (policy_init_state == PolicyInitState::kBeforeInit) {
-    // Before Policy is initialized, the value won't be available.
-    // So, we'll use the value preserved in the feature flags.
-    // See also LacrosAvailabilityPolicyObserver how it will be propergated.
-    lacros_availability =
-        ash::standalone_browser::DetermineLacrosAvailabilityFromPolicyValue(
-            user, base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                      kLacrosAvailabilityPolicySwitch));
-  } else {
-    DCHECK_EQ(policy_init_state, PolicyInitState::kAfterInit);
-    lacros_availability = GetCachedLacrosAvailability();
-  }
+  LacrosAvailability lacros_availability =
+      GetLacrosAvailability(user, policy_init_state);
 
   switch (lacros_availability) {
     case LacrosAvailability::kUserChoice:
@@ -593,19 +589,8 @@ bool IsLacrosPrimaryBrowserForMigration(const user_manager::User* user,
     return true;
   }
 
-  LacrosAvailability lacros_availability;
-  if (policy_init_state == PolicyInitState::kBeforeInit) {
-    // Before Policy is initialized, the value won't be available.
-    // So, we'll use the value preserved in the feature flags.
-    // See also LacrosAvailabilityPolicyObserver how it will be propergated.
-    lacros_availability =
-        ash::standalone_browser::DetermineLacrosAvailabilityFromPolicyValue(
-            user, base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                      kLacrosAvailabilityPolicySwitch));
-  } else {
-    DCHECK_EQ(policy_init_state, PolicyInitState::kAfterInit);
-    lacros_availability = GetCachedLacrosAvailability();
-  }
+  LacrosAvailability lacros_availability =
+      GetLacrosAvailability(user, policy_init_state);
 
   if (!IsLacrosPrimaryBrowserAllowedForMigration(user, lacros_availability))
     return false;
@@ -1255,5 +1240,4 @@ SetLacrosPrimaryBrowserForTest(  // IN-TEST
       &g_lacros_primary_browser_for_test, value);
 }
 
-}  // namespace browser_util
-}  // namespace crosapi
+}  // namespace crosapi::browser_util

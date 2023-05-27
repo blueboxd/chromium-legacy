@@ -330,9 +330,9 @@ class CookieSettingsTest
 
   // Set a cookie with JavaScript.
   void JSWriteCookie(Browser* browser) {
-    bool rv = content::ExecuteScript(
-        browser->tab_strip_model()->GetActiveWebContents(),
-        "document.cookie = 'name=Good;Max-Age=3600'");
+    bool rv =
+        content::ExecJs(browser->tab_strip_model()->GetActiveWebContents(),
+                        "document.cookie = 'name=Good;Max-Age=3600'");
     CHECK(rv);
   }
 
@@ -1134,7 +1134,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RendererUpdateWhilePendingCommit) {
       }));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), second_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      ui_test_utils::BROWSER_TEST_NO_WAIT);
   delayer.Wait();
 
   EXPECT_TRUE(PageSpecificContentSettings::GetForFrame(

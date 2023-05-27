@@ -448,59 +448,34 @@ STDMETHODIMP MediaFoundationClearKeyDecryptor::ProcessMessage(
   DVLOG_FUNC(3) << "message=" << MessageTypeToString(message);
   RETURN_IF_FAILED(GetShutdownStatus());
 
-  // TODO(crbug.com/1443014): Remove unused MFT message types here once the
-  // encrypted video playback and rendering is fully working.
   switch (message) {
-    case MFT_MESSAGE_COMMAND_DRAIN:
-      // A synchronous MFT can ignore this message and return S_OK since:
-      //  - The MFT never stores more than one input sample at a time.
-      //  - Each input sample produces a single output sample.
-      break;
-    case MFT_MESSAGE_COMMAND_MARKER:
-      // This message applies only to Asynchronous MFTs.
-      break;
     case MFT_MESSAGE_COMMAND_FLUSH:
       // Flush all stored data. MFT should discard any media samples it is
       // holding.
       FlushAllStoredData();
-      break;
-    case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
-      // The streaming is about to start. The MFT can respond by allocating
-      // buffers or other resources before the first call to ProcessInput().
-      break;
-    case MFT_MESSAGE_NOTIFY_END_STREAMING:
-      // The streaming is about to end. The MFT can respond to this message by
-      // releasing buffers and other resources. The MFT does not flush input
-      // data or reset the media types in response to this message.
-      break;
-    case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
-      // The first sample is about to be processed. A synchronous MFT is not
-      // required to respond to the message.
-      break;
-    case MFT_MESSAGE_NOTIFY_END_OF_STREAM:
-      // An input stream has ended.
       break;
     case MFT_MESSAGE_NOTIFY_RELEASE_RESOURCES:
       // When we are told to release resources we need to flush all output
       // samples.
       FlushAllStoredData();
       break;
-    case MFT_MESSAGE_NOTIFY_REACQUIRE_RESOURCES:
-      break;
+    // Message types not required for synchronous MFTs to respond.
+    case MFT_MESSAGE_COMMAND_DRAIN:
+    case MFT_MESSAGE_COMMAND_MARKER:
+    case MFT_MESSAGE_NOTIFY_BEGIN_STREAMING:
+    case MFT_MESSAGE_NOTIFY_END_STREAMING:
+    case MFT_MESSAGE_NOTIFY_START_OF_STREAM:
+    case MFT_MESSAGE_NOTIFY_END_OF_STREAM:
+    // Applies only if `MF_SA_D3D_AWARE` attribute is set to TRUE.
     case MFT_MESSAGE_SET_D3D_MANAGER:
-      // This message applies to video transforms only if the MF_SA_D3D_AWARE
-      // attribute is set to TRUE.
-      break;
+    // Applies only if `MFT_POLICY_SET_AWARE` attribute is set to TRUE.
     case MFT_MESSAGE_NOTIFY_EVENT:
-      // Need to handle initial or dynamic policy notifications when the media
-      // event type is `MEPolicySet` when we set `MFT_POLICY_SET_AWARE`
-      // attribute to TRUE.
-      break;
-    case MFT_MESSAGE_DROP_SAMPLES:                     // fallthrough
-    case MFT_MESSAGE_COMMAND_TICK:                     // fallthrough
-    case MFT_MESSAGE_COMMAND_SET_OUTPUT_STREAM_STATE:  // fallthrough
-    case MFT_MESSAGE_COMMAND_FLUSH_OUTPUT_STREAM:      // fallthrough
-      // An MFT is allowed to ignore message types it doesn't care about.
+    // An MFT is allowed to ignore message types it doesn't care about.
+    case MFT_MESSAGE_NOTIFY_REACQUIRE_RESOURCES:
+    case MFT_MESSAGE_DROP_SAMPLES:
+    case MFT_MESSAGE_COMMAND_TICK:
+    case MFT_MESSAGE_COMMAND_SET_OUTPUT_STREAM_STATE:
+    case MFT_MESSAGE_COMMAND_FLUSH_OUTPUT_STREAM:
       DVLOG_FUNC(3) << "fallthrough!";
       break;
   }
@@ -588,60 +563,53 @@ STDMETHODIMP MediaFoundationClearKeyDecryptor::ProcessOutput(
     DVLOG_FUNC(3) << "Clear sample detected!";
 
     output_samples[0].pSample = sample_.Detach();
-  } else {
-    // Convert the Media Foundation sample to a DecoderBuffer.
-    scoped_refptr<DecoderBuffer> encrypted_buffer;
-    RETURN_IF_FAILED(GenerateDecoderBufferFromSample(
-        sample_.Detach(), &key_id_guid, &encrypted_buffer));
-    DVLOG_FUNC(3) << "encrypted_buffer=" +
-                         encrypted_buffer->AsHumanReadableString(true);
-
-    // Decrypt the protected content.
-    Decryptor::Status decryptor_status = Decryptor::kError;
-
-    // TODO(crbug.com/1442373): We may remove the tracking code of stream type
-    // if two decryptors get created for audio and video respectively.
-    CHECK(stream_type_ != StreamType::kUnknown);
-    Decryptor::StreamType stream_type = stream_type_ == StreamType::kVideo
-                                            ? Decryptor::kVideo
-                                            : Decryptor::kAudio;
-    scoped_refptr<DecoderBuffer> decrypted_buffer;
-    bool is_decrypt_completed = false;
-    aes_decryptor_->Decrypt(
-        stream_type, encrypted_buffer,
-        base::BindOnce(
-            [](Decryptor::Status* status_copy,
-               scoped_refptr<DecoderBuffer>* buffer_copy,
-               bool* is_decrypt_completed, Decryptor::Status status,
-               scoped_refptr<DecoderBuffer> buffer) {
-              *status_copy = status;
-              *buffer_copy = std::move(buffer);
-              *is_decrypt_completed = true;
-            },
-            &decryptor_status, &decrypted_buffer, &is_decrypt_completed));
-
-    // Ensure the decryption is done synchronously.
-    CHECK(is_decrypt_completed);
-
-    // Convert the DecoderBuffer back to a Media Foundation sample.
-    ComPtr<IMFSample> sample_decrypted = nullptr;
-    GUID last_key_id = GUID_NULL;
-    RETURN_IF_FAILED(GenerateSampleFromDecoderBuffer(
-        decrypted_buffer.get(), &sample_decrypted, &last_key_id,
-        base::NullCallback()));
-    DVLOG_FUNC(3) << "decrypted_buffer=" +
-                         decrypted_buffer->AsHumanReadableString(true);
-
-    output_samples[0].pSample = sample_decrypted.Detach();
+    return S_OK;
   }
 
-  // TODO(crbug.com/1421444): Playback never ends with a sync Media Foundation
-  // MFT decryptor. Nothing will be rendered but it is sufficient for initial
-  // testing. Remove this block after fixing the bug.
-  {
-    output_samples[0].pSample->Release();
-    output_samples[0].pSample = nullptr;
-  }
+  // Convert the Media Foundation sample to a DecoderBuffer.
+  scoped_refptr<DecoderBuffer> encrypted_buffer;
+  RETURN_IF_FAILED(GenerateDecoderBufferFromSample(
+      sample_.Detach(), &key_id_guid, &encrypted_buffer));
+  DVLOG_FUNC(3) << "encrypted_buffer=" +
+                       encrypted_buffer->AsHumanReadableString(true);
+
+  // Decrypt the protected content.
+  Decryptor::Status decryptor_status = Decryptor::kError;
+
+  // TODO(crbug.com/1442373): We may remove the tracking code of stream type
+  // if two decryptors get created for audio and video respectively.
+  CHECK(stream_type_ != StreamType::kUnknown);
+  Decryptor::StreamType stream_type = stream_type_ == StreamType::kVideo
+                                          ? Decryptor::kVideo
+                                          : Decryptor::kAudio;
+  scoped_refptr<DecoderBuffer> decrypted_buffer;
+  bool is_decrypt_completed = false;
+  aes_decryptor_->Decrypt(
+      stream_type, encrypted_buffer,
+      base::BindOnce(
+          [](Decryptor::Status* status_copy,
+             scoped_refptr<DecoderBuffer>* buffer_copy,
+             bool* is_decrypt_completed, Decryptor::Status status,
+             scoped_refptr<DecoderBuffer> buffer) {
+            *status_copy = status;
+            *buffer_copy = std::move(buffer);
+            *is_decrypt_completed = true;
+          },
+          &decryptor_status, &decrypted_buffer, &is_decrypt_completed));
+
+  // Ensure the decryption is done synchronously.
+  CHECK(is_decrypt_completed);
+
+  // Convert the DecoderBuffer back to a Media Foundation sample.
+  ComPtr<IMFSample> sample_decrypted = nullptr;
+  GUID last_key_id = GUID_NULL;
+  RETURN_IF_FAILED(
+      GenerateSampleFromDecoderBuffer(decrypted_buffer.get(), &sample_decrypted,
+                                      &last_key_id, base::NullCallback()));
+  DVLOG_FUNC(3) << "decrypted_buffer=" +
+                       decrypted_buffer->AsHumanReadableString(true);
+
+  output_samples[0].pSample = sample_decrypted.Detach();
 
   return S_OK;
 }

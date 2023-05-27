@@ -69,11 +69,12 @@ bool TestSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
   return true;
 }
 
-bool TestSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
+void TestSafeBrowsingDatabaseManager::CheckUrlForHighConfidenceAllowlist(
     const GURL& url,
-    const std::string& metric_variation) {
+    const std::string& metric_variation,
+    base::OnceCallback<void(bool)> callback) {
   NOTIMPLEMENTED();
-  return false;
+  std::move(callback).Run(false);
 }
 
 bool TestSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
@@ -90,10 +91,11 @@ AsyncMatch TestSafeBrowsingDatabaseManager::CheckCsdAllowlistUrl(
   return AsyncMatch::MATCH;
 }
 
-bool TestSafeBrowsingDatabaseManager::MatchDownloadAllowlistUrl(
-    const GURL& url) {
+void TestSafeBrowsingDatabaseManager::MatchDownloadAllowlistUrl(
+    const GURL& url,
+    base::OnceCallback<void(bool)> callback) {
   NOTIMPLEMENTED();
-  return true;
+  std::move(callback).Run(true);
 }
 
 safe_browsing::ThreatSource TestSafeBrowsingDatabaseManager::GetThreatSource()

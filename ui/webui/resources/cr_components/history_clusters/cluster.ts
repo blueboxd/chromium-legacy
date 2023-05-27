@@ -191,10 +191,18 @@ class HistoryClusterElement extends HistoryClusterElementBase {
 
   private onOpenAllVisits_() {
     BrowserProxyImpl.getInstance().handler.openVisitUrlsInTabGroup(
-        this.cluster.visits);
+        this.cluster.visits, this.cluster.tabGroupName ?? null);
 
     MetricsProxyImpl.getInstance().recordClusterAction(
         ClusterAction.kOpenedInTabGroup, this.index);
+  }
+
+  private onHideAllVisits_() {
+    this.dispatchEvent(new CustomEvent('hide-visits', {
+      bubbles: true,
+      composed: true,
+      detail: this.cluster.visits,
+    }));
   }
 
   private onRemoveAllVisits_() {

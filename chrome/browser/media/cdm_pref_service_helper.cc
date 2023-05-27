@@ -45,22 +45,22 @@ bool TimeIsBetween(const base::Time& time,
 //     },
 //     more origin_string map...
 // }
-base::Value ToDictValue(const CdmPrefData& pref_data) {
-  base::Value dict(base::Value::Type::DICT);
-
+base::Value::Dict ToDictValue(const CdmPrefData& pref_data) {
   // Origin ID
-  dict.SetKey(kOriginId, base::UnguessableTokenToValue(pref_data.origin_id()));
-  dict.SetKey(kOriginIdCreationTime,
-              base::TimeToValue(pref_data.origin_id_creation_time()));
+  auto dict =
+      base::Value::Dict()
+          .Set(kOriginId, base::UnguessableTokenToValue(pref_data.origin_id()))
+          .Set(kOriginIdCreationTime,
+               base::TimeToValue(pref_data.origin_id_creation_time()));
 
   // Optional Client Token
   const absl::optional<std::vector<uint8_t>> client_token =
       pref_data.client_token();
   if (client_token.has_value() && !client_token->empty()) {
     std::string encoded_client_token = base::Base64Encode(client_token.value());
-    dict.SetStringKey(kClientToken, encoded_client_token);
-    dict.SetKey(kClientTokenCreationTime,
-                base::TimeToValue(pref_data.client_token_creation_time()));
+    dict.Set(kClientToken, encoded_client_token);
+    dict.Set(kClientTokenCreationTime,
+             base::TimeToValue(pref_data.client_token_creation_time()));
   }
 
   return dict;
@@ -177,22 +177,19 @@ void CdmPrefServiceHelper::ClearCdmPreferenceData(
   ScopedDictPrefUpdate update(user_prefs, prefs::kMediaCdmOriginData);
 
   std::vector<std::string> origins_to_delete;
-  for (auto key_value : *update) {
-    const std::string& origin = key_value.first;
-
+  for (auto [origin, origin_value] : *update) {
     // Null filter indicates that we should delete everything.
     if (filter && !filter.Run(GURL(origin)))
       continue;
 
-    const base::Value& origin_dict = key_value.second;
-    if (!origin_dict.is_dict()) {
+    auto* origin_dict = origin_value.GetIfDict();
+    if (!origin_dict) {
       DVLOG(ERROR) << "Could not parse the preference data. Removing entry.";
       origins_to_delete.push_back(origin);
       continue;
     }
 
-    std::unique_ptr<CdmPrefData> cdm_pref_data =
-        FromDictValue(origin_dict.GetDict());
+    std::unique_ptr<CdmPrefData> cdm_pref_data = FromDictValue(*origin_dict);
 
     if (!cdm_pref_data) {
       origins_to_delete.push_back(origin);
@@ -204,8 +201,8 @@ void CdmPrefServiceHelper::ClearCdmPreferenceData(
       origins_to_delete.push_back(origin);
     } else if (TimeIsBetween(cdm_pref_data->client_token_creation_time(), start,
                              end)) {
-      key_value.second.RemoveKey(kClientToken);
-      key_value.second.RemoveKey(kClientTokenCreationTime);
+      origin_dict->Remove(kClientToken);
+      origin_dict->Remove(kClientTokenCreationTime);
     }
   }
 

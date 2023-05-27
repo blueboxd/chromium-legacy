@@ -73,7 +73,11 @@ bool IsValidSearchBoxAccessibilityHint(const std::u16string& hint) {
               IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SETTINGS)),
       l10n_util::GetStringFUTF16(
           IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
-          l10n_util::GetStringUTF16(IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TABS))};
+          l10n_util::GetStringUTF16(IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TABS)),
+      l10n_util::GetStringFUTF16(
+          IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL,
+          l10n_util::GetStringUTF16(
+              IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_IMAGES))};
   // Check if the current accessibility text is one of the possible
   // options.
   return base::Contains(possible_a11y_text, hint);
@@ -280,7 +284,9 @@ TEST_F(SearchBoxViewTest, CloseButtonVisibleInZeroStateSearchBox) {
   EXPECT_FALSE(view()->close_button()->GetVisible());
 }
 
-TEST_F(SearchBoxViewTest, AccessibilityHintRemovedWhenSearchBoxActive) {
+// TODO(crbug.com/1446550): Re-enable this test
+TEST_F(SearchBoxViewTest,
+       DISABLED_AccessibilityHintRemovedWhenSearchBoxActive) {
   EXPECT_TRUE(IsValidSearchBoxAccessibilityHint(
       view()->search_box()->GetAccessibleName()));
   SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);

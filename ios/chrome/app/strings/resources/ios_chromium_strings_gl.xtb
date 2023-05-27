@@ -14,7 +14,6 @@
 <translation id="1617663976202781617">Datos da sincronización de Chromium</translation>
 <translation id="1722370509450468186">O contrasinal gardarase na túa Conta (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Borráronse os datos de Chromium</translation>
-<translation id="177102542580335555">Contas cun sistema de seguranza estándar neste perfil de Chromium</translation>
 <translation id="1838412507805038478">Chromium verificou que <ph name="ISSUER" /> emitiu o certificado deste sitio web.</translation>
 <translation id="1843424232666537147">Chromium inclúe funcións que che axudan a xestionar os teus datos de Internet e a rapidez coa que podes cargar páxinas web.
 <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
@@ -47,8 +46,11 @@
 <translation id="3567399274263440288">Para tirarlle o máximo partido a Chromium, inicia sesión coa túa Conta de Google en Chromium.</translation>
 <translation id="3639997914391704523">Chromium pode comprobar os teus contrasinais cando inicies sesión coa túa Conta de Google.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> estivo usando Chromium e deixou os marcadores, os contrasinais e outras opcións de configuración neste dispositivo.</translation>
+<translation id="3661862315467204831">Abre a configuración de Chromium en iOS, toca Default Browser App (Aplicación de navegador predeterminada) e selecciona Chromium.</translation>
 <translation id="372658070733623520">Para usar e gardar os datos de Chromium na túa Conta de Google, verifica a túa identidade.</translation>
 <translation id="3805899903892079518">Chromium non ten acceso ás túas fotos nin aos teus vídeos. Activa o acceso en Configuración de iOS &gt; Privacidade &gt; Fotos.</translation>
+<translation id="3827545470516145620">Contas con protección de seguranza estándar neste dispositivo</translation>
+<translation id="3955621079070267756">Abre Chromium desde calquera aplicación</translation>
 <translation id="4043291146360695975">Os contrasinais gárdanse no xestor de contrasinais só neste dispositivo.</translation>
 <translation id="4099085513035183040">Non compatible na versión beta de Chromium</translation>
 <translation id="4432744876818348753">Inicia sesión para sacarlle o máximo partido a Chromium.</translation>
@@ -82,6 +84,7 @@
 1. Abre Configuración
 2. Toca Aplicación de navegador predeterminada
 3. Selecciona Chromium.</translation>
+<translation id="6247557882553405851">Xestor de contrasinais de Google</translation>
 <translation id="6268381023930128611">Pechar sesión en Chromium?</translation>
 <translation id="632825460376924298">Permitir inicio de sesión en Chromium</translation>
 <translation id="6337530241089703714">Indicar se queres borrar ou conservar os teus datos de Chromium neste dispositivo</translation>
@@ -100,7 +103,6 @@
 <translation id="7192111075364461693">As notificacións de Chromium están desactivadas actualmente na configuración do dispositivo.</translation>
 <translation id="7208566199746267865">Chromium fai que aforres tempo ao pasar as túas contas á web. Podes engadir ou eliminar contas en Configuración.</translation>
 <translation id="725427773388857052">Chromium pode protexerte contra violacións da seguranza dos datos, sitios web que non son seguros e moito máis.</translation>
-<translation id="7255976941681861701">Coñece o novo menú de Chromium</translation>
 <translation id="7269362888766543920">Algúns complementos fan que Chromium falle. Proba a desinstalalos.</translation>
 <translation id="7313655110045230863">Se queres que Chromium pase a ser o teu navegador predeterminado, abre Configuración. Toca Aplicación de navegador predeterminada e, a continuación, selecciona Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -143,5 +145,6 @@ Cuestións que se deben ter en conta:
 <translation id="9089354809943900324">Chromium está desactualizado</translation>
 <translation id="9110075932708282655">Utiliza Chromium de forma predeterminada</translation>
 <translation id="921174536258924340">Chromium non puido comprobar todos os contrasinais. Podes tentalo de novo mañá ou ben <ph name="BEGIN_LINK" />comprobar os contrasinais da túa Conta de Google<ph name="END_LINK" />.</translation>
+<translation id="971488683725792095">Usa Chromium automaticamente cando toques ligazóns en mensaxes, en documentos e noutras aplicacións.</translation>
 <translation id="985602178874221306">Os autores de Chromium</translation>
 </translationbundle>

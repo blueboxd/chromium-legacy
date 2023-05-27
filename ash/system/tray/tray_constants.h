@@ -30,6 +30,12 @@ constexpr int kTrayMenuWidth = 360;
 // The width of the revamped tray menu.
 constexpr int kRevampedTrayMenuWidth = 400;
 
+// TODO(b:277268122): Update once spec is finalized.
+// Horizontal margins between the glanceable bubble and individual glanceables.
+constexpr int kGlanceablesLeftRightMargin = 25;
+constexpr int kGlanceablesVerticalMargin = 10;
+constexpr int kTasksGlanceableMinHeight = 200;
+
 constexpr int kTrayPopupAutoCloseDelayInSeconds = 2;
 constexpr int kTrayPopupAutoCloseDelayInSecondsWithSpokenFeedback = 5;
 constexpr int kTrayPopupPaddingHorizontal = 18;
@@ -217,6 +223,7 @@ constexpr int kUnifiedFeaturePodsPageSpacing = 48;
 
 // Constants used in FeatureTiles of QuickSettingsView.
 constexpr int kFeatureTileMaxRows = 4;
+constexpr int kFeatureTileMaxRowsWhenMediaViewIsShowing = 3;
 constexpr int kFeatureTileMinRows = 1;
 constexpr int kFeatureTileHeight = 64;
 

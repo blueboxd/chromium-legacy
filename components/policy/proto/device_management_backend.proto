@@ -93,6 +93,8 @@ message CheckUserAccountRequest {
   // Email address of a user.
   // The user may not exist in GAIA.
   optional string user_email = 1;
+  // If enrollment nudge policy is required.
+  optional bool enrollment_nudge_request = 2 [default = false];
 }
 
 // Request from device to server to register a device, user or browser.
@@ -275,7 +277,12 @@ message DeviceRegisterRequest {
   // milliseconds since Epoch in UTC timezone (Java time).
   optional int64 psm_determination_timestamp_ms = 20;
 
-  // Next id: 21.
+  // Information specific to Demo Mode about the device and the demo context.
+  // Only set when the device is enrolling into Demo Mode, as defined by
+  // DeviceRegisterRequest.requisition == "cros-demo-mode".
+  optional DemoModeDimensions demo_mode_dimensions = 21;
+
+  // Next id: 22.
 }
 
 // Identification of a device used during its registration.
@@ -304,6 +311,19 @@ message CheckUserAccountResponse {
 
   // The account type mapping from the specific user email.
   optional UserAccountType user_account_type = 2;
+
+  // Enum listing the possible enrollment nudge types.
+  enum EnrollmentNudgeType {
+    UNKNOWN_ENROLLMENT_NUDGE_TYPE = 0;
+    // Enrollment is not required.
+    NONE = 1;
+    // Requires the user to complete the enrollment process before they can
+    // login.
+    ENROLLMENT_REQUIRED = 2;
+  }
+
+  // Whether to nudge managed users to enroll unowned devices.
+  optional EnrollmentNudgeType enrollment_nudge_type = 3;
 }
 
 // Response from server to device register request.
@@ -1493,6 +1513,25 @@ message LaCrOsBrowserReport {
   optional BrowserReport browser_report = 2;
 }
 
+// Information specific to Demo Mode about the device and the demo context.
+message DemoModeDimensions {
+  // Two-letter country code.
+  optional string country = 1;
+  // Name of the retailer whose store the device is running in. Also called
+  // retailer_id elsewhere in some legacy field names.
+  optional string retailer_name = 2;
+  // Retailer-defined number to identify the store that a device is running in.
+  // Also called store_id elsewhere in some legacy field names.
+  optional string store_number = 3;
+  // Device attributes significant to Demo Mode for customization purposes.
+  enum CustomizationFacet {
+    UNDEFINED = 0;
+    CLOUD_GAMING_DEVICE = 1;
+    FEATURE_AWARE_DEVICE = 2;
+  }
+  repeated CustomizationFacet customization_facets = 4;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1640,6 +1679,10 @@ message DeviceStatusReportRequest {
 
   // Flag whether LaCros is the primary browser.
   optional bool is_lacros_primary_browser = 48;
+
+  // Information specific to Demo Mode about the device and the demo context.
+  // Only included for devices in Demo Mode.
+  optional DemoModeDimensions demo_mode_dimensions = 49;
 }
 
 message OsUpdateStatus {
@@ -2107,14 +2150,9 @@ message OSReport {
   optional VersionType version_type = 4;
 }
 
-// An enum shows which information a partial CBCM report contains.
-enum PartialReportType {
-  UNSPECIFIED = 0;
-  EXTENSION_REQUEST = 1;
-}
-
 // Report the status of a Chrome installation on non-Chrome OS platform.
 message ChromeDesktopReportRequest {
+  reserved 10;
   // The name of the machine within its local network. The string is a JSON
   // encoded structure with a single computername field.
   // This field is replaced by computer_name and only used by old Chrome
@@ -2148,10 +2186,6 @@ message ChromeDesktopReportRequest {
   // TODO(crbug.com/1105938): This will also replace the computer_name and
   // serial_number fields.
   optional BrowserDeviceIdentifier browser_device_identifier = 9;
-  // A list of flags indicating that the report only contains particular
-  // information. When the list is empty or unset, the report should contain all
-  // information.
-  repeated PartialReportType partial_report_types = 10;
   // Public key that can be used for attesting the machine.
   optional string machine_attestation_key = 11;
   // A string that represents the device model.
@@ -2163,14 +2197,11 @@ message ChromeDesktopReportRequest {
 // Report user level status on Chrome OS platform. Chrome OS equivalent of
 // ChromeDesktopReportRequest.
 message ChromeOsUserReportRequest {
+  reserved 3;
   // Browser related info.
   optional BrowserReport browser_report = 1;
   // Android applications installed in primary profile.
   repeated AndroidAppInfo android_app_infos = 2;
-  // A list of flags indicates that the report only contains particular
-  // information. When list is empty or unset, the report should contains all
-  // information.
-  repeated PartialReportType partial_report_types = 3;
 }
 
 // Report user level status on all platforms. It includes the information of the

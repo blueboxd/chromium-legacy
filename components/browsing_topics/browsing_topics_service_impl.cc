@@ -449,7 +449,18 @@ bool BrowsingTopicsServiceImpl::HandleTopicsWebApi(
     topics.emplace_back(std::move(result_topic));
   }
 
-  std::sort(topics.begin(), topics.end());
+  // Sort result based on the version first, and then based on the topic ID.
+  // This groups the topics with the same version together, so that when
+  // transforming into the header format, all duplicate versions can be omitted.
+  std::sort(topics.begin(), topics.end(),
+            [](const blink::mojom::EpochTopicPtr& left,
+               const blink::mojom::EpochTopicPtr& right) {
+              if (left->version != right->version) {
+                return left->version < right->version;
+              }
+
+              return left->topic < right->topic;
+            });
 
   // Remove duplicate entries.
   topics.erase(std::unique(topics.begin(), topics.end()), topics.end());
@@ -529,8 +540,7 @@ void BrowsingTopicsServiceImpl::ClearTopic(
   if (!browsing_topics_state_loaded_)
     return;
 
-  browsing_topics_state_.ClearTopic(canonical_topic.topic_id(),
-                                    canonical_topic.taxonomy_version());
+  browsing_topics_state_.ClearTopic(canonical_topic.topic_id());
 }
 
 void BrowsingTopicsServiceImpl::ClearTopicsDataForOrigin(
@@ -645,8 +655,7 @@ void BrowsingTopicsServiceImpl::OnBrowsingTopicsStateLoaded() {
   } else if (!decision.topics_to_clear.empty()) {
     for (const privacy_sandbox::CanonicalTopic& canonical_topic :
          decision.topics_to_clear) {
-      browsing_topics_state_.ClearTopic(canonical_topic.topic_id(),
-                                        canonical_topic.taxonomy_version());
+      browsing_topics_state_.ClearTopic(canonical_topic.topic_id());
     }
   }
 

@@ -1392,8 +1392,13 @@ void WebContentsImpl::SetDelegate(WebContentsDelegate* delegate) {
     view_->SetOverscrollControllerEnabled(CanOverscrollContent());
 }
 
-RenderFrameHostImpl* WebContentsImpl::GetPrimaryMainFrame() {
+const RenderFrameHostImpl* WebContentsImpl::GetPrimaryMainFrame() const {
   return primary_frame_tree_.root()->current_frame_host();
+}
+
+RenderFrameHostImpl* WebContentsImpl::GetPrimaryMainFrame() {
+  return const_cast<RenderFrameHostImpl*>(
+      std::as_const(*this).GetPrimaryMainFrame());
 }
 
 PageImpl& WebContentsImpl::GetPrimaryPage() {
@@ -2885,11 +2890,14 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.threaded_scrolling_enabled =
       !command_line.HasSwitch(blink::switches::kDisableThreadedScrolling);
 
+#if BUILDFLAG(IS_ANDROID)
   if (prefs.viewport_enabled &&
       base::FeatureList::IsEnabled(
-          blink::features::kDefaultViewportIsDeviceWidth)) {
+          blink::features::kDefaultViewportIsDeviceWidth) &&
+      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
     prefs.viewport_style = blink::mojom::ViewportStyle::kDefault;
   }
+#endif
 
   if (GetController().GetVisibleEntry() &&
       GetController().GetVisibleEntry()->GetIsOverridingUserAgent()) {
@@ -5354,7 +5362,7 @@ void WebContentsImpl::GenerateMHTMLWithResult(
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() {
-  return GetPrimaryPage().contents_mime_type();
+  return GetPrimaryPage().GetContentsMimeType();
 }
 
 blink::RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
@@ -5901,15 +5909,6 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
     if (navigation_handle->IsInPrimaryMainFrame() &&
         !navigation_handle->IsSameDocument()) {
       was_ever_audible_ = false;
-    }
-
-    // Clear the stored prerender activation result if this is not a prerender
-    // activation. If this is another prerender activation, it will override
-    // the old result in DevTools.
-    if (!navigation_handle->IsPrerenderedPageActivation() &&
-        !navigation_handle->IsSameDocument() &&
-        navigation_handle->IsInPrimaryMainFrame()) {
-      last_navigation_was_prerender_activation_for_devtools_ = false;
     }
 
     if (!navigation_handle->IsSameDocument())
@@ -7589,14 +7588,10 @@ void WebContentsImpl::UpdateWindowPreferredSize(const gfx::Size& pref_size) {
   OnPreferredSizeChanged(old_size);
 }
 
-// TODO(https://crbug.com/1424417): This function is used exclusively for COOP
-// reporting, to determine what other pages might try to access this page, for
-// the purpose of installing and removing access reporters. Update it to handle
-// CoopRelatedGroups instead of BrowsingContextGroups as a part of COOP:
-// restrict-properties reporting implementation.
 std::vector<RenderFrameHostImpl*>
-WebContentsImpl::GetActiveTopLevelDocumentsInBrowsingContextGroup(
-    RenderFrameHostImpl* render_frame_host) {
+WebContentsImpl::GetActiveTopLevelDocumentsInGroup(
+    RenderFrameHostImpl* render_frame_host,
+    GroupType group_type) {
   std::vector<RenderFrameHostImpl*> out;
   for (WebContentsImpl* web_contents : GetAllWebContents()) {
     RenderFrameHostImpl* other_render_frame_host =
@@ -7608,8 +7603,18 @@ WebContentsImpl::GetActiveTopLevelDocumentsInBrowsingContextGroup(
       continue;
     }
 
-    // Filters out documents from a different browsing context group.
-    if (!render_frame_host->GetSiteInstance()->IsRelatedSiteInstance(
+    // If we're looking for frames in the same browsing context group, filter
+    // frames in different browsing context groups.
+    if (group_type == GroupType::kBrowsingContextGroup &&
+        !render_frame_host->GetSiteInstance()->IsRelatedSiteInstance(
+            other_render_frame_host->GetSiteInstance())) {
+      continue;
+    }
+
+    // If we're looking for frames in the same CoopRelatedGroup, filter frames
+    // in different CoopRelatedGroups.
+    if (group_type == GroupType::kCoopRelatedGroup &&
+        !render_frame_host->GetSiteInstance()->IsCoopRelatedSiteInstance(
             other_render_frame_host->GetSiteInstance())) {
       continue;
     }
@@ -7617,6 +7622,20 @@ WebContentsImpl::GetActiveTopLevelDocumentsInBrowsingContextGroup(
     out.push_back(other_render_frame_host);
   }
   return out;
+}
+
+std::vector<RenderFrameHostImpl*>
+WebContentsImpl::GetActiveTopLevelDocumentsInBrowsingContextGroup(
+    RenderFrameHostImpl* render_frame_host) {
+  return GetActiveTopLevelDocumentsInGroup(render_frame_host,
+                                           GroupType::kBrowsingContextGroup);
+}
+
+std::vector<RenderFrameHostImpl*>
+WebContentsImpl::GetActiveTopLevelDocumentsInCoopRelatedGroup(
+    RenderFrameHostImpl* render_frame_host) {
+  return GetActiveTopLevelDocumentsInGroup(render_frame_host,
+                                           GroupType::kCoopRelatedGroup);
 }
 
 PrerenderHostRegistry* WebContentsImpl::GetPrerenderHostRegistry() {

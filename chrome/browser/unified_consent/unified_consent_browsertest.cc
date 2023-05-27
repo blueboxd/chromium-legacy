@@ -50,8 +50,10 @@ class UnifiedConsentBrowserTest : public SyncTest {
   }
 
   void FinishSyncSetup(int client_id) {
-    GetSyncService(client_id)->GetUserSettings()->SetFirstSetupComplete(
-        syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+    GetSyncService(client_id)
+        ->GetUserSettings()
+        ->SetInitialSyncFeatureSetupComplete(
+            syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
     sync_blocker_.reset();
     ASSERT_TRUE(GetClient(client_id)->AwaitSyncSetupCompletion());
   }
@@ -119,7 +121,9 @@ IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,
   // Second client: Start sync setup.
   StartSyncSetup(1);
   ASSERT_TRUE(GetSyncService(1)->IsSetupInProgress());
-  ASSERT_FALSE(GetSyncService(1)->GetUserSettings()->IsFirstSetupComplete());
+  ASSERT_FALSE(GetSyncService(1)
+                   ->GetUserSettings()
+                   ->IsInitialSyncFeatureSetupComplete());
 
   // Second client: Turn on pref B while sync setup is in progress.
   GetProfile(1)->GetPrefs()->SetBoolean(pref_B, true);

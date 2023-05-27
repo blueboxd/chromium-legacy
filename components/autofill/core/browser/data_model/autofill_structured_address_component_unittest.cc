@@ -12,9 +12,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_name.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -40,33 +42,23 @@ class TestAtomicMiddleNameAddressComponent : public AddressComponent {
   explicit TestAtomicMiddleNameAddressComponent(AddressComponent* parent)
       : AddressComponent(NAME_MIDDLE, parent, MergeMode::kDefault) {}
 
-  void GetAdditionalSupportedFieldTypes(
-      ServerFieldTypeSet* supported_types) const override {
-    DCHECK(supported_types->find(NAME_MIDDLE_INITIAL) ==
-           supported_types->end());
-    supported_types->insert(NAME_MIDDLE_INITIAL);
+  const ServerFieldTypeSet GetAdditionalSupportedFieldTypes() const override {
+    constexpr ServerFieldTypeSet supported_types{NAME_MIDDLE_INITIAL};
+    return supported_types;
   }
 
-  bool SetValueForOtherSupportedType(
+  void SetValueForOtherSupportedType(
       ServerFieldType field_type,
       const std::u16string& value,
       const VerificationStatus& status) override {
-    if (field_type == NAME_MIDDLE_INITIAL) {
-      SetValue(value, status);
-      return true;
-    }
-    return false;
+    CHECK(IsSupportedType(field_type));
+    SetValue(value, status);
   }
 
-  bool GetValueForOtherSupportedType(ServerFieldType field_type,
-                                     std::u16string* value) const override {
-    if (field_type == NAME_MIDDLE_INITIAL) {
-      if (value) {
-        *value = GetValue().substr(0, 1);
-      }
-      return true;
-    }
-    return false;
+  std::u16string GetValueForOtherSupportedType(
+      ServerFieldType field_type) const override {
+    CHECK(IsSupportedType(field_type));
+    return GetValue().substr(0, 1);
   }
 };
 
@@ -333,18 +325,16 @@ TEST(AutofillStructuredAddressAddressComponent, TestGetRootNode) {
 
 // Tests that additional field types are correctly retrieved.
 TEST(AutofillStructuredAddressAddressComponent, TestGetSupportedFieldType) {
-  ServerFieldTypeSet field_type_set;
-
   TestAtomicFirstNameAddressComponent first_name_component;
   TestAtomicMiddleNameAddressComponent middle_name_component;
 
   // The first name does not have an additional supported field type.
-  first_name_component.GetAdditionalSupportedFieldTypes(&field_type_set);
-  EXPECT_EQ(field_type_set, ServerFieldTypeSet({}));
+  EXPECT_EQ(first_name_component.GetAdditionalSupportedFieldTypes(),
+            ServerFieldTypeSet({}));
 
   // The middle name supports an initial.
-  middle_name_component.GetAdditionalSupportedFieldTypes(&field_type_set);
-  EXPECT_EQ(field_type_set, ServerFieldTypeSet({NAME_MIDDLE_INITIAL}));
+  EXPECT_EQ(middle_name_component.GetAdditionalSupportedFieldTypes(),
+            ServerFieldTypeSet({NAME_MIDDLE_INITIAL}));
 }
 
 // Tests setting an additional field type.
@@ -365,6 +355,32 @@ TEST(AutofillStructuredAddressAddressComponent, TestGetFieldTypeValue) {
   EXPECT_EQ(compound_name.GetValueForType(NAME_MIDDLE_INITIAL), u"M");
   EXPECT_EQ(compound_name.GetVerificationStatusForType(NAME_MIDDLE_INITIAL),
             VerificationStatus::kObserved);
+}
+
+// Tests retrieving a value for comparison for a field type.
+TEST(AutofillStructuredAddressAddressComponent,
+     TestGetValueForComparisonForType) {
+  TestCompoundNameAddressComponent compound_name;
+  EXPECT_TRUE(compound_name.SetValueForType(NAME_FIRST, u"First1-First2",
+                                            VerificationStatus::kObserved));
+  EXPECT_TRUE(compound_name.SetValueForTypeAndResetSubstructure(
+      NAME_MIDDLE, u"Middle", VerificationStatus::kObserved));
+  EXPECT_TRUE(compound_name.SetValueForType(NAME_LAST, u"LAST",
+                                            VerificationStatus::kObserved));
+  EXPECT_TRUE(compound_name.CompleteFullTree());
+  EXPECT_EQ(
+      compound_name.GetValueForComparisonForType(NAME_FULL, compound_name),
+      u"first1 first2 middle last");
+  EXPECT_EQ(
+      compound_name.GetValueForComparisonForType(NAME_FIRST, compound_name),
+      u"first1 first2");
+  EXPECT_EQ(compound_name.GetValueForComparisonForType(NAME_MIDDLE_INITIAL,
+                                                       compound_name),
+            u"m");
+  EXPECT_TRUE(
+      compound_name
+          .GetValueForComparisonForType(ADDRESS_HOME_STREET_NAME, compound_name)
+          .empty());
 }
 
 // Tests adding all supported types to the set.
@@ -1770,14 +1786,14 @@ TEST(AutofillStructuredAddressAddressComponent, TestFillTreeGaps) {
        .value = "Mr",
        .status = VerificationStatus::kObserved},
       {.type = NAME_FIRST,
-       .value = "",
-       .status = VerificationStatus::kNoStatus},
+       .value = "Pablo Diego",
+       .status = VerificationStatus::kParsed},
       {.type = NAME_MIDDLE,
        .value = "",
        .status = VerificationStatus::kNoStatus},
       {.type = NAME_LAST,
        .value = "Ruiz y Picasso",
-       .status = VerificationStatus::kFormatted},
+       .status = VerificationStatus::kParsed},
       {.type = NAME_LAST_FIRST,
        .value = "Ruiz",
        .status = VerificationStatus::kObserved},
@@ -1787,6 +1803,85 @@ TEST(AutofillStructuredAddressAddressComponent, TestFillTreeGaps) {
       {.type = NAME_LAST_SECOND,
        .value = "Picasso",
        .status = VerificationStatus::kObserved},
+  };
+
+  SetTestValues(&name, name_filled_values);
+  name.CompleteFullTree();
+  VerifyTestValues(&name, expectation);
+}
+
+TEST(AutofillStructuredAddressAddressComponent,
+     IsValueCompatibleWithAncestorsCompatible) {
+  AddressNode address;
+  AddressComponentTestValues test_values = {
+      {.type = ADDRESS_HOME_STREET_ADDRESS,
+       .value = "Flat 42, Floor 7, Tagore Road Hostel, 13, Hitech City Rd",
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_FLOOR,
+       .value = "Floor 7",
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_APT_NUM,
+       .value = "Flat 42",
+       .status = VerificationStatus::kObserved}};
+
+  AddressComponentTestValues expectation = {
+      {.type = ADDRESS_HOME_STREET_ADDRESS,
+       .value = "Flat 42, Floor 7, Tagore Road Hostel, 13, Hitech City Rd",
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_SUBPREMISE,
+       .value = "Floor 7 Flat 42",
+       .status = VerificationStatus::kFormatted},
+      {.type = ADDRESS_HOME_FLOOR,
+       .value = "Floor 7",
+       .status = VerificationStatus::kObserved},
+      {.type = ADDRESS_HOME_APT_NUM,
+       .value = "Flat 42",
+       .status = VerificationStatus::kObserved}};
+
+  SetTestValues(&address, test_values);
+  address.CompleteFullTree();
+  VerifyTestValues(&address, expectation);
+}
+
+TEST(AutofillStructuredAddressAddressComponent, TestFillTreeGapsParsing) {
+  NameFullWithPrefix name;
+
+  AddressComponentTestValues name_filled_values = {
+      {.type = NAME_FULL_WITH_HONORIFIC_PREFIX,
+       .value = "Mr Pablo Diego Ruiz y Picasso",
+       .status = VerificationStatus::kObserved},
+      {.type = NAME_LAST,
+       .value = "Ruiz y Picasso",
+       .status = VerificationStatus::kObserved}};
+
+  AddressComponentTestValues expectation = {
+      {.type = NAME_FULL_WITH_HONORIFIC_PREFIX,
+       .value = "Mr Pablo Diego Ruiz y Picasso",
+       .status = VerificationStatus::kObserved},
+      {.type = NAME_FULL,
+       .value = "Pablo Diego Ruiz y Picasso",
+       .status = VerificationStatus::kParsed},
+      {.type = NAME_HONORIFIC_PREFIX,
+       .value = "Mr",
+       .status = VerificationStatus::kParsed},
+      {.type = NAME_FIRST,
+       .value = "Pablo Diego",
+       .status = VerificationStatus::kParsed},
+      {.type = NAME_MIDDLE,
+       .value = "",
+       .status = VerificationStatus::kNoStatus},
+      {.type = NAME_LAST,
+       .value = "Ruiz y Picasso",
+       .status = VerificationStatus::kObserved},
+      {.type = NAME_LAST_FIRST,
+       .value = "Ruiz",
+       .status = VerificationStatus::kParsed},
+      {.type = NAME_LAST_CONJUNCTION,
+       .value = "y",
+       .status = VerificationStatus::kParsed},
+      {.type = NAME_LAST_SECOND,
+       .value = "Picasso",
+       .status = VerificationStatus::kParsed},
   };
 
   SetTestValues(&name, name_filled_values);

@@ -53,17 +53,15 @@
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 using autofill::PopupHidingReason;
+#if !BUILDFLAG(IS_ANDROID)
+using password_manager::features::PasswordGenerationVariation;
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace {
 
 // Minimum number of characters of the typed password to display a minimized
 // version of the generation popup.
 constexpr int kMinCharsForMinimizedPopup = 6;
-
-bool IsPasswordGenerationSuggestionsPreviewEnabled() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kPasswordGenerationPreviewOnHover);
-}
 
 }  // namespace
 
@@ -373,16 +371,12 @@ void PasswordGenerationPopupControllerImpl::ViewDestroyed() {
 
 void PasswordGenerationPopupControllerImpl::SelectionCleared() {
   PasswordSelected(false);
-  if (IsPasswordGenerationSuggestionsPreviewEnabled()) {
-    driver_->ClearPreviewedForm();
-  }
+  driver_->ClearPreviewedForm();
 }
 
 void PasswordGenerationPopupControllerImpl::SetSelected() {
   PasswordSelected(true);
-  if (IsPasswordGenerationSuggestionsPreviewEnabled()) {
-    driver_->PreviewGenerationSuggestion(current_generated_password_);
-  }
+  driver_->PreviewGenerationSuggestion(current_generated_password_);
 }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -456,10 +450,36 @@ const std::u16string& PasswordGenerationPopupControllerImpl::password() const {
 }
 
 std::u16string PasswordGenerationPopupControllerImpl::SuggestedText() const {
-  if (state_ == kOfferGeneration)
-    return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_SUGGESTION_GPM);
+  if (state_ == kEditGeneratedPassword) {
+    return l10n_util::GetStringUTF16(
+        IDS_PASSWORD_GENERATION_EDITING_SUGGESTION);
+  }
 
-  return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_EDITING_SUGGESTION);
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordGenerationExperiment)) {
+    switch (
+        password_manager::features::kPasswordGenerationExperimentVariationParam
+            .Get()) {
+      case PasswordGenerationVariation::kTrustedAdvice:
+        return l10n_util::GetStringUTF16(
+            IDS_PASSWORD_GENERATION_SUGGESTION_TRUSTED_ADVICE);
+      case PasswordGenerationVariation::kSafetyFirst:
+        return l10n_util::GetStringUTF16(
+            IDS_PASSWORD_GENERATION_SUGGESTION_SAFETY_FIRST);
+      case PasswordGenerationVariation::kTrySomethingNew:
+        return l10n_util::GetStringUTF16(
+            IDS_PASSWORD_GENERATION_SUGGESTION_TRY_SOMETHING_NEW);
+      case PasswordGenerationVariation::kConvenience:
+        return l10n_util::GetStringUTF16(
+            IDS_PASSWORD_GENERATION_SUGGESTION_CONVENIENCE);
+      default:
+        break;
+    }
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+  return l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_SUGGESTION_GPM);
 }
 
 const std::u16string& PasswordGenerationPopupControllerImpl::HelpText() const {

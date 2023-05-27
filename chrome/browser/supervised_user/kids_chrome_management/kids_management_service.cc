@@ -21,7 +21,6 @@
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_browser_utils.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -29,9 +28,10 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_change_event.h"
 #include "components/signin/public/identity_manager/tribool.h"
-#include "components/supervised_user/core/browser/kids_external_fetcher.h"
 #include "components/supervised_user/core/browser/proto/families_common.pb.h"
 #include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
+#include "components/supervised_user/core/browser/proto_fetcher.h"
+#include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "components/supervised_user/core/common/features.h"
 #include "content/public/browser/browser_context.h"
@@ -113,7 +113,7 @@ auto FindFamilyMemberWithRole(const std::vector<FamilyMember>& members,
 KidsManagementService::KidsManagementService(
     Profile* profile,
     IdentityManager& identity_manager,
-    SupervisedUserService& supervised_user_service,
+    supervised_user::SupervisedUserService& supervised_user_service,
     PrefService& pref_service,
     scoped_refptr<SharedURLLoaderFactory> url_loader_factory)
     : profile_(profile),
@@ -248,7 +248,7 @@ void KidsManagementService::StopFetchFamilyMembers() {
 }
 
 void KidsManagementService::ConsumeListFamilyMembers(
-    KidsExternalFetcherStatus status,
+    supervised_user::ProtoFetcherStatus status,
     std::unique_ptr<ListFamilyMembersResponse> response) {
   if (status.IsTransientError()) {
     list_family_members_backoff_.InformOfRequest(false);

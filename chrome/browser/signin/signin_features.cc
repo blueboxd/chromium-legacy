@@ -53,10 +53,6 @@ const base::FeatureParam<std::string> kForYouFreStudyGroup{
     &kForYouFreSyntheticTrialRegistration, /*name=*/"group_name",
     /*default_value=*/""};
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-
-BASE_FEATURE(kEnterpriseWelcomeTangibleSyncStyle,
-             "EnterpriseWelcomeTangibleSyncStyle",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 
 // Enables the client-side processing of the HTTP response header
@@ -65,16 +61,17 @@ BASE_FEATURE(kProcessGaiaRemoveLocalAccountHeader,
              "ProcessGaiaRemoveLocalAccountHeader",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the sync promo after the sign-in intercept.
+// Enables the sync promo after the sign-in intercept. Fully rolled out on
+// Desktop.
 BASE_FEATURE(kSyncPromoAfterSigninIntercept,
              "SyncPromoAfterSigninIntercept",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables using new style (strings, illustration, and disclaimer if needed)
-// for the sign-in intercept bubble.
+// for the sign-in intercept bubble. Fully rolled out on Desktop.
 BASE_FEATURE(kSigninInterceptBubbleV2,
              "SigninInterceptBubbleV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables showing the enterprise dialog after every signin into a managed
 // account.
@@ -86,3 +83,7 @@ BASE_FEATURE(kShowEnterpriseDialogForAllManagedAccountsSignin,
 BASE_FEATURE(kDisallowManagedProfileSignout,
              "DisallowManagedProfileSignout",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
+BASE_FEATURE(kWaffle, "Waffle", base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(ENABLE_WAFFLE_DESKTOP)

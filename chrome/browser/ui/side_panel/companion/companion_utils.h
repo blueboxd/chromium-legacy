@@ -8,10 +8,22 @@
 class Browser;
 class PrefService;
 
+namespace content {
+class WebContents;
+}
+
 namespace companion {
 
 // Returns true if the companion feature is enabled.
 bool IsCompanionFeatureEnabled();
+
+// Returns true if the companion entry points should be enabled for the state of
+// the current active tab.
+bool IsCompanionAvailableForCurrentActiveTab(const Browser* browser);
+
+// Returns true if the companion policy is enabled. The policy can change
+// dynamically, so callers should not cache the returned results.
+bool IsCompanionFeatureEnabledByPolicy(PrefService* pref_service);
 
 // Returns true if browser is valid, DSE is Google, and the side panel companion
 // feature is enabled.
@@ -28,6 +40,9 @@ bool IsSearchImageInCompanionSidePanelSupported(const Browser* browser);
 // Updated the default value for the pref used to determine whether companion
 // should be pinned to the toolbar by default.
 void UpdateCompanionDefaultPinnedToToolbarState(PrefService* pref_service);
+
+// Potentially triggers the IPH promo for the companion feature.
+void MaybeTriggerCompanionFeaturePromo(content::WebContents* web_contents);
 
 }  // namespace companion
 

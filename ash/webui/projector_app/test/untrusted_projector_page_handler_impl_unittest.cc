@@ -10,6 +10,7 @@
 #include "ash/webui/projector_app/mojom/untrusted_projector.mojom.h"
 #include "ash/webui/projector_app/public/mojom/projector_types.mojom.h"
 #include "ash/webui/projector_app/test/mock_app_client.h"
+#include "base/files/safe_base_name.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -19,11 +20,26 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
 
 namespace {
+
+constexpr char kTestUserEmail[] = "testuser1@gmail.com";
+const char kVideoFileId[] = "video_file_id";
+const char kResourceKey[] = "resource_key";
+
+constexpr char kTestXhrUrl[] =
+    "https://www.googleapis.com/drive/v3/files/fileID";
+constexpr char kTestXhrUnsupportedUrl[] = "https://www.example.com";
+constexpr ash::projector::mojom::RequestType kTestXhrMethod =
+    ash::projector::mojom::RequestType::kPost;
+constexpr char kTestXhrRequestBody[] = "{}";
+constexpr char kTestXhrHeaderKey[] = "X-Goog-Drive-Resource-Keys";
+constexpr char kTestXhrHeaderValue[] = "resource-key";
+constexpr char kTestResponseBody[] = "{}";
 
 // MOCK the Projector page instance in the WebUI renderer.
 class MockUntrustedProjectorPageJs
@@ -245,6 +261,222 @@ TEST_F(UntrustedProjectorPageHandlerImplUnitTest, OpenFeedbackDialog) {
   base::test::TestFuture<void> open_feedback_future;
   page().page_handler()->OpenFeedbackDialog(open_feedback_future.GetCallback());
   EXPECT_TRUE(open_feedback_future.Wait());
+}
+
+class ProjectorSessionStartUnitTest
+    : public ::testing::WithParamInterface<NewScreencastPrecondition>,
+      public UntrustedProjectorPageHandlerImplUnitTest {
+ public:
+  ProjectorSessionStartUnitTest() = default;
+  ProjectorSessionStartUnitTest(const ProjectorSessionStartUnitTest&) = delete;
+  ProjectorSessionStartUnitTest& operator=(
+      const ProjectorSessionStartUnitTest&) = delete;
+  ~ProjectorSessionStartUnitTest() override = default;
+};
+
+TEST_P(ProjectorSessionStartUnitTest, ProjectorSessionTest) {
+  const auto& precondition = GetParam();
+  EXPECT_CALL(controller(), GetNewScreencastPrecondition());
+  ON_CALL(controller(), GetNewScreencastPrecondition)
+      .WillByDefault(testing::Return(precondition));
+
+  bool expected_success =
+      precondition.state == NewScreencastPreconditionState::kEnabled;
+
+  const auto kFolderId = base::SafeBaseName::Create("folderId").value();
+
+  EXPECT_CALL(controller(), StartProjectorSession(kFolderId))
+      .Times(expected_success ? 1 : 0);
+
+  base::test::TestFuture<bool> start_projector_session_future;
+  page().page_handler()->StartProjectorSession(
+      kFolderId, start_projector_session_future.GetCallback());
+  EXPECT_EQ(start_projector_session_future.Get(), expected_success);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    SessionStartSuccessFailTest,
+    ProjectorSessionStartUnitTest,
+    ::testing::Values(
+        NewScreencastPrecondition(NewScreencastPreconditionState::kEnabled, {}),
+        NewScreencastPrecondition(
+            NewScreencastPreconditionState::kDisabled,
+            {NewScreencastPreconditionReason::kInProjectorSession})));
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, SafeBaseNameTest) {
+  const auto valid_path = base::FilePath("folderName");
+  const auto failing_path_1 = base::FilePath("parent1/folderName");
+  const auto failing_path_2 = base::FilePath("../folderId");
+  const auto failing_path_3 = base::FilePath("../");
+  const auto failing_path_4 = base::FilePath("parent1/../../folderName");
+
+  EXPECT_EQ(base::SafeBaseName::Create(valid_path)->path(), valid_path);
+  EXPECT_NE(base::SafeBaseName::Create(failing_path_1)->path(), failing_path_1);
+  EXPECT_NE(base::SafeBaseName::Create(failing_path_2)->path(), failing_path_2);
+  EXPECT_NE(base::SafeBaseName::Create(failing_path_4)->path(), failing_path_4);
+
+  // The safe base name would not even be created in this instance.
+  EXPECT_FALSE(base::SafeBaseName::Create(failing_path_3));
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, SendXhr) {
+  mock_app_client().test_url_loader_factory().AddResponse(kTestXhrUrl,
+                                                          kTestResponseBody);
+  const base::flat_map<std::string, std::string> headers{
+      {std::string(kTestXhrHeaderKey), std::string(kTestXhrHeaderValue)}};
+
+  base::test::TestFuture<projector::mojom::XhrResponsePtr>
+      send_xhr_request_future;
+  page().page_handler()->SendXhr(
+      GURL(kTestXhrUrl), kTestXhrMethod, kTestXhrRequestBody,
+      /*use_credentials=*/true,
+      /*use_api_key=*/false, headers,
+      /*email=*/absl::nullopt, send_xhr_request_future.GetCallback());
+  mock_app_client().WaitForAccessRequest(kTestUserEmail);
+
+  const auto& response = send_xhr_request_future.Get();
+  EXPECT_EQ(response->response, kTestResponseBody);
+  EXPECT_EQ(response->response_code,
+            projector::mojom::XhrResponseCode::kSuccess);
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, SendXhrEmptyEmail) {
+  mock_app_client().test_url_loader_factory().AddResponse(kTestXhrUrl,
+                                                          kTestResponseBody);
+  const base::flat_map<std::string, std::string> headers{
+      {std::string(kTestXhrHeaderKey), std::string(kTestXhrHeaderValue)}};
+
+  base::test::TestFuture<projector::mojom::XhrResponsePtr>
+      send_xhr_request_future;
+  page().page_handler()->SendXhr(
+      GURL(kTestXhrUrl), kTestXhrMethod, kTestXhrRequestBody,
+      /*use_credentials=*/true,
+      /*use_api_key=*/false, headers,
+      /*email=*/"", send_xhr_request_future.GetCallback());
+  mock_app_client().WaitForAccessRequest(kTestUserEmail);
+
+  const auto& response = send_xhr_request_future.Get();
+  EXPECT_EQ(response->response, kTestResponseBody);
+  EXPECT_EQ(response->response_code,
+            projector::mojom::XhrResponseCode::kSuccess);
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, SendXhrWithEmail) {
+  mock_app_client().test_url_loader_factory().AddResponse(kTestXhrUrl,
+                                                          kTestResponseBody);
+  const base::flat_map<std::string, std::string> headers{
+      {std::string(kTestXhrHeaderKey), std::string(kTestXhrHeaderValue)}};
+  base::test::TestFuture<projector::mojom::XhrResponsePtr>
+      send_xhr_request_future;
+  page().page_handler()->SendXhr(GURL(kTestXhrUrl), kTestXhrMethod,
+                                 kTestXhrRequestBody,
+                                 /*use_credentials=*/true,
+                                 /*use_api_key=*/false, headers, kTestUserEmail,
+                                 send_xhr_request_future.GetCallback());
+  mock_app_client().WaitForAccessRequest(kTestUserEmail);
+
+  const auto& response = send_xhr_request_future.Get();
+  EXPECT_EQ(response->response, kTestResponseBody);
+  EXPECT_EQ(response->response_code,
+            projector::mojom::XhrResponseCode::kSuccess);
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, SendXhrFailed) {
+  constexpr char kTestErrorResponseBody[] = "error";
+  mock_app_client().test_url_loader_factory().AddResponse(
+      /*url=*/kTestXhrUrl,
+      /*content=*/kTestErrorResponseBody,
+      /*status=*/net::HttpStatusCode::HTTP_NOT_FOUND);
+  const base::flat_map<std::string, std::string> headers{
+      {std::string(kTestXhrHeaderKey), std::string(kTestXhrHeaderValue)}};
+  base::test::TestFuture<projector::mojom::XhrResponsePtr>
+      send_xhr_request_future;
+  page().page_handler()->SendXhr(GURL(kTestXhrUrl), kTestXhrMethod,
+                                 kTestXhrRequestBody,
+                                 /*use_credentials=*/true,
+                                 /*use_api_key=*/false, headers, kTestUserEmail,
+                                 send_xhr_request_future.GetCallback());
+
+  mock_app_client().WaitForAccessRequest(kTestUserEmail);
+  const auto& response = send_xhr_request_future.Get();
+  EXPECT_EQ(response->response, kTestErrorResponseBody);
+  EXPECT_EQ(response->response_code,
+            projector::mojom::XhrResponseCode::kXhrFetchFailure);
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, SendXhrWithUnSupportedUrl) {
+  auto crashing_lambda_test = [&]() {
+    const base::flat_map<std::string, std::string> headers{
+        {std::string(kTestXhrHeaderKey), std::string(kTestXhrHeaderValue)}};
+
+    base::test::TestFuture<projector::mojom::XhrResponsePtr>
+        send_xhr_request_future;
+
+    page().page_handler()->SendXhr(
+        GURL(kTestXhrUnsupportedUrl), kTestXhrMethod, kTestXhrRequestBody,
+        /*use_credentials=*/true,
+        /*use_api_key=*/false, headers, kTestUserEmail,
+        send_xhr_request_future.GetCallback());
+
+    const auto& response = send_xhr_request_future.Get();
+    EXPECT_EQ(response->response_code,
+              projector::mojom::XhrResponseCode::kUnsupportedURL);
+  };
+
+  EXPECT_DEATH_IF_SUPPORTED(crashing_lambda_test(), "");
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, GetAccounts) {
+  base::test::TestFuture<std::vector<projector::mojom::AccountPtr>>
+      get_accounts_future;
+  page().page_handler()->GetAccounts(get_accounts_future.GetCallback());
+  const auto& accounts = get_accounts_future.Get();
+  EXPECT_EQ(accounts.size(), 1u);
+  EXPECT_EQ(accounts[0]->email, kTestUserEmail);
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, GetVideo) {
+  auto expected_video = projector::mojom::VideoInfo::New();
+  expected_video->file_id = kVideoFileId;
+
+  EXPECT_CALL(mock_app_client(),
+              GetVideo(kVideoFileId, absl::optional<std::string>(kResourceKey),
+                       testing::_))
+      .WillOnce([&expected_video](
+                    const std::string& video_file_id,
+                    const absl::optional<std::string>& resource_key,
+                    ProjectorAppClient::OnGetVideoCallback callback) {
+        std::move(callback).Run(
+            projector::mojom::GetVideoResult::NewVideo(expected_video.Clone()));
+      });
+
+  base::test::TestFuture<projector::mojom::GetVideoResultPtr> get_video_future;
+  page().page_handler()->GetVideo(kVideoFileId, kResourceKey,
+                                  get_video_future.GetCallback());
+
+  const auto& result = get_video_future.Get<0>();
+  EXPECT_FALSE(result->is_error_message());
+  EXPECT_TRUE(result->is_video());
+  EXPECT_EQ(result->get_video()->file_id, expected_video->file_id);
+}
+
+TEST_F(UntrustedProjectorPageHandlerImplUnitTest, GetVideoFail) {
+  EXPECT_CALL(mock_app_client(), GetVideo(kVideoFileId, testing::_, testing::_))
+      .WillOnce([](const std::string& video_file_id,
+                   const absl::optional<std::string>& resource_key,
+                   ProjectorAppClient::OnGetVideoCallback callback) {
+        EXPECT_FALSE(resource_key);
+        std::move(callback).Run(
+            projector::mojom::GetVideoResult::NewErrorMessage("error1"));
+      });
+
+  base::test::TestFuture<projector::mojom::GetVideoResultPtr> get_video_future;
+  page().page_handler()->GetVideo(kVideoFileId, absl::nullopt,
+                                  get_video_future.GetCallback());
+
+  const auto& result = get_video_future.Get<0>();
+  EXPECT_TRUE(result->is_error_message());
+  EXPECT_EQ(result->get_error_message(), "error1");
 }
 
 }  // namespace ash

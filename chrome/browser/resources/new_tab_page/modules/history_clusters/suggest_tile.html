@@ -13,6 +13,15 @@
     text-decoration: none;
   }
 
+  a:hover {
+    background: var(--color-sys-state-hover-dim-blend-protection);
+  }
+
+  a:active,
+  :host-context(.focus-outline-visible) a:focus {
+    background-color: var(--color-new-tab-page-active-background);
+  }
+
   :host-context(.focus-outline-visible) :focus,
   :focus-visible {
     box-shadow: var(--ntp-focus-shadow);
@@ -44,7 +53,7 @@
     -webkit-mask-position: center;
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: 20px;
-    background-color: var(--color-new-tab-page-primary-foreground);
+    background-color: var(--color-new-tab-page-secondary-foreground);
     background-position: center center;
     background-repeat: no-repeat;
     background-size: 20px;

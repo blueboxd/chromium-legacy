@@ -136,8 +136,7 @@ TEST_F(ImageServiceTest, GetConsentToFetchImage) {
 
   test_sync_service_->GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
-      /*types=*/syncer::UserSelectableTypeSet(
-          syncer::UserSelectableType::kHistory));
+      /*types=*/{syncer::UserSelectableType::kHistory});
   test_sync_service_->FireStateChanged();
 
   EXPECT_TRUE(GetConsentToFetchImageAwaitResult(mojom::ClientId::Journeys));
@@ -154,8 +153,7 @@ TEST_F(ImageServiceTest, SyncInitialization) {
       syncer::SyncService::TransportState::INITIALIZING);
   test_sync_service_->GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
-      /*types=*/syncer::UserSelectableTypeSet(
-          syncer::UserSelectableType::kHistory));
+      /*types=*/{syncer::UserSelectableType::kHistory});
   test_sync_service_->FireStateChanged();
 
   mojom::Options options;
@@ -274,11 +272,11 @@ TEST_F(ImageServiceTest, OptimizationGuideSalientImagesEndToEnd) {
   // Test histograms with literal names to validate client-sliced names.
   EXPECT_EQ(histogram_tester_.GetBucketCount(
                 "PageImageService.Backend.OptimizationGuide.Result",
-                PageImageServiceOptimizationGuideResult::kSuccess),
+                PageImageServiceResult::kSuccess),
             2);
   EXPECT_EQ(histogram_tester_.GetBucketCount(
                 "PageImageService.Backend.OptimizationGuide.Result.Journeys",
-                PageImageServiceOptimizationGuideResult::kSuccess),
+                PageImageServiceResult::kSuccess),
             2);
 }
 

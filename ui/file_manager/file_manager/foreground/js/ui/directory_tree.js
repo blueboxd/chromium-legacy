@@ -6,6 +6,7 @@ import {assert, assertNotReached} from 'chrome://resources/ash/common/assert.js'
 import {dispatchSimpleEvent, getPropertyDescriptor, PropertyKind} from 'chrome://resources/ash/common/cr_deprecated.js';
 
 import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
+import {isEntryInsideDrive} from '../../../common/js/entry_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
 import {vmTypeToIconName} from '../../../common/js/icon_util.js';
 import {metrics} from '../../../common/js/metrics.js';
@@ -13,7 +14,7 @@ import {str, strf, util} from '../../../common/js/util.js';
 import {VolumeManagerCommon} from '../../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../../externs/background/file_operation_manager.js';
 import {FilesAppDirEntry} from '../../../externs/files_app_entry_interfaces.js';
-import {PropStatus, SearchData, State} from '../../../externs/ts/state.js';
+import {PropStatus, SearchData, SearchLocation, State} from '../../../externs/ts/state.js';
 import {VolumeInfo} from '../../../externs/volume_info.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
 import {getStore} from '../../../state/store.js';
@@ -360,16 +361,7 @@ export class DirectoryItem extends FilesTreeItem {
    * @type {!boolean}
    */
   get insideDrive() {
-    const rootType = this.rootType;
-    return rootType &&
-        (rootType === VolumeManagerCommon.RootType.DRIVE ||
-         rootType === VolumeManagerCommon.RootType.SHARED_DRIVES_GRAND_ROOT ||
-         rootType === VolumeManagerCommon.RootType.SHARED_DRIVE ||
-         rootType === VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
-         rootType === VolumeManagerCommon.RootType.COMPUTER ||
-         rootType === VolumeManagerCommon.RootType.DRIVE_OFFLINE ||
-         rootType === VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME ||
-         rootType === VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT);
+    return isEntryInsideDrive({rootType: this.rootType});
   }
 
   /**
@@ -2088,7 +2080,9 @@ export class DirectoryTree extends Tree {
         this.setActiveItemHighlighted_(true);
       } else if (
           searchState.status === PropStatus.STARTED && searchState.query) {
-        this.setActiveItemHighlighted_(false);
+        this.setActiveItemHighlighted_(
+            (searchState.options || {}).location ===
+            SearchLocation.THIS_FOLDER);
       }
     }
   }

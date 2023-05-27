@@ -141,6 +141,13 @@ void MetricsRenderFrameObserver::DidObserveLoadingBehavior(
     page_timing_metrics_sender_->DidObserveLoadingBehavior(behavior);
 }
 
+void MetricsRenderFrameObserver::DidObserveJavaScriptFrameworks(
+    const blink::JavaScriptFrameworkDetectionResult& result) {
+  if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->DidObserveJavaScriptFrameworks(result);
+  }
+}
+
 void MetricsRenderFrameObserver::DidObserveSubresourceLoad(
     const blink::SubresourceLoadMetrics& subresource_load_metrics) {
   if (page_timing_metrics_sender_)
@@ -656,6 +663,14 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
           CreateTimeDeltaFromTimestampsInSeconds(
               (*perf.LargestContentfulPaintImageLoadEnd()).InSecondsF(), start);
     }
+
+    timing->paint_timing->largest_contentful_paint
+        ->is_loaded_from_memory_cache =
+        perf.LargestContentfulPaintImageIsLoadedFromMemoryCache();
+
+    timing->paint_timing->largest_contentful_paint
+        ->is_preloaded_with_early_hints =
+        perf.LargestContentfulPaintImageIsPreloadedWithEarlyHints();
   }
   if (perf.LargestTextPaintSizeForMetrics() > 0) {
     // LargestTextPaint and LargestTextPaintSize should be available at the

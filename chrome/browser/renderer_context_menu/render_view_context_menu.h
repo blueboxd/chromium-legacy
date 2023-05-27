@@ -89,6 +89,10 @@ class SystemWebAppDelegate;
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
+namespace chromeos::clipboard_history {
+class ClipboardHistorySubmenuModel;
+}  // namespace chromeos::clipboard_history
+
 namespace policy {
 class DlpRulesManager;
 }  // namespace policy
@@ -185,6 +189,17 @@ class RenderViewContextMenu
 #if BUILDFLAG(IS_CHROMEOS)
   virtual const policy::DlpRulesManager* GetDlpRulesManager() const;
 #endif
+
+  // RenderViewContextMenuBase:
+  // If called in Ash when Lacros is the only browser, this open the URL in
+  // Lacros. In that case, only the |url| and some values of |disposition| are
+  // respected - other parameters are ignored.
+  void OpenURLWithExtraHeaders(const GURL& url,
+                               const GURL& referring_url,
+                               WindowOpenDisposition disposition,
+                               ui::PageTransition transition,
+                               const std::string& extra_headers,
+                               bool started_from_context_menu) override;
 
  private:
   friend class RenderViewContextMenuTest;
@@ -423,6 +438,11 @@ class RenderViewContextMenu
       start_smart_selection_action_menu_observer_;
   // An observer that generate Quick answers queries.
   std::unique_ptr<QuickAnswersMenuObserver> quick_answers_menu_observer_;
+
+  // A submenu model to contain clipboard history item descriptors. Used only if
+  // the clipboard history refresh feature is enabled.
+  std::unique_ptr<chromeos::clipboard_history::ClipboardHistorySubmenuModel>
+      submenu_model_;
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

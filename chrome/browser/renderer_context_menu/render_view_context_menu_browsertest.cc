@@ -126,15 +126,15 @@
 #include "ui/gfx/codec/png_codec.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-#include "components/services/screen_ai/public/cpp/screen_ai_install_state.h"
+#include "chrome/browser/screen_ai/screen_ai_install_state.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -476,10 +476,9 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
     // Prepare to load a pdf plugin inside.
     TestMimeHandlerViewGuest::RegisterTestGuestViewType(
         test_guest_view_manager_);
-    ASSERT_TRUE(
-        content::ExecuteScript(web_contents,
-                               "var l = document.getElementById('link1');"
-                               "l.click();"));
+    ASSERT_TRUE(content::ExecJs(web_contents,
+                                "var l = document.getElementById('link1');"
+                                "l.click();"));
 
     // Wait for the guest view of the PDF plugin to be created.
     auto* guest_view =
@@ -582,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(
       prefs::kSupervisedUserId, supervised_user::kChildAccountSUID);
 
   // Block access to http://www.google.com/ in the URL filter.
-  SupervisedUserService* supervised_user_service =
+  supervised_user::SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
   supervised_user::SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilter();
@@ -622,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(
       prefs::kSupervisedUserId, supervised_user::kChildAccountSUID);
 
   // Block access to http://www.google.com/ in the URL filter.
-  SupervisedUserService* supervised_user_service =
+  supervised_user::SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
   supervised_user::SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilter();
@@ -738,7 +737,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
         WebAppProvider::GetForTest(browser()->profile());
     base::RunLoop run_loop;
 
-    ASSERT_TRUE(provider->install_finalizer().CanUserUninstallWebApp(app_id));
+    ASSERT_TRUE(provider->registrar_unsafe().CanUserUninstallWebApp(app_id));
     provider->install_finalizer().UninstallWebApp(
         app_id, webapps::WebappUninstallSource::kAppMenu,
         base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
@@ -2141,8 +2140,16 @@ class SearchByRegionWithUnifiedSidePanelBrowserTest
   }
 };
 
+// https://crbug.com/1444953
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_ValidLensRegionSearchWithUnifiedSidePanel \
+  DISABLED_ValidLensRegionSearchWithUnifiedSidePanel
+#else
+#define MAYBE_ValidLensRegionSearchWithUnifiedSidePanel \
+  ValidLensRegionSearchWithUnifiedSidePanel
+#endif
 IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
-                       ValidLensRegionSearchWithUnifiedSidePanel) {
+                       MAYBE_ValidLensRegionSearchWithUnifiedSidePanel) {
   SetupUnifiedSidePanel();
   // We need a base::RunLoop to ensure that our test does not finish until the
   // side panel has opened and we have verified the URL.
@@ -2186,8 +2193,17 @@ IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
                                    ".*ep=crs&re=df&s=4&st=\\d+&lm=.+"));
 }
 
-IN_PROC_BROWSER_TEST_F(SearchByRegionWithUnifiedSidePanelBrowserTest,
-                       ValidFullscreenLensRegionSearchWithUnifiedSidePanel) {
+// https://crbug.com/1444953
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_ValidFullscreenLensRegionSearchWithUnifiedSidePanel \
+  DISABLED_ValidFullscreenLensRegionSearchWithUnifiedSidePanel
+#else
+#define MAYBE_ValidFullscreenLensRegionSearchWithUnifiedSidePanel \
+  ValidFullscreenLensRegionSearchWithUnifiedSidePanel
+#endif
+IN_PROC_BROWSER_TEST_F(
+    SearchByRegionWithUnifiedSidePanelBrowserTest,
+    MAYBE_ValidFullscreenLensRegionSearchWithUnifiedSidePanel) {
   SetupUnifiedSidePanel();
   // We need a base::RunLoop to ensure that our test does not finish until the
   // side panel has opened and we have verified the URL.

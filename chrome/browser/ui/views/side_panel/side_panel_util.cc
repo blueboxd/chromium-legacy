@@ -12,6 +12,7 @@
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/side_panel/bookmarks/bookmarks_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/feed/feed_side_panel_coordinator.h"
@@ -20,11 +21,11 @@
 #include "chrome/browser/ui/views/side_panel/reading_list/reading_list_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/search_companion/search_companion_side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
 #include "chrome/browser/ui/views/side_panel/user_note/user_note_ui_coordinator.h"
 #include "components/feed/feed_feature_list.h"
 #include "components/history_clusters/core/features.h"
-#include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_notes/user_notes_features.h"
@@ -57,6 +58,7 @@ std::string GetHistogramNameForId(SidePanelEntry::Id id) {
            {SidePanelEntry::Id::kCustomizeChrome, "CustomizeChrome"},
            {SidePanelEntry::Id::kWebView, "WebView"},
            {SidePanelEntry::Id::kSearchCompanion, "Companion"},
+           {SidePanelEntry::Id::kShoppingInsights, "ShoppingInsights"},
            {SidePanelEntry::Id::kExtension, "Extension"}});
   auto* i = id_to_histogram_name_map.find(id);
   DCHECK(i != id_to_histogram_name_map.cend());
@@ -78,13 +80,8 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
 
   // Add history clusters.
   if (HistoryClustersSidePanelCoordinator::IsSupported(browser->profile())) {
-    auto* history_clusters_side_panel_coordinator =
-        HistoryClustersSidePanelCoordinator::GetOrCreateForBrowser(browser);
-    if (browser->profile()->GetPrefs()->GetBoolean(
-            history_clusters::prefs::kVisible)) {
-      history_clusters_side_panel_coordinator->CreateAndRegisterEntry(
-          global_registry);
-    }
+    HistoryClustersSidePanelCoordinator::GetOrCreateForBrowser(browser)
+        ->CreateAndRegisterEntry(global_registry);
   }
 
   // Add read anything.
@@ -94,9 +91,12 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
   }
 
   // Create Search Companion coordinator.
+  // Disable runtime checks so that coordinator can monitor the runtime changes
+  // in the availability of companion.
   if (base::FeatureList::IsEnabled(companion::features::kSidePanelCompanion) &&
       SearchCompanionSidePanelCoordinator::IsSupported(
-          browser->profile(), /*include_dsp_check=*/false)) {
+          browser->profile(),
+          /*include_runtime_checks=*/false)) {
     SearchCompanionSidePanelCoordinator::GetOrCreateForBrowser(browser);
   }
 
@@ -137,6 +137,12 @@ std::unique_ptr<views::View> SidePanelUtil::DeregisterAndReturnView(
   std::unique_ptr<SidePanelEntry> entry =
       registry->DeregisterAndReturnEntry(key);
   return entry->CachedView() ? entry->GetContent() : nullptr;
+}
+
+SidePanelCoordinator* SidePanelUtil::GetSidePanelCoordinatorForBrowser(
+    Browser* browser) {
+  return static_cast<SidePanelCoordinator*>(
+      SidePanelUI::GetSidePanelUIForBrowser(browser));
 }
 
 void SidePanelUtil::RecordSidePanelOpen(
@@ -194,6 +200,7 @@ void SidePanelUtil::RecordEntryHiddenMetrics(SidePanelEntry::Id id,
 }
 
 void SidePanelUtil::RecordEntryShowTriggeredMetrics(
+    Browser* browser,
     SidePanelEntry::Id id,
     absl::optional<SidePanelUtil::SidePanelOpenTrigger> trigger) {
   if (trigger.has_value()) {
@@ -201,5 +208,12 @@ void SidePanelUtil::RecordEntryShowTriggeredMetrics(
         base::StrCat(
             {"SidePanel.", GetHistogramNameForId(id), ".ShowTriggered"}),
         trigger.value());
+  }
+
+  if (id == SidePanelEntry::Id::kSearchCompanion) {
+    auto* search_companion_coordinator =
+        SearchCompanionSidePanelCoordinator::GetOrCreateForBrowser(browser);
+    search_companion_coordinator->NotifyCompanionOfSidePanelOpenTrigger(
+        trigger);
   }
 }

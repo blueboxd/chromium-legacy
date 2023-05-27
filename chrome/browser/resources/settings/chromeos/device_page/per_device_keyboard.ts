@@ -8,15 +8,14 @@
  * settings for each device in system settings.
  */
 
-import '../../icons.html.js';
-import '../../settings_shared.css.js';
+import '../icons.html.js';
+import '../settings_shared.css.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '/shared/settings/controls/settings_radio_group.js';
 import '/shared/settings/controls/settings_slider.js';
 import '/shared/settings/controls/settings_toggle_button.js';
-import '../../settings_shared.css.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -132,11 +131,11 @@ export class SettingsPerDeviceKeyboardElement extends
     this.attemptDeepLink();
   }
 
-  private onShowKeyboardShortcutViewerTap(): void {
+  private onShowKeyboardShortcutViewerClick(): void {
     this.browserProxy.showKeyboardShortcutViewer();
   }
 
-  private onShowInputSettingsTap(): void {
+  private onShowInputSettingsClick(): void {
     Router.getInstance().navigateTo(
         routes.OS_LANGUAGES_INPUT,
         /*dynamicParams=*/ undefined, /*removeSearch=*/ true);

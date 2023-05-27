@@ -1,0 +1,56 @@
+# Copyright 2023 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("data_controls") {
+  sources = [
+    "action_context.h",
+    "attributes_condition.cc",
+    "attributes_condition.h",
+    "condition.h",
+    "data_controls_policy_handler.cc",
+    "data_controls_policy_handler.h",
+    "dlp_rules_manager_base.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/policy/core/browser",
+    "//components/prefs",
+    "//components/url_matcher",
+    "//third_party/abseil-cpp:absl",
+    "//url",
+  ]
+
+  if (is_chromeos) {
+    sources += [
+      "component.cc",
+      "component.h",
+    ]
+  }
+}
+
+source_set("test_support") {
+  testonly = true
+  public_deps = [
+    ":data_controls",
+    "//base",
+    "//components/policy/core/browser",
+    "//components/policy/core/common:common_constants",
+    "//components/prefs",
+    "//testing/gtest",
+    "//third_party/abseil-cpp:absl",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "attributes_condition_unittest.cc" ]
+
+  deps = [
+    ":data_controls",
+    "//base",
+    "//testing/gtest",
+  ]
+}

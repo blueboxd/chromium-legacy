@@ -115,6 +115,9 @@
   <message name="IDS_AR_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use AR. Follows a prompt: 'This site would like to:">
     Create a 3D map of your surroundings and track camera position
   </message>
+  <message name="IDS_STORAGE_ACCESS_PERMISSION_TWO_ORIGIN_PROMPT_TITLE" translateable="false" desc="The label that is used to introduce storage access permission request to the user in a popup.">
+    Allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to use info they've saved about you to display content?
+  </message>
   <message name="IDS_STORAGE_ACCESS_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site needs access to its data while it is embedded into another site. Follows a prompt: 'This site would like to:'">
     Access cookies and site data.
   </message>
@@ -122,6 +125,12 @@
 Do you want to allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to use cookies and site data on <ph name="TOP_LEVEL_URL">$2<ex>content_domain.site</ex></ph>?
 
 This will otherwise be blocked by your privacy settings. This will allow the content you interacted with to work correctly, but may allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to track your activity.
+  </message>
+  <message name="IDS_STORAGE_ACCESS_PERMISSION_TWO_ORIGIN_EXPLANATION" translateable="false" desc="Explanation of the permission request shown if the user is visiting a site needs access to its data while it is embedded into another site.">
+    <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> will know that you visited <ph name="TOP_LEVEL_URL">$2<ex>content_domain.site</ex></ph>. <ph name="HELP_CENTER_LINK">$3<ex>More about embedded content</ex></ph>.
+  </message>
+  <message name="IDS_STORAGE_ACCESS_PERMISSION_TWO_ORIGIN_LINK" translateable="false" desc="Text that links to help center article about storage access and embedded content.">
+  More about embedded content
   </message>
   <message name="IDS_WINDOW_MANAGEMENT_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to manage windows. Follows a prompt: 'This site would like to:'">
     Manage windows on all your displays
@@ -222,6 +231,13 @@ This will otherwise be blocked by your privacy settings. This will allow the con
     Finding USB devices...
   </message>
 
+  <message name="IDS_PRIVATE_NETWORK_DEVICE_CHOOSER_PROMPT_ORIGIN" desc="Text on a popup permission prompt asking the user whether they want to allow the site to access a private network device.">
+    <ph name="Origin">$1<ex>www.google.com</ex></ph> wants to access a device on your network:
+  </message>
+  <message name="IDS_PRIVATE_NETWORK_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT" desc="Label on the button that closes the private network chooser popup and connects the selected device.">
+    Connect
+  </message>
+
   <if expr="not is_android">
     <message name="IDS_GEOLOCATION_PERMISSION_CHIP" desc="Button text representing a request for the user's physical location from a website. When clicked, shows a permission prompt bubble with more information.">
       Use your location?
@@ -243,6 +259,9 @@ This will otherwise be blocked by your privacy settings. This will allow the con
     </message>
     <message name="IDS_CLIPBOARD_PERMISSION_CHIP" desc="Button text representing a request for reading data from the system clipboard from a website. When clicked, shows a permission prompt bubble with more information.">
       Share clipboard?
+    </message>
+    <message name="IDS_SAA_PERMISSION_CHIP" desc="Button text representing a request for using Storage Access API from a website embedded in another website. When clicked, shows a permission prompt bubble with more information.">
+      Allow embedded content?
     </message>
     <message name="IDS_VR_PERMISSION_CHIP" desc="Button text representing a request for using VR from a website. When clicked, shows a permission prompt bubble with more information.">
       Allow VR?
@@ -311,6 +330,12 @@ This will otherwise be blocked by your privacy settings. This will allow the con
     </message>
       <message name="IDS_PERMISSIONS_CAMERA_AND_MICROPHONE_NOT_ALLOWED_CONFIRMATION_SCREENREADER_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="Announcement to screen readers confirming that a microphone and camera permission requested has been denied.">
         Camera and microphone not allowed
+    </message>
+      <message name="IDS_PERMISSIONS_SAA_ALLOWED_CONFIRMATION_SCREENREADER_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="Announcement to screen readers confirming that the Storage Access API permission requested has been granted.">
+        Embedded content allowed
+    </message>
+    <message name="IDS_PERMISSIONS_SAA_NOT_ALLOWED_CONFIRMATION_SCREENREADER_ANNOUNCEMENT" is_accessibility_with_no_ui="true" desc="Announcement to screen readers confirming that the Storage Access API permission requested has been denied.">
+        Embedded content not allowed
     </message>
   </if>
 

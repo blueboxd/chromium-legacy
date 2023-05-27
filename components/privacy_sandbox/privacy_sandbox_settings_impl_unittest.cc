@@ -56,6 +56,7 @@ constexpr auto kIsIncognito = StateKey::kIsIncognito;
 constexpr auto kIsRestrictedAccount = StateKey::kIsRestrictedAccount;
 constexpr auto kHasAppropriateTopicsConsent =
     StateKey::kHasAppropriateTopicsConsent;
+constexpr auto kAttestationsMap = StateKey::kAttestationsMap;
 
 // using enum privacy_sandbox_test_util::InputKey;
 using privacy_sandbox_test_util::InputKey;
@@ -1685,15 +1686,284 @@ TEST_F(PrivacySandboxSettingsM1Test, TopicsConsentStatus) {
            static_cast<int>(Status::kApisDisabled)}});
 }
 
-class PrivacySandboxAttestationsTest : public PrivacySandboxSettingsTest {
+class PrivacySandboxAttestationsTest : public PrivacySandboxSettingsM1Test {
   void InitializeFeaturesBeforeStart() override {
-    feature_list_.InitAndEnableFeature(
-        privacy_sandbox::kEnforcePrivacySandboxAttestations);
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{privacy_sandbox::kPrivacySandboxSettings4,
+                              privacy_sandbox::
+                                  kEnforcePrivacySandboxAttestations},
+        /*disabled_features=*/{});
   }
 };
 
-// TODO(crbug.com/1442226): Transition to the new declarative test format.
-TEST_F(PrivacySandboxAttestationsTest, IsTopicsAllowedForContextAttestation) {
+// When the attestations map has no enrollments at all (i.e., no enrollment
+// for the site in question), attestation fails.
+TEST_F(PrivacySandboxAttestationsTest, NoEnrollments) {
+  GURL top_frame_url("https://top-frame.com");
+  GURL enrollee_url("https://embedded.com");
+  RunTestCase(
+      TestState{{MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
+                                   kM1FledgeEnabledUserPrefValue,
+                                   kM1AdMeasurementEnabledUserPrefValue},
+                 true},
+                {kAttestationsMap, PrivacySandboxAttestationsMap{}}},
+      TestInput{
+          {kTopicsURL, enrollee_url},
+          {kTopFrameOrigin, url::Origin::Create(top_frame_url)},
+          {kAdMeasurementReportingOrigin, url::Origin::Create(enrollee_url)},
+          {kFledgeAuctionPartyOrigin, url::Origin::Create(enrollee_url)},
+          {kAdMeasurementSourceOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAdMeasurementDestinationOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAccessingOrigin, url::Origin::Create(enrollee_url)}},
+      TestOutput{
+          {MultipleOutputKeys{
+               kIsTopicsAllowedForContext, kIsAttributionReportingAllowed,
+               kMaySendAttributionReport, kIsFledgeAllowed,
+               kIsSharedStorageAllowed, kIsPrivateAggregationAllowed},
+           false},
+          {MultipleOutputKeys{kIsTopicsAllowedForContextMetric,
+                              kIsAttributionReportingAllowedMetric,
+                              kMaySendAttributionReportMetric,
+                              kIsFledgeAllowedMetric,
+                              kIsSharedStorageAllowedMetric,
+                              kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kAttestationFailed)}});
+}
+
+// When the site in question is enrolled but has no attestations at all (i.e.,
+// no attestation for the API in question), attestation fails.
+TEST_F(PrivacySandboxAttestationsTest, EnrollmentWithoutAttestations) {
+  GURL top_frame_url("https://top-frame.com");
+  GURL enrollee_url("https://embedded.com");
+  RunTestCase(
+      TestState{{MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
+                                   kM1FledgeEnabledUserPrefValue,
+                                   kM1AdMeasurementEnabledUserPrefValue},
+                 true},
+                {kAttestationsMap,
+                 PrivacySandboxAttestationsMap{
+                     {net::SchemefulSite(enrollee_url), {}}}}},
+      TestInput{
+          {kTopicsURL, enrollee_url},
+          {kTopFrameOrigin, url::Origin::Create(top_frame_url)},
+          {kAdMeasurementReportingOrigin, url::Origin::Create(enrollee_url)},
+          {kFledgeAuctionPartyOrigin, url::Origin::Create(enrollee_url)},
+          {kAdMeasurementSourceOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAdMeasurementDestinationOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAccessingOrigin, url::Origin::Create(enrollee_url)}},
+      TestOutput{
+          {MultipleOutputKeys{
+               kIsTopicsAllowedForContext, kIsAttributionReportingAllowed,
+               kMaySendAttributionReport, kIsFledgeAllowed,
+               kIsSharedStorageAllowed, kIsPrivateAggregationAllowed},
+           false},
+          {MultipleOutputKeys{kIsTopicsAllowedForContextMetric,
+                              kIsAttributionReportingAllowedMetric,
+                              kMaySendAttributionReportMetric,
+                              kIsFledgeAllowedMetric,
+                              kIsSharedStorageAllowedMetric,
+                              kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kAttestationFailed)}});
+}
+
+TEST_F(PrivacySandboxAttestationsTest, TopicsAttestation) {
+  GURL top_frame_url("https://top-frame.com");
+  GURL enrollee_url("https://embedded.com");
+  RunTestCase(
+      TestState{{MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
+                                   kM1FledgeEnabledUserPrefValue,
+                                   kM1AdMeasurementEnabledUserPrefValue},
+                 true},
+                {kAttestationsMap,
+                 PrivacySandboxAttestationsMap{
+                     {net::SchemefulSite(enrollee_url),
+                      {PrivacySandboxAttestationsGatedAPI::kTopics}}}}},
+      TestInput{
+          {kTopicsURL, enrollee_url},
+          {kTopFrameOrigin, url::Origin::Create(top_frame_url)},
+          {kAdMeasurementReportingOrigin, url::Origin::Create(enrollee_url)},
+          {kFledgeAuctionPartyOrigin, url::Origin::Create(enrollee_url)},
+          {kAdMeasurementSourceOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAdMeasurementDestinationOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAccessingOrigin, url::Origin::Create(enrollee_url)}},
+      TestOutput{{kIsTopicsAllowedForContext, true},
+                 {MultipleOutputKeys{kIsAttributionReportingAllowed,
+                                     kMaySendAttributionReport,
+                                     kIsFledgeAllowed, kIsSharedStorageAllowed,
+                                     kIsPrivateAggregationAllowed},
+                  false},
+                 {kIsTopicsAllowedForContextMetric,
+                  static_cast<int>(Status::kAllowed)},
+                 {MultipleOutputKeys{kIsAttributionReportingAllowedMetric,
+                                     kMaySendAttributionReportMetric,
+                                     kIsFledgeAllowedMetric,
+                                     kIsSharedStorageAllowedMetric,
+                                     kIsPrivateAggregationAllowedMetric},
+                  static_cast<int>(Status::kAttestationFailed)}});
+}
+
+TEST_F(PrivacySandboxAttestationsTest, PrivateAggregationAttestation) {
+  GURL top_frame_url("https://top-frame.com");
+  GURL enrollee_url("https://embedded.com");
+  RunTestCase(
+      TestState{
+          {MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
+                             kM1FledgeEnabledUserPrefValue,
+                             kM1AdMeasurementEnabledUserPrefValue},
+           true},
+          {kAttestationsMap,
+           PrivacySandboxAttestationsMap{
+               {net::SchemefulSite(enrollee_url),
+                {PrivacySandboxAttestationsGatedAPI::kPrivateAggregation}}}}},
+      TestInput{
+          {kTopicsURL, enrollee_url},
+          {kTopFrameOrigin, url::Origin::Create(top_frame_url)},
+          {kAdMeasurementReportingOrigin, url::Origin::Create(enrollee_url)},
+          {kFledgeAuctionPartyOrigin, url::Origin::Create(enrollee_url)},
+          {kAdMeasurementSourceOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAdMeasurementDestinationOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAccessingOrigin, url::Origin::Create(enrollee_url)}},
+      TestOutput{{kIsPrivateAggregationAllowed, true},
+                 {MultipleOutputKeys{kIsTopicsAllowedForContext,
+                                     kIsAttributionReportingAllowed,
+                                     kMaySendAttributionReport,
+                                     kIsFledgeAllowed, kIsSharedStorageAllowed},
+                  false},
+                 {kIsPrivateAggregationAllowedMetric,
+                  static_cast<int>(Status::kAllowed)},
+                 {MultipleOutputKeys{kIsTopicsAllowedForContextMetric,
+                                     kIsAttributionReportingAllowedMetric,
+                                     kMaySendAttributionReportMetric,
+                                     kIsFledgeAllowedMetric,
+                                     kIsSharedStorageAllowedMetric},
+                  static_cast<int>(Status::kAttestationFailed)}});
+}
+
+TEST_F(PrivacySandboxAttestationsTest, SharedStorageAttestation) {
+  GURL top_frame_url("https://top-frame.com");
+  GURL enrollee_url("https://embedded.com");
+  RunTestCase(
+      TestState{{MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
+                                   kM1FledgeEnabledUserPrefValue,
+                                   kM1AdMeasurementEnabledUserPrefValue},
+                 true},
+                {kAttestationsMap,
+                 PrivacySandboxAttestationsMap{
+                     {net::SchemefulSite(enrollee_url),
+                      {PrivacySandboxAttestationsGatedAPI::kSharedStorage}}}}},
+      TestInput{
+          {kTopicsURL, enrollee_url},
+          {kTopFrameOrigin, url::Origin::Create(top_frame_url)},
+          {kAdMeasurementReportingOrigin, url::Origin::Create(enrollee_url)},
+          {kFledgeAuctionPartyOrigin, url::Origin::Create(enrollee_url)},
+          {kAdMeasurementSourceOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAdMeasurementDestinationOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAccessingOrigin, url::Origin::Create(enrollee_url)}},
+      TestOutput{
+          {kIsSharedStorageAllowed, true},
+          {MultipleOutputKeys{kIsTopicsAllowedForContext,
+                              kIsAttributionReportingAllowed,
+                              kMaySendAttributionReport, kIsFledgeAllowed,
+                              kIsPrivateAggregationAllowed},
+           false},
+          {kIsSharedStorageAllowedMetric, static_cast<int>(Status::kAllowed)},
+          {MultipleOutputKeys{kIsTopicsAllowedForContextMetric,
+                              kIsAttributionReportingAllowedMetric,
+                              kMaySendAttributionReportMetric,
+                              kIsFledgeAllowedMetric,
+                              kIsPrivateAggregationAllowedMetric},
+           static_cast<int>(Status::kAttestationFailed)}});
+}
+
+TEST_F(PrivacySandboxAttestationsTest, FledgeAttestation) {
+  GURL top_frame_url("https://top-frame.com");
+  GURL enrollee_url("https://embedded.com");
+  RunTestCase(
+      TestState{
+          {MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
+                             kM1FledgeEnabledUserPrefValue,
+                             kM1AdMeasurementEnabledUserPrefValue},
+           true},
+          {kAttestationsMap,
+           PrivacySandboxAttestationsMap{
+               {net::SchemefulSite(enrollee_url),
+                {PrivacySandboxAttestationsGatedAPI::kProtectedAudience}}}}},
+      TestInput{
+          {kTopicsURL, enrollee_url},
+          {kTopFrameOrigin, url::Origin::Create(top_frame_url)},
+          {kAdMeasurementReportingOrigin, url::Origin::Create(enrollee_url)},
+          {kFledgeAuctionPartyOrigin, url::Origin::Create(enrollee_url)},
+          {kAdMeasurementSourceOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAdMeasurementDestinationOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAccessingOrigin, url::Origin::Create(enrollee_url)}},
+      TestOutput{{kIsFledgeAllowed, true},
+                 {MultipleOutputKeys{
+                      kIsTopicsAllowedForContext,
+                      kIsAttributionReportingAllowed, kMaySendAttributionReport,
+                      kIsSharedStorageAllowed, kIsPrivateAggregationAllowed},
+                  false},
+                 {kIsFledgeAllowedMetric, static_cast<int>(Status::kAllowed)},
+                 {MultipleOutputKeys{kIsTopicsAllowedForContextMetric,
+                                     kIsAttributionReportingAllowedMetric,
+                                     kMaySendAttributionReportMetric,
+                                     kIsSharedStorageAllowedMetric,
+                                     kIsPrivateAggregationAllowedMetric},
+                  static_cast<int>(Status::kAttestationFailed)}});
+}
+
+TEST_F(PrivacySandboxAttestationsTest, AttributionReportingAttestation) {
+  GURL top_frame_url("https://top-frame.com");
+  GURL enrollee_url("https://embedded.com");
+  RunTestCase(
+      TestState{
+          {MultipleStateKeys{kM1TopicsEnabledUserPrefValue,
+                             kM1FledgeEnabledUserPrefValue,
+                             kM1AdMeasurementEnabledUserPrefValue},
+           true},
+          {kAttestationsMap,
+           PrivacySandboxAttestationsMap{
+               {net::SchemefulSite(enrollee_url),
+                {PrivacySandboxAttestationsGatedAPI::kAttributionReporting}}}}},
+      TestInput{
+          {kTopicsURL, enrollee_url},
+          {kTopFrameOrigin, url::Origin::Create(top_frame_url)},
+          {kAdMeasurementReportingOrigin, url::Origin::Create(enrollee_url)},
+          {kFledgeAuctionPartyOrigin, url::Origin::Create(enrollee_url)},
+          {kAdMeasurementSourceOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAdMeasurementDestinationOrigin,
+           url::Origin::Create(GURL(top_frame_url))},
+          {kAccessingOrigin, url::Origin::Create(enrollee_url)}},
+      TestOutput{{MultipleOutputKeys{kIsAttributionReportingAllowed,
+                                     kMaySendAttributionReport},
+                  true},
+                 {MultipleOutputKeys{kIsTopicsAllowedForContext,
+                                     kIsFledgeAllowed, kIsSharedStorageAllowed,
+                                     kIsPrivateAggregationAllowed},
+                  false},
+                 {MultipleOutputKeys{kIsAttributionReportingAllowedMetric,
+                                     kMaySendAttributionReportMetric},
+                  static_cast<int>(Status::kAllowed)},
+                 {MultipleOutputKeys{kIsTopicsAllowedForContextMetric,
+                                     kIsFledgeAllowedMetric,
+                                     kIsSharedStorageAllowedMetric,
+                                     kIsPrivateAggregationAllowedMetric},
+                  static_cast<int>(Status::kAttestationFailed)}});
+}
+
+TEST_F(PrivacySandboxAttestationsTest, SetOverrideFromDevtools) {
   privacy_sandbox_test_util::SetupTestState(
       prefs(), host_content_settings_map(),
       /*privacy_sandbox_enabled=*/true,
@@ -1703,7 +1973,6 @@ TEST_F(PrivacySandboxAttestationsTest, IsTopicsAllowedForContextAttestation) {
       /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
       /*managed_cookie_exceptions=*/{});
   privacy_sandbox_settings()->SetAllPrivacySandboxAllowedForTesting();
-  base::HistogramTester histogram_tester;
 
   GURL top_level_url("https://top-level-origin.com");
   GURL caller_url("https://embedded.com");
@@ -1712,33 +1981,11 @@ TEST_F(PrivacySandboxAttestationsTest, IsTopicsAllowedForContextAttestation) {
   EXPECT_FALSE(privacy_sandbox_settings()->IsTopicsAllowedForContext(
       url::Origin::Create(top_level_url), caller_url));
 
-  // With the top-level site in the attestation map, Topics is still not
-  // allowed; it's gated on the caller's site.
-  privacy_sandbox_settings()->SetPrivacySandboxAttestationsMapForTesting(
-      {{net::SchemefulSite(top_level_url),
-        {PrivacySandboxAttestationsGatedAPI::kTopics}}});
-  EXPECT_FALSE(privacy_sandbox_settings()->IsTopicsAllowedForContext(
-      url::Origin::Create(top_level_url), caller_url));
-
-  // With the caller's site in the attestation map, but no attestation for
-  // Topics, Topics is not allowed.
-  privacy_sandbox_settings()->SetPrivacySandboxAttestationsMapForTesting(
-      {{net::SchemefulSite(caller_url), {}}});
-  EXPECT_FALSE(privacy_sandbox_settings()->IsTopicsAllowedForContext(
-      url::Origin::Create(top_level_url), caller_url));
-
-  // With the caller's site in the attestation map and attestation for Topics,
-  // Topics is allowed.
-  privacy_sandbox_settings()->SetPrivacySandboxAttestationsMapForTesting(
-      {{net::SchemefulSite(caller_url),
-        {PrivacySandboxAttestationsGatedAPI::kTopics}}});
+  // With an override of the site from a devtools call, Topics is allowed.
+  privacy_sandbox_settings()->AddPrivacySandboxAttestationOverride(
+      GURL("https://embedded.com"));
   EXPECT_TRUE(privacy_sandbox_settings()->IsTopicsAllowedForContext(
       url::Origin::Create(top_level_url), caller_url));
-
-  // Check that the histogram recorded 3 failures of 4 attempts above.
-  histogram_tester.ExpectUniqueSample(
-      "PrivacySandbox.IsTopicsAllowedForContext", Status::kAttestationFailed,
-      3);
 }
 
 }  // namespace privacy_sandbox

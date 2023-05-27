@@ -25,6 +25,8 @@ constexpr int kFovLeft = 0;
 constexpr int kFovRight = 1;
 constexpr int kFovBottom = 2;
 constexpr int kFovTop = 3;
+
+constexpr float kRadToDeg = 180.0f / M_PI;
 }  // anonymous namespace
 
 CardboardImageTransport::CardboardImageTransport(
@@ -38,8 +40,11 @@ CardboardImageTransport::~CardboardImageTransport() = default;
 void CardboardImageTransport::DoRuntimeInitialization() {
   // TODO(https://crbug.com/1429088): Move this into helper classes rather than
   // directly using the cardboard types here.
+  CardboardOpenGlEsDistortionRendererConfig config = {
+      CardboardSupportedOpenGlEsTextureType::kGlTextureExternalOes,
+  };
   renderer_ = internal::ScopedCardboardObject<CardboardDistortionRenderer*>(
-      CardboardOpenGlEs2DistortionRenderer_create());
+      CardboardOpenGlEs2DistortionRenderer_create(&config));
 
   surface_size_ = {0, 0};
 
@@ -128,8 +133,22 @@ mojom::VRFieldOfViewPtr CardboardImageTransport::GetFOV(
   float fov[4];
   CardboardLensDistortion_getFieldOfView(lens_distortion_.get(), eye, fov);
 
-  return mojom::VRFieldOfView::New(fov[kFovTop], fov[kFovBottom], fov[kFovLeft],
-                                   fov[kFovRight]);
+  return mojom::VRFieldOfView::New(
+      fov[kFovTop] * kRadToDeg, fov[kFovBottom] * kRadToDeg,
+      fov[kFovLeft] * kRadToDeg, fov[kFovRight] * kRadToDeg);
+}
+
+gfx::Transform CardboardImageTransport::GetMojoFromView(
+    CardboardEye eye,
+    gfx::Transform mojo_from_viewer) {
+  float view_from_viewer[16];
+  CardboardLensDistortion_getEyeFromHeadMatrix(lens_distortion_.get(), eye,
+                                               view_from_viewer);
+  // This needs to be inverted because the Cardboard SDK appears to be giving
+  // back values that are the inverse of what WebXR expects.
+  gfx::Transform viewer_from_view =
+      gfx::Transform::ColMajorF(view_from_viewer).InverseOrIdentity();
+  return mojo_from_viewer * viewer_from_view;
 }
 
 std::unique_ptr<CardboardImageTransport> CardboardImageTransportFactory::Create(

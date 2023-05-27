@@ -940,9 +940,13 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
     EXPECT_TRUE(
         PerformAcceleratorAction(AcceleratorAction::kToggleSystemTrayBubble));
   });
-  sm_.ExpectSpeech(
-      "Quick Settings, Press search plus left to access the notification "
-      "center.");
+  if (base::FeatureList::IsEnabled(features::kQsRevamp)) {
+    sm_.ExpectSpeech("Quick Settings");
+  } else {
+    sm_.ExpectSpeech(
+        "Quick Settings, Press search plus left to access the notification "
+        "center.");
+  }
   sm_.Replay();
 }
 
@@ -955,11 +959,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   sm_.Call([this]() {
     (PerformAcceleratorAction(AcceleratorAction::kToggleSystemTrayBubble));
   });
-  sm_.ExpectSpeech(
-      "Quick Settings, Press search plus left to access the notification "
-      "center.");
 
-  if (base::FeatureList::IsEnabled(features::kQsRevamp)) {
+  bool is_qs_revamp_enabled = base::FeatureList::IsEnabled(features::kQsRevamp);
+  if (is_qs_revamp_enabled) {
+    sm_.ExpectSpeech("Quick Settings");
     // Settings button.
     sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
     sm_.ExpectSpeech("Settings");
@@ -984,6 +987,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
     return;
   }
 
+  sm_.ExpectSpeech(
+      "Quick Settings, Press search plus left to access the notification "
+      "center.");
   // Avatar button. Disabled for guest account.
   if (GetParam() != kTestAsGuestUser) {
     sm_.Call([this]() { SendKeyPress(ui::VKEY_TAB); });
@@ -1479,10 +1485,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreSecondaryDisplay) {
       Shell::GetAllRootWindowControllers();
   EXPECT_EQ(1U, root_controllers.size());
 
-  // Make two displays, each 800 by 800, side by side.
+  // Make two displays, each 800 by 700, side by side.
   ShellTestApi shell_test_api;
   display::test::DisplayManagerTestApi(shell_test_api.display_manager())
-      .UpdateDisplay("800x800,801+0-800x800");
+      .UpdateDisplay("800x700,801+0-800x700");
   ASSERT_EQ(2u, shell_test_api.display_manager()->GetNumDisplays());
   display::test::DisplayManagerTestApi display_manager_test_api(
       shell_test_api.display_manager());
@@ -1512,7 +1518,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreSecondaryDisplay) {
   params.parent = root_window;
 
   // This is the right edge of the screen.
-  params.bounds = {1550, 0, 50, 700};
+  params.bounds = {1550, 0, 50, 600};
   widget->Init(std::move(params));
 
   views::View* view = new views::View();

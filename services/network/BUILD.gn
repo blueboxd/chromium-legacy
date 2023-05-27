@@ -13,6 +13,8 @@ component("network_service") {
   sources = [
     "brokered_client_socket_factory.cc",
     "brokered_client_socket_factory.h",
+    "brokered_udp_client_socket.cc",
+    "brokered_udp_client_socket.h",
     "cache_transparency_settings.cc",
     "cache_transparency_settings.h",
     "chunked_data_pipe_upload_data_stream.cc",
@@ -143,12 +145,16 @@ component("network_service") {
     "shared_dictionary/shared_dictionary_manager.h",
     "shared_dictionary/shared_dictionary_manager_in_memory.cc",
     "shared_dictionary/shared_dictionary_manager_in_memory.h",
+    "shared_dictionary/shared_dictionary_manager_on_disk.cc",
+    "shared_dictionary/shared_dictionary_manager_on_disk.h",
     "shared_dictionary/shared_dictionary_on_disk.cc",
     "shared_dictionary/shared_dictionary_on_disk.h",
     "shared_dictionary/shared_dictionary_storage.cc",
     "shared_dictionary/shared_dictionary_storage.h",
     "shared_dictionary/shared_dictionary_storage_in_memory.cc",
     "shared_dictionary/shared_dictionary_storage_in_memory.h",
+    "shared_dictionary/shared_dictionary_storage_on_disk.cc",
+    "shared_dictionary/shared_dictionary_storage_on_disk.h",
     "shared_dictionary/shared_dictionary_writer.h",
     "shared_dictionary/shared_dictionary_writer_in_memory.cc",
     "shared_dictionary/shared_dictionary_writer_in_memory.h",
@@ -343,6 +349,10 @@ component("network_service") {
   }
 
   if (is_android) {
+    sources += [
+      "empty_network_service.cc",
+      "empty_network_service.h",
+    ]
     deps += [
       "//crypto",
       "//third_party/boringssl",
@@ -374,6 +384,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "brokered_udp_client_socket_unittest.cc",
     "chunked_data_pipe_upload_data_stream_unittest.cc",
     "cookie_access_delegate_impl_unittest.cc",
     "cookie_manager_unittest.cc",
@@ -420,6 +431,7 @@ source_set("tests") {
     "session_cleanup_cookie_store_unittest.cc",
     "shared_dictionary/shared_dictionary_data_pipe_writer_unittest.cc",
     "shared_dictionary/shared_dictionary_disk_cache_unittest.cc",
+    "shared_dictionary/shared_dictionary_manager_on_disk_unittest.cc",
     "shared_dictionary/shared_dictionary_manager_unittest.cc",
     "shared_dictionary/shared_dictionary_on_disk_unittest.cc",
     "shared_dictionary/shared_dictionary_writer_in_memory_unittest.cc",
@@ -522,6 +534,7 @@ source_set("tests") {
     "//services/network/trust_tokens:tests",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
+    "//sql:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

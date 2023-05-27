@@ -36,7 +36,7 @@
 #import "components/password_manager/ios/ios_password_manager_driver.h"
 #import "components/password_manager/ios/ios_password_manager_driver_factory.h"
 #import "components/security_state/ios/security_state_utils.h"
-#import "components/sync/driver/sync_service.h"
+#import "components/sync/service/sync_service.h"
 #import "components/translate/core/browser/translate_manager.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
 #import "components/variations/service/variations_service.h"
@@ -490,7 +490,7 @@ bool ChromeAutofillClientIOS::IsContextSecure() const {
   return IsContextSecureForWebState(web_state_);
 }
 
-void ChromeAutofillClientIOS::ExecuteCommand(int id) {
+void ChromeAutofillClientIOS::ExecuteCommand(Suggestion::FrontendId id) {
   NOTIMPLEMENTED();
 }
 

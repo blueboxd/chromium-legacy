@@ -8,7 +8,7 @@
  */
 
 import 'chrome://resources/cr_components/settings_prefs/prefs.js';
-import '../../settings_shared.css.js';
+import '../settings_shared.css.js';
 import '/shared/settings/controls/settings_toggle_button.js';
 
 import {getHotspotConfig} from 'chrome://resources/ash/common/hotspot/cros_hotspot_config.js';
@@ -30,7 +30,8 @@ import {getTemplate} from './hotspot_subpage.html.js';
 const SettingsHotspotSubpageElementBase =
     DeepLinkingMixin(RouteObserverMixin(PrefsMixin(I18nMixin(PolymerElement))));
 
-class SettingsHotspotSubpageElement extends SettingsHotspotSubpageElementBase {
+export class SettingsHotspotSubpageElement extends
+    SettingsHotspotSubpageElementBase {
   static get is() {
     return 'settings-hotspot-subpage' as const;
   }

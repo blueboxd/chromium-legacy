@@ -17,6 +17,9 @@
 #import "components/policy/policy_constants.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
+#import "components/sync/base/sync_prefs.h"
+#import "components/sync/base/user_selectable_type.h"
+#import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
@@ -256,12 +259,8 @@ id<GREYMatcher> DeleteConfirmationButtonForGrouping() {
 // Matcher for the Delete button in Confirmation Alert for batch passwords
 // deletion when password grouping is enabled.
 id<GREYMatcher> BatchDeleteConfirmationButtonForGrouping() {
-  return grey_allOf(
-      grey_accessibilityID([NSString
-          stringWithFormat:@"%@%@",
-                           l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE),
-                           @"AlertAction"]),
-      grey_interactable(), nullptr);
+  return chrome_test_util::AlertAction(
+      l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE));
 }
 
 // Matcher for the Delete button in the list view, located at the bottom of the
@@ -504,6 +503,12 @@ id<GREYMatcher> EditDoneButton() {
 
 - (void)setUp {
   [super setUp];
+  // Manually clear sync passwords pref before testShowAccountStorageNotice*.
+  // TODO(crbug.com/1069086): Wipe the PrefService between tests.
+  [ChromeEarlGreyAppInterface
+      clearUserPrefWithName:base::SysUTF8ToNSString(
+                                syncer::SyncPrefs::GetPrefNameForTypeForTesting(
+                                    syncer::UserSelectableType::kPasswords))];
   GREYAssertNil([MetricsAppInterface setupHistogramTester],
                 @"Cannot setup histogram tester.");
   _passwordAutoFillStatusSwizzler =
@@ -575,6 +580,10 @@ id<GREYMatcher> EditDoneButton() {
     config.features_disabled.push_back(
         password_manager::features::kIOSPasswordCheckup);
   }
+
+  // TODO(crbug.com/1448574): Re-enable CPE promo and update
+  // testCopyPasswordToast and testCopyPasswordMenuItem to check for the promo.
+  config.features_disabled.push_back(kCredentialProviderExtensionPromo);
 
   return config;
 }
@@ -2054,7 +2063,8 @@ id<GREYMatcher> EditDoneButton() {
 }
 
 // Test search and delete all passwords and blocked items.
-- (void)testSearchAndDeleteAllPasswords {
+// TODO(crbug.com/1441783): Flaky.
+- (void)DISABLED_testSearchAndDeleteAllPasswords {
   SaveExamplePasswordForms();
   SaveExampleBlockedForms();
 

@@ -27,7 +27,6 @@ class ChromeWebClient : public web::WebClient {
   void AddAdditionalSchemes(Schemes* schemes) const override;
   std::string GetApplicationLocale() const override;
   bool IsAppSpecificURL(const GURL& url) const override;
-  std::u16string GetPluginNotSupportedText() const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
   std::u16string GetLocalizedString(int message_id) const override;
   base::StringPiece GetDataResource(
@@ -55,7 +54,7 @@ class ChromeWebClient : public web::WebClient {
                                          const GURL& url) const override;
   void LogDefaultUserAgent(web::WebState* web_state,
                            const GURL& url) const override;
-  bool RestoreSessionFromCache(web::WebState* web_state) const override;
+  NSData* FetchSessionFromCache(web::WebState* web_state) const override;
   void CleanupNativeRestoreURLs(web::WebState* web_state) const override;
   void WillDisplayMediaCapturePermissionPrompt(
       web::WebState* web_state) const override;

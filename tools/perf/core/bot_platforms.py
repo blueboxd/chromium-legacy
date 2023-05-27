@@ -357,11 +357,6 @@ for board, path_parts in _IMAGE_PATHS.items():
   FUCHSIA_EXEC_ARGS[board] = _COMMON_FUCHSIA_ARGS + [
       '--system-image-dir=%s' % image_dir
   ]
-  FUCHSIA_EXEC_CONFIGS[board] = frozenset([
-      _base_perftests(900,
-                      path='bin/run_base_perftests',
-                      additional_flags=FUCHSIA_EXEC_ARGS[board])
-  ])
 
 for board, pb_name in _PB_IMAGE_PATHS.items():
   FUCHSIA_EXEC_ARGS[board] = _COMMON_FUCHSIA_ARGS + [
@@ -423,7 +418,7 @@ _MAC_M1_MINI_2020_BENCHMARK_CONFIGS = PerfSuite(
 _MAC_M1_MINI_2020_PGO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('jetstream2'),
     _GetBenchmarkConfig('speedometer2'),
-    _GetBenchmarkConfig('rendering.desktop'),
+    _GetBenchmarkConfig('rendering.desktop.notracing'),
 ])
 _MAC_M1_PRO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('jetstream2'),
@@ -708,7 +703,7 @@ ANDROID_GO_PGO = PerfPlatform('android-go-perf-pgo',
                               pinpoint_only=True)
 ANDROID_GO_WEBVIEW = PerfPlatform('android-go_webview-perf',
                                   'Android OPM1.171019.021 (gobo)',
-                                  _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS, 10,
+                                  _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS, 8,
                                   'android')
 ANDROID_PIXEL2 = PerfPlatform('android-pixel2-perf',
                               'Android OPM1.171019.021',
@@ -828,23 +823,19 @@ FUCHSIA_PERF_ASTRO = PerfPlatform('fuchsia-perf-ast',
                                   _FUCHSIA_PERF_ASTRO_BENCHMARK_CONFIGS,
                                   2,
                                   'fuchsia',
-                                  is_fyi=True,
-                                  executables=FUCHSIA_EXEC_CONFIGS['astro'])
+                                  is_fyi=True)
 FUCHSIA_PERF_NELSON = PerfPlatform('fuchsia-perf-nsn',
                                    '',
                                    _FUCHSIA_PERF_ASTRO_BENCHMARK_CONFIGS,
                                    2,
                                    'fuchsia',
-                                   is_fyi=True,
-                                   executables=FUCHSIA_EXEC_CONFIGS['nelson'])
-FUCHSIA_PERF_SHERLOCK = PerfPlatform(
-    'fuchsia-perf-shk',
-    '',
-    _FUCHSIA_PERF_SHERLOCK_BENCHMARK_CONFIGS,
-    2,
-    'fuchsia',
-    is_fyi=True,
-    executables=FUCHSIA_EXEC_CONFIGS['sherlock'])
+                                   is_fyi=True)
+FUCHSIA_PERF_SHERLOCK = PerfPlatform('fuchsia-perf-shk',
+                                     '',
+                                     _FUCHSIA_PERF_SHERLOCK_BENCHMARK_CONFIGS,
+                                     2,
+                                     'fuchsia',
+                                     is_fyi=True)
 
 # FYI bots
 WIN_10_LOW_END_HP_CANDIDATE = PerfPlatform(

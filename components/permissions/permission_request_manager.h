@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/check_is_test.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -159,6 +160,7 @@ class PermissionRequestManager
   void Deny() override;
   void Dismiss() override;
   void Ignore() override;
+  void OpenHelpCenterLink(const ui::Event& event) override;
   void PreIgnoreQuietPrompt() override;
   bool WasCurrentRequestAlreadyDisplayed() override;
   bool ShouldDropCurrentRequestIfCannotShowQuietly() const override;
@@ -235,6 +237,10 @@ class PermissionRequestManager
 
   void set_enabled_app_level_notification_permission_for_testing(bool enabled) {
     enabled_app_level_notification_permission_for_testing_ = enabled;
+  }
+
+  void set_embedding_origin_for_testing(const GURL& embedding_origin) {
+    embedding_origin_for_testing_ = embedding_origin;
   }
 
   base::ObserverList<Observer>* get_observer_list_for_testing() {
@@ -493,6 +499,8 @@ class PermissionRequestManager
   absl::optional<base::TimeDelta> time_to_decision_for_test_;
 
   absl::optional<bool> enabled_app_level_notification_permission_for_testing_;
+
+  absl::optional<GURL> embedding_origin_for_testing_;
 
   // A timer is used to pre-ignore the permission request if it's been displayed
   // as a quiet chip.

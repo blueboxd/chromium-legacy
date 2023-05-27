@@ -22,6 +22,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/pointer/touch_editing_controller.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_observer.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -169,6 +170,14 @@ bool TouchSelectionControllerClientAura::HandleContextMenu(
     return true;
   }
 
+  if (::features::IsTouchTextEditingRedesignEnabled() &&
+      params.source_type == ui::MENU_SOURCE_TOUCH && params.is_editable &&
+      params.selection_text.empty() && IsQuickMenuAvailable()) {
+    quick_menu_requested_ = !quick_menu_requested_;
+    UpdateQuickMenu();
+    return true;
+  }
+
   const bool from_touch = params.source_type == ui::MENU_SOURCE_LONG_PRESS ||
                           params.source_type == ui::MENU_SOURCE_LONG_TAP ||
                           params.source_type == ui::MENU_SOURCE_TOUCH;
@@ -181,6 +190,16 @@ bool TouchSelectionControllerClientAura::HandleContextMenu(
 
 void TouchSelectionControllerClientAura::DidStopFlinging() {
   OnScrollCompleted();
+}
+
+void TouchSelectionControllerClientAura::OnSwipeToMoveCursorBegin() {
+  GetTouchSelectionController()->OnSwipeToMoveCursorBegin();
+  OnSelectionEvent(ui::INSERTION_HANDLE_DRAG_STARTED);
+}
+
+void TouchSelectionControllerClientAura::OnSwipeToMoveCursorEnd() {
+  GetTouchSelectionController()->OnSwipeToMoveCursorEnd();
+  OnSelectionEvent(ui::INSERTION_HANDLE_DRAG_STOPPED);
 }
 
 void TouchSelectionControllerClientAura::UpdateClientSelectionBounds(
@@ -296,18 +315,18 @@ void TouchSelectionControllerClientAura::UpdateQuickMenu() {
   }
 }
 
-void TouchSelectionControllerClientAura::ShowMagnifier(
-    const gfx::PointF& position) {
+void TouchSelectionControllerClientAura::UpdateMagnifier() {
   if (auto* magnifier_runner =
           ui::TouchSelectionMagnifierRunner::GetInstance()) {
-    magnifier_runner->ShowMagnifier(rwhva_->GetNativeView(), position);
-  }
-}
-
-void TouchSelectionControllerClientAura::CloseMagnifier() {
-  if (auto* magnifier_runner =
-          ui::TouchSelectionMagnifierRunner::GetInstance()) {
-    magnifier_runner->CloseMagnifier();
+    if (handle_drag_in_progress_ &&
+        GetTouchSelectionController()->active_status() !=
+            ui::TouchSelectionController::INACTIVE) {
+      magnifier_runner->ShowMagnifier(
+          rwhva_->GetNativeView(),
+          GetTouchSelectionController()->GetFocusBound());
+    } else {
+      magnifier_runner->CloseMagnifier();
+    }
   }
 }
 
@@ -394,16 +413,18 @@ void TouchSelectionControllerClientAura::OnSelectionEvent(
     case ui::INSERTION_HANDLE_DRAG_STARTED:
       handle_drag_in_progress_ = true;
       UpdateQuickMenu();
+      UpdateMagnifier();
       break;
     case ui::SELECTION_HANDLE_DRAG_STOPPED:
     case ui::INSERTION_HANDLE_DRAG_STOPPED:
       handle_drag_in_progress_ = false;
       UpdateQuickMenu();
-      CloseMagnifier();
+      UpdateMagnifier();
       break;
     case ui::SELECTION_HANDLES_MOVED:
     case ui::INSERTION_HANDLE_MOVED:
       UpdateQuickMenu();
+      UpdateMagnifier();
       break;
     case ui::INSERTION_HANDLE_TAPPED:
       quick_menu_requested_ = !quick_menu_requested_;
@@ -419,10 +440,7 @@ void TouchSelectionControllerClientAura::InternalClient::OnSelectionEvent(
 
 void TouchSelectionControllerClientAura::OnDragUpdate(
     const ui::TouchSelectionDraggable::Type type,
-    const gfx::PointF& position) {
-  DCHECK(handle_drag_in_progress_);
-  ShowMagnifier(position);
-}
+    const gfx::PointF& position) {}
 
 void TouchSelectionControllerClientAura::InternalClient::OnDragUpdate(
     const ui::TouchSelectionDraggable::Type type,

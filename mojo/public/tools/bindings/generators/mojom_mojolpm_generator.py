@@ -24,6 +24,17 @@ _kind_to_proto_type = {
     mojom.INT64: "int64",
     mojom.UINT64: "uint64",
     mojom.DOUBLE: "double",
+    mojom.NULLABLE_BOOL: "bool",
+    mojom.NULLABLE_INT8: "int32",
+    mojom.NULLABLE_UINT8: "uint32",
+    mojom.NULLABLE_INT16: "int32",
+    mojom.NULLABLE_UINT16: "uint32",
+    mojom.NULLABLE_INT32: "int32",
+    mojom.NULLABLE_UINT32: "uint32",
+    mojom.NULLABLE_FLOAT: "float",
+    mojom.NULLABLE_INT64: "int64",
+    mojom.NULLABLE_UINT64: "uint64",
+    mojom.NULLABLE_DOUBLE: "double",
 }
 
 _kind_to_cpp_proto_type = {
@@ -38,6 +49,17 @@ _kind_to_cpp_proto_type = {
     mojom.INT64: "::google::protobuf::int64",
     mojom.UINT64: "::google::protobuf::int64",
     mojom.DOUBLE: "double",
+    mojom.NULLABLE_BOOL: "bool",
+    mojom.NULLABLE_INT8: "::google::protobuf::int32",
+    mojom.NULLABLE_UINT8: "::google::protobuf::uint32",
+    mojom.NULLABLE_INT16: "::google::protobuf::int32",
+    mojom.NULLABLE_UINT16: "::google::protobuf::uint32",
+    mojom.NULLABLE_INT32: "::google::protobuf::int32",
+    mojom.NULLABLE_UINT32: "::google::protobuf::uint32",
+    mojom.NULLABLE_FLOAT: "float",
+    mojom.NULLABLE_INT64: "::google::protobuf::int64",
+    mojom.NULLABLE_UINT64: "::google::protobuf::int64",
+    mojom.NULLABLE_DOUBLE: "double",
 }
 
 
@@ -211,11 +233,16 @@ class Generator(CppGenerator):
         "is_array_kind": mojom.IsArrayKind,
         "is_bool_kind": mojom.IsBoolKind,
         "is_default_constructible": self._IsDefaultConstructible,
+        "is_value_kind": mojom.IsValueKind,
         "is_enum_kind": mojom.IsEnumKind,
         "is_double_kind": mojom.IsDoubleKind,
         "is_float_kind": mojom.IsFloatKind,
         "is_integral_kind": mojom.IsIntegralKind,
         "is_interface_kind": mojom.IsInterfaceKind,
+        "is_nullable_value_kind_packed_field":
+        pack.IsNullableValueKindPackedField,
+        "is_primary_nullable_value_kind_packed_field":
+        pack.IsPrimaryNullableValueKindPackedField,
         "is_receiver_kind": self._IsReceiverKind,
         "is_pending_associated_receiver_kind":
         mojom.IsPendingAssociatedReceiverKind,
@@ -439,6 +466,8 @@ class Generator(CppGenerator):
     if mojom.IsMapKind(kind):
       return False
     if mojom.IsStringKind(kind):
+      return False
+    if mojom.IsValueKind(kind):
       return False
     return True
 

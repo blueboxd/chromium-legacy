@@ -5,8 +5,20 @@
 #ifndef CHROME_BROWSER_ASH_POLICY_REPORTING_METRICS_REPORTING_METRIC_REPORTING_PREFS_H_
 #define CHROME_BROWSER_ASH_POLICY_REPORTING_METRICS_REPORTING_METRIC_REPORTING_PREFS_H_
 
+#include <string>
+
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
 namespace user_prefs {
 class PrefRegistrySyncable;
+}
+
+namespace apps {
+enum class AppType;
+}
+
+namespace reporting {
+class ReportingSettings;
 }
 
 namespace ash::reporting {
@@ -24,7 +36,28 @@ constexpr char kReportAppUsage[] = "reporting.report_app_usage";
 constexpr char kReportAppUsageCollectionRateMs[] =
     "reporting.report_app_usage_collection_rate_ms";
 
+// Application category types tracked by the app metric reporting user policies.
+constexpr char kAppCategoryAndroidApps[] = "android_apps";
+constexpr char kAppCategoryBrowser[] = "browser";
+constexpr char kAppCategoryChromeAppsExtensions[] =
+    "chrome_apps_and_extensions";
+constexpr char kAppCategoryGames[] = "games";
+constexpr char kAppCategoryLinuxApps[] = "linux_apps";
+constexpr char kAppCategoryPWA[] = "progressive_web_apps";
+constexpr char kAppCategorySystemApps[] = "system_apps";
+
 void RegisterProfilePrefs(::user_prefs::PrefRegistrySyncable* registry);
+
+// Gets the corresponding app metric reporting category for the specified app
+// type.
+absl::optional<std::string> GetAppReportingCategoryForType(
+    ::apps::AppType app_type);
+
+// Retrieves the corresponding app reporting policy and returns true if the app
+// type is in the retrieved allowlist. False otherwise.
+bool IsAppTypeAllowed(::apps::AppType app_type,
+                      const ::reporting::ReportingSettings* reporting_settings,
+                      const std::string& policy_setting);
 
 }  // namespace ash::reporting
 

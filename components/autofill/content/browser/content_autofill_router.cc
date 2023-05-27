@@ -50,7 +50,8 @@ void ForEachFrame(internal::FormForest& form_forest, UnaryFunction fun) {
     auto MainUrlForDebugging = []() { return std::string(); };
     AFCHECK(some_frame, continue);
     if (some_frame->driver)
-      base::invoke(fun, some_frame->driver);
+      base::invoke(fun,
+                   static_cast<ContentAutofillDriver*>(some_frame->driver));
   }
 }
 
@@ -64,8 +65,10 @@ std::string ContentAutofillRouter::MainUrlForDebugging() const {
       content::RenderFrameHost::FromID(some_rfh_for_debugging_);
   if (!some_rfh) {
     for (const auto& frame_data : form_forest_.frame_datas()) {
-      if (frame_data && frame_data->driver)
-        some_rfh = frame_data->driver->render_frame_host();
+      if (frame_data && frame_data->driver) {
+        some_rfh = static_cast<ContentAutofillDriver*>(frame_data->driver)
+                       ->render_frame_host();
+      }
     }
   }
   if (!some_rfh)
@@ -78,7 +81,9 @@ ContentAutofillDriver* ContentAutofillRouter::DriverOfFrame(
   DCHECK(base::FeatureList::IsEnabled(features::kAutofillAcrossIframes));
   const auto& frames = form_forest_.frame_datas();
   auto it = frames.find(frame);
-  return it != frames.end() ? (*it)->driver.get() : nullptr;
+  return it != frames.end()
+             ? static_cast<ContentAutofillDriver*>((*it)->driver.get())
+             : nullptr;
 }
 
 void ContentAutofillRouter::UnregisterDriver(ContentAutofillDriver* driver,
@@ -183,35 +188,35 @@ void ContentAutofillRouter::SetShouldSuppressKeyboard(
 
 // Routing of events called by the renderer:
 
-// Calls TriggerReparse() on all ContentAutofillDrivers in |form_forest_| as
-// well as their ancestor ContentAutofillDrivers.
+// Calls TriggerFormExtraction() on all ContentAutofillDrivers in |form_forest_|
+// as well as their ancestor ContentAutofillDrivers.
 //
-// An ancestor might not be contained in the form tree itself: if the ancestor
-// contained only invisible iframe(s) and no interesting fields, it would not be
-// sent to the browser. In the meantime, these frames may have become visible.
+// An ancestor might not be contained in the form tree known to FormForest: if
+// the ancestor contained only invisible iframe(s) and no interesting fields, it
+// would not be sent to the browser. In the meantime, these frames may have
+// become visible. Therefore, we also call TriggerFormExtraction() in all
+// ancestors.
 //
-// The typical use case is that some frame triggers reparses on its own
+// The typical use case is that some frame triggers form extractions on its own
 // initiative and triggers an event. Then ContentAutofillRouter's event handler
-// tells the other frames to reparse, too, using TriggerReparseExcept(source).
-void ContentAutofillRouter::TriggerReparseExcept(
+// tells the other frames to form extraction, too, using
+// TriggerFormExtractionExcept(source).
+void ContentAutofillRouter::TriggerFormExtractionExcept(
     ContentAutofillDriver* exception) {
   DCHECK(base::FeatureList::IsEnabled(features::kAutofillAcrossIframes));
-
-  base::flat_set<ContentAutofillDriver*> already_triggered;
-  ForEachFrame(form_forest_, [&](ContentAutofillDriver* driver) mutable {
-    content::RenderFrameHost* rfh = driver->render_frame_host();
+  base::flat_set<AutofillDriver*> already_triggered;
+  ForEachFrame(form_forest_, [&](AutofillDriver* driver) mutable {
     do {
-      // Trigger reparse for |rfh| and all its ancestors (as some
-      // ancestors may not be in the forest).
-      ContentAutofillDriver* rfh_driver =
-          ContentAutofillDriver::GetForRenderFrameHost(rfh);
-      AFCHECK(rfh_driver, continue);
-      if (rfh_driver != exception &&
-          !base::Contains(already_triggered, rfh_driver)) {
-        rfh_driver->TriggerReparse();
-        already_triggered.insert(rfh_driver);
+      if (!already_triggered.insert(driver).second) {
+        // An earlier invocation of this lambda has executed the rest of this
+        // loop's body for `driver` and hence also for all its ancestors.
+        break;
       }
-    } while ((rfh = rfh->GetParent()) != nullptr);
+      if (driver == exception) {
+        continue;
+      }
+      driver->TriggerFormExtraction();
+    } while ((driver = driver->GetParent()) != nullptr);
   });
 }
 
@@ -358,7 +363,7 @@ void ContentAutofillRouter::TextFieldDidChange(
   FormGlobalId form_id = form.global_id();
   form_forest_.UpdateTreeOfRendererForm(std::move(form), source);
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   const FormData* browser_form = form_forest_.GetBrowserForm(form_id);
   AFCHECK(browser_form, return);
@@ -386,7 +391,7 @@ void ContentAutofillRouter::TextFieldDidScroll(
   FormGlobalId form_id = form.global_id();
   form_forest_.UpdateTreeOfRendererForm(std::move(form), source);
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   const FormData* browser_form = form_forest_.GetBrowserForm(form_id);
   AFCHECK(browser_form, return);
@@ -414,7 +419,7 @@ void ContentAutofillRouter::SelectControlDidChange(
   FormGlobalId form_id = form.global_id();
   form_forest_.UpdateTreeOfRendererForm(std::move(form), source);
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   const FormData* browser_form = form_forest_.GetBrowserForm(form_id);
   AFCHECK(browser_form, return);
@@ -447,7 +452,7 @@ void ContentAutofillRouter::AskForValuesToFill(
   FormGlobalId form_id = form.global_id();
   form_forest_.UpdateTreeOfRendererForm(std::move(form), source);
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   const FormData* browser_form = form_forest_.GetBrowserForm(form_id);
   AFCHECK(browser_form, return);
@@ -499,7 +504,7 @@ void ContentAutofillRouter::FocusNoLongerOnForm(
   // Prevents FocusOnFormField() from calling FocusNoLongerOnForm().
   focus_no_longer_on_form_has_fired_ = true;
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   // TODO(crbug/1228706): Retrofit event with the FormGlobalId and unicast
   // event.
@@ -541,7 +546,7 @@ void ContentAutofillRouter::FocusOnFormField(
   focused_frame_ = frame_token;
   focus_no_longer_on_form_has_fired_ = false;
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   const FormData* browser_form = form_forest_.GetBrowserForm(form_id);
   AFCHECK(browser_form, return);
@@ -601,7 +606,7 @@ void ContentAutofillRouter::DidEndTextFieldEditing(
 
   some_rfh_for_debugging_ = source->render_frame_host()->GetGlobalId();
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   // TODO(crbug/1228706): Retrofit event with the FormGlobalId and FieldGlobalId
   // and unicast event.
@@ -622,7 +627,7 @@ void ContentAutofillRouter::SelectFieldOptionsDidChange(
   FormGlobalId form_id = form.global_id();
   form_forest_.UpdateTreeOfRendererForm(std::move(form), source);
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   const FormData* browser_form = form_forest_.GetBrowserForm(form_id);
   AFCHECK(browser_form, return);
@@ -650,7 +655,7 @@ void ContentAutofillRouter::JavaScriptChangedAutofilledValue(
   FormGlobalId form_id = form.global_id();
   form_forest_.UpdateTreeOfRendererForm(std::move(form), source);
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   const FormData* browser_form = form_forest_.GetBrowserForm(form_id);
   AFCHECK(browser_form, return);
@@ -673,7 +678,7 @@ void ContentAutofillRouter::OnContextMenuShownInField(
 
   some_rfh_for_debugging_ = source->render_frame_host()->GetGlobalId();
 
-  TriggerReparseExcept(source);
+  TriggerFormExtractionExcept(source);
 
   ForEachFrame(form_forest_, [&](ContentAutofillDriver* some_driver) {
     callback(some_driver, form_global_id, field_global_id);

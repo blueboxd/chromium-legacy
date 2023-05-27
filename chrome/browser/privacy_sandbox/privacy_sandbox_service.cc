@@ -49,6 +49,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chromeos/components/kiosk/kiosk_utils.h"
 #endif
 
 namespace {
@@ -68,7 +69,8 @@ bool AreThirdPartyCookiesBlocked(
 }
 
 // Sorts |topics| alphabetically by topic display name for display.
-void SortTopicsForDisplay(
+// In addition, removes duplicate topics.
+void SortAndDeduplicateTopicsForDisplay(
     std::vector<privacy_sandbox::CanonicalTopic>& topics) {
   std::sort(topics.begin(), topics.end(),
             [](const privacy_sandbox::CanonicalTopic& a,
@@ -76,6 +78,7 @@ void SortTopicsForDisplay(
               return a.GetLocalizedRepresentation() <
                      b.GetLocalizedRepresentation();
             });
+  topics.erase(std::unique(topics.begin(), topics.end()), topics.end());
 }
 
 // Returns whether |profile_type|, and the current browser session on CrOS,
@@ -88,7 +91,7 @@ bool IsRegularProfile(profile_metrics::BrowserProfileType profile_type) {
 #if BUILDFLAG(IS_CHROMEOS)
   // Any Device Local account, which is a CrOS concept powering things like
   // Kiosks and Managed Guest Sessions, is not considered regular.
-  return !profiles::IsPublicSession() && !profiles::IsKioskSession() &&
+  return !profiles::IsPublicSession() && !chromeos::IsKioskSession() &&
          !profiles::IsChromeAppKioskSession();
 #else
   return true;
@@ -721,6 +724,28 @@ void PrivacySandboxService::RecordPrivacySandbox4StartupMetrics() {
     return;
   }
 
+  // Check for users waiting for graduation: If a user was ever reported as
+  // restricted and is currently unrestricted it means they are ready for
+  // graduation.
+  const bool restricted_notice_acknowledged = pref_service_->GetBoolean(
+      prefs::kPrivacySandboxM1RestrictedNoticeAcknowledged);
+  const bool user_reported_restricted =
+      pref_service_->GetBoolean(prefs::kPrivacySandboxM1Restricted);
+  const bool user_is_currently_unrestricted =
+      privacy_sandbox_settings_->IsPrivacySandboxCurrentlyUnrestricted();
+
+  if (user_reported_restricted && user_is_currently_unrestricted) {
+    base::UmaHistogramEnumeration(
+        privacy_sandbox_prompt_startup_histogram,
+        restricted_notice_acknowledged
+            ? PromptStartupState::
+                  kWaitingForGraduationRestrictedNoticeFlowCompleted
+            : PromptStartupState::
+                  kWaitingForGraduationRestrictedNoticeFlowNotCompleted);
+
+    return;
+  }
+
   const bool row_notice_acknowledged =
       pref_service_->GetBoolean(prefs::kPrivacySandboxM1RowNoticeAcknowledged);
   const bool eaa_notice_acknowledged =
@@ -730,9 +755,6 @@ void PrivacySandboxService::RecordPrivacySandbox4StartupMetrics() {
   // required when the restricted prompt is shown, and both return
   // unconditionally.
   if (privacy_sandbox_settings_->IsSubjectToM1NoticeRestricted()) {
-    const bool restricted_notice_acknowledged = pref_service_->GetBoolean(
-        prefs::kPrivacySandboxM1RestrictedNoticeAcknowledged);
-
     // Acknowledgement of any of the prompt types implies acknowledgement of the
     // restricted notice as well.
     if (row_notice_acknowledged || eaa_notice_acknowledged) {
@@ -928,11 +950,7 @@ PrivacySandboxService::GetCurrentTopTopics() const {
   }
 
   auto topics = browsing_topics_service_->GetTopTopicsForDisplay();
-
-  // Topics returned by the backend may include duplicates. Sort into display
-  // order before removing them.
-  SortTopicsForDisplay(topics);
-  topics.erase(std::unique(topics.begin(), topics.end()), topics.end());
+  SortAndDeduplicateTopicsForDisplay(topics);
 
   return topics;
 }
@@ -956,7 +974,7 @@ PrivacySandboxService::GetBlockedTopics() const {
     }
   }
 
-  SortTopicsForDisplay(blocked_topics);
+  SortAndDeduplicateTopicsForDisplay(blocked_topics);
   return blocked_topics;
 }
 
@@ -1411,6 +1429,8 @@ PrivacySandboxService::GetRequiredPromptTypeInternalM1(
         pref_service->SetInteger(
             prefs::kPrivacySandboxM1PromptSuppressed,
             static_cast<int>(PromptSuppressedReason::kNoticeShownToGuardian));
+        pref_service->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled,
+                                 true);
         return PromptType::kNone;
       }
     }

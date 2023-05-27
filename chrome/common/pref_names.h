@@ -15,7 +15,6 @@
 #include "chrome/common/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
-#include "components/supervised_user/core/common/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -25,7 +24,6 @@
 namespace prefs {
 
 // Profile prefs. Please add Local State prefs below instead.
-extern const char kChildAccountStatusKnown[];
 extern const char kPreinstalledApps[];
 extern const char kSafeBrowsingForTrustedSourcesEnabled[];
 extern const char kDisableScreenshots[];
@@ -253,6 +251,8 @@ extern const char kHatsBluetoothRevampCycleEndTs[];
 extern const char kHatsBluetoothRevampIsSelected[];
 extern const char kHatsBatteryLifeCycleEndTs[];
 extern const char kHatsBatteryLifeIsSelected[];
+extern const char kHatsPeripheralsCycleEndTs[];
+extern const char kHatsPeripheralsIsSelected[];
 extern const char kHatsLastInteractionTimestamp[];
 extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
@@ -356,6 +356,7 @@ extern const char kUpdateRequiredWarningPeriod[];
 extern const char kSystemProxyUserTrafficHostAndPort[];
 extern const char kEduCoexistenceArcMigrationCompleted[];
 extern const char kSharedStorage[];
+extern const char kTotalUniqueOsSettingsChanged[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kDeskAPIThirdPartyAccessEnabled[];
@@ -396,9 +397,7 @@ extern const char kDefaultBrowserSettingEnabled[];
 #if BUILDFLAG(IS_MAC)
 extern const char kShowUpdatePromotionInfoBar[];
 #endif
-// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
-// of lacros-chrome is complete.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX)
 extern const char kUseCustomChromeFrame[];
 #endif
 extern const char kPartitionDefaultZoomLevel[];
@@ -546,6 +545,8 @@ extern const char kQuietNotificationPermissionPromoWasShown[];
 extern const char kNotificationPermissionActions[];
 extern const char kHadThreeConsecutiveNotificationPermissionDenies[];
 
+extern const char kDataUrlInSvgUseEnabled[];
+
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kManagedSerialAllowAllPortsForUrls[];
 extern const char kManagedSerialAllowUsbDevicesForUrls[];
@@ -603,7 +604,6 @@ extern const char kDefaultTasksBySuffix[];
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kDefaultHandlersForFileExtensions[];
-extern const char kOfficeSetupComplete[];
 extern const char kOfficeFilesAlwaysMoveToDrive[];
 extern const char kOfficeFilesAlwaysMoveToOneDrive[];
 extern const char kOfficeMoveConfirmationShownForDrive[];
@@ -862,6 +862,7 @@ extern const char kHSTSPolicyBypassList[];
 extern const char kPostQuantumEnabled[];
 extern const char kEncryptedClientHelloEnabled[];
 extern const char kInsecureHashesInTLSHandshakesEnabled[];
+extern const char kRSAKeyUsageForLocalAnchorsEnabled[];
 
 extern const char kBuiltInDnsClientEnabled[];
 extern const char kDnsOverHttpsMode[];
@@ -1243,6 +1244,7 @@ extern const char kLastWhatsNewVersion[];
 extern const char kLensRegionSearchEnabled[];
 extern const char kSidePanelHorizontalAlignment[];
 extern const char kSidePanelCompanionEntryPinnedToToolbar[];
+extern const char kGoogleSearchSidePanelEnabled[];
 extern const char kLensDesktopNTPSearchEnabled[];
 #endif
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -22,10 +23,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/label_button.h"
 
-namespace ui {
-class MouseEvent;
-}  // namespace ui
-
 namespace views {
 class ImageView;
 class Label;
@@ -33,6 +30,9 @@ class MdTextButton;
 }  // namespace views
 
 namespace ash {
+
+enum class HelpBubbleId;
+enum class HelpBubbleStyle;
 
 namespace internal {
 
@@ -42,13 +42,6 @@ namespace internal {
 struct HelpBubbleAnchorParams {
   // This is the View to be anchored to (mandatory).
   raw_ptr<views::View> view = nullptr;
-
-  // This is an optional override of the anchor rect in screen coordinates.
-  // If unspecified, the bubble is anchored as normal to `view`.
-  absl::optional<gfx::Rect> rect;
-
-  // Whether or not a visible arrow should be shown.
-  bool show_arrow = true;
 };
 
 }  // namespace internal
@@ -64,7 +57,8 @@ class ASH_EXPORT HelpBubbleViewAsh : public views::BubbleDialogDelegateView {
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kFirstNonDefaultButtonIdForTesting);
   DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kBodyTextIdForTesting);
 
-  HelpBubbleViewAsh(const internal::HelpBubbleAnchorParams& anchor,
+  HelpBubbleViewAsh(HelpBubbleId id,
+                    const internal::HelpBubbleAnchorParams& anchor,
                     user_education::HelpBubbleParams params);
   HelpBubbleViewAsh(const HelpBubbleViewAsh&) = delete;
   HelpBubbleViewAsh& operator=(const HelpBubbleViewAsh&) = delete;
@@ -78,16 +72,22 @@ class ASH_EXPORT HelpBubbleViewAsh : public views::BubbleDialogDelegateView {
   views::LabelButton* GetDefaultButtonForTesting() const;
   views::LabelButton* GetNonDefaultButtonForTesting(int index) const;
 
-  void SetForceAnchorRect(gfx::Rect force_anchor_rect);
+  HelpBubbleId id() const { return id_; }
+  HelpBubbleStyle style() const { return style_; }
 
  protected:
-  // BubbleDialogDelegateView:
-  bool OnMousePressed(const ui::MouseEvent& event) override;
+  // views::BubbleDialogDelegateView:
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
+      views::Widget* widget) override;
+  void OnAnchorBoundsChanged() override;
   std::u16string GetAccessibleWindowTitle() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  void OnWidgetBoundsChanged(views::Widget* widget, const gfx::Rect&) override;
   void OnThemeChanged() override;
   gfx::Size CalculatePreferredSize() const override;
   gfx::Rect GetAnchorRect() const override;
+  void GetWidgetHitTestMask(SkPath* mask) const override;
+  bool WidgetHasHitTestMask() const override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HelpBubbleViewTimeoutTest,
@@ -98,8 +98,13 @@ class ASH_EXPORT HelpBubbleViewAsh : public views::BubbleDialogDelegateView {
 
   void OnTimeout();
 
-  // If set, overrides the anchor bounds within the anchor view.
-  absl::optional<gfx::Rect> local_anchor_bounds_;
+  // Updates the help bubble's rounded corners based on its position relative to
+  // its anchor. When the help bubble is not center aligned with its anchor, the
+  // corner closest to the anchor has a smaller radius.
+  void UpdateRoundedCorners();
+
+  const HelpBubbleId id_;
+  const HelpBubbleStyle style_;
 
   raw_ptr<views::ImageView> icon_view_ = nullptr;
   std::vector<views::Label*> labels_;

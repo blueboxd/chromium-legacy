@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.android_webview.common.Lifetime;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
@@ -30,6 +31,7 @@ import java.util.Set;
  * AwBrowserContext instance, so at this point the class mostly exists for conceptual clarity.
  */
 @JNINamespace("android_webview")
+@Lifetime.Profile
 public class AwBrowserContext implements BrowserContextHandle {
     private static final String CHROMIUM_PREFS_NAME = "WebViewProfilePrefsDefault";
 
@@ -37,7 +39,6 @@ public class AwBrowserContext implements BrowserContextHandle {
     private final SharedPreferences mSharedPreferences;
 
     private AwGeolocationPermissions mGeolocationPermissions;
-    private AwFormDatabase mFormDatabase;
     private AwServiceWorkerController mServiceWorkerController;
     private AwQuotaManagerBridge mQuotaManagerBridge;
 
@@ -82,13 +83,6 @@ public class AwBrowserContext implements BrowserContextHandle {
             mGeolocationPermissions = new AwGeolocationPermissions(mSharedPreferences);
         }
         return mGeolocationPermissions;
-    }
-
-    public AwFormDatabase getFormDatabase() {
-        if (mFormDatabase == null) {
-            mFormDatabase = new AwFormDatabase();
-        }
-        return mFormDatabase;
     }
 
     public AwServiceWorkerController getServiceWorkerController() {
@@ -174,6 +168,14 @@ public class AwBrowserContext implements BrowserContextHandle {
                 mNativeAwBrowserContext);
     }
 
+    public boolean hasFormData() {
+        return AwBrowserContextJni.get().hasFormData(mNativeAwBrowserContext);
+    }
+
+    public void clearFormData() {
+        AwBrowserContextJni.get().clearFormData(mNativeAwBrowserContext);
+    }
+
     @CalledByNative
     public static AwBrowserContext create(long nativeAwBrowserContext, boolean isDefault) {
         SharedPreferences sharedPreferences;
@@ -194,5 +196,7 @@ public class AwBrowserContext implements BrowserContextHandle {
         String[] updateServiceWorkerXRequestedWithAllowListOriginMatcher(
                 long nativeAwBrowserContext, String[] rules);
         void clearPersistentOriginTrialStorageForTesting(long nativeAwBrowserContext);
+        boolean hasFormData(long nativeAwBrowserContext);
+        void clearFormData(long nativeAwBrowserContext);
     }
 }

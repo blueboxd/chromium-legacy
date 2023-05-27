@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/commerce/shopping_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -53,8 +54,9 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
   if (power_bookmarks_side_panel_enabled) {
     // Icon column
     auto* icon = AddChildView(std::make_unique<views::ImageView>());
-    icon->SetImage(gfx::CreateVectorIcon(omnibox::kPriceTrackingDisabledIcon,
-                                         SkColor(gfx::kGoogleGrey700)));
+    icon->SetImage(
+        ui::ImageModel::FromVectorIcon(omnibox::kPriceTrackingDisabledIcon,
+                                       kColorBookmarkDialogTrackPriceIcon));
     icon->SetImageSize(gfx::Size(kIconSize, kIconSize));
     icon->SetProperty(views::kMarginsKey,
                       gfx::Insets::TLBR(0, 0, 0, kIconMargin));
@@ -72,8 +74,8 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
             .SetImageSize(gfx::Size(kProductImageSize, kProductImageSize))
             .SetPreferredSize(gfx::Size(kProductImageSize, kProductImageSize))
             // TODO(meiliang@): Verify color and corner radius with UX.
-            .SetBorder(views::CreateRoundedRectBorder(
-                1, kImageBorderRadius, SkColorSetA(gfx::kGoogleGrey900, 0x24)))
+            .SetBorder(views::CreateThemedRoundedRectBorder(
+                1, kImageBorderRadius, kColorBookmarkDialogProductImageBorder))
             .SetImage(
                 gfx::ImageSkiaOperations::CreateCroppedCenteredRoundRectImage(
                     gfx::Size(kProductImageSize, kProductImageSize),
@@ -99,6 +101,9 @@ PriceTrackingView::PriceTrackingView(Profile* profile,
   body_label_ = text_container->AddChildView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(body_string_id), label_style,
       views::style::STYLE_SECONDARY));
+  if (power_bookmarks_side_panel_enabled) {
+    body_label_->SetFontList(body_label_->font_list().DeriveWithSizeDelta(-1));
+  }
   body_label_->SetProperty(views::kMarginsKey,
                            gfx::Insets::TLBR(label_spacing, 0, 0, 0));
   body_label_->SetMultiLine(true);
@@ -185,10 +190,10 @@ void PriceTrackingView::UpdatePriceTrackingState(const GURL& url) {
     DCHECK(!is_price_track_enabled_);
     absl::optional<commerce::ProductInfo> info =
         service->GetAvailableProductInfoForUrl(url);
-    if (info.has_value()) {
+    if (commerce::CanTrackPrice(info)) {
       commerce::SetPriceTrackingStateForClusterId(
-          service, model, info->product_cluster_id, is_price_track_enabled_,
-          std::move(callback));
+          service, model, info->product_cluster_id.value(),
+          is_price_track_enabled_, std::move(callback));
     }
   }
 }

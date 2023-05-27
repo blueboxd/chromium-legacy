@@ -5,7 +5,12 @@
 package org.chromium.chrome.browser.share.android_share_sheet;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipDescription;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.graphics.drawable.Icon;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
@@ -28,11 +33,14 @@ import org.chromium.chrome.browser.share.long_screenshots.LongScreenshotsCoordin
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.signin.DeviceLockActivityLauncher;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +54,11 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
             "SharingHubAndroid.AndroidShareHighlightText.WithLink";
     private static final String USER_ACTION_SHARE_HIGHLIGHT_TEXT_WITHOUT_LINK =
             "SharingHubAndroid.AndroidShareHighlightText.WithoutLink";
+
     private static final String USER_ACTION_LONG_SCREENSHOT_NO_EDITOR_SELECTED =
             "SharingHubAndroid.LongScreenshotSelected.NoEditor";
+    private static final String USER_ACTION_SHARE_COPY_IMAGE_WITH_LINK_SELECTED =
+            "SharingHubAndroid.CopyImageWithLinkSelected";
     private static final Integer MAX_ACTION_SUPPORTED = 5;
 
     private final ChromeShareExtras mChromeShareExtras;
@@ -75,17 +86,22 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
      * @param chromeShareExtras The {@link ChromeShareExtras} for the current share, if exists.
      * @param isMultiWindow Whether the current activity is in multi-window mode.
      * @param linkToTextCoordinator Link to text generator used for this share.
+     * @param deviceLockActivityLauncher The launcher to start up the device lock page.
      */
     AndroidCustomActionProvider(Activity activity, WindowAndroid windowAndroid,
             Supplier<Tab> tabProvider, BottomSheetController bottomSheetController,
             ShareParams shareParams, Callback<Tab> printTab, boolean isIncognito,
             ChromeOptionShareCallback chromeOptionShareCallback, Tracker featureEngagementTracker,
             String url, Profile profile, ChromeShareExtras chromeShareExtras, boolean isMultiWindow,
-            @Nullable LinkToTextCoordinator linkToTextCoordinator) {
+            @Nullable LinkToTextCoordinator linkToTextCoordinator,
+            DeviceLockActivityLauncher deviceLockActivityLauncher) {
         super(activity, windowAndroid, tabProvider, bottomSheetController, shareParams, printTab,
-                isIncognito, chromeOptionShareCallback, featureEngagementTracker, url, profile);
+                isIncognito, chromeOptionShareCallback, featureEngagementTracker, url, profile,
+                deviceLockActivityLauncher);
         mChromeShareExtras = chromeShareExtras;
         mLinkToTextCoordinator = linkToTextCoordinator;
+
+        initializeFirstPartyOptionsInOrder();
         initCustomActions(shareParams, chromeShareExtras, isMultiWindow);
     }
 
@@ -114,6 +130,7 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
 
         // getLinkToTextSuccessful is only populated when an link is generated for share.
         if (mShareParams.getLinkToTextSuccessful() != null && mShareParams.getLinkToTextSuccessful()
+                && mChromeShareExtras != null
                 && mChromeShareExtras.getDetailedContentType()
                         == ChromeShareExtras.DetailedContentType.HIGHLIGHTED_TEXT) {
             FirstPartyOption option = TextUtils.isEmpty(mShareParams.getUrl())
@@ -135,6 +152,12 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
 
     //  extends ChromeProvidedSharingOptionsProviderBase:
 
+    @Override
+    protected boolean usePolishedActionOrderedList() {
+        // Always use the polished list of actions for Android share sheet.
+        return true;
+    }
+
     @Nullable
     @Override
     protected FirstPartyOption createScreenshotFirstPartyOption() {
@@ -144,8 +167,7 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
     @Nullable
     @Override
     protected FirstPartyOption createLongScreenshotsFirstPartyOption() {
-        return new FirstPartyOptionBuilder(ContentType.LINK_PAGE_VISIBLE, ContentType.TEXT,
-                ContentType.HIGHLIGHTED_TEXT, ContentType.IMAGE)
+        return new FirstPartyOptionBuilder(ContentType.LINK_PAGE_VISIBLE)
                 .setDetailedContentTypesToDisableFor(DetailedContentType.WEB_NOTES)
                 .setIcon(R.drawable.long_screenshot, R.string.sharing_long_screenshot)
                 .setFeatureNameForMetrics(USER_ACTION_LONG_SCREENSHOT_NO_EDITOR_SELECTED)
@@ -165,6 +187,17 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
 
     @Override
     protected void maybeAddDownloadImageFirstPartyOption() {}
+
+    @Override
+    protected void maybeAddCopyFirstPartyOption() {
+        // For Android's share sheet, only use copy image for web share.
+        // TODO(crbug/1448944): Exclude the copy action from Context menu instead.
+        if (mChromeShareExtras != null
+                && mChromeShareExtras.getDetailedContentType() == DetailedContentType.WEB_SHARE) {
+            mOrderedFirstPartyOptions.add(createCopyImageFirstPartyOption(false));
+        }
+        mOrderedFirstPartyOptions.add(createCopyImageWithLinkFirstPartyOption());
+    }
 
     private FirstPartyOption createShareHighlightTextWithLink() {
         return new FirstPartyOptionBuilder(ContentType.HIGHLIGHTED_TEXT)
@@ -188,6 +221,30 @@ class AndroidCustomActionProvider extends ChromeProvidedSharingOptionsProviderBa
                     mChromeOptionShareCallback.showShareSheet(
                             mLinkToTextCoordinator.getShareParams(LinkToggleState.NO_LINK),
                             mChromeShareExtras, SystemClock.elapsedRealtime());
+                })
+                .build();
+    }
+
+    private FirstPartyOption createCopyImageWithLinkFirstPartyOption() {
+        return new FirstPartyOptionBuilder(ContentType.IMAGE_AND_LINK)
+                .setIcon(R.drawable.ic_content_copy_black, R.string.sharing_copy_image_with_link)
+                .setFeatureNameForMetrics(USER_ACTION_SHARE_COPY_IMAGE_WITH_LINK_SELECTED)
+                .setOnClickCallback((view) -> {
+                    String linkUrl = mShareParams.getUrl();
+                    Uri imageUri = mShareParams.getImageUriToShare();
+                    if (imageUri != null) {
+                        // This call stores the URL in the cache image provider.
+                        Clipboard.getInstance().setImageUri(imageUri);
+
+                        ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(
+                                Context.CLIPBOARD_SERVICE);
+                        ClipData clip = new ClipData("imageLink",
+                                new String[] {mShareParams.getFileContentType(),
+                                        ClipDescription.MIMETYPE_TEXT_PLAIN},
+                                new ClipData.Item(linkUrl, /*intent=*/null, imageUri));
+                        clipboard.setPrimaryClip(clip);
+                        Toast.makeText(mActivity, R.string.image_copied, Toast.LENGTH_SHORT).show();
+                    }
                 })
                 .build();
     }

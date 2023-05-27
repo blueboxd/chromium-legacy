@@ -191,6 +191,8 @@ class VIEWS_EXPORT MenuItemView : public View {
                                const std::u16string& label = std::u16string(),
                                const ui::ImageModel& icon = ui::ImageModel());
 
+  MenuItemView* AppendTitle(const std::u16string& label);
+
   // Append a submenu to this menu.
   // The returned pointer is owned by this menu.
   MenuItemView* AppendSubMenu(int item_id,
@@ -500,6 +502,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   //    ApplyMinimumDimensions(x).minor_text_width == x.minor_text_width
   //    ApplyMinimumDimensions(x).height >= x.height
   void ApplyMinimumDimensions(MenuItemDimensions* dims) const;
+
+  // Returns the earliest horizontal position where content may appear.
+  int GetContentStart() const;
 
   // Get the horizontal position at which to draw the menu item's label.
   int GetLabelStartForThisItem() const;

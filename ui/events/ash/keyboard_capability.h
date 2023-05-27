@@ -18,11 +18,12 @@
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/devices/keyboard_device.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 
 namespace ui {
 
-// TODO(dpad): Handle privacy screen toggle and display mirror top row keys.
+// TODO(dpad): Handle display mirror top row keys.
 enum class TopRowActionKey {
   kNone = 0,
   kMinValue = kNone,
@@ -48,7 +49,8 @@ enum class TopRowActionKey {
   kAllApplications,
   kEmojiPicker,
   kDictation,
-  kMaxValue = kDictation,
+  kPrivacyScreenToggle,
+  kMaxValue = kPrivacyScreenToggle,
 };
 
 inline constexpr auto kLayout1TopRowActionKeys =
@@ -123,6 +125,7 @@ inline constexpr auto kLayout2TopRowKeyToFKeyMap =
     });
 
 // Keyboard wilco/drallion map between top row keys to function keys.
+// TODO(dpad): Handle privacy screen better on drallion devices.
 // TODO(zhangwenyu): Both F3 and F12 map to VKEY_ZOOM for wilco. Handle edge
 // case when creating the top row accelerator alias for VKEY_ZOOM key.
 inline constexpr auto kLayoutWilcoDrallionTopRowKeyToFKeyMap =
@@ -169,6 +172,7 @@ class KeyboardCapability : public InputDeviceEventObserver {
   enum class DeviceType {
     kDeviceUnknown = 0,
     kDeviceInternalKeyboard,
+    kDeviceInternalRevenKeyboard,
     kDeviceExternalAppleKeyboard,
     kDeviceExternalChromeOsKeyboard,
     kDeviceExternalGenericKeyboard,
@@ -298,9 +302,8 @@ class KeyboardCapability : public InputDeviceEventObserver {
       const KeyboardDevice& keyboard) const;
 
   // Check if a keyboard has a launcher button rather than a search button.
-  // TODO(zhangwenyu): Handle command key and window key cases.
-  bool HasLauncherButton(
-      const absl::optional<KeyboardDevice>& keyboard = absl::nullopt);
+  bool HasLauncherButton(const KeyboardDevice& keyboard) const;
+  bool HasLauncherButtonOnAnyKeyboard() const;
 
   // Check if a keyboard has a six pack key.
   static bool HasSixPackKey(const KeyboardDevice& keyboard);
@@ -333,8 +336,11 @@ class KeyboardCapability : public InputDeviceEventObserver {
   const std::vector<uint32_t>* GetTopRowScanCodes(int device_id) const;
 
   // Takes a `KeyboardInfo` to use for testing the passed in keyboard.
-  void SetKeyboardInfoForTesting(const KeyboardDevice& keyboard,
-                                 KeyboardInfo keyboard_info);
+  void SetKeyboardInfoForTesting(const KeyboardDevice& keyboard, KeyboardInfo);
+
+  // Disables "trimming" which means the `keyboard_info_map_` will not remove
+  // entries when they are disconnected.
+  void DisableKeyboardInfoTrimmingForTesting();
 
   // InputDeviceEventObserver:
   void OnDeviceListsComplete() override;
@@ -390,6 +396,9 @@ class KeyboardCapability : public InputDeviceEventObserver {
   bool HasAssistantKey(const KeyboardDevice& keyboard) const;
   bool HasAssistantKeyOnAnyKeyboard() const;
 
+  // Check if the CapsLock key exists on the given keyboard.
+  bool HasCapsLockKey(const KeyboardDevice& keyboard) const;
+
   // Gets the corresponding function key for the given `action_key` on the
   // given `keyboard`.
   absl::optional<KeyboardCode> GetCorrespondingFunctionKey(
@@ -401,6 +410,9 @@ class KeyboardCapability : public InputDeviceEventObserver {
   absl::optional<TopRowActionKey> GetCorrespondingActionKeyForFKey(
       const KeyboardDevice& keyboard,
       KeyboardCode key_code) const;
+
+  const std::vector<TopRowActionKey>* GetTopRowActionKeys(
+      const KeyboardDevice& keyboard);
 
   const base::flat_map<int, KeyboardInfo>& keyboard_info_map() const {
     return keyboard_info_map_;
@@ -419,6 +431,10 @@ class KeyboardCapability : public InputDeviceEventObserver {
   // which are effectively const.
   mutable base::flat_map<int, KeyboardInfo> keyboard_info_map_;
   std::unique_ptr<Delegate> delegate_;
+
+  // Whether or not to disable "trimming" which means the `keyboard_info_map_`
+  // will not remove entries when they are disconnected.
+  bool should_disable_trimming_ = false;
 };
 
 }  // namespace ui

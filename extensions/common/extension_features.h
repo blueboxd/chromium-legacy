@@ -35,6 +35,7 @@ namespace extensions_features {
 // make sense to have their own file.
 
 BASE_DECLARE_FEATURE(kApiRuntimeGetContexts);
+BASE_DECLARE_FEATURE(kApiSidePanelOpen);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Other Features
@@ -68,6 +69,8 @@ BASE_DECLARE_FEATURE(kExtensionsMenuAccessControlWithPermittedSites);
 
 BASE_DECLARE_FEATURE(kForceWebRequestProxyForTest);
 
+BASE_DECLARE_FEATURE(kLaunchWindowsNativeHostsDirectly);
+
 BASE_DECLARE_FEATURE(kNewExtensionFaviconHandling);
 
 BASE_DECLARE_FEATURE(kNewWebstoreDomain);
@@ -91,6 +94,8 @@ BASE_DECLARE_FEATURE(kWebviewTagMPArchBehavior);
 // Please don't just add your new feature down here.
 // See the guidance at the top of this file.
 ///////////////////////////////////////////////////////////////////////////////
+
+BASE_DECLARE_FEATURE(kExtensionsZipFileInstalledInProfileDir);
 
 }  // namespace extensions_features
 

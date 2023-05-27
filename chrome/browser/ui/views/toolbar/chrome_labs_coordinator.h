@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_CHROME_LABS_COORDINATOR_H_
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_CHROME_LABS_COORDINATOR_H_
 
-#include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view_model.h"
-
 #include "base/memory/raw_ptr.h"
+#include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/ui/toolbar/chrome_labs_model.h"
 #include "components/flags_ui/flags_state.h"
 #include "components/flags_ui/flags_storage.h"
 #include "ui/views/view_observer.h"
@@ -29,7 +30,7 @@ class ChromeLabsCoordinator : public views::ViewObserver {
 
   ChromeLabsCoordinator(ChromeLabsButton* anchor_view,
                         Browser* browser,
-                        const ChromeLabsBubbleViewModel* model);
+                        const ChromeLabsModel* model);
   ~ChromeLabsCoordinator() override;
 
   bool BubbleExists();
@@ -37,6 +38,9 @@ class ChromeLabsCoordinator : public views::ViewObserver {
   void Show(ShowUserType user_type = ShowUserType::kDefaultUserType);
 
   void Hide();
+
+  // Toggles the visibility of the bubble.
+  void ShowOrHide();
 
   ChromeLabsBubbleView* GetChromeLabsBubbleViewForTesting() {
     return chrome_labs_bubble_view_;
@@ -48,20 +52,29 @@ class ChromeLabsCoordinator : public views::ViewObserver {
     return controller_.get();
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void SetShouldCircumventDeviceCheckForTesting(bool should_circumvent) {
+    should_circumvent_device_check_for_testing_ = should_circumvent;
+  }
+#endif
+
  private:
   // views::ViewObserver
   void OnViewIsDeleting(views::View* observed_view) override;
 
   raw_ptr<ChromeLabsButton, DanglingUntriaged> anchor_view_;
   raw_ptr<Browser, DanglingUntriaged> browser_;
-  raw_ptr<const ChromeLabsBubbleViewModel, DanglingUntriaged>
-      chrome_labs_model_;
+  raw_ptr<const ChromeLabsModel, DanglingUntriaged> chrome_labs_model_;
   raw_ptr<ChromeLabsBubbleView, DanglingUntriaged> chrome_labs_bubble_view_ =
       nullptr;
 
   std::unique_ptr<flags_ui::FlagsStorage> flags_storage_;
   raw_ptr<flags_ui::FlagsState> flags_state_;
   std::unique_ptr<ChromeLabsViewController> controller_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  bool is_waiting_to_show_ = false;
+  bool should_circumvent_device_check_for_testing_ = false;
+#endif
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_CHROME_LABS_COORDINATOR_H_

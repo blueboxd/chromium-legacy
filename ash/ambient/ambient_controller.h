@@ -15,6 +15,7 @@
 #include "ash/ambient/ambient_ui_launcher.h"
 #include "ash/ambient/ambient_view_delegate_impl.h"
 #include "ash/ambient/ambient_weather_controller.h"
+#include "ash/ambient/managed/screensaver_images_policy_handler.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
@@ -71,7 +72,8 @@ class ASH_EXPORT AmbientController
       public device::mojom::FingerprintObserver,
       public ui::UserActivityObserver,
       public ui::EventHandler,
-      public AssistantInteractionModelObserver {
+      public AssistantInteractionModelObserver,
+      public AmbientUiLauncher::Observer {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -126,10 +128,11 @@ class ASH_EXPORT AmbientController
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;
 
+  // AmbientUiLauncher::Observer:
+  void OnReadyStateChanged(bool is_ready) override;
+
   // Invoked by the `LockScreen` to notify ambient mode that either the login or
-  // lock screen has been created. Note: This should only be used for reacting
-  // to login screen creation. For LockScreen lock/unlock we should keep relying
-  // on `OnLockStateChanged` method.
+  // lock screen has been created.
   void OnLoginOrLockScreenCreated();
 
   // Set the ui state to begin showing ambient mode. After calling this
@@ -199,6 +202,10 @@ class ASH_EXPORT AmbientController
   }
 
  private:
+  // Enum to indicate which state the lock screen is in. This is used
+  // by `OnLoginLockScreenStateChanged` method as a parameter to pass
+  // the correct information to the method.
+  enum LockScreenState { kLogin, kLocked, kUnlocked };
   friend class AmbientAshTestBase;
   friend class AmbientControllerTest;
   FRIEND_TEST_ALL_PREFIXES(AmbientControllerTest,
@@ -252,9 +259,9 @@ class ASH_EXPORT AmbientController
   // Removes any and all ambient mode ui model related settings pref observers
   void RemoveAmbientModeSettingsPrefObservers();
 
-  // Adds/Removes managed pref observers
+  // Adds/Removes pref observers
   void AddManagedScreensaverPolicyPrefObservers();
-  void AddAmbientModeUserSettingsPolicyPrefObservers();
+  void AddConsumerPrefObservers();
 
   // Invoked when the Ambient mode prefs state changes.
   void OnEnabledPrefChanged();
@@ -268,7 +275,6 @@ class ASH_EXPORT AmbientController
   void ResetAmbientControllerResources();
 
   // Invoked when preferences change via policy updates.
-  void OnManagedScreensaverEnabledPrefChanged();
   void OnManagedScreensaverLockScreenIdleTimeoutPrefChanged();
   void OnManagedScreensaverPhotoRefreshIntervalPrefChanged();
 
@@ -276,6 +282,10 @@ class ASH_EXPORT AmbientController
   void DestroyUiLauncher();
   bool IsUiLauncherActive() const;
   void OnUiLauncherInitialized(bool success);
+
+  void OnLoginLockStateChanged(LockScreenState state);
+
+  LockScreenState GetLockScreenState();
 
   // Returns the active pref change registrar. Note: The registar for user
   // profile `pref_change_registrar_` will always be the active pref change
@@ -359,7 +369,7 @@ class ASH_EXPORT AmbientController
   // TODO(safarli): Remove this workaround when b/266234711 is fixed.
   bool last_mouse_event_was_move_ = false;
 
-  // Flag used to prevent multiple calls to OnEnabledPrefChanged initializing
+  // Flag used to handle calls to OnEnabledPrefChanged initializing
   // the controller.
   bool is_initialized_ = false;
 
@@ -368,6 +378,24 @@ class ASH_EXPORT AmbientController
   bool is_receiving_pretarget_events_ = false;
 
   std::unique_ptr<AmbientSessionMetricsRecorder> session_metrics_recorder_;
+
+  // The policy handler for downloading policy set images. This lives in the
+  // ambient controller because it needs to outlive the disable policy update
+  // so that it is able to actually clean up the images when the policy is
+  // disabled.
+  //
+  // The sequence of operations are as follows which happen on policy update
+  // 1. Admin sets ambient mode policy to disabled
+  // 2. Ambient mode is dismissed
+  // 3. ManagedSlideshowUiLauncher is destroyed
+  // 4. Other policy values (photo interval, inactivity time, images) are unset
+  //    and sent as part of the policy update.
+  //
+  // Now at point 4 the policy handler needs to be alive so that it can react to
+  // the unset images call and clean up the images from disk.
+  std::unique_ptr<ScreensaverImagesPolicyHandler>
+      screensaver_images_policy_handler_;
+
   std::unique_ptr<AmbientUiLauncher> ambient_ui_launcher_;
 
   base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};

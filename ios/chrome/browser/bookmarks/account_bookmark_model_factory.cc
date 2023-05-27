@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
 
 #include <utility>
+#include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -17,7 +18,6 @@
 #include "ios/chrome/browser/bookmarks/bookmark_client_impl.h"
 #include "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_sync_service_factory.h"
-#import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -30,22 +30,34 @@ namespace ios {
 namespace {
 
 std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
-  if (!base::FeatureList::IsEnabled(
-          bookmarks::kEnableBookmarksAccountStorage)) {
-    return nullptr;
-  }
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(context);
+  if (!base::FeatureList::IsEnabled(
+          bookmarks::kEnableBookmarksAccountStorage)) {
+    if (base::FeatureList::IsEnabled(
+            bookmarks::kRollbackBookmarksAccountStorage)) {
+      // Try deleting the file that was used by the account storage. This is a
+      // no-op if the file doesn't exist. Guarded by
+      // `kRollbackBookmarksAccountStorage` to minimize the performance impact.
+      bookmarks::BookmarkModel::WipeAccountStorageForRollback(
+          browser_state->GetStatePath());
+    }
+
+    return nullptr;
+  }
   // Using nullptr for `ManagedBookmarkService`, since managed bookmarks affect
   // only the local bookmark storage.
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(std::make_unique<BookmarkClientImpl>(
           browser_state, /*managed_bookmark_service=*/nullptr,
           ios::AccountBookmarkSyncServiceFactory::GetForBrowserState(
-              browser_state))));
+              browser_state),
+          ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state),
+          bookmarks::StorageType::kAccount)));
   bookmark_model->Load(browser_state->GetStatePath(),
                        bookmarks::StorageType::kAccount);
-  // TODO(crbug.com/1424820): Support undo/redo operations.
+  ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state)
+      ->StartObservingBookmarkModel(bookmark_model.get());
   return bookmark_model;
 }
 

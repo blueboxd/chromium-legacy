@@ -70,6 +70,7 @@ chromium-metrics-reviews@google.com.
   <variant name="FeedUserSegment"/>
   <variant name="FrequentFeatureUser"/>
   <variant name="IntentionalUser"/>
+  <variant name="PasswordManagerUser"/>
   <variant name="PowerUser"/>
   <variant name="QueryTiles"/>
   <variant name="ResumeHeavyUser"/>
@@ -94,6 +95,7 @@ chromium-metrics-reviews@google.com.
   <variant name="FrequentFeatureUserSegment"/>
   <variant name="IntentionalUser"/>
   <variant name="NewTab"/>
+  <variant name="PasswordManagerUser"/>
   <variant name="PowerUserSegment"/>
   <variant name="QueryTiles"/>
   <variant name="ResumeHeavyUserSegment"/>
@@ -715,6 +717,45 @@ chromium-metrics-reviews@google.com.
     Records the number of input tensors that are causing structured metrics to
     fail to upload due to input size. Recorded immediately after the failure
     when an ML model is reporting structured metrics.
+  </summary>
+</histogram>
+
+<histogram name="SegmentationPlatform.SyncSessions.TabsCountAtFirstSyncUpdate"
+    units="tabs" expires_after="2023-10-01">
+  <owner>ritikagup@google.com</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    Records the number of tabs that are opened and synced till the first sync
+    session update.
+
+    Recorded once, only if there is sync session update for the first time.
+  </summary>
+</histogram>
+
+<histogram
+    name="SegmentationPlatform.SyncSessions.TimeFromStartupToFirstSyncUpdate"
+    units="ms" expires_after="2023-10-01">
+  <owner>ritikagup@google.com</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    The time taken from chrome startup to the time first sync session update is
+    received. This includes the network delay for receiving the sync session
+    updates. The metric is recorded once after chrome startup if sync is enabled
+    and sync session is updated for the first time.
+  </summary>
+</histogram>
+
+<histogram
+    name="SegmentationPlatform.SyncSessions.TimeFromTabLoadedToSyncUpdate"
+    units="ms" expires_after="2023-10-01">
+  <owner>ritikagup@google.com</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    After chrome startup anytime if a tab is loaded, the time taken from tab
+    load time to the time next immediate sync session update is received. This
+    includes the network delay for receiving the sync session updates. The
+    metric is recorded everytime a tab is loaded and a sync session update is
+    recieved after it.
   </summary>
 </histogram>
 

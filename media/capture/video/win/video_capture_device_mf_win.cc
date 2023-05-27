@@ -573,6 +573,22 @@ void GetTextureSizeAndFormat(ID3D11Texture2D* texture,
       format = PIXEL_FORMAT_UNKNOWN;
       break;
   }
+
+  // Log this in an UMA histogram to determine what proportion of frames might
+  // actually benefit from zero-copy.
+
+  // According to
+  // https://learn.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_resource_misc_flag,
+  // D3D11_RESOURCE_MISC_RESTRICT_SHARED_RESOURCE and
+  // D3D11_RESOURCE_MISC_RESTRICT_SHARED_RESOURCE_DRIVER only support shared
+  // texture on same process.
+  bool is_cross_process_shared_texture =
+      (desc.MiscFlags & D3D11_RESOURCE_MISC_SHARED) &&
+      (desc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_NTHANDLE) &&
+      !(desc.MiscFlags & D3D11_RESOURCE_MISC_RESTRICT_SHARED_RESOURCE) &&
+      !(desc.MiscFlags & D3D11_RESOURCE_MISC_RESTRICT_SHARED_RESOURCE_DRIVER);
+  base::UmaHistogramBoolean("Media.VideoCapture.Win.Device.IsSharedTexture",
+                            is_cross_process_shared_texture);
 }
 
 HRESULT CopyTextureToGpuMemoryBuffer(ID3D11Texture2D* texture,
@@ -2023,11 +2039,13 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedDataInternal(
       camera_rotation_ = GetCameraRotation(device_descriptor_.facing);
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-    // Use the hardware path only if it is enabled and the selected pixel format
-    // is NV12 (which is the only supported one).
+    // Use the hardware path only if it is enabled and the produced pixel format
+    // is NV12 (which is the only supported one) and the requested format is
+    // also NV12.
     if (dxgi_device_manager_ &&
         selected_video_capability_->supported_format.pixel_format ==
             PIXEL_FORMAT_NV12 &&
+        params_.requested_format.pixel_format == PIXEL_FORMAT_NV12 &&
         SUCCEEDED(GetTextureFromMFBuffer(buffer.Get(), &texture))) {
       HRESULT hr =
           DeliverTextureToClient(texture.Get(), reference_time, timestamp);

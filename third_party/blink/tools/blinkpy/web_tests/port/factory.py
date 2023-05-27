@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """Factory method to retrieve the appropriate port implementation."""
 
+import argparse
 import fnmatch
 import optparse
 import re
@@ -136,13 +137,6 @@ class PortFactory(object):
 def platform_options(use_globs=False):
     return [
         optparse.make_option(
-            '--android',
-            action='store_const',
-            dest='platform',
-            const=('android*' if use_globs else 'android'),
-            help=('Alias for --platform=android*'
-                  if use_globs else 'Alias for --platform=android')),
-        optparse.make_option(
             '--platform',
             action='store',
             help=('Glob-style list of platform/ports to use (e.g., "mac*")'
@@ -190,19 +184,47 @@ def wpt_options():
     ]
 
 
-def python_server_options():
-    # TODO(suzukikeita): Remove this once all the servers run on python3 everywhere.
-    return [
-        optparse.make_option(
-            '--python-executable',
-            default=sys.executable,
-            help=('The path to the python executable to run the server in. '
-                  'Use this to run servers on the speicifed python version. '
-                  'For example, use this to run the server on python 3 while '
-                  'other components (such as python scripts) run on python 2. '
-                  'Currently, only pywebsocket supports this option. '
-                  'Default is set to sys.executable')),
-    ]
+# TODO(crbug.com/1431070): Remove the `*_options` methods above once all tools
+# use `argparse`.
+
+
+def add_platform_options_group(parser: argparse.ArgumentParser):
+    group = parser.add_argument_group('Platform Options')
+    group.add_argument('--platform', help='Platform to use (e.g., "mac-lion")')
+    return group
+
+
+def add_configuration_options_group(parser: argparse.ArgumentParser):
+    group = parser.add_argument_group('Configuration Options')
+    group.add_argument(
+        '-t',
+        '--target',
+        help='Specify the target build subdirectory under //out')
+    group.add_argument('--debug',
+                       action='store_const',
+                       const='Debug',
+                       dest='configuration',
+                       help='Set the configuration to Debug')
+    group.add_argument('--release',
+                       action='store_const',
+                       const='Release',
+                       dest='configuration',
+                       help='Set the configuration to Release')
+    group.add_argument('--no-xvfb',
+                       action='store_false',
+                       dest='use_xvfb',
+                       help='Do not run tests with Xvfb')
+    return group
+
+
+def add_wpt_options_group(parser: argparse.ArgumentParser):
+    group = parser.add_argument_group('web-platform-tests (WPT) Options')
+    group.add_argument('--no-manifest-update',
+                       dest='manifest_update',
+                       action='store_false',
+                       help=('Do not update the web-platform-tests '
+                             'MANIFEST.json unless it does not exist.'))
+    return group
 
 
 def _builder_options(builder_name):

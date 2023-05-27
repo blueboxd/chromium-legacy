@@ -41,3 +41,18 @@ export function getTextDirection(): string {
 export function getChromeFlag(flag: Flag): boolean {
   return window.loadTimeData.getBoolean(flag);
 }
+
+/**
+ * Returns the boolean value of whether the image is test image.
+ */
+export function getIsTestImage(): boolean {
+  return window.loadTimeData.getBoolean('is_test_image');
+}
+
+
+/**
+ * Returns the browser version string.
+ */
+export function getBrowserVersion(): string {
+  return window.loadTimeData.getString('browser_version');
+}

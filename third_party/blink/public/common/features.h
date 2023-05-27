@@ -90,9 +90,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kPrivateAggregationApiMaxBudgetPerScope;
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kPrivateAggregationApiFledgeExtensionsLocalTestingOverride);
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPI);
 // Maximum number of URLs allowed to be included in the input parameter for
 // runURLSelectionOperation().
@@ -245,6 +242,35 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkImageClassifier>
     kForceDarkImageClassifierParam;
 
+// TODO(crbug/1431792): Speculatively warm-up service worker.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSpeculativeServiceWorkerWarmUp);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kSpeculativeServiceWorkerWarmUpDryRun;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSpeculativeServiceWorkerWarmUpBatchTimer;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSpeculativeServiceWorkerWarmUpMaxCount;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSpeculativeServiceWorkerWarmUpRequestCacheSize;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSpeculativeServiceWorkerWarmUpRequestQueueLength;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSpeculativeServiceWorkerWarmUpRequestLimit;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSpeculativeServiceWorkerWarmUpDuration;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSpeculativeServiceWorkerWarmUpReWarmUpThreshold;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kSpeculativeServiceWorkerWarmUpIntersectionObserver;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSpeculativeServiceWorkerWarmUpIntersectionObserverDelay;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kSpeculativeServiceWorkerWarmUpOnVisible;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kSpeculativeServiceWorkerWarmUpOnPointerover;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kSpeculativeServiceWorkerWarmUpOnPointerdown;
+
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 
@@ -314,10 +340,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInputPredictorTypeChoice);
 
 // Enables resampling input events on main thread.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kResamplingInputEvents);
-
-// Elevates the InputTargetClient mojo interface to input, since its input
-// blocking.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInputTargetClientHighPriority);
 
 // Enables passing of mailbox backed Accelerated bitmap images to be passed
 // cross-process as mailbox references instead of serialized bitmaps in
@@ -425,6 +447,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInterestGroupStorageMaxOpsBeforeMaintenance;
 // FLEDGE ad serving runtime flag/JS API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledge);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeBiddingAndAuctionServer);
 
 // Configures FLEDGE to consider k-anononymity. If both
 // kFledgeConsiderKAnonymity and kFledgeEnforceKAnonymity are on it will be
@@ -559,9 +583,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSystemColorChooser);
 
 // Disables forced frame updates for web tests. Used by web test runner only.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNoForcedFrameUpdatesForWebTests);
-
-// If enabled, the client hints cache will be loaded on browser restarts.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDurableClientHintsCache);
 
 // A parameter for kReduceUserAgentMinorVersion;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
@@ -789,6 +810,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAndroidExtendedKeyboardShortcuts);
 // enabling functions like writing into a nearby input element.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kStylusPointerAdjustment);
 
+// Record the bounds of a selection even when there is no selection handle.
+// This allows providing more information to the IME, but was disabled because
+// of https://crbug.com/1441243.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kHiddenSelectionBounds);
+
 // TODO(https://crbug.com/1201109): temporary flag to disable new ArrayBuffer
 // size limits, so that tests can be written against code receiving these
 // buffers. Remove when the bindings code instituting these limits is removed.
@@ -895,6 +921,19 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 
 // Combine WebRTC Network and Worker threads. More info at crbug.com/1373439.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcCombinedNetworkAndWorkerThread);
+
+// Combine WebRTC Network and Worker threads. More info at crbug.com/1373439.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcSendPacketBatch);
+
+// Feature flag for driving the Metronome by VSyncs instead of by timer.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kVSyncDecoding);
+// Feature parameter controlling WebRTC VSyncDecoding tick durations during
+// occluded tabs.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kVSyncDecodingHiddenOccludedTickDuration;
+
+// Feature flag for batching sending of WebRTC RTP UDP packets.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcSendPacketBatch);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kIsolateSandboxedIframes);
 enum class IsolateSandboxedIframesGrouping {
@@ -1011,9 +1050,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // See https://crbug.com/1393246.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExtendScriptResourceLifetime);
 
-// Use WebIDL instead of iteration to populate RTCStatsReport.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcStatsReportIdl);
-
 // Makes preloaded fonts render-blocking up to the limits below.
 // See https://crbug.com/1412861
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kRenderBlockingFonts);
@@ -1110,7 +1146,7 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMainThreadHighPriorityImageLoading);
 
 // Enables input IPC to directly target the renderer's compositor thread without
 // hopping through the IO thread first.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInputIpcDirect);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDirectCompositorThreadIpc);
 
 }  // namespace features
 }  // namespace blink

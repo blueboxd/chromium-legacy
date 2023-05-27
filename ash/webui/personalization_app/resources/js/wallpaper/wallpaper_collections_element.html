@@ -32,9 +32,10 @@
     bottom: calc(8px + var(--cros-annotation-2-line-height));
     display: flex;
     flex-direction: row;
+    justify-content: center;
   }
 
-  wallpaper-grid-item[data-google-photos] iron-icon[icon='personalization:managed'] {
+  wallpaper-grid-item[data-google-photos] iron-icon[icon^='personalization:managed'] {
     --iron-icon-fill-color: var(--cros-icon-color-secondary);
     --iron-icon-height: 16px;
     --iron-icon-width: 16px;
@@ -43,7 +44,7 @@
     margin-inline-end: 8px;
   }
 
-  wallpaper-grid-item[data-google-photos][aria-disabled='true'] iron-icon[icon='personalization:managed'] {
+  wallpaper-grid-item[data-google-photos][aria-disabled='true'] iron-icon[icon^='personalization:managed'] {
     /* Icon color should stay light even in dark mode.
      * All of the google photos tile is always light.
      */
@@ -93,8 +94,21 @@
     --personalization-app-grid-item-background-color: var(--google-grey-200);
   }
 
+  :host-context(body.jelly-enabled) wallpaper-grid-item[is-local-no-images]::part(item) {
+    background: linear-gradient(var(--cros-sys-primary), var(--cros-sys-primary_container));
+  }
+
+  :host-context(body.jelly-enabled) wallpaper-grid-item[is-local-no-images]::part(image) {
+    display: none;
+  }
+
   wallpaper-grid-item[data-is-time-of-day-collection] {
     --personalization-app-grid-item-border-radius: 80px;
+  }
+
+  wallpaper-grid-item[data-is-time-of-day-collection]::part(info-icon) {
+    right: 20px;
+    top: 20px;
   }
 </style>
 <template is="dom-if" if="[[hasError_]]">
@@ -130,9 +144,16 @@
               tabindex$="[[tabIndex]]">
             <template is="dom-if" if="[[!isSelectableTile_(item)]]" restamp>
               <div slot="text" class="primary-text">
-                <iron-icon icon="personalization:managed"
-                    title$="$i18n{managedSetting}">
-                </iron-icon>
+                <template is="dom-if" if="[[!isPersonalizationJellyEnabled_]]">
+                  <iron-icon icon="personalization:managed"
+                      title$="$i18n{managedSetting}">
+                  </iron-icon>
+                </template>
+                <template is="dom-if" if="[[isPersonalizationJellyEnabled_]]">
+                  <iron-icon icon="personalization:managed2"
+                      title$="$i18n{managedSetting}">
+                  </iron-icon>
+                </template>
                 <p title$="[[item.name]]">[[item.name]]</p>
               </div>
             </template>
@@ -144,6 +165,7 @@
               collage
               disabled="[[!isSelectableTile_(item)]]"
               index="[[index]]"
+              is-local-no-images$="[[isLocalNoImagesTile_(item)]]"
               on-wallpaper-grid-item-selected="onCollectionSelected_"
               primary-text="[[item.name]]"
               role="option"

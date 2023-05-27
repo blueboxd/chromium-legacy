@@ -51,6 +51,7 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
+#include "components/unified_consent/pref_names.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
@@ -265,34 +266,46 @@ void ChromePermissionsClient::TriggerPromptHatsSurveyIfEnabled(
     const GURL& gurl,
     base::OnceCallback<void()> hats_shown_callback) {
   Profile* profile = Profile::FromBrowserContext(context);
+  absl::optional<GURL> recorded_gurl =
+      profile->GetPrefs()->GetBoolean(
+          unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled)
+          ? absl::make_optional(gurl)
+          : absl::nullopt;
 
   auto prompt_parameters =
       permissions::PermissionHatsTriggerHelper::PromptParametersForHaTS(
           request_type, action, prompt_disposition, prompt_disposition_reason,
-          gesture_type, version_info::GetChannelString(chrome::GetChannel()),
+          gesture_type,
+          std::string(version_info::GetChannelString(chrome::GetChannel())),
           is_post_prompt ? permissions::kOnPromptResolved
                          : permissions::kOnPromptAppearing,
           prompt_display_duration,
           permissions::PermissionHatsTriggerHelper::
               GetOneTimePromptsDecidedBucket(profile->GetPrefs()),
-          gurl);
+          recorded_gurl);
 
   if (!permissions::PermissionHatsTriggerHelper::
-          ArePromptTriggerCriteriaSatisfied(prompt_parameters)) {
+          ArePromptTriggerCriteriaSatisfied(
+              prompt_parameters, kHatsSurveyTriggerPermissionsPrompt)) {
     return;
   }
+
+  auto trigger_and_probability = permissions::PermissionHatsTriggerHelper::
+      GetPermissionPromptTriggerNameAndProbabilityForRequestType(
+          kHatsSurveyTriggerPermissionsPrompt,
+          permissions::PermissionUmaUtil::GetRequestTypeString(request_type));
 
   auto* hats_service =
       HatsServiceFactory::GetForProfile(profile,
                                         /*create_if_necessary=*/true);
-  if (!hats_service) {
+  if (!hats_service || !trigger_and_probability.has_value()) {
     return;
   }
 
   auto survey_data = permissions::PermissionHatsTriggerHelper::
       SurveyProductSpecificData::PopulateFrom(prompt_parameters);
 
-  hats_service->LaunchSurvey(kHatsSurveyTriggerPermissionsPrompt,
+  hats_service->LaunchSurvey(trigger_and_probability->first,
                              std::move(hats_shown_callback), base::DoNothing(),
                              survey_data.survey_bits_data,
                              survey_data.survey_string_data);

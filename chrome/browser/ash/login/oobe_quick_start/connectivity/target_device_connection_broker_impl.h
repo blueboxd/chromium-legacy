@@ -65,6 +65,7 @@ class TargetDeviceConnectionBrokerImpl
                         ResultCallback on_start_advertising_callback) override;
   void StopAdvertising(base::OnceClosure on_stop_advertising_callback) override;
   base::Value::Dict GetPrepareForUpdateInfo() override;
+  std::string GetSessionIdDisplayCode() override;
 
  private:
   // Used to access the |random_session_id_| in tests, and to allow testing
@@ -107,6 +108,8 @@ class TargetDeviceConnectionBrokerImpl
       NearbyConnectionsManager::ConnectionsStatus status);
   const Connection::SessionContext BuildConnectionSessionContext() const;
 
+  void OnHandshakeCompleted(bool success);
+
   // A 4-digit decimal pin code derived from the connection's authentication
   // token for the pin authentication flow.
   std::string pin_;
@@ -126,6 +129,7 @@ class TargetDeviceConnectionBrokerImpl
   std::unique_ptr<Connection> connection_;
 
   mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder_;
+  bool is_resume_after_update_;
 
   base::WeakPtrFactory<TargetDeviceConnectionBrokerImpl> weak_ptr_factory_{
       this};

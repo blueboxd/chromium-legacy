@@ -29,7 +29,6 @@
 #include "chrome/updater/util/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
-#include "components/update_client/buildflags.h"
 #include "components/update_client/network.h"
 #include "components/update_client/patch/in_process_patcher.h"
 #include "components/update_client/patcher.h"
@@ -57,7 +56,7 @@ Configurator::Configurator(scoped_refptr<UpdaterPrefs> prefs,
           base::MakeRefCounted<update_client::InProcessUnzipperFactory>()),
       patch_factory_(
           base::MakeRefCounted<update_client::InProcessPatcherFactory>()),
-      is_managed_device_([]() {
+      is_managed_device_([] {
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
         return base::IsManagedOrEnterpriseDevice();
 #else
@@ -129,7 +128,7 @@ std::string Configurator::GetLang() const {
 }
 
 std::string Configurator::GetOSLongName() const {
-  return version_info::GetOSType();
+  return std::string(version_info::GetOSType());
 }
 
 base::flat_map<std::string, std::string> Configurator::ExtraRequestParams()
@@ -219,15 +218,13 @@ update_client::UpdaterStateProvider Configurator::GetUpdaterStateProvider()
   });
 }
 
-#if BUILDFLAG(ENABLE_PUFFIN_PATCHES)
 absl::optional<base::FilePath> Configurator::GetCrxCachePath() const {
   absl::optional<base::FilePath> optional_result =
       updater::GetInstallDirectory(GetUpdaterScope());
   return optional_result.has_value()
              ? absl::optional<base::FilePath>(
-                   optional_result.value().AppendASCII(kCrxCachePath))
+                   optional_result.value().AppendASCII("crx_cache"))
              : absl::nullopt;
 }
-#endif
 
 }  // namespace updater

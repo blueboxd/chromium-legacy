@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -18,9 +19,11 @@
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
+#include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -40,7 +43,8 @@ absl::optional<double> GetBaseValue(
     auction_worklet::mojom::BaseValue base_value,
     double winning_bid,
     double highest_scoring_other_bid,
-    const absl::optional<auction_worklet::mojom::RejectReason> reject_reason) {
+    const absl::optional<auction_worklet::mojom::RejectReason> reject_reason,
+    const PrivateAggregationTimings& timings) {
   // The mojom API declaration should ensure base_value is one of these cases.
   switch (base_value) {
     case auction_worklet::mojom::BaseValue::kWinningBid:
@@ -48,9 +52,9 @@ absl::optional<double> GetBaseValue(
     case auction_worklet::mojom::BaseValue::kHighestScoringOtherBid:
       return highest_scoring_other_bid;
     case auction_worklet::mojom::BaseValue::kScriptRunTime:
-      return absl::nullopt;
+      return timings.script_run_time.InMillisecondsF();
     case auction_worklet::mojom::BaseValue::kSignalsFetchTime:
-      return absl::nullopt;
+      return timings.signals_fetch_time.InMillisecondsF();
     case auction_worklet::mojom::BaseValue::kBidRejectReason:
       // reportWin() and reportResult() have no reject reason, so their private
       // aggregation requests with "bid-reject-reason" base value are not sent.
@@ -139,8 +143,6 @@ absl::optional<int32_t> CalculateValue(
     const auction_worklet::mojom::SignalValuePtr& value_obj,
     absl::optional<double> base) {
   if (!base.has_value()) {
-    // Once kScriptRunTime and kSignalsFetchTime are supported, this should not
-    // happen.
     return absl::nullopt;
   }
 
@@ -176,7 +178,8 @@ CalculateContributionBucketAndValue(
         contribution,
     double winning_bid,
     double highest_scoring_other_bid,
-    const absl::optional<auction_worklet::mojom::RejectReason> reject_reason) {
+    const absl::optional<auction_worklet::mojom::RejectReason> reject_reason,
+    const PrivateAggregationTimings& timings) {
   absl::uint128 bucket;
   int value;
 
@@ -186,8 +189,9 @@ CalculateContributionBucketAndValue(
     auction_worklet::mojom::SignalBucketPtr& bucket_obj =
         contribution->bucket->get_signal_bucket();
     absl::optional<absl::uint128> bucket_opt = CalculateBucket(
-        bucket_obj, GetBaseValue(bucket_obj->base_value, winning_bid,
-                                 highest_scoring_other_bid, reject_reason));
+        bucket_obj,
+        GetBaseValue(bucket_obj->base_value, winning_bid,
+                     highest_scoring_other_bid, reject_reason, timings));
     if (!bucket_opt.has_value()) {
       return nullptr;
     }
@@ -209,8 +213,9 @@ CalculateContributionBucketAndValue(
     const auction_worklet::mojom::SignalValuePtr& value_obj =
         contribution->value->get_signal_value();
     absl::optional<int> value_opt = CalculateValue(
-        value_obj, GetBaseValue(value_obj->base_value, winning_bid,
-                                highest_scoring_other_bid, reject_reason));
+        value_obj,
+        GetBaseValue(value_obj->base_value, winning_bid,
+                     highest_scoring_other_bid, reject_reason, timings));
     if (!value_opt.has_value()) {
       return nullptr;
     }
@@ -245,6 +250,7 @@ FillInPrivateAggregationRequest(
     double winning_bid,
     double highest_scoring_other_bid,
     const absl::optional<auction_worklet::mojom::RejectReason> reject_reason,
+    const PrivateAggregationTimings& timings,
     bool is_winner) {
   DCHECK(request);
   if (request->contribution->is_histogram_contribution()) {
@@ -292,7 +298,7 @@ FillInPrivateAggregationRequest(
   blink::mojom::AggregatableReportHistogramContributionPtr
       calculated_contribution = CalculateContributionBucketAndValue(
           std::move(contribution->get_for_event_contribution()), winning_bid,
-          highest_scoring_other_bid, reject_reason);
+          highest_scoring_other_bid, reject_reason, timings);
   if (!calculated_contribution) {
     return absl::nullopt;
   }
@@ -304,6 +310,41 @@ FillInPrivateAggregationRequest(
           request->aggregation_mode, std::move(request->debug_mode_details)),
       final_event_type);
   return request_with_event_type;
+}
+
+void SplitContributionsIntoBatchesThenSendToHost(
+    std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr> requests,
+    mojo::Remote<blink::mojom::PrivateAggregationHost>& remote_host) {
+  // Split the vector of requests into those with matching debug mode details.
+  std::map<
+      blink::mojom::DebugModeDetailsPtr,
+      std::vector<blink::mojom::AggregatableReportHistogramContributionPtr>>
+      contributions_map;
+
+  for (auction_worklet::mojom::PrivateAggregationRequestPtr& request :
+       requests) {
+    // All for-event contributions have already been converted to histogram
+    // contributions by filling in post auction signals using
+    // `FillInPrivateAggregationRequest()` before reaching here.
+    CHECK(request->contribution->is_histogram_contribution());
+    CHECK(request->debug_mode_details);
+
+    // TODO(alexmt): Split by this too when it can be non-default.
+    CHECK_EQ(request->aggregation_mode,
+             blink::mojom::AggregationServiceMode::kDefault);
+
+    contributions_map[std::move(request->debug_mode_details)].push_back(
+        std::move(request->contribution->get_histogram_contribution()));
+  }
+
+  for (auto& [debug_mode_details, contributions] : contributions_map) {
+    // TODO(alexmt): Use `std::map::extract()` to avoid the `Clone()` when
+    // this is allowed in Chromium.
+    remote_host->SendHistogramReport(
+        std::move(contributions),
+        blink::mojom::AggregationServiceMode::kDefault,
+        debug_mode_details.Clone());
+  }
 }
 
 }  // namespace content

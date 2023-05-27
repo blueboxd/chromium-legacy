@@ -350,7 +350,7 @@ class CertificateProviderApiMockedExtensionTest
   }
 
   void ExecuteJavascript(const std::string& function) const {
-    ASSERT_TRUE(content::ExecuteScript(GetExtensionMainFrame(), function));
+    ASSERT_TRUE(content::ExecJs(GetExtensionMainFrame(), function));
   }
 
   // Calls |function| in the extension. |function| needs to return a bool or a
@@ -398,7 +398,7 @@ class CertificateProviderApiMockedExtensionTest
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GetHttpsClientCertUrl(),
         WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        ui_test_utils::BROWSER_TEST_NONE);
+        ui_test_utils::BROWSER_TEST_NO_WAIT);
 
     content::WebContents* const https_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -471,7 +471,7 @@ class CertificateProviderApiMockedExtensionTest
     // Proceed through the interstitial to set an SSL bypass for this host.
     content::TestNavigationObserver nav_observer(tab,
                                                  /*number_of_navigations=*/1);
-    ASSERT_TRUE(content::ExecuteScript(
+    ASSERT_TRUE(content::ExecJs(
         tab, "window.certificateErrorPageController.proceed();"));
     nav_observer.Wait();
 

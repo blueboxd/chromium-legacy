@@ -197,6 +197,9 @@ class Surface final : public ui::PropertyHandler {
   // commit.
   void SetBackgroundColor(absl::optional<SkColor4f> background_color);
 
+  // Sets that this surface uses trusted damage.
+  void SetTrustedDamage(bool trusted_damage);
+
   // This sets the surface viewport for scaling.
   void SetViewport(const gfx::SizeF& viewport);
 
@@ -383,7 +386,9 @@ class Surface final : public ui::PropertyHandler {
   void SetOcclusionTracking(bool tracking);
 
   // Triggers sending an occlusion update to observers.
-  void OnWindowOcclusionChanged();
+  void OnWindowOcclusionChanged(
+      aura::Window::OcclusionState old_occlusion_state,
+      aura::Window::OcclusionState new_occlusion_state);
 
   // Triggers sending a locking status to observers.
   // true : lock a frame to normal or restore state
@@ -613,6 +618,9 @@ class Surface final : public ui::PropertyHandler {
 
   // This true, if sub_surfaces_ has changes (order, position, etc).
   bool sub_surfaces_changed_ = false;
+
+  // This is true if damage reported by the client should be trusted.
+  bool trusted_damage_ = false;
 
   // This is the size of the last committed contents.
   gfx::SizeF content_size_;

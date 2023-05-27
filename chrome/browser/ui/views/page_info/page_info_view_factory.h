@@ -60,11 +60,13 @@ class PageInfoViewFactory {
     VIEW_ID_PAGE_INFO_AD_PERSONALIZATION_BUTTON,
     VIEW_ID_PAGE_INFO_MORE_ABOUT_THIS_PAGE_BUTTON,
     VIEW_ID_PERMISSION_TOGGLE_ROW_TOGGLE_BUTTON,
+    VIEW_ID_PAGE_INFO_RESET_DECISIONS_LABEL,
   };
 
   // Creates a separator view with padding on top and bottom. Use with flex
   // layout only.
-  [[nodiscard]] static std::unique_ptr<views::View> CreateSeparator();
+  [[nodiscard]] static std::unique_ptr<views::View> CreateSeparator(
+      int horizontal_inset = 0);
 
   // Creates a label container view with padding on left and right side.
   // Supports multiple multiline labels in a column (ex. title and subtitle
@@ -97,9 +99,6 @@ class PageInfoViewFactory {
   // Returns the icon for a button which opens an external dialog or page (ex.
   // cookies dialog or site settings page).
   static const ui::ImageModel GetLaunchIcon();
-
-  // Returns the icon for the side panel.
-  static const ui::ImageModel GetSidePanelIcon();
 
   // Returns the not secure state icon for the SecurityInformationView.
   static const ui::ImageModel GetConnectionNotSecureIcon();

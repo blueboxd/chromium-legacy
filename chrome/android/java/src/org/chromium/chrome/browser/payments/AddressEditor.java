@@ -4,6 +4,13 @@
 
 package org.chromium.chrome.browser.payments;
 
+import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.ALL_KEYS;
+import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.CANCEL_RUNNABLE;
+import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.DONE_RUNNABLE;
+import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.EDITOR_FIELDS;
+import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.EDITOR_TITLE;
+import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.SHOW_REQUIRED_INDICATOR;
+
 import android.app.ProgressDialog;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -18,7 +25,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.GetSubKeysRequestDelegate;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorBase;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorModel;
 import org.chromium.chrome.browser.autofill.settings.AddressValidationType;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.AddressField;
@@ -26,7 +32,9 @@ import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.Addre
 import org.chromium.components.autofill.prefeditor.EditorFieldModel;
 import org.chromium.components.autofill.prefeditor.EditorFieldModel.EditorFieldValidator;
 import org.chromium.payments.mojom.AddressErrors;
+import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,7 +70,7 @@ public class AddressEditor
     private String mRecentlySelectedCountry;
     private Runnable mCountryChangeCallback;
     private AutofillProfile mProfile;
-    private EditorModel mEditor;
+    private PropertyModel mEditorModel;
     private ProgressDialog mProgressDialog;
     @Nullable
     private AddressErrors mAddressErrors;
@@ -158,14 +166,13 @@ public class AddressEditor
         final String editTitle;
         final AutofillAddress address;
         if (toEdit == null) {
-            address = new AutofillAddress(mContext, new AutofillProfile());
+            address = new AutofillAddress(mContext, AutofillProfile.builder().build());
             editTitle = mContext.getString(R.string.autofill_create_profile);
         } else {
             address = toEdit;
             editTitle = toEdit.getEditTitle();
         }
 
-        mEditor = new EditorModel(editTitle);
         mProfile = address.getProfile();
 
         // When edit is called, a new form is started, so the country on the
@@ -191,7 +198,7 @@ public class AddressEditor
              */
             @Override
             public void onResult(Pair<String, Runnable> eventData) {
-                mEditor.removeAllFields();
+                mEditorModel.get(EDITOR_FIELDS).clear();
                 showProgressDialog();
                 mRecentlySelectedCountry = eventData.first;
                 mPhoneFormatter.setCountryCode(mRecentlySelectedCountry);
@@ -241,8 +248,7 @@ public class AddressEditor
                     mContext.getString(R.string.pref_edit_dialog_field_required_validation_message);
             mPhoneField = EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
                     mContext.getString(R.string.autofill_profile_editor_phone_number),
-                    mPhoneNumbers, mPhoneFormatter, mPhoneValidator, null /* valueIconGenerator */,
-                    requiredErrorMessage,
+                    mPhoneNumbers, mPhoneFormatter, mPhoneValidator, requiredErrorMessage,
                     mContext.getString(R.string.payments_phone_invalid_validation_message),
                     EditorFieldModel.LENGTH_COUNTER_LIMIT_NONE, null /* value */);
         }
@@ -253,23 +259,31 @@ public class AddressEditor
 
         // If the user clicks [Cancel], send |toEdit| address back to the caller, which was the
         // original state (could be null, a complete address, a partial address).
-        mEditor.setCancelCallback(() -> {
+        Runnable onCancel = () -> {
             // This makes sure that onSubKeysReceived returns early if it's
             // ever called when Cancel has already occurred.
             mAdminAreasLoaded = true;
             PersonalDataManager.getInstance().cancelPendingGetSubKeys();
             cancelCallback.onResult(toEdit);
-        });
+        };
 
         // If the user clicks [Done], save changes on disk, mark the address "complete" if possible,
         // and send it back to the caller.
-        mEditor.setDoneCallback(() -> {
+        Runnable onDone = () -> {
             mAdminAreasLoaded = true;
             PersonalDataManager.getInstance().cancelPendingGetSubKeys();
             commitChanges(mProfile);
             address.completeAddress(mProfile);
             doneCallback.onResult(address);
-        });
+        };
+
+        mEditorModel = new PropertyModel.Builder(ALL_KEYS)
+                               .with(EDITOR_TITLE, editTitle)
+                               .with(SHOW_REQUIRED_INDICATOR, true)
+                               .with(EDITOR_FIELDS, new ArrayList())
+                               .with(DONE_RUNNABLE, onDone)
+                               .with(CANCEL_RUNNABLE, onCancel)
+                               .build();
 
         loadAdminAreasForCountry(mCountryField.getValue().toString());
         if (mAddressErrors != null) mEditorDialog.validateForm();
@@ -423,7 +437,7 @@ public class AddressEditor
             setAddressFieldValuesFromCache();
             addAddressFieldsToEditor(
                     mCountryField.getValue().toString(), mProfile.getLanguageCode());
-            mEditorDialog.show(mEditor);
+            mEditorDialog.show(mEditorModel);
         }
     }
 
@@ -460,11 +474,12 @@ public class AddressEditor
      * the profile that's being edited.
      */
     private void addAddressFieldsToEditor(String countryCode, String languageCode) {
+        List<EditorFieldModel> editorFields = new ArrayList<>();
         mAddressUiComponents = mAutofillProfileBridge.getAddressUiComponents(
                 countryCode, languageCode, AddressValidationType.PAYMENT_REQUEST);
         // In terms of order, country must be the first field.
         mCountryField.setCustomErrorMessage(getAddressError(AddressField.COUNTRY));
-        mEditor.addField(mCountryField);
+        editorFields.add(mCountryField);
         for (int i = 0; i < mAddressUiComponents.size(); i++) {
             AddressUiComponent component = mAddressUiComponents.get(i);
 
@@ -485,11 +500,12 @@ public class AddressEditor
                             : null);
 
             field.setCustomErrorMessage(getAddressError(component.id));
-            mEditor.addField(field);
+            editorFields.add(field);
         }
         // Phone number (and email if applicable) are the last fields of the address.
         mPhoneField.setCustomErrorMessage(mAddressErrors != null ? mAddressErrors.phone : null);
-        mEditor.addField(mPhoneField);
+        editorFields.add(mPhoneField);
+        mEditorModel.get(EDITOR_FIELDS).addAll(editorFields);
     }
 
     /** Country based phone number validator. */

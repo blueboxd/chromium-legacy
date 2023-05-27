@@ -347,7 +347,8 @@ void Preferences::RegisterProfilePrefs(
   // device.
   registry->RegisterBooleanPref(prefs::kSendFunctionKeys, false);
 
-  registry->RegisterBooleanPref(prefs::kEventRemappedToRightClick, false);
+  registry->RegisterIntegerPref(prefs::kAltEventRemappedToRightClick, 0);
+  registry->RegisterIntegerPref(prefs::kSearchEventRemappedToRightClick, 0);
   registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackDelete, 0);
   registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackEnd, 0);
   registry->RegisterIntegerPref(prefs::kKeyEventRemappedToSixPackHome, 0);
@@ -471,6 +472,10 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kHatsBatteryLifeIsSelected, false);
 
+  registry->RegisterInt64Pref(::prefs::kHatsPeripheralsCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsPeripheralsIsSelected, false);
+
   registry->RegisterBooleanPref(::prefs::kHatsPrivacyHubBaselineIsSelected,
                                 false);
 
@@ -588,6 +593,8 @@ void Preferences::RegisterProfilePrefs(
                                 false);
 
   registry->RegisterBooleanPref(prefs::kShowDisplaySizeScreenEnabled, true);
+
+  registry->RegisterDictionaryPref(::prefs::kTotalUniqueOsSettingsChanged);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

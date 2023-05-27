@@ -10,7 +10,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -35,7 +34,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/web_package/web_bundle_builder.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -82,9 +80,10 @@ const char kWebstoreDomain[] = "cws.com";
 bool RunAllPending(content::WebContents* web_contents) {
   // This is slight hack to achieve a RunPendingInRenderer() method. Since IPCs
   // are sent synchronously, anything started prior to this method will finish
-  // before this method returns (as content::ExecuteScript() is synchronous).
-  if (!content::ExecuteScript(web_contents, "1 == 1;"))
+  // before this method returns (as content::ExecJs() is synchronous).
+  if (!content::ExecJs(web_contents, "1 == 1;")) {
     return false;
+  }
   base::RunLoop().RunUntilIdle();
   return true;
 }
@@ -658,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptExtensionAPIs) {
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), extension->GetResourceURL("fire_event.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+      ui_test_utils::BROWSER_TEST_NO_WAIT);
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
@@ -839,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptBlockingScript) {
   // Navigate! Both extensions will try to inject.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NO_WAIT);
 
   dialog_wait.Run();
   // Right now, the alert dialog is showing and blocking injection of anything
@@ -893,7 +892,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
   // Navigate!
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NO_WAIT);
 
   // Now, instead of closing the dialog, just close the tab. Later scripts
   // should never get a chance to run (and we shouldn't crash).
@@ -930,7 +929,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest,
   // Navigate!
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), embedded_test_server()->GetURL("/empty.html"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NO_WAIT);
 
   dialog_wait.Run();
 
@@ -1529,7 +1528,7 @@ content::WebContents* ContentScriptRelatedFrameTest::OpenPopup(
   int initial_tab_count = browser()->tab_strip_model()->count();
   content::TestNavigationObserver popup_observer(nullptr /* web_contents */);
   popup_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(content::ExecuteScript(
+  EXPECT_TRUE(content::ExecJs(
       opener_web_contents, content::JsReplace("window.open($1);", url.spec())));
   popup_observer.Wait();
   EXPECT_EQ(initial_tab_count + 1, browser()->tab_strip_model()->count());
@@ -1554,7 +1553,7 @@ void ContentScriptRelatedFrameTest::NavigateIframe(
                                           url.spec().c_str());
   content::TestNavigationObserver navigation_observer(url);
   navigation_observer.WatchExistingWebContents();
-  EXPECT_TRUE(content::ExecuteScript(navigating_host, script));
+  EXPECT_TRUE(content::ExecJs(navigating_host, script));
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 
@@ -2170,104 +2169,6 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiIdentifiabilityTest,
   EXPECT_FALSE(IdentifiabilityMetricsTestHelper::ContainsSurfaceOfType(
       merged_entries,
       blink::IdentifiableSurface::Type::kExtensionContentScript));
-}
-
-class SubresourceWebBundlesContentScriptApiTest : public ExtensionApiTest {
- protected:
-  // Registers a request handler for static content.
-  void RegisterRequestHandler(const std::string& relative_url,
-                              const std::string& content_type,
-                              const std::string& content,
-                              bool nosniff) {
-    embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
-        [relative_url, content_type, content,
-         nosniff](const net::test_server::HttpRequest& request)
-            -> std::unique_ptr<net::test_server::HttpResponse> {
-          if (request.relative_url == relative_url) {
-            auto response =
-                std::make_unique<net::test_server::BasicHttpResponse>();
-            response->set_code(net::HTTP_OK);
-            response->set_content_type(content_type);
-            response->set_content(content);
-            if (nosniff) {
-              response->AddCustomHeader("X-Content-Type-Options", "nosniff");
-            }
-            return std::move(response);
-          }
-          return nullptr;
-        }));
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(SubresourceWebBundlesContentScriptApiTest,
-                       SubresourceWebBundleIframe) {
-  // Create an extension that injects a content script in "uuid-in-package"
-  // scheme urls.
-  TestExtensionDir test_dir;
-  test_dir.WriteManifest(R"({
-        "name": "Web Request Subresource Web Bundles Test",
-        "manifest_version": 2,
-        "version": "0.1",
-        "permissions": ["uuid-in-package:*"],
-        "content_scripts": [{
-          "matches":[
-            "uuid-in-package:*"
-          ],
-          "all_frames": true,
-          "js":[
-            "content_script.js"
-          ]
-        }]
-      })");
-
-  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"),
-                     R"(
-      (() => {
-        const documentUrl = document.location.toString();
-        chrome.test.sendMessage(documentUrl);
-      })();
-      )");
-
-  ASSERT_TRUE(LoadExtension(test_dir.UnpackedPath()));
-
-  const std::string uuid_html_url =
-      "uuid-in-package:65c6f241-f6b5-4302-9f95-9a826c4dda1c";
-  web_package::WebBundleBuilder builder;
-  builder.AddExchange(uuid_html_url,
-                      {{":status", "200"}, {"content-type", "text/html"}},
-                      "<script>console.error('hoge');</script>");
-  std::vector<uint8_t> bundle = builder.CreateBundle();
-  const std::string web_bundle = std::string(bundle.begin(), bundle.end());
-
-  // For serving web bundles, "Content-Type: application/webbundle" and
-  // "X-Content-Type-Options: nosniff" response headers are required.
-  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#name-serving-constraints
-  RegisterRequestHandler("/test.wbn", "application/webbundle", web_bundle,
-                         true /* nosniff */);
-
-  const std::string page_html = base::StringPrintf(R"(
-        <script type="webbundle">
-        {
-          "source": "./test.wbn",
-          "scopes": ["uuid-in-package:"]
-        }
-        </script>
-        <iframe src="%s"></iframe>
-      )",
-                                                   uuid_html_url.c_str());
-  RegisterRequestHandler("/test.html", "text/html", page_html,
-                         false /* nosniff */);
-  ASSERT_TRUE(StartEmbeddedTestServer());
-
-  ExtensionTestMessageListener listener;
-
-  GURL page_url = embedded_test_server()->GetURL("/test.html");
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), page_url));
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-  EXPECT_EQ(uuid_html_url, listener.message());
 }
 
 class ContentScriptApiPrerenderingTest

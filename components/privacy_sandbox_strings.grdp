@@ -128,7 +128,7 @@
   </message>
   <!-- Note that this string differs slightly on Android, which instead uses `privacy_sandbox_m1_notice_restricted_description_1_android` -->
   <message name="IDS_PRIVACY_SANDBOX_M1_NOTICE_RESTRICTED_DESCRIPTION_1" desc="First description in the restricted notice">
-    Chrome now shares only very limited information between sites, such as when an ad was shown to you, to help sites measure the performance of ads.
+    We’re launching a new ad privacy feature called ad measurement. Chrome shares only very limited information between sites, such as when an ad was shown to you, to help sites measure the performance of ads.
   </message>
   <message name="IDS_PRIVACY_SANDBOX_M1_NOTICE_RESTRICTED_DESCRIPTION_2" desc="Second description in the restricted notice"  formatter_data="android_java">
     Learn more about how Google protects your data in our Privacy Policy.
@@ -223,7 +223,7 @@
     When on, a list of topics appears here based on your recent browsing history
   </message>
   <message name="IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY" desc="A description that appear beneath the 'Your topics' title. This setting could be on but no topics appear in the list. This text explains why." formatter_data="android_java">
-    It can take up to a week for a list of topics to appear here based on your recent browsing history
+    No topics to show right now
   </message>
   <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCK_TOPIC" desc="A button associated with each of the user's topics. If the user clicks 'Block', that topic will get moved to the 'Topics you blocked' page.">
     Block

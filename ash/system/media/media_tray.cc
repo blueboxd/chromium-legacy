@@ -78,21 +78,6 @@ bool GetIsPinnedToShelfByDefault() {
   return diagonal_len > kMinimumScreenSizeDiagonal;
 }
 
-// Used for getting default pin state for experiment.
-bool GetIsPinnedToShelfByFeatureParams() {
-  switch (media::kCrosGlobalMediaControlsPinParam.Get()) {
-    case media::kCrosGlobalMediaControlsPinOptions::kPin:
-      return true;
-    case media::kCrosGlobalMediaControlsPinOptions::kNotPin:
-      return false;
-    case media::kCrosGlobalMediaControlsPinOptions::kHeuristic:
-      return GetIsPinnedToShelfByDefault();
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 // Enum that specifies the pin state of global media controls.
 enum PinState {
   kDefault = 0,
@@ -178,7 +163,7 @@ bool MediaTray::IsPinnedToShelf() {
     case PinState::kUnpinned:
       return false;
     case PinState::kDefault:
-      return GetIsPinnedToShelfByFeatureParams();
+      return GetIsPinnedToShelfByDefault();
   }
 
   NOTREACHED();
@@ -447,7 +432,7 @@ std::unique_ptr<TrayBubbleView> MediaTray::CreateTrayBubbleView() {
   init_params.anchor_view = nullptr;
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = GetAnchorBoundsInScreen();
-  init_params.insets = GetTrayBubbleInsets();
+  init_params.insets = GetTrayBubbleInsets(GetBubbleWindowContainer());
   init_params.shelf_alignment = shelf()->alignment();
   init_params.preferred_width = kTrayMenuWidth;
   init_params.close_on_deactivate = true;

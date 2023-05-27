@@ -7,16 +7,20 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/session/session_observer.h"
+#include "ash/user_education/user_education_help_bubble_controller.h"
 #include "ash/user_education/user_education_ping_controller.h"
 #include "ash/user_education/user_education_private_api_key.h"
 #include "base/functional/callback_forward.h"
 #include "base/scoped_observation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ui {
 class ElementContext;
+class ElementIdentifier;
 }  // namespace ui
 
 namespace ash {
@@ -39,6 +43,13 @@ class ASH_EXPORT UserEducationController : public SessionObserver {
   // NOTE: Exists if and only if user education features are enabled.
   static UserEducationController* Get();
 
+  // Returns the identifier for an element associated with the specified
+  // `app_id`, or an absent value if no such identifier exists. Note that
+  // existence of an identifier does not imply the existence of an associated
+  // element.
+  absl::optional<ui::ElementIdentifier> GetElementIdentifierForAppId(
+      const std::string& app_id) const;
+
   // Starts the tutorial previously registered with the specified `tutorial_id`.
   // Any running tutorial is cancelled. One of either `completed_callback` or
   // `aborted_callback` will be run on tutorial finish.
@@ -57,6 +68,9 @@ class ASH_EXPORT UserEducationController : public SessionObserver {
   // The delegate  which facilitates communication between Ash and user
   // education services in the browser.
   std::unique_ptr<UserEducationDelegate> delegate_;
+
+  // The controller responsible for creation/management of help bubbles.
+  UserEducationHelpBubbleController help_bubble_controller_{delegate_.get()};
 
   // The controller responsible for creation/management of pings.
   UserEducationPingController ping_controller_;

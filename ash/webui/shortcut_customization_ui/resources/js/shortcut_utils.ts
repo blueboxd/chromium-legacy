@@ -7,7 +7,7 @@ import '../strings.m.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 
-import {Accelerator, AcceleratorCategory, AcceleratorId, AcceleratorInfo, AcceleratorState, AcceleratorSubcategory, AcceleratorType, Modifier, MojoAcceleratorInfo, MojoSearchResult, StandardAcceleratorInfo, TextAcceleratorInfo} from './shortcut_types.js';
+import {Accelerator, AcceleratorCategory, AcceleratorId, AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, Modifier, MojoAcceleratorInfo, MojoSearchResult, StandardAcceleratorInfo, TextAcceleratorInfo} from './shortcut_types.js';
 
 // TODO(jimmyxgong): ChromeOS currently supports up to F24 but can be updated to
 // F32. Update here when F32 is available.
@@ -249,3 +249,13 @@ export const getURLForSearchResult = (searchResult: MojoSearchResult): URL => {
 export const isFunctionKey = (keycode: number): boolean => {
   return keycode >= kF11 && keycode <= kF24;
 };
+
+export const getSourceAndActionFromAcceleratorId =
+    (uuid: AcceleratorId): {source: number, action: number} => {
+      // Split '{source}-{action}` into [source][action].
+      const uuidSplit = uuid.split('-');
+      const source: AcceleratorSource = parseInt(uuidSplit[0], 10);
+      const action = parseInt(uuidSplit[1], 10);
+
+      return {source, action};
+    };

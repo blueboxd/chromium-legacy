@@ -2745,8 +2745,8 @@ TEST_F(FormAutofillTest, WebFormControlElementToFormFieldAutocompletetype) {
                               ? WebInputElement::DefaultMaxLength()
                               : 0;
     expected.autocomplete_attribute = test_cases[i].autocomplete_attribute;
-    expected.parsed_autocomplete = ParseAutocompleteAttribute(
-        test_cases[i].autocomplete_attribute, expected.max_length);
+    expected.parsed_autocomplete =
+        ParseAutocompleteAttribute(test_cases[i].autocomplete_attribute);
 
     SCOPED_TRACE(test_cases[i].element_id);
     EXPECT_FORM_FIELD_DATA_EQUALS(expected, result);
@@ -3031,7 +3031,7 @@ TEST_F(FormAutofillTest, WebFormElementConsiderNonControlLabelableElements) {
 TEST_F(FormAutofillTest, WebFormElementToFormDataTooManyFields) {
   std::string html =
       "<FORM name='TestForm' action='http://cnn.com' method='post'>";
-  for (size_t i = 0; i < (kMaxParseableFields + 1); ++i) {
+  for (size_t i = 0; i < (kMaxExtractableFields + 1); ++i) {
     html += "<INPUT type='text'/>";
   }
   html += "</FORM>";

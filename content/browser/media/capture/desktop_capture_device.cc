@@ -72,6 +72,10 @@ const int kDefaultMaximumCpuConsumptionPercentage = 50;
 // (EMA) filter used to calculate the current frame rate (in frames per second).
 constexpr float kAlpha = 0.1;
 
+// The maximum refresh delay. Callers of the API that request a refresh
+// frame may end up waiting up to this long.
+static constexpr base::TimeDelta kMaxRefreshDelay = base::Seconds(1);
+
 webrtc::DesktopRect ComputeLetterboxRect(
     const webrtc::DesktopSize& max_size,
     const webrtc::DesktopSize& source_size) {
@@ -91,28 +95,6 @@ void BindWakeLockProvider(
     mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetDeviceService().BindWakeLockProvider(std::move(receiver));
-}
-
-int GetMaximumCpuConsumptionPercentage() {
-  int max_cpu_consumption_percentage = kDefaultMaximumCpuConsumptionPercentage;
-
-  std::string string_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWebRtcMaxCpuConsumptionPercentage);
-  int tmp_percentage = 0;
-  if (base::StringToInt(string_value, &tmp_percentage)) {
-    // If the max cpu percentage provided by the user is outside [1, 100] then
-    // |max_cpu_consumption_percentage_| is left to the default value. Same if
-    // no value is provided by the user, i.e. |string_value| will be empty and
-    // base::StringToInt will set |tmp_percentage| to 0.
-    if (tmp_percentage > 0 && tmp_percentage <= 100)
-      max_cpu_consumption_percentage = tmp_percentage;
-  }
-
-  UMA_HISTOGRAM_BOOLEAN("WebRTC.DesktopCapture.MaxCpuConsumptionIsDefault",
-                        max_cpu_consumption_percentage ==
-                            kDefaultMaximumCpuConsumptionPercentage);
-  return max_cpu_consumption_percentage;
 }
 
 void LogDesktopCaptureZeroHzIsActive(DesktopMediaID::Type capturer_type,
@@ -165,13 +147,19 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // Implementation of VideoCaptureDevice methods.
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         std::unique_ptr<Client> client);
+  // Executes a refresh capture, if conditions permit. Otherwise, schedules a
+  // later retry. If a refresh was already pending, a new request is ignored.
   void RequestRefreshFrame();
+
+  base::TimeDelta GetDelayBeforeNextRefreshAttempt() const;
 
   void SetNotificationWindowId(gfx::NativeViewId window_id);
 
   void SetMockTimeForTesting(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const base::TickClock* tick_clock);
+
+  void SetRefreshFrameCallbackForTesting(RefreshFrameCallback* rrf_callback);
 
   base::WeakPtr<Core> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 
@@ -182,17 +170,23 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
     webrtc::DesktopCapturer::Result result,
     std::unique_ptr<webrtc::DesktopFrame> frame) override;
 
-  // Sends the last received frame (stored in |output_frame_|) to the client
-  // using the colorspace in |last_frame_color_space_|.
-  // Does not schedule the next frame.
-  void SendLastReceivedFrameToClient(bool is_refresh_frame);
-
   // Method that is scheduled on |task_runner_| to be called on regular interval
   // to capture a frame.
   void OnCaptureTimer();
 
-  // Captures a frame. Upon completion, schedules the next frame.
-  void CaptureFrame();
+  // Method that is scheduled on |task_runner_| and called as a result of a
+  // previous call to |RequestRefreshFrame|. Leads to capturing of a new frame
+  // when the default captured stream did not provide frames on time for some
+  // reason. No-op if a default capture event is already pending by the time
+  // this method is called.
+  void OnRequestRefreshFrameTimer();
+
+  // Captures a frame. Upon completion, schedules the next frame. The frame type
+  // is a refresh frame if `is_refresh_frame` is true and a default frame
+  // otherwise. Sending refresh frames is expected to be a rare event since a
+  // refresh request will be canceled by default capture events and they are
+  // periodic.
+  void CaptureFrame(bool is_refresh_frame);
 
   // Schedules a timer for the next call to |CaptureFrame|. This method assumes
   // that |CaptureFrame| has already been called at least once before.
@@ -231,9 +225,12 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // Size of frame most recently captured from the source.
   webrtc::DesktopSize last_frame_size_;
 
-  // DesktopFrame into which captured frames are stored; either intact or
-  // possibly after being down-scaled and/or letterboxed, depending upon the
-  // caller's requested capture capabilities. The output frame is black when
+  // DesktopFrame into which captured frames are down-scaled and/or letterboxed,
+  // depending upon the caller's requested capture capabilities. If frames can
+  // be returned to the caller directly then this is NULL.
+  // TODO(https://crbug.com/1444340): should NOT be used to store frames
+  // received from the underlying capturer since it can cause cursor flickering
+  // if the frame is a DesktopFrameWithCursor. The output frame is black when
   // |output_frame_is_black_| is set. This can happen when a minimized window
   // is shared.
   std::unique_ptr<webrtc::DesktopFrame> output_frame_;
@@ -243,9 +240,6 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // we are only sending black frames.
   bool output_frame_is_black_ = false;
 
-  // Copy of the colorspace used for the most recent frame sent to the client.
-  gfx::ColorSpace output_frame_color_space_;
-
   // Determines the size of frames to deliver to the |client_|.
   media::CaptureResolutionChooser resolution_chooser_;
 
@@ -254,19 +248,29 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // Timer used to capture the frame.
   std::unique_ptr<base::OneShotTimer> capture_timer_;
 
+  // This timer is started whenever the consumer needs another frame delivered.
+  // This might be because: 1) the consumer was just started and needs an
+  // initial frame; 2) the capture target changed; 3) to satisfy explicit
+  // requests for a refresh frame, when RequestRefreshFrame() has been called.
+  std::unique_ptr<base::OneShotTimer> request_refresh_frame_timer_;
+
   // See above description of kDefaultMaximumCpuConsumptionPercentage.
   int max_cpu_consumption_percentage_;
 
   // True when waiting for |desktop_capturer_| to capture current frame.
-  bool capture_in_progress_;
+  bool capture_in_progress_ = false;
+
+  // True when waiting for |desktop_capturer_| to capture current frame as a
+  // response to refresh frame request.
+  bool refresh_in_progress_ = false;
 
   // True if the first capture call has returned. Used to log the first capture
   // result.
-  bool first_capture_returned_;
+  bool first_capture_returned_ = false;
 
   // True if the first capture permanent error has been logged. Used to log the
   // first capture permanent error.
-  bool first_permanent_error_logged;
+  bool first_permanent_error_logged = false;
 
   // The type of the capturer.
   DesktopMediaID::Type capturer_type_;
@@ -282,8 +286,12 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
 
   // The time when Core::CaptureFrame() is called. Used to derive the delta
   // time since last call. The delta time then drives the frame-rate filter
-  // which results in an average capture frame rate in `frame_rate_`.
+  // which results in an average capture frame rate in `frame_ra>e_`.
   base::TimeTicks last_capture_time_;
+
+  std::unique_ptr<webrtc::BasicDesktopFrame> black_frame_;
+
+  raw_ptr<RefreshFrameCallback> rrf_callback_ = nullptr;
 
   // TODO(jiayl): Remove wake_lock_ when there is an API to keep the
   // screen from sleeping for the drive-by web.
@@ -300,7 +308,8 @@ DesktopCaptureDevice::Core::Core(
     : task_runner_(task_runner),
       desktop_capturer_(std::move(capturer)),
       capture_timer_(new base::OneShotTimer()),
-      max_cpu_consumption_percentage_(GetMaximumCpuConsumptionPercentage()),
+      request_refresh_frame_timer_(new base::OneShotTimer()),
+      max_cpu_consumption_percentage_(kDefaultMaximumCpuConsumptionPercentage),
       capture_in_progress_(false),
       first_capture_returned_(false),
       first_permanent_error_logged(false),
@@ -310,6 +319,8 @@ DesktopCaptureDevice::Core::Core(
 DesktopCaptureDevice::Core::~Core() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_.reset();
+  output_frame_.reset();
+  last_frame_size_.set(0, 0);
   desktop_capturer_.reset();
 }
 
@@ -337,7 +348,7 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
   resolution_chooser_.SetConstraints(constraints.min_frame_size,
                                      constraints.max_frame_size,
                                      constraints.fixed_aspect_ratio);
-  VLOG(2) << __func__ << " (requested_frame_rate=" << requested_frame_rate_
+  VLOG(1) << __func__ << " (requested_frame_rate=" << requested_frame_rate_
           << ", max_frame_size=" << constraints.max_frame_size.ToString()
           << ", requested_frame_duration="
           << requested_frame_duration_.InMilliseconds()
@@ -351,18 +362,37 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
   // Assume it will be always started successfully for now.
   client_->OnStarted();
 
-  CaptureFrame();
+  CaptureFrame(/*is_refresh_frame=*/false);
 }
 
 void DesktopCaptureDevice::Core::RequestRefreshFrame() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("webrtc", __func__);
-  VLOG(2) << __func__ << " is called by the client";
-  // Simply send the last received frame, if we ever received one. Don't
-  // schedule a new frame.
-  if (output_frame_) {
-    SendLastReceivedFrameToClient(/*is_refresh_frame=*/true);
+  VLOG(2) << __func__;
+
+  if (!client_) {
+    return;
   }
+
+  // Ignore this request if one is already pending.
+  if (request_refresh_frame_timer_->IsRunning()) {
+    return;
+  }
+
+  // Schedule a new attempt to capture a refresh frame within ~2 times the
+  // specified frame duration. The attempt will be canceled if a default capture
+  // event is triggered before this timer fires.
+  request_refresh_frame_timer_->Start(FROM_HERE,
+                                      GetDelayBeforeNextRefreshAttempt(), this,
+                                      &Core::OnRequestRefreshFrameTimer);
+}
+
+base::TimeDelta DesktopCaptureDevice::Core::GetDelayBeforeNextRefreshAttempt()
+    const {
+  // The delay should be long enough to prevent interrupting the smooth timing
+  // of captured frames. However, the delay should not be excessively long
+  // either. Two default frame periods should be "just right."
+  return std::min(kMaxRefreshDelay, 2 * requested_frame_duration_);
 }
 
 void DesktopCaptureDevice::Core::SetNotificationWindowId(
@@ -378,6 +408,14 @@ void DesktopCaptureDevice::Core::SetMockTimeForTesting(
   tick_clock_ = tick_clock;
   capture_timer_ = std::make_unique<base::OneShotTimer>(tick_clock_);
   capture_timer_->SetTaskRunner(task_runner);
+  request_refresh_frame_timer_ =
+      std::make_unique<base::OneShotTimer>(tick_clock_);
+  request_refresh_frame_timer_->SetTaskRunner(task_runner);
+}
+
+void DesktopCaptureDevice::Core::SetRefreshFrameCallbackForTesting(
+    RefreshFrameCallback* rrf_callback) {
+  rrf_callback_ = rrf_callback;
 }
 
 void DesktopCaptureDevice::Core::OnCaptureResult(
@@ -385,9 +423,10 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(client_);
-  DCHECK(capture_in_progress_);
-  TRACE_EVENT0("webrtc", __func__);
+  DCHECK(capture_in_progress_ || refresh_in_progress_);
   capture_in_progress_ = false;
+  const bool frame_is_refresh = refresh_in_progress_;
+  refresh_in_progress_ = false;
 
   bool success = result == webrtc::DesktopCapturer::Result::SUCCESS;
 
@@ -427,13 +466,15 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
   // Continue capturing frames when there are no changes in updated regions
   // since the last captured frame but don't send the same frame again to the
   // client. Clients may call RequestRefreshFrame() to ask for a copy of the
-  // last captured frame. Check |output_frame_| to ensure that at least one
-  // valid frame has already been captured.
+  // last captured frame. Checking `first_ref_time_` ensures that at least one
+  // frame has been captured before 0Hz can be activated. The zero-hertz mode
+  // is disabled if the captured frame is a refresh frame to guarantee that the
+  // client actually receives a new frame when explicitly asking for it.
   // |zero_hertz_is_supported()| can be false in combination with capturers that
   // do not support the 0Hz mode, e.g. Windows capturers using the WGC API.
-  const bool zero_hertz_is_active = zero_hertz_is_supported() &&
-                                    output_frame_ &&
-                                    frame->updated_region().is_empty();
+  const bool zero_hertz_is_active =
+      zero_hertz_is_supported() && !first_ref_time_.is_null() &&
+      !frame_is_refresh && frame->updated_region().is_empty();
   VLOG(2) << __func__ << " [SUCCESS]" << (zero_hertz_is_active ? "[0Hz]" : "");
   if (zero_hertz_is_supported()) {
     LogDesktopCaptureZeroHzIsActive(capturer_type_, zero_hertz_is_active);
@@ -450,8 +491,6 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
     resolution_chooser_.SetSourceSize(
         gfx::Size(frame->size().width(), frame->size().height()));
     last_frame_size_ = frame->size();
-    VLOG(2) << "  last_frame_size=(" << last_frame_size_.width() << "x"
-            << last_frame_size_.height() << ")";
   }
   // Align to 2x2 pixel boundaries, as required by OnIncomingCapturedData() so
   // it can convert the frame to I420 format.
@@ -463,16 +502,12 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
     // be guaranteed.
     output_size.set(2, 2);
   }
-  VLOG(2) << "  output_size=(" << output_size.width() << "x"
-          << output_size.height() << ")";
+  VLOG(2) << __func__ << " [output_size=(" << output_size.width() << "x"
+          << output_size.height() << ")]";
 
-  gfx::ColorSpace frame_color_space;
-  if (!frame->icc_profile().empty()) {
-    gfx::ICCProfile icc_profile = gfx::ICCProfile::FromData(
-        frame->icc_profile().data(), frame->icc_profile().size());
-    frame_color_space = icc_profile.GetColorSpace();
-  }
-  output_frame_color_space_ = frame_color_space;
+  size_t output_bytes = output_size.width() * output_size.height() *
+                        webrtc::DesktopFrame::kBytesPerPixel;
+  const uint8_t* output_data = nullptr;
 
   if (frame->size().width() <= 1 || frame->size().height() <= 1) {
     // On OSX We receive a 1x1 frame when the shared window is minimized. It
@@ -485,9 +520,7 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
       output_frame_is_black_ = true;
     }
     if (!output_frame_is_black_) {
-      size_t total_bytes = webrtc::DesktopFrame::kBytesPerPixel *
-                           output_size.width() * output_size.height();
-      memset(output_frame_->data(), 0, total_bytes);
+      output_frame_->SetFrameDataToBlack();
       output_frame_is_black_ = true;
     }
   } else {
@@ -534,9 +567,9 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
                         frame->size().height(), output_rect_data,
                         output_frame_->stride(), output_rect.width(),
                         output_rect.height(), libyuv::kFilterBilinear);
+      output_data = output_frame_->data();
       output_frame_is_black_ = false;
     } else if (IsFrameUnpackedOrInverted(frame.get())) {
-      VLOG(2) << "  FrameUnpackedOrInverted";
       // If |frame| is not packed top-to-bottom then create a packed
       // top-to-bottom copy. This is required if the frame is inverted (see
       // crbug.com/306876), or if |frame| is cropped form a larger frame (see
@@ -548,44 +581,39 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
       output_frame_->CopyPixelsFrom(
           *frame, webrtc::DesktopVector(),
           webrtc::DesktopRect::MakeSize(frame->size()));
+      output_data = output_frame_->data();
       output_frame_is_black_ = false;
     } else {
-      VLOG(2) << "  output_frame_ = std::move(frame)";
-      // If the captured frame matches the output size, we can use the incoming
-      // frame as is without any modifications.
-      output_frame_ = std::move(frame);
+      // If the captured frame matches the output size, we can return the pixel
+      // data directly.
+      output_data = frame->data();
       output_frame_is_black_ = false;
     }
   }
 
-  // Immediately send the new frame to the client and ask for a new frame.
-  SendLastReceivedFrameToClient(/*is_refresh_frame=*/false);
-  ScheduleNextCaptureFrame();
-}
+  gfx::ColorSpace frame_color_space;
+  if (!frame->icc_profile().empty()) {
+    gfx::ICCProfile icc_profile = gfx::ICCProfile::FromData(
+        frame->icc_profile().data(), frame->icc_profile().size());
+    frame_color_space = icc_profile.GetColorSpace();
+  }
 
-void DesktopCaptureDevice::Core::SendLastReceivedFrameToClient(
-    bool is_refresh_frame) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT0("webrtc", __func__);
-  LogDesktopCaptureFrameIsRefresh(capturer_type_, is_refresh_frame);
-
-  size_t output_bytes = output_frame_->size().width() *
-                        output_frame_->size().height() *
-                        webrtc::DesktopFrame::kBytesPerPixel;
-
-  VLOG(2) << __func__ << " [output_size=(" << output_frame_->size().width()
-          << "x" << output_frame_->size().height() << ")]";
   base::TimeTicks now = NowTicks();
   if (first_ref_time_.is_null())
     first_ref_time_ = now;
   client_->OnIncomingCapturedData(
-      output_frame_->data(), output_bytes,
-      media::VideoCaptureFormat(gfx::Size(output_frame_->size().width(),
-                                          output_frame_->size().height()),
-                                requested_frame_rate_,
-                                media::PIXEL_FORMAT_ARGB),
-      output_frame_color_space_, 0 /* clockwise_rotation */, false /* flip_y */,
-      now, now - first_ref_time_);
+      output_data, output_bytes,
+      media::VideoCaptureFormat(
+          gfx::Size(output_size.width(), output_size.height()),
+          requested_frame_rate_, media::PIXEL_FORMAT_ARGB),
+      frame_color_space, 0 /* clockwise_rotation */, false /* flip_y */, now,
+      now - first_ref_time_);
+
+  if (rrf_callback_ && frame_is_refresh) {
+    rrf_callback_->OnCaptureFrameIsRefresh();
+  }
+
+  ScheduleNextCaptureFrame();
 }
 
 void DesktopCaptureDevice::Core::OnCaptureTimer() {
@@ -594,17 +622,46 @@ void DesktopCaptureDevice::Core::OnCaptureTimer() {
   if (!client_)
     return;
 
-  CaptureFrame();
+  request_refresh_frame_timer_->Stop();
+  CaptureFrame(/*is_refresh_frame=*/false);
 }
 
-void DesktopCaptureDevice::Core::CaptureFrame() {
+void DesktopCaptureDevice::Core::OnRequestRefreshFrameTimer() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!client_) {
+    return;
+  }
+
+  if (!capture_in_progress_) {
+    CaptureFrame(/*is_refresh_frame=*/true);
+  }
+}
+
+void DesktopCaptureDevice::Core::CaptureFrame(bool is_refresh_frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!capture_in_progress_);
-  TRACE_EVENT0("webrtc", __func__);
-  VLOG(2) << __func__;
+  TRACE_EVENT1("webrtc", __func__, "is_refresh_frame", is_refresh_frame);
+  VLOG(2) << __func__ << "(is_refresh_frame=" << is_refresh_frame << ")";
+  LogDesktopCaptureFrameIsRefresh(capturer_type_, is_refresh_frame);
 
   capture_start_time_ = NowTicks();
-  capture_in_progress_ = true;
+
+  if (!is_refresh_frame) {
+    capture_in_progress_ = true;
+    // Cancel any outstanding refresh attempts when we are about to capture a
+    // frame the default way. The following is a no-op, if the timer was not
+    // running.
+    request_refresh_frame_timer_->Stop();
+    capture_in_progress_ = true;
+  } else {
+    refresh_in_progress_ = true;
+    // Cancel any outstanding default capture attempts since we know that a
+    // request frame is about to be captured. If we don't do this there is a
+    // risk that the pending default capture event triggers back-to-back with
+    // the RRF and that can cause a spike in the frame rate.
+    capture_timer_->Stop();
+  }
 
   if (last_capture_time_.is_null()) {
     last_capture_time_ = capture_start_time_;
@@ -643,10 +700,10 @@ void DesktopCaptureDevice::Core::ScheduleNextCaptureFrame() {
   base::TimeDelta capture_period =
       std::max((last_capture_duration * 100) / max_cpu_consumption_percentage_,
                requested_frame_duration_);
-
   VLOG(2) << "  capture_period=" << capture_period.InMilliseconds();
   VLOG(2) << "  timer(dT="
           << (capture_period - last_capture_duration).InMilliseconds() << ")";
+
   // Schedule a task for the next frame.
   capture_timer_->Start(FROM_HERE, capture_period - last_capture_duration, this,
                         &Core::OnCaptureTimer);
@@ -846,7 +903,12 @@ DesktopCaptureDevice::DesktopCaptureDevice(
 void DesktopCaptureDevice::SetMockTimeForTesting(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::TickClock* tick_clock) {
-  core_->SetMockTimeForTesting(task_runner, tick_clock);
+  core_->SetMockTimeForTesting(task_runner, tick_clock);  // IN-TEST
+}
+
+void DesktopCaptureDevice::SetRefreshFrameCallbackForTesting(
+    RefreshFrameCallback* rrf_callback) {
+  core_->SetRefreshFrameCallbackForTesting(rrf_callback);  // IN-TEST
 }
 
 }  // namespace content

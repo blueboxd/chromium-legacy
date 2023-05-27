@@ -1117,7 +1117,7 @@ void VTVideoDecodeAccelerator::DecodeTaskH264(
                 config_.hdr_metadata = gfx::HDRMetadata();
               }
               sei_msg.mastering_display_info.PopulateColorVolumeMetadata(
-                  config_.hdr_metadata->color_volume_metadata);
+                  config_.hdr_metadata->smpte_st_2086);
               break;
             case H264SEIMessage::kSEIContentLightLevelInfo:
               if (!config_.hdr_metadata) {
@@ -1513,7 +1513,7 @@ void VTVideoDecodeAccelerator::DecodeTaskHEVC(
               if (!config_.hdr_metadata)
                 config_.hdr_metadata = gfx::HDRMetadata();
               sei_msg.mastering_display_info.PopulateColorVolumeMetadata(
-                  config_.hdr_metadata->color_volume_metadata);
+                  config_.hdr_metadata->smpte_st_2086);
               break;
             case H265SEIMessage::kSEIContentLightLevelInfo:
               if (!config_.hdr_metadata)

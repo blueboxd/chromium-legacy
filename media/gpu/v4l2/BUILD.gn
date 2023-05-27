@@ -24,10 +24,6 @@ generate_stubs("libv4l2_stubs") {
 source_set("v4l2") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
   sources = [
-    "buffer_affinity_tracker.cc",
-    "buffer_affinity_tracker.h",
-    "generic_v4l2_device.cc",
-    "generic_v4l2_device.h",
     "legacy/v4l2_slice_video_decode_accelerator.cc",
     "legacy/v4l2_slice_video_decode_accelerator.h",
     "legacy/v4l2_stateful_workaround.cc",
@@ -45,6 +41,8 @@ source_set("v4l2") {
     "v4l2_framerate_control.h",
     "v4l2_image_processor_backend.cc",
     "v4l2_image_processor_backend.h",
+    "v4l2_queue.cc",
+    "v4l2_queue.h",
     "v4l2_stateful_video_decoder.cc",
     "v4l2_stateful_video_decoder.h",
     "v4l2_stateless_video_decoder.cc",
@@ -93,14 +91,6 @@ source_set("v4l2") {
     "EGL",
     "GLESv2",
   ]
-
-  if (use_v4l2_codec_aml) {
-    sources += [
-      "aml_v4l2_device.cc",
-      "aml_v4l2_device.h",
-    ]
-    defines += [ "AML_V4L2" ]
-  }
 
   configs += [ "//third_party/libyuv:libyuv_config" ]
 
@@ -215,7 +205,7 @@ executable("v4l2_stateless_decoder") {
 
 test("v4l2_unittest") {
   testonly = true
-  sources = [ "v4l2_unittest.cc" ]
+  sources = [ "test/v4l2_unittest.cc" ]
 
   deps = [
     ":v4l2",

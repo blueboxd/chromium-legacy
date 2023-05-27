@@ -8,6 +8,7 @@
 #include <CoreText/CoreText.h>
 #import <Foundation/Foundation.h>
 
+#include "base/apple/bridging.h"
 #include "base/i18n/char_iterator.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
@@ -47,7 +48,6 @@ CFArrayRef CTFontCopyDefaultCascadeListForLanguagesWrapper(
 
 }  // namespace
 
-
 namespace gfx {
 
 namespace {
@@ -68,9 +68,9 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   // On Mac "There is a system default cascade list (which is polymorphic, based
   // on the user's language setting and current font)" - CoreText Programming
   // Guide.
-  NSArray* languages = [[NSUserDefaults standardUserDefaults]
-      stringArrayForKey:@"AppleLanguages"];
-  CFArrayRef languages_cf = base::mac::NSToCFCast(languages);
+  NSArray* languages =
+      [NSUserDefaults.standardUserDefaults stringArrayForKey:@"AppleLanguages"];
+  CFArrayRef languages_cf = base::apple::NSToCFPtrCast(languages);
   base::ScopedCFTypeRef<CFArrayRef> cascade_list(
       CTFontCopyDefaultCascadeListForLanguagesWrapper(
           font.GetCTFont(), languages_cf));

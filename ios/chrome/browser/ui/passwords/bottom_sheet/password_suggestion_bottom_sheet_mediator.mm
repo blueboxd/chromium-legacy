@@ -8,16 +8,17 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/password_manager/core/browser/password_store_interface.h"
+#import "components/password_manager/core/browser/password_ui_utils.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #import "components/password_manager/ios/password_manager_java_script_feature.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/autofill/bottom_sheet/bottom_sheet_tab_helper.h"
+#import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/default_browser/utils.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/active_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
@@ -128,7 +129,7 @@ using ReauthenticationEvent::kSuccess;
     // Create and register the observers.
     _observer = std::make_unique<web::WebStateObserverBridge>(self);
     _forwarder = std::make_unique<ActiveWebStateObservationForwarder>(
-        webStateList, _observer.get());
+        _webStateList, _observer.get());
 
     if (activeWebState) {
       FormSuggestionTabHelper* tabHelper =
@@ -153,7 +154,7 @@ using ReauthenticationEvent::kSuccess;
           initWithProfilePasswordStore:_profilePasswordStore
                   accountPasswordStore:_accountPasswordStore
                               delegate:self
-                                   URL:_URL];
+                                   URL:url::Origin::Create(_URL).GetURL()];
     }
   }
   return self;
@@ -209,7 +210,13 @@ using ReauthenticationEvent::kSuccess;
 - (void)setConsumer:(id<PasswordSuggestionBottomSheetConsumer>)consumer {
   _consumer = consumer;
   if ([self hasSuggestions]) {
-    [consumer setSuggestions:self.suggestions];
+    NSString* domain = @"";
+    if (!_URL.is_empty()) {
+      url::Origin origin = url::Origin::Create(_URL);
+      domain =
+          base::SysUTF8ToNSString(password_manager::GetShownOrigin(origin));
+    }
+    [consumer setSuggestions:self.suggestions andDomain:domain];
   } else {
     [consumer dismiss];
   }
@@ -262,7 +269,7 @@ using ReauthenticationEvent::kSuccess;
         password_manager::PasswordManagerJavaScriptFeature::GetInstance();
     web::WebFrame* frame =
         feature->GetWebFramesManager(activeWebState)->GetFrameWithId(_frameId);
-    BottomSheetTabHelper::FromWebState(activeWebState)
+    AutofillBottomSheetTabHelper::FromWebState(activeWebState)
         ->DetachListenersAndRefocus(frame);
   }
 }
@@ -284,7 +291,7 @@ using ReauthenticationEvent::kSuccess;
   }
 }
 
-#pragma mark - WebStateListObserver
+#pragma mark - WebStateListObserving
 
 - (void)webStateList:(WebStateList*)webStateList
     didReplaceWebState:(web::WebState*)oldWebState
@@ -303,6 +310,15 @@ using ReauthenticationEvent::kSuccess;
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
   DCHECK_EQ(_webStateList, webStateList);
+  [self disableRefocus];
+  [self.consumer dismiss];
+}
+
+- (void)webStateListDestroyed:(WebStateList*)webStateList {
+  DCHECK_EQ(webStateList, _webStateList);
+  _forwarder = nullptr;
+  _observer = nullptr;
+  _webStateList = nullptr;
   [self disableRefocus];
   [self.consumer dismiss];
 }
@@ -361,10 +377,13 @@ using ReauthenticationEvent::kSuccess;
 // Increments the dismiss count preference.
 - (void)incrementDismissCount {
   if (_prefService) {
-    _prefService->SetInteger(
-        prefs::kIosPasswordBottomSheetDismissCount,
+    int newDismissCount =
         _prefService->GetInteger(prefs::kIosPasswordBottomSheetDismissCount) +
-            1);
+        1;
+    CHECK(newDismissCount <=
+          AutofillBottomSheetTabHelper::kPasswordBottomSheetMaxDismissCount);
+    _prefService->SetInteger(prefs::kIosPasswordBottomSheetDismissCount,
+                             newDismissCount);
   }
 }
 

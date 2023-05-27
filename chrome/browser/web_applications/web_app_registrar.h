@@ -140,6 +140,10 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Returns true if the app was installed by the SubApp API.
   bool WasInstalledBySubApp(const AppId& app_id) const;
 
+  // Returns true if the app exists and is allowed to be uninstalled by the user
+  // e.g. it is not policy installed.
+  bool CanUserUninstallWebApp(const AppId& app_id) const;
+
   // Returns the AppIds and URLs of apps externally installed from
   // |install_source|.
   base::flat_map<AppId, base::flat_set<GURL>> GetExternallyInstalledApps(
@@ -199,7 +203,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   absl::optional<SkColor> GetAppDarkModeBackgroundColor(
       const AppId& app_id) const;
   const GURL& GetAppStartUrl(const AppId& app_id) const;
-  absl::optional<std::string> GetAppManifestId(const AppId& app_id) const;
+  ManifestId GetAppManifestId(const AppId& app_id) const;
   const std::string* GetAppLaunchQueryParams(const AppId& app_id) const;
   const apps::ShareTarget* GetAppShareTarget(const AppId& app_id) const;
   const apps::FileHandlers* GetAppFileHandlers(const AppId& app_id) const;
@@ -277,6 +281,11 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Gets the IDs for all sub-apps of parent app with id |parent_app_id|.
   std::vector<AppId> GetAllSubAppIds(const AppId& parent_app_id) const;
 
+  // Maps all app IDs to their parent apps' IDs. Maps that do not have a parent
+  // are omitted. This query should only be called with an AllAppsLock since all
+  // apps are queried for their parent.
+  base::flat_map<AppId, AppId> GetSubAppToParentMap() const;
+
   // Returns the "scope" field from the app manifest, or infers a scope from the
   // "start_url" field if unavailable. Returns an invalid GURL iff the |app_id|
   // does not refer to an installed web app.
@@ -344,7 +353,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
   // Computes and returns the unhashed app id from entries in the web app
   // manifest.
-  std::string GetComputedUnhashedAppId(const AppId& app_id) const;
+  GURL GetComputedManifestId(const AppId& app_id) const;
 
   // Returns whether the app should be opened in tabbed window mode.
   bool IsTabbedWindowModeEnabled(const AppId& app_id) const;

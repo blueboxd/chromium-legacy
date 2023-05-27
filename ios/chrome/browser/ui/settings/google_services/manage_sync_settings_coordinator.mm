@@ -8,13 +8,14 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/google/core/common/google_util.h"
-#import "components/sync/driver/sync_service.h"
-#import "components/sync/driver/sync_service_utils.h"
-#import "components/sync/driver/sync_user_settings.h"
+#import "components/sync/service/sync_service.h"
+#import "components/sync/service/sync_service_utils.h"
+#import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -35,7 +36,6 @@
 #import "ios/chrome/browser/ui/settings/google_services/sync_error_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_table_view_controller.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -304,16 +304,7 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   if (self.signOutFlowInProgress) {
     return;
   }
-  syncer::SyncService::DisableReasonSet disableReasons =
-      self.syncService->GetDisableReasons();
-  syncer::SyncService::DisableReasonSet userChoiceDisableReason =
-      syncer::SyncService::DisableReasonSet(
-          syncer::SyncService::DISABLE_REASON_USER_CHOICE);
-  // Manage sync settings needs to stay opened if sync is disabled with
-  // DISABLE_REASON_USER_CHOICE. Manage sync settings is the only way for a
-  // user to turn on the sync engine (and remove DISABLE_REASON_USER_CHOICE).
-  // The sync engine turned back on automatically by enabling any datatype.
-  if (!disableReasons.Empty() && disableReasons != userChoiceDisableReason) {
+  if (!self.syncService->GetDisableReasons().Empty()) {
     [self closeManageSyncSettings];
   }
 }

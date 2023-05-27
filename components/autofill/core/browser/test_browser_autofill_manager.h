@@ -82,8 +82,6 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
 
   // Unique to TestBrowserAutofillManager:
 
-  int GetPackedCreditCardID(int credit_card_id);
-
   void AddSeenForm(const FormData& form,
                    const std::vector<ServerFieldType>& field_types,
                    bool preserve_values_in_form_structure = false) {
@@ -137,7 +135,7 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
     std::string profile_id;
   };
 
-  int MakeFrontendId(const MakeFrontendIdParams& params);
+  Suggestion::FrontendId MakeFrontendId(const MakeFrontendIdParams& params);
 
  private:
   bool autofill_profile_enabled_ = true;

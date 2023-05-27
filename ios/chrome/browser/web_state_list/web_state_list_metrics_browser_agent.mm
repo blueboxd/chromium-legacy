@@ -13,10 +13,10 @@
 #import "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web_state_list/session_metrics.h"
 #import "ios/web/public/browser_state.h"
 #import "ios/web/public/navigation/navigation_context.h"
@@ -69,15 +69,6 @@ void WebStateListMetricsBrowserAgent::WebStateInsertedAt(
     return;
   }
   base::RecordAction(base::UserMetricsAction("MobileNewTabOpened"));
-}
-
-void WebStateListMetricsBrowserAgent::WebStateDetachedAt(
-    WebStateList* web_state_list,
-    web::WebState* web_state,
-    int index) {
-  if (metric_collection_paused_) {
-    return;
-  }
 }
 
 void WebStateListMetricsBrowserAgent::WillCloseWebStateAt(

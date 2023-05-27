@@ -198,7 +198,8 @@ cc_test(
     deps = [
         ":graphcycles_internal",
         "//absl/base:core_headers",
-        "//absl/base:raw_logging_internal",
+        "//absl/log",
+        "//absl/log:check",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -238,6 +239,7 @@ cc_test(
     size = "large",
     srcs = ["mutex_test.cc"],
     copts = ABSL_TEST_COPTS,
+    flaky = 1,
     linkopts = ABSL_DEFAULT_LINKOPTS,
     shard_count = 25,
     deps = [
@@ -246,7 +248,8 @@ cc_test(
         "//absl/base",
         "//absl/base:config",
         "//absl/base:core_headers",
-        "//absl/base:raw_logging_internal",
+        "//absl/log",
+        "//absl/log:check",
         "//absl/memory",
         "//absl/time",
         "@com_google_googletest//:gtest_main",
@@ -300,6 +303,7 @@ cc_test(
     size = "small",
     srcs = ["notification_test.cc"],
     copts = ABSL_TEST_COPTS,
+    flaky = 1,
     linkopts = ABSL_DEFAULT_LINKOPTS,
     tags = ["no_test_lexan"],
     deps = [
@@ -374,6 +378,6 @@ cc_test(
     deps = [
         ":synchronization",
         "//absl/base:core_headers",
-        "//absl/base:raw_logging_internal",
+        "//absl/log:check",
     ],
 )

@@ -26,8 +26,7 @@ GLImageIOSurface* GLImageIOSurface::Create(const gfx::Size& size) {
     default:
       break;
   }
-  NOTREACHED();
-  return nullptr;
+  NOTREACHED_NORETURN();
 }
 
 GLImageIOSurface::GLImageIOSurface(const gfx::Size& size) : size_(size) {}
@@ -93,10 +92,6 @@ bool GLImageIOSurface::InitializeWithCVPixelBuffer(
 
   cv_pixel_buffer_.reset(cv_pixel_buffer, base::scoped_policy::RETAIN);
   return true;
-}
-
-gfx::Size GLImageIOSurface::GetSize() {
-  return size_;
 }
 
 void GLImageIOSurface::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,

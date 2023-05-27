@@ -10,9 +10,10 @@
 #include <string>
 #include <utility>
 
+#include "base/apple/bridging.h"
 #include "base/containers/span.h"
-#include "base/mac/bridging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/mac/mock_secure_enclave_client.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/mac/secure_enclave_signing_key.h"
@@ -65,7 +66,7 @@ class MacKeyPersistenceDelegateTest : public testing::Test {
     CFDictionarySetValue(test_attributes, kSecAttrKeyType,
                          kSecAttrKeyTypeECSECPrimeRandom);
     CFDictionarySetValue(test_attributes, kSecAttrKeySizeInBits,
-                         base::mac::NSToCFPtrCast(@256));
+                         base::apple::NSToCFPtrCast(@256));
     base::ScopedCFTypeRef<CFMutableDictionaryRef> private_key_params(
         CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                   &kCFTypeDictionaryKeyCallBacks,
@@ -79,7 +80,7 @@ class MacKeyPersistenceDelegateTest : public testing::Test {
   }
 
   std::unique_ptr<MacKeyPersistenceDelegate> persistence_delegate_;
-  MockSecureEnclaveClient* mock_secure_enclave_client_ = nullptr;
+  raw_ptr<MockSecureEnclaveClient> mock_secure_enclave_client_ = nullptr;
 };
 
 // Tests that storing a key with an OS key trust level invokes the clients'

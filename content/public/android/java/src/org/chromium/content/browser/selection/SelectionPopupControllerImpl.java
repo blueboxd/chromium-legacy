@@ -38,6 +38,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
@@ -102,6 +103,9 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // The readback view could be the ContainerView, which WindowAndroid has no control on that.
     // Embedders should set this properly to use the correct view for readback.
     private static boolean sShouldGetReadbackViewFromWindowAndroid;
+
+    // Allow using magnifer built using surface control instead of the system-proivded one.
+    private static boolean sAllowSurfaceControlMagnifier;
 
     // A flag to determine if we must only use the context from the associated web contents
     // to inflate menus. By default we use the context held by the ActionMode, because this
@@ -213,6 +217,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         sShouldGetReadbackViewFromWindowAndroid = true;
     }
 
+    public static void setAllowSurfaceControlMagnifier() {
+        sAllowSurfaceControlMagnifier = true;
+    }
+
     public static void setMustUseWebContentsContext() {
         sMustUseWebContentsContext = true;
     }
@@ -254,6 +262,12 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     public static SelectionPopupControllerImpl createForTesting(WebContents webContents) {
         return new SelectionPopupControllerImpl(webContents, null, false);
+    }
+
+    public static boolean isMagnifierWithSurfaceControlSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && sAllowSurfaceControlMagnifier
+                && SelectionPopupControllerImplJni.get().isMagnifierWithSurfaceControlSupported();
     }
 
     @VisibleForTesting
@@ -309,7 +323,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         mResultCallback = new SmartSelectionCallback();
         mLastSelectedText = "";
-        initMagnifier();
         mAdditionalMenuItemProvider = ContentClassFactory.get().createAddtionalMenuItemProvider();
         getPopupController().registerPopup(this);
     }
@@ -348,7 +361,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         if (view != null) view.setClickable(true);
         mView = view;
-        initMagnifier();
+        mMagnifierAnimator = null;
     }
 
     // ImeEventObserver
@@ -428,6 +441,9 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             int selectionStartOffset, boolean canSelectAll, boolean canRichlyEdit,
             boolean shouldSuggest, @MenuSourceType int sourceType,
             RenderFrameHost renderFrameHost) {
+        RecordHistogram.recordEnumeratedHistogram("Android.ShowSelectionMenuSourceType", sourceType,
+                MenuSourceType.MENU_SOURCE_TYPE_LAST + 1);
+
         int offsetBottom = bottom;
         offsetBottom += handleHeight;
         mSelectionRect.set(left, top, right, offsetBottom);
@@ -658,7 +674,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         mWindowAndroid = newWindowAndroid;
         mContext = mWebContents.getContext();
-        initMagnifier();
+        mMagnifierAnimator = null;
         destroyPastePopup();
     }
 
@@ -1320,8 +1336,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
                 showContextMenuAtTouchHandle(left, bottom);
-                if (mMagnifierAnimator != null) {
-                    mMagnifierAnimator.handleDragStopped();
+                if (getMagnifierAnimator() != null) {
+                    getMagnifierAnimator().handleDragStopped();
                 }
                 mIsInHandleDragging = false;
                 break;
@@ -1369,8 +1385,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                     showContextMenuAtTouchHandle(mSelectionRect.left, mSelectionRect.bottom);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
-                if (mMagnifierAnimator != null) {
-                    mMagnifierAnimator.handleDragStopped();
+                if (getMagnifierAnimator() != null) {
+                    getMagnifierAnimator().handleDragStopped();
                 }
                 mIsInHandleDragging = false;
                 break;
@@ -1401,13 +1417,13 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             return;
         }
 
-        if (mMagnifierAnimator != null) {
+        if (getMagnifierAnimator() != null) {
             final float deviceScale = getDeviceScaleFactor();
             x *= deviceScale;
             // The selection coordinates are relative to the content viewport, but we need
             // coordinates relative to the containing View, so adding getContentOffsetYPix().
             y = y * deviceScale + mWebContents.getRenderCoordinates().getContentOffsetYPix();
-            mMagnifierAnimator.handleDragStartedOrMoved(x, y);
+            getMagnifierAnimator().handleDragStartedOrMoved(x, y);
         }
     }
 
@@ -1483,15 +1499,24 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         mMagnifierAnimator = magnifierAnimator;
     }
 
-    private void initMagnifier() {
-        if (sDisableMagnifier || Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return;
-        mMagnifierAnimator = new MagnifierAnimator(new MagnifierWrapperImpl(() -> {
+    private MagnifierAnimator getMagnifierAnimator() {
+        if (mMagnifierAnimator != null) return mMagnifierAnimator;
+        if (sDisableMagnifier || Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return null;
+        ReadbackViewCallback callback = () -> {
             if (sShouldGetReadbackViewFromWindowAndroid) {
                 return mWindowAndroid == null ? null : mWindowAndroid.getReadbackView();
             } else {
                 return mView;
             }
-        }));
+        };
+        MagnifierWrapper magnifier;
+        if (isMagnifierWithSurfaceControlSupported()) {
+            magnifier = new MagnifierSurfaceControl(mWebContents, callback);
+        } else {
+            magnifier = new MagnifierWrapperImpl(callback);
+        }
+        mMagnifierAnimator = new MagnifierAnimator(magnifier);
+        return mMagnifierAnimator;
     }
 
     @CalledByNative
@@ -1651,6 +1676,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     @NativeMethods
     interface Natives {
+        boolean isMagnifierWithSurfaceControlSupported();
         long init(SelectionPopupControllerImpl caller, WebContents webContents);
         void setTextHandlesTemporarilyHidden(long nativeSelectionPopupController,
                 SelectionPopupControllerImpl caller, boolean hidden);

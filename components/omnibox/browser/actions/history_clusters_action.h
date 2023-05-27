@@ -11,7 +11,6 @@
 
 struct AutocompleteMatch;
 class AutocompleteResult;
-class PrefService;
 
 namespace gfx {
 struct VectorIcon;
@@ -70,17 +69,12 @@ class HistoryClustersAction : public OmniboxAction {
 
   // Used to open journeys in side panel with relevant clusters
   std::string query_;
-
-#if BUILDFLAG(IS_ANDROID)
-  mutable base::android::ScopedJavaGlobalRef<jobject> j_omnibox_action_;
-#endif
 };
 
 // If the feature is enabled, attaches any necessary History Clusters actions
 // onto any relevant matches in `result`.
 void AttachHistoryClustersActions(
     history_clusters::HistoryClustersService* service,
-    PrefService* prefs,
     AutocompleteResult& result);
 
 }  // namespace history_clusters

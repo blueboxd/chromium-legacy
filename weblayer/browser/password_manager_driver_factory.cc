@@ -75,9 +75,9 @@ class PasswordManagerDriverFactory::PasswordManagerDriver
                                const gfx::RectF& bounds) override {}
 
 #if BUILDFLAG(IS_ANDROID)
-  void ShowTouchToFill(
-      autofill::mojom::SubmissionReadinessState submission_readiness) override {
-  }
+  void ShowKeyboardReplacingSurface(
+      autofill::mojom::SubmissionReadinessState submission_readiness,
+      bool is_webauthn_form) override {}
 #endif
 
   void CheckSafeBrowsingReputation(const GURL& form_action,

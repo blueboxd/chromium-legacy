@@ -632,6 +632,7 @@ void PasswordControllerTest::FillFormAndValidate(TestPasswordFormData test_data,
                        displayDescription:nil
                                      icon:nil
                                identifier:0
+                        backendIdentifier:nil
                            requiresReauth:NO];
 
   SuggestionHandledCompletion completion = ^{
@@ -2055,6 +2056,32 @@ TEST_F(PasswordControllerTest,
       .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
   LoadHtml(kHtmlWithPasswordForm);
   WaitForFormManagersCreation();
+
+  EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
+
+  SimulateFormActivityObserverSignal("password_form_removed", FormRendererId(1),
+                                     FieldRendererId(), std::string());
+}
+
+// Tests that prompt is not shown automatically if the form is eligible only for
+// manual fallback for saving.
+TEST_F(PasswordControllerTest,
+       DetectNoSubmissionOnRemovedFormForManualFallback) {
+  ON_CALL(*store_, GetLogins)
+      .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
+  LoadHtml(@""
+            "<form id='form1'>"
+            "  <input id='username' type='text'>"
+            "  <input id='one-time-code' type='password'>"
+            "</form>");
+  WaitForFormManagersCreation();
+
+  std::string mainFrameID = GetMainWebFrameId();
+
+  SimulateUserTyping("form1", FormRendererId(1), "username", FieldRendererId(2),
+                     "john", mainFrameID);
+  SimulateUserTyping("form1", FormRendererId(1), "one-time-code",
+                     FieldRendererId(3), "123456", mainFrameID);
 
   EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
 

@@ -618,6 +618,47 @@ TEST_F(MirroringActivityTest, Play) {
   testing::Mock::VerifyAndClearExpectations(&media_status_observer);
 }
 
+TEST_F(MirroringActivityTest, PauseAndPlay) {
+  base::HistogramTester uma_recorder;
+  EXPECT_CALL(mirroring_service_host_factory_, GetForTab(kFrameTreeNodeId));
+  MediaSource source = MediaSource::ForTab(kTabId);
+  MakeActivity(source, kFrameTreeNodeId,
+               CastDiscoveryType::kAccessCodeManualEntry);
+  auto cb = [&](base::OnceClosure callback) { std::move(callback).Run(); };
+  EXPECT_CALL(*mirroring_service_, Pause(_)).WillOnce(testing::Invoke(cb));
+  EXPECT_CALL(*mirroring_service_, Resume(_)).WillOnce(testing::Invoke(cb));
+
+  activity_->DidStart();
+  activity_->Pause();
+  base::RunLoop().RunUntilIdle();
+  activity_->Play();
+  base::RunLoop().RunUntilIdle();
+  activity_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  uma_recorder.ExpectTotalCount("AccessCodeCast.Session.FreezeCount", 1);
+  uma_recorder.ExpectTotalCount("AccessCodeCast.Session.FreezeDuration", 1);
+}
+
+TEST_F(MirroringActivityTest, PauseAndReset) {
+  base::HistogramTester uma_recorder;
+  EXPECT_CALL(mirroring_service_host_factory_, GetForTab(kFrameTreeNodeId));
+  MediaSource source = MediaSource::ForTab(kTabId);
+  MakeActivity(source, kFrameTreeNodeId,
+               CastDiscoveryType::kAccessCodeManualEntry);
+  auto cb = [&](base::OnceClosure callback) { std::move(callback).Run(); };
+  EXPECT_CALL(*mirroring_service_, Pause(_)).WillOnce(testing::Invoke(cb));
+
+  activity_->DidStart();
+  activity_->Pause();
+  base::RunLoop().RunUntilIdle();
+  activity_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  uma_recorder.ExpectTotalCount("AccessCodeCast.Session.FreezeCount", 1);
+  uma_recorder.ExpectTotalCount("AccessCodeCast.Session.FreezeDuration", 1);
+}
+
 TEST_F(MirroringActivityTest, OnRemotingStateChanged) {
   MakeActivity();
   mojo::PendingRemote<mojom::MediaStatusObserver> observer_pending_remote;
@@ -685,6 +726,50 @@ TEST_F(MirroringActivityTest, GetTargetPlayoutDelay) {
   // Test that returned value is the switch even with nullopt.
   EXPECT_EQ(activity_->GetTargetPlayoutDelay(absl::nullopt).value(),
             switch_playout_delay);
+}
+
+TEST_F(MirroringActivityTest, MultipleMediaControllersNotified) {
+  MakeActivity();
+
+  // Set up the first media controller and observer.
+  mojo::PendingRemote<mojom::MediaStatusObserver> observer_pending_remote_1;
+  NiceMock<MockMediaStatusObserver> media_status_observer_1 =
+      NiceMock<MockMediaStatusObserver>(
+          observer_pending_remote_1.InitWithNewPipeAndPassReceiver());
+  mojo::Remote<mojom::MediaController> media_controller_1;
+  activity_->CreateMediaController(
+      media_controller_1.BindNewPipeAndPassReceiver(),
+      std::move(observer_pending_remote_1));
+
+  // Set up the second media controller and observer.
+  mojo::PendingRemote<mojom::MediaStatusObserver> observer_pending_remote_2;
+  NiceMock<MockMediaStatusObserver> media_status_observer_2 =
+      NiceMock<MockMediaStatusObserver>(
+          observer_pending_remote_2.InitWithNewPipeAndPassReceiver());
+  mojo::Remote<mojom::MediaController> media_controller_2;
+  activity_->CreateMediaController(
+      media_controller_2.BindNewPipeAndPassReceiver(),
+      std::move(observer_pending_remote_2));
+
+  // Pause the route, and expect both observers to be notified.
+  mojom::MediaStatusPtr expected_status = mojom::MediaStatus::New();
+  expected_status->play_state = mojom::MediaStatus::PlayState::PAUSED;
+  auto cb = [&](base::OnceClosure callback) { std::move(callback).Run(); };
+  EXPECT_CALL(*mirroring_service_, Pause(_)).WillOnce(testing::Invoke(cb));
+  EXPECT_CALL(media_status_observer_1, OnMediaStatusUpdated(_))
+      .WillOnce([&](mojom::MediaStatusPtr status) {
+        EXPECT_EQ(expected_status->play_state, status->play_state);
+      });
+  EXPECT_CALL(media_status_observer_2, OnMediaStatusUpdated(_))
+      .WillOnce([&](mojom::MediaStatusPtr status) {
+        EXPECT_EQ(expected_status->play_state, status->play_state);
+      });
+  activity_->Pause();
+
+  // Ensure the mojom receivers have processed all calls, since we are expecting
+  // them to have been called.
+  media_status_observer_1.FlushForTesting();
+  media_status_observer_2.FlushForTesting();
 }
 
 }  // namespace media_router

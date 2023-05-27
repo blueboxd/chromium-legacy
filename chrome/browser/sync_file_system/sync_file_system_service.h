@@ -23,7 +23,7 @@
 #include "chrome/browser/sync_file_system/sync_service_state.h"
 #include "chrome/browser/sync_file_system/task_logger.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/service/sync_service_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
 
@@ -48,6 +48,9 @@ class LocalSyncRunner;
 class RemoteSyncRunner;
 class SyncEventObserver;
 
+// Service implementing the chrome.syncFileSystem() API for the deprecated
+// Chrome Apps platform.
+// https://developer.chrome.com/docs/extensions/reference/syncFileSystem/
 class SyncFileSystemService
     : public KeyedService,
       public SyncProcessRunner::Client,

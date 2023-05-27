@@ -14,7 +14,7 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
-import '../../settings_shared.css.js';
+import '../settings_shared.css.js';
 import '../guest_os/guest_os_shared_paths.js';
 import '../guest_os/guest_os_shared_usb_devices.js';
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
@@ -32,6 +32,7 @@ import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isCrostiniAllowed, isCrostiniSupported} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
@@ -113,6 +114,20 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
         type: Boolean,
       },
 
+      isCrostiniSupported_: {
+        type: Boolean,
+        value: () => {
+          return isCrostiniSupported();
+        },
+      },
+
+      isCrostiniAllowed_: {
+        type: Boolean,
+        value: () => {
+          return isCrostiniAllowed();
+        },
+      },
+
       /**
        * Used by DeepLinkingMixin to focus this page's deep links.
        */
@@ -130,6 +145,8 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
 
   private browserProxy_: CrostiniBrowserProxy;
   private disableCrostiniInstall_: boolean;
+  private isCrostiniAllowed_: boolean;
+  private isCrostiniSupported_: boolean;
 
   constructor() {
     super();
@@ -140,7 +157,7 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
   override connectedCallback() {
     super.connectedCallback();
 
-    if (!loadTimeData.getBoolean('allowCrostini')) {
+    if (!this.isCrostiniAllowed_) {
       this.disableCrostiniInstall_ = true;
       return;
     }

@@ -37,23 +37,15 @@
   <managed-footnote show-device-info></managed-footnote>
 </template>
 <template is="dom-if" if="[[showPages_.settings]]">
-  <os-settings-page
+  <main-page-container
       class="cr-centered-card-container"
       prefs="{{prefs}}"
       page-availability="[[pageAvailability]]"
-      show-android-apps="[[showAndroidApps]]"
-      show-arcvm-manage-usb="[[showArcvmManageUsb]]";
-      show-crostini="[[showCrostini]]"
-      show-plugin-vm="[[showPluginVm]]"
-      show-reset="[[showReset]]"
-      show-startup="[[showStartup]]"
-      have-play-store-app="[[havePlayStoreApp]]"
       on-showing-section="onShowingSection_"
       on-subpage-expand="onShowingSubpage_"
       on-showing-main-page="onShowingMainPage_"
-      advanced-toggle-expanded="{{advancedToggleExpanded}}"
-      show-kerberos-section="[[showKerberosSection]]">
-  </os-settings-page>
+      advanced-toggle-expanded="{{advancedToggleExpanded}}">
+  </main-page-container>
 </template>
 <template is="dom-if" if="[[showPages_.about]]">
   <os-settings-about-page role="main"
@@ -61,8 +53,7 @@
       on-subpage-expand="onShowingSubpage_"
       on-showing-section="onShowingSection_"
       on-showing-main-page="onShowingMainPage_"
-      prefs="{{prefs}}"
-      show-crostini="[[showCrostini]]">
+      prefs="{{prefs}}">
   </os-settings-about-page>
 </template>
 <div id="overscroll" style="padding-bottom: [[overscroll_]]px"></div>

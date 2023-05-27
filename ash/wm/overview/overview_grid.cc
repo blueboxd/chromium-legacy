@@ -758,8 +758,9 @@ void OverviewGrid::AddItem(aura::Window* window,
   if (reposition)
     PositionWindows(should_animate, ignored_items);
 
-  if (IsShowingSavedDeskLibrary() || WillShowSavedDeskLibrary())
+  if (IsShowingSavedDeskLibrary()) {
     item->HideForSavedDeskLibrary(/*animate=*/false);
+  }
 }
 
 void OverviewGrid::AppendItem(aura::Window* window,
@@ -852,8 +853,7 @@ void OverviewGrid::RemoveAllItemsForSavedDeskLaunch() {
 
     for (auto& item : window_list_) {
       item->RevertHideForSavedDeskLibrary(/*animate=*/false);
-      item->RestoreWindow(/*reset_transform=*/true,
-                          /*was_saved_desk_library_showing=*/true);
+      item->RestoreWindow(/*reset_transform=*/true, /*animate=*/false);
     }
   }
   window_list_.clear();
@@ -1821,6 +1821,14 @@ void OverviewGrid::ShowSavedDeskLibrary() {
 
   UpdateSaveDeskButtons();
 
+  // If the overview desk bar is not created at this point, create it. This is
+  // only possible for clicking library button on the desk button desk bar,
+  // since for the overview desk bar, there has to be a bar before we can click
+  // on the library button.
+  if (!desks_widget_) {
+    MaybeInitDesksWidget();
+  }
+
   // When desks bar is at zero state, the library button's state update will be
   // handled by `UpdateNewMiniViews` when expanding the desks bar.
   if (desks_bar_view_->IsZeroState()) {
@@ -1893,12 +1901,9 @@ void OverviewGrid::HideSavedDeskLibrary(bool exit_overview) {
 }
 
 bool OverviewGrid::IsShowingSavedDeskLibrary() const {
-  return saved_desk_library_widget_ && saved_desk_library_widget_->IsVisible();
-}
-
-bool OverviewGrid::WillShowSavedDeskLibrary() const {
-  return saved_desk_library_widget_ && saved_desk_library_widget_->GetLayer() &&
-         saved_desk_library_widget_->GetLayer()->GetTargetVisibility() != 0.f;
+  return saved_desk_library_widget_ &&
+         saved_desk_library_widget_->IsVisible() &&
+         saved_desk_library_widget_->GetLayer()->GetTargetOpacity() == 1.0f;
 }
 
 bool OverviewGrid::IsSavedDeskNameBeingModified() const {

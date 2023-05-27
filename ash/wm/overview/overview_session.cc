@@ -176,7 +176,7 @@ void OverviewSession::Init(const WindowList& windows,
     tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
     hide_windows_for_saved_desks_grid_ =
         std::make_unique<ScopedOverviewHideWindows>(
-            /*windows=*/std::vector<aura::Window*>({}), /*forced_hidden=*/true);
+            /*windows=*/std::vector<aura::Window*>{}, /*forced_hidden=*/true);
   }
 
   hide_overview_windows_ = std::make_unique<ScopedOverviewHideWindows>(
@@ -334,7 +334,7 @@ void OverviewSession::Shutdown() {
     }
     for (const auto& overview_item : overview_grid->window_list()) {
       overview_item->RestoreWindow(/*reset_transform=*/true,
-                                   was_saved_desk_library_showing);
+                                   /*animate=*/!was_saved_desk_library_showing);
     }
     remaining_items += overview_grid->size();
   }
@@ -1124,11 +1124,6 @@ bool OverviewSession::IsShowingSavedDeskLibrary() const {
                             : grid_list_.front()->IsShowingSavedDeskLibrary();
 }
 
-bool OverviewSession::WillShowSavedDeskLibrary() const {
-  return grid_list_.empty() ? false
-                            : grid_list_.front()->WillShowSavedDeskLibrary();
-}
-
 bool OverviewSession::ShouldEnterWithoutAnimations() const {
   return enter_exit_overview_type_ == OverviewEnterExitType::kImmediateEnter ||
          enter_exit_overview_type_ ==
@@ -1562,8 +1557,7 @@ void OverviewSession::OnItemAdded(aura::Window* window) {
   // `ShowInactive()` instead of `ActivateWindow()` to show the widget.
   // When the saved desk library is on, do not switch focus to avoid unexpected
   // name commit.
-  bool saved_desk_grid_should_keep_focus =
-      IsShowingSavedDeskLibrary() || WillShowSavedDeskLibrary();
+  bool saved_desk_grid_should_keep_focus = IsShowingSavedDeskLibrary();
   if (saved_desk_grid_should_keep_focus)
     overview_focus_widget_->ShowInactive();
   else

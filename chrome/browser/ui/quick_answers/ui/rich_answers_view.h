@@ -14,8 +14,10 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace views {
 class ImageButton;
@@ -45,6 +47,11 @@ class RichAnswersView : public views::View {
 
   ~RichAnswersView() override;
 
+  static views::UniqueWidgetPtr CreateWidget(
+      const gfx::Rect& anchor_view_bounds,
+      base::WeakPtr<QuickAnswersUiController> controller,
+      const quick_answers::QuickAnswer& result);
+
   // views::View:
   void OnFocus() override;
   void OnThemeChanged() override;
@@ -55,9 +62,10 @@ class RichAnswersView : public views::View {
 
  private:
   void InitLayout();
-  void InitWidget();
   void AddResultTypeIcon();
   void AddFrameButtons();
+  void AddGoogleSearchLink();
+  void OnGoogleSearchLinkClicked();
   void UpdateBounds();
 
   // QuickAnswersFocusSearch::GetFocusableViewsCallback to poll currently
@@ -75,6 +83,7 @@ class RichAnswersView : public views::View {
   raw_ptr<views::View> content_view_ = nullptr;
   raw_ptr<views::ImageButton> settings_button_ = nullptr;
   raw_ptr<views::ImageView> vector_icon_ = nullptr;
+  raw_ptr<views::Link> search_link_label_ = nullptr;
 
   std::unique_ptr<quick_answers::RichAnswersPreTargetHandler>
       rich_answers_view_handler_;

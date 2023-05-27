@@ -69,8 +69,7 @@ WaylandToplevelWindow::WaylandToplevelWindow(PlatformWindowDelegate* delegate,
                                              WaylandConnection* connection)
     : WaylandWindow(delegate, connection),
       state_(PlatformWindowState::kNormal),
-      screen_coordinates_enabled_(
-          features::IsWaylandScreenCoordinatesEnabled()) {
+      screen_coordinates_enabled_(kDefaultScreenCoordinateEnabled) {
   // Set a class property key, which allows |this| to be used for interactive
   // events, e.g. move or resize.
   SetWmMoveResizeHandler(this, AsWmMoveResizeHandler());
@@ -90,11 +89,15 @@ bool WaylandToplevelWindow::CreateShellToplevel() {
     LOG(ERROR) << "Failed to create a ShellToplevel.";
     return false;
   }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   screen_coordinates_enabled_ &= shell_toplevel_->SupportsScreenCoordinates();
   screen_coordinates_enabled_ &= !use_native_frame_;
 
-  if (screen_coordinates_enabled_)
+  if (screen_coordinates_enabled_) {
     shell_toplevel_->EnableScreenCoordinates();
+  }
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   shell_toplevel_->SetAppId(window_unique_id_);
@@ -317,6 +320,13 @@ void WaylandToplevelWindow::SetZOrderLevel(ZOrderLevel order) {
 
 ZOrderLevel WaylandToplevelWindow::GetZOrderLevel() const {
   return z_order_;
+}
+
+void WaylandToplevelWindow::SetShape(std::unique_ptr<ShapeRects> native_shape,
+                                     const gfx::Transform& transform) {
+  if (shell_toplevel_) {
+    shell_toplevel_->SetShape(std::move(native_shape));
+  }
 }
 
 std::string WaylandToplevelWindow::GetWindowUniqueId() const {
@@ -647,8 +657,19 @@ void WaylandToplevelWindow::SetWindowGeometry(gfx::Size size_dip) {
   gfx::Rect geometry_dip(size_dip);
 
   const auto insets = GetDecorationInsetsInDIP();
-  if (state_ == PlatformWindowState::kNormal && !insets.IsEmpty())
+  if (state_ == PlatformWindowState::kNormal && !insets.IsEmpty()) {
     geometry_dip.Inset(insets);
+
+    // Shrinking the bounds by the decoration insets might result in empty
+    // bounds. For the reasons already explained in WaylandWindow::Initialize(),
+    // we mustn't request an empty window geometry.
+    if (geometry_dip.width() == 0) {
+      geometry_dip.set_width(1);
+    }
+    if (geometry_dip.height() == 0) {
+      geometry_dip.set_height(1);
+    }
+  }
   shell_toplevel_->SetWindowGeometry(geometry_dip);
 }
 

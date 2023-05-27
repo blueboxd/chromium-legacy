@@ -33,6 +33,8 @@ enum class ZOrderLevel;
 // and move.
 class ShellToplevelWrapper {
  public:
+  using ShapeRects = std::vector<gfx::Rect>;
+
   enum class DecorationMode {
     // Initial mode that the surface has till the first configure event.
     kNone,
@@ -144,9 +146,11 @@ class ShellToplevelWrapper {
   // screen coordinates.
   virtual bool SupportsScreenCoordinates() const = 0;
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Enables screen coordinates support. This is no-op if the server does not
   // support the screen coordinates.
   virtual void EnableScreenCoordinates() = 0;
+#endif
 
   // Sets/usets a native window to float state. This places it on top of other
   // windows.
@@ -180,6 +184,10 @@ class ShellToplevelWrapper {
 
   // Sets the persistable window property.
   virtual void SetPersistable(bool persistable) const = 0;
+
+  // Sets the shape of the toplevel window. If `shape_rects` is null this will
+  // unset the window shape.
+  virtual void SetShape(std::unique_ptr<ShapeRects> shape_rects) = 0;
 
   // Casts `this` to XDGToplevelWrapperImpl, if it is of that type.
   virtual XDGToplevelWrapperImpl* AsXDGToplevelWrapper();

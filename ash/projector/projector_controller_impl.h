@@ -12,6 +12,7 @@
 #include "ash/capture_mode/capture_mode_observer.h"
 #include "ash/projector/model/projector_session_impl.h"
 #include "ash/public/cpp/projector/projector_controller.h"
+#include "base/files/safe_base_name.h"
 #include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
@@ -70,7 +71,7 @@ class ASH_EXPORT ProjectorControllerImpl
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // ProjectorController:
-  void StartProjectorSession(const std::string& storage_dir) override;
+  void StartProjectorSession(const base::SafeBaseName& storage_dir) override;
   void SetClient(ProjectorClient* client) override;
   void OnSpeechRecognitionAvailabilityChanged() override;
   void OnTranscription(const media::SpeechRecognitionResult& result) override;
@@ -158,6 +159,12 @@ class ASH_EXPORT ProjectorControllerImpl
   void StartSpeechRecognition();
   void MaybeStopSpeechRecognition();
   void ForceEndSpeechRecognition();
+
+  // Called when the projector-initiated capture mode session initialization is
+  // completed or returned to start the projector session with given
+  // `storage_dir` if `success` is true.
+  void OnSessionStartAttempted(const base::SafeBaseName& storage_dir,
+                               bool success);
 
   // Triggered when finish creating the screencast container folder. This method
   // caches the the container folder path in `ProjectorSession` and triggers the

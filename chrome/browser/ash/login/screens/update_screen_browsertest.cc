@@ -203,6 +203,7 @@ class UpdateScreenTest : public OobeBaseTest,
   }
 
   void ShowUpdateScreen() {
+    WaitForOobeUI();
     WizardController::default_controller()->AdvanceToScreen(
         UpdateView::kScreenId);
     // When opt out option is not available we try to wait and don't show the
@@ -652,7 +653,8 @@ IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestTemporaryPortalNetwork) {
   histogram_tester_.ExpectTotalCount(kTimeFinalize, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(UpdateScreenTest, TestTwoOfflineNetworks) {
+// TODO(https://crbug.com/1449334): Flaky on Chrome OS.
+IN_PROC_BROWSER_TEST_P(UpdateScreenTest, DISABLED_TestTwoOfflineNetworks) {
   // Change ethernet state to portal.
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);

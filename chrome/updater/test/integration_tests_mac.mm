@@ -41,8 +41,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-namespace updater {
-namespace test {
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace updater::test {
 namespace {
 
 base::FilePath GetExecutablePath() {
@@ -54,7 +57,7 @@ base::FilePath GetExecutablePath() {
 
 absl::optional<base::FilePath> GetActiveFile(UpdaterScope /*scope*/,
                                              const std::string& id) {
-  // The active user is always managaged in the updater scope for the user.
+  // The active user is always managed in the updater scope for the user.
   const absl::optional<base::FilePath> path =
       GetLibraryFolderPath(UpdaterScope::kUser);
   if (!path)
@@ -225,7 +228,7 @@ void ExpectNotActive(UpdaterScope scope, const std::string& app_id) {
 
 bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
   return WaitFor(
-      base::BindRepeating([]() {
+      base::BindRepeating([] {
         std::string ps_stdout;
         EXPECT_TRUE(
             base::GetAppOutput({"ps", "ax", "-o", "command"}, &ps_stdout));
@@ -236,7 +239,7 @@ bool WaitForUpdaterExit(UpdaterScope /*scope*/) {
         return false;
       }),
       base::BindLambdaForTesting(
-          []() { VLOG(0) << "Still waiting for updater to exit..."; }));
+          [] { VLOG(0) << "Still waiting for updater to exit..."; }));
 }
 
 void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
@@ -321,13 +324,9 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_EQ(persisted_data->GetDateLastActive(kPopularApp).value(), 5921);
   EXPECT_EQ(persisted_data->GetDateLastRollcall(kPopularApp).value(), 5922);
 
-// TODO(crbug.com/1442695): Enable this after updating the `ticketstore` under
-// chrome/test/data/updater/Keystone.legacy.ticketstore.
-#if 0
   EXPECT_EQ(persisted_data->GetCohort(kPopularApp), "TestCohort");
   EXPECT_EQ(persisted_data->GetCohortName(kPopularApp), "TestCohortName");
   EXPECT_EQ(persisted_data->GetCohortHint(kPopularApp), "TestCohortHint");
-#endif
 
   // App CorruptedApp (client-regulated counting data is corrupted).
   const std::string kCorruptedApp = "com.chromium.CorruptedApp";
@@ -355,5 +354,9 @@ void RunOfflineInstall(UpdaterScope scope,
   // TODO(crbug.com/1286574).
 }
 
-}  // namespace test
-}  // namespace updater
+base::CommandLine MakeElevated(base::CommandLine command_line) {
+  command_line.PrependWrapper("/usr/bin/sudo");
+  return command_line;
+}
+
+}  // namespace updater::test

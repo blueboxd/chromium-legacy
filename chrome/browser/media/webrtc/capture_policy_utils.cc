@@ -123,8 +123,7 @@ AllowedScreenCaptureLevel GetAllowedCaptureLevel(const GURL& request_origin,
   return AllowedScreenCaptureLevel::kDisallowed;
 }
 
-bool IsGetDisplayMediaSetSelectAllScreensAllowedForAnySite(
-    content::BrowserContext* context) {
+bool IsGetAllScreensMediaAllowedForAnySite(content::BrowserContext* context) {
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   Profile* profile = Profile::FromBrowserContext(context);
   if (!profile) {
@@ -159,9 +158,8 @@ bool IsGetDisplayMediaSetSelectAllScreensAllowedForAnySite(
 #endif
 }
 
-bool IsGetDisplayMediaSetSelectAllScreensAllowed(
-    content::BrowserContext* context,
-    const GURL& url) {
+bool IsGetAllScreensMediaAllowed(content::BrowserContext* context,
+                                 const GURL& url) {
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   Profile* profile = Profile::FromBrowserContext(context);
   if (!profile) {
@@ -253,8 +251,7 @@ void FilterMediaList(std::vector<DesktopMediaList::Type>& media_types,
       media_types, [capture_level](const DesktopMediaList::Type& type) {
         switch (type) {
           case DesktopMediaList::Type::kNone:
-            NOTREACHED();
-            return false;
+            NOTREACHED_NORETURN();
           // SameOrigin is more restrictive than just Tabs, so as long as
           // at least SameOrigin is allowed, these entries should stay.
           // They should be filtered later by the caller.

@@ -83,6 +83,7 @@
 #include "content/public/test/mock_web_contents_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/prerender_test_util.h"
+#include "content/public/test/resource_load_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -91,7 +92,6 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/mock_reduce_accept_language_controller_delegate.h"
-#include "content/test/resource_load_observer.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/features.h"
@@ -460,14 +460,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
 
   // Navigate to an invalid URL and make sure it doesn't leave a pending entry.
-  LoadStopNotificationObserver load_observer1(
-      &shell()->web_contents()->GetController());
+  LoadStopObserver load_observer1(shell()->web_contents());
   ASSERT_TRUE(ExecJs(shell(), "window.location.href=\"nonexistent:12121\";"));
   load_observer1.Wait();
   EXPECT_FALSE(shell()->web_contents()->GetController().GetPendingEntry());
 
-  LoadStopNotificationObserver load_observer2(
-      &shell()->web_contents()->GetController());
+  LoadStopObserver load_observer2(shell()->web_contents());
   ASSERT_TRUE(ExecJs(shell(), "window.location.href=\"#foo\";"));
   load_observer2.Wait();
   EXPECT_EQ(embedded_test_server()->GetURL("/title1.html#foo"),
@@ -645,7 +643,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   EXPECT_TRUE(NavigateToURL(shell(), kWebUIUrl));
 
-  EXPECT_TRUE(content::ExecuteScript(shell(), kJSCodeForAppendingFrame));
+  EXPECT_TRUE(content::ExecJs(shell(), kJSCodeForAppendingFrame));
 }
 
 // Test that creation of new RenderFrameHost objects sends the correct object
@@ -691,8 +689,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
       new LoadingStateChangedDelegate());
   shell()->web_contents()->SetDelegate(delegate.get());
 
-  LoadStopNotificationObserver load_observer(
-      &shell()->web_contents()->GetController());
+  LoadStopObserver load_observer(shell()->web_contents());
   TitleWatcher title_watcher(shell()->web_contents(), u"pushState");
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("/push_state.html")));
@@ -1476,7 +1473,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // present when the cross-site navigation later commits.
   // Note: the javascript function executed will not do the link click but
   // schedule it for afterwards. Since the BeforeUnload event is synchronous,
-  // clicking on the link right away would cause the ExecuteScript to never
+  // clicking on the link right away would cause the ExecJs to never
   // return.
   SetShouldProceedOnBeforeUnload(shell(), false, false);
   AppModalDialogWaiter dialog_waiter(shell());
@@ -3878,7 +3875,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, RejectFullscreenIfBlocked) {
   base::ScopedClosureRunner fullscreen_block =
       web_contents->ForSecurityDropFullscreen();
 
-  EXPECT_TRUE(ExecuteScript(main_frame, "document.body.requestFullscreen();"));
+  EXPECT_TRUE(ExecJs(main_frame, "document.body.requestFullscreen();",
+                     EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
 
   std::u16string title = title_watcher.WaitAndGetTitle();
   ASSERT_EQ(title, u"onfullscreenerror");
@@ -5691,6 +5689,10 @@ class WebContentsPrerenderBrowserTest : public WebContentsImplBrowserTest {
     return static_cast<WebContentsImpl*>(web_contents());
   }
 
+  content::test::PrerenderTestHelper& prerender_helper() {
+    return prerender_helper_;
+  }
+
  private:
   content::test::PrerenderTestHelper prerender_helper_;
 };
@@ -5729,6 +5731,30 @@ IN_PROC_BROWSER_TEST_F(WebContentsPrerenderBrowserTest,
   WebContentsDestroyedWatcher close_observer(web_contents_impl());
   web_contents_impl()->DispatchBeforeUnload(false /* auto_cancel */);
   close_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsPrerenderBrowserTest,
+                       GetContentsMimeTypeForEachPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // Prerender a page that has a MIME type, text/plain.
+  const GURL prerendering_url = embedded_test_server()->GetURL("/plain.txt");
+  int host_id = prerender_helper().AddPrerender(prerendering_url);
+
+  // Check MIME type for each page.
+  EXPECT_EQ("text/html",
+            web_contents()->GetPrimaryPage().GetContentsMimeType());
+  EXPECT_EQ("text/plain", prerender_helper()
+                              .GetPrerenderedMainFrameHost(host_id)
+                              ->GetPage()
+                              .GetContentsMimeType());
+
+  // WebContents API should return the MIME type of the primary page.
+  EXPECT_EQ("text/html", shell()->web_contents()->GetContentsMimeType());
 }
 
 class WebContentsFencedFrameBrowserTest : public WebContentsImplBrowserTest {

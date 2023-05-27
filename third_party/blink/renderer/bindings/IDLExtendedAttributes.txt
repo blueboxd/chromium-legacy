@@ -35,11 +35,10 @@ ActiveScriptWrappable
 Affects=Everything|Nothing
 AllowShared
 CEReactions
-CSSProperty
 CachedAccessor=*
 CachedAttribute=*
 CallWith=ExecutionContext|Isolate|ScriptState|ThisValue
-CheckSecurity=Receiver|ReturnValue
+CheckSecurity=ReturnValue
 Clamp
 Constructor
 ContextEnabled=*

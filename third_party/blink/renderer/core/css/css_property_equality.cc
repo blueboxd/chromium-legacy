@@ -365,8 +365,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.GetFontDescription().FontOpticalSizing() ==
              b.GetFontDescription().FontOpticalSizing();
     case CSSPropertyID::kFontPalette:
-      return a.GetFontDescription().GetFontPalette() ==
-             b.GetFontDescription().GetFontPalette();
+      return base::ValuesEquivalent(a.FontPalette(), b.FontPalette());
     case CSSPropertyID::kFontFeatureSettings:
       return a.GetFontDescription().FeatureSettings() ==
              b.GetFontDescription().FeatureSettings();
@@ -591,6 +590,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.Right() == b.Right();
     case CSSPropertyID::kRubyPosition:
       return a.GetRubyPosition() == b.GetRubyPosition();
+    case CSSPropertyID::kScrollbarColor:
+      return a.ScrollbarColor() == b.ScrollbarColor();
     case CSSPropertyID::kScrollbarGutter:
       return a.ScrollbarGutter() == b.ScrollbarGutter();
     case CSSPropertyID::kScrollbarWidth:
@@ -621,6 +622,14 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.ScrollSnapStop() == b.ScrollSnapStop();
     case CSSPropertyID::kScrollSnapType:
       return a.GetScrollSnapType() == b.GetScrollSnapType();
+    case CSSPropertyID::kScrollStartX:
+      return a.ScrollStartX() == b.ScrollStartX();
+    case CSSPropertyID::kScrollStartY:
+      return a.ScrollStartY() == b.ScrollStartY();
+    case CSSPropertyID::kScrollStartTargetX:
+      return a.ScrollStartTargetX() == b.ScrollStartTargetX();
+    case CSSPropertyID::kScrollStartTargetY:
+      return a.ScrollStartTargetY() == b.ScrollStartTargetY();
     case CSSPropertyID::kShapeImageThreshold:
       return a.ShapeImageThreshold() == b.ShapeImageThreshold();
     case CSSPropertyID::kShapeMargin:
@@ -1089,6 +1098,10 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kScrollPaddingBlockStart:
     case CSSPropertyID::kScrollPaddingInlineEnd:
     case CSSPropertyID::kScrollPaddingInlineStart:
+    case CSSPropertyID::kScrollStartBlock:
+    case CSSPropertyID::kScrollStartInline:
+    case CSSPropertyID::kScrollStartTargetBlock:
+    case CSSPropertyID::kScrollStartTargetInline:
     case CSSPropertyID::kInlineSize:
     case CSSPropertyID::kInsetBlock:
     case CSSPropertyID::kInsetInline:
@@ -1185,6 +1198,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kPlaceSelf:
     case CSSPropertyID::kScrollMargin:
     case CSSPropertyID::kScrollPadding:
+    case CSSPropertyID::kScrollStart:
+    case CSSPropertyID::kScrollStartTarget:
     case CSSPropertyID::kScrollTimeline:
     case CSSPropertyID::kTextDecoration:
     case CSSPropertyID::kTextEmphasis:
@@ -1229,6 +1244,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kDirection:
     case CSSPropertyID::kTextCombineUpright:
     case CSSPropertyID::kTextOrientation:
+    case CSSPropertyID::kTimelineScope:
     case CSSPropertyID::kToggleGroup:
     case CSSPropertyID::kToggleRoot:
     case CSSPropertyID::kToggleTrigger:

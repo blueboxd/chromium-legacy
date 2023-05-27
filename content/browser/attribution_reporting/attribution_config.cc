@@ -15,7 +15,7 @@ bool AttributionConfig::Validate() const {
     return false;
   }
 
-  if (max_destinations_per_source_site_reporting_origin <= 0) {
+  if (max_destinations_per_source_site_reporting_site <= 0) {
     return false;
   }
 
@@ -80,8 +80,15 @@ bool AttributionConfig::EventLevelLimit::Validate() const {
     return false;
   }
 
-  if (first_report_window_deadline < base::TimeDelta() ||
-      second_report_window_deadline <= first_report_window_deadline) {
+  if (first_navigation_report_window_deadline < base::TimeDelta() ||
+      second_navigation_report_window_deadline <=
+          first_navigation_report_window_deadline) {
+    return false;
+  }
+
+  if (first_event_report_window_deadline < base::TimeDelta() ||
+      second_event_report_window_deadline <=
+          first_event_report_window_deadline) {
     return false;
   }
 
@@ -115,7 +122,23 @@ bool AttributionConfig::AggregateLimit::Validate() const {
     return false;
   }
 
+  if (max_aggregatable_reports_per_source <= 0) {
+    return false;
+  }
+
   return true;
 }
+
+AttributionConfig::EventLevelLimit::EventLevelLimit() = default;
+AttributionConfig::EventLevelLimit::EventLevelLimit(const EventLevelLimit&) =
+    default;
+AttributionConfig::EventLevelLimit::EventLevelLimit(EventLevelLimit&&) =
+    default;
+AttributionConfig::EventLevelLimit::~EventLevelLimit() = default;
+
+AttributionConfig::EventLevelLimit&
+AttributionConfig::EventLevelLimit::operator=(const EventLevelLimit&) = default;
+AttributionConfig::EventLevelLimit&
+AttributionConfig::EventLevelLimit::operator=(EventLevelLimit&&) = default;
 
 }  // namespace content

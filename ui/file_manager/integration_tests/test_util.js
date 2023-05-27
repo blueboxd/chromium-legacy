@@ -265,15 +265,24 @@ export const EntryType = {
 Object.freeze(EntryType);
 
 /**
+ * Enumeration that determines the shared status of entries.
  * @enum {string}
  * @const
  */
-
 export const SharedOption = {
+  // Not shared.
   NONE: 'none',
+
+  // Shared but not visible in the 'Shared with me' view.
   SHARED: 'shared',
+
+  // Shared and appears in the 'Shared With Me' view.
   SHARED_WITH_ME: 'sharedWithMe',
-  NESTED_SHARED_WITH_ME: 'nestedSharedWithMe',
+
+  // Not directly shared, but belongs to a folder that is shared with me.
+  // Entries marked as indirectly shared do not have the 'shared' metadata
+  // field, and thus cannot be located via search for shared items.
+  INDIRECTLY_SHARED_WITH_ME: 'indirectlySharedWithMe',
 };
 Object.freeze(SharedOption);
 
@@ -370,6 +379,8 @@ export let TestEntryFolderFeature;
  *
  * alternateUrl: File's Drive alternate URL. Defaults to an empty string.
  *
+ * canPin: Whether the item can be pinned or not. Defaults to true.
+ *
  * @typedef {{
  *    type: EntryType,
  *    sourceFileName: (string|undefined),
@@ -387,6 +398,7 @@ export let TestEntryFolderFeature;
  *    pinned: (boolean|undefined),
  *    availableOffline: (boolean|undefined),
  *    alternateUrl: (string|undefined),
+ *    canPin: (boolean|undefined),
  * }}
  */
 export let TestEntryInfoOptions;
@@ -420,6 +432,7 @@ export class TestEntryInfo {
     this.pinned = !!options.pinned;
     this.availableOffline = !!options.availableOffline;
     this.alternateUrl = options.alternateUrl || '';
+    this.canPin = options.canPin !== undefined ? !!options.canPin : true;
     Object.freeze(this);
   }
 
@@ -1563,7 +1576,7 @@ export const ENTRIES = {
     sourceFileName: 'text.txt',
     targetPath: 'Shared Directory/file.txt',
     mimeType: 'text/plain',
-    sharedOption: SharedOption.NESTED_SHARED_WITH_ME,
+    sharedOption: SharedOption.INDIRECTLY_SHARED_WITH_ME,
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'file.txt',
     sizeText: '51 bytes',
@@ -1627,6 +1640,18 @@ export const ENTRIES = {
     nameText: 'hello.txt.trashinfo',
     sizeText: '64 bytes',
     typeText: 'TRASHINFO',
+  }),
+
+  cantPinFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'text.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Mar 20, 2012, 11:40 PM',
+    nameText: 'text.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    canPin: false,
   }),
 };
 

@@ -76,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.HighResolutionTimerUsage" units="%"
-    expires_after="2023-09-10">
+    expires_after="2023-11-12">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -98,7 +98,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.InstallerPinUnpinned" enum="IsPinnedToTaskbarResult"
-    expires_after="2023-08-31">
+    expires_after="2023-11-12">
   <owner>davidbienvenu@chromium.org</owner>
   <owner>jessemckenna@chromium.org</owner>
   <summary>
@@ -164,19 +164,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Indicates whether Windows 11 style menus are used. Recorded on menu
     configuration initialization.
-  </summary>
-</histogram>
-
-<histogram name="Windows.OnCurrentWorkspaceCached" enum="BooleanCacheHit"
-    expires_after="2023-06-18">
-  <owner>davidbienvenu@chromium.org</owner>
-  <owner>sky@chromium.org</owner>
-  <summary>
-    Indicates if the current workspace state of a window is cached or not. If
-    it's known that the window is on the current workspace or not, then we can
-    avoid the COM method call IsWindowOnCurrentVirtualDesktop. This is recorded
-    in BrowserView::IsOnCurrentWorkspace. In general, the state should almost
-    always be cached.
   </summary>
 </histogram>
 
@@ -270,6 +257,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether virtualization has been enabled in the system firmware. Logged
     shortly after startup. This metric will only be logged on Windows 10+.
+  </summary>
+</histogram>
+
+<histogram name="Windows.RendererCodeIntegrityEnabled" enum="BooleanEnabled"
+    expires_after="M118">
+  <owner>ajgo@chromium.org</owner>
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    Records whether or not Renderer code integrity is enabled. This is enabled
+    by default but can be overridden by policy. This is recorded each time a new
+    renderer process starts.
   </summary>
 </histogram>
 

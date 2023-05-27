@@ -12,9 +12,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/apple/bridging.h"
 #include "base/containers/span.h"
-#include "base/mac/bridging.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/mac/mock_secure_enclave_client.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/mac/secure_enclave_client.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/shared_command_constants.h"
@@ -54,7 +55,7 @@ class SecureEnclaveSigningKeyTest : public testing::Test {
     CFDictionarySetValue(test_attributes, kSecAttrKeyType,
                          kSecAttrKeyTypeECSECPrimeRandom);
     CFDictionarySetValue(test_attributes, kSecAttrKeySizeInBits,
-                         base::mac::NSToCFPtrCast(@256));
+                         base::apple::NSToCFPtrCast(@256));
     base::ScopedCFTypeRef<CFMutableDictionaryRef> private_key_params(
         CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                   &kCFTypeDictionaryKeyCallBacks,
@@ -78,7 +79,7 @@ class SecureEnclaveSigningKeyTest : public testing::Test {
     key_ = provider.GenerateSigningKeySlowly(acceptable_algorithms);
   }
 
-  MockSecureEnclaveClient* mock_secure_enclave_client_ = nullptr;
+  raw_ptr<MockSecureEnclaveClient> mock_secure_enclave_client_ = nullptr;
   std::unique_ptr<crypto::UnexportableSigningKey> key_;
   base::ScopedCFTypeRef<SecKeyRef> test_key_;
 };

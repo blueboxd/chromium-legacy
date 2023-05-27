@@ -179,6 +179,7 @@ BASE_DECLARE_FEATURE(kEnablePreferencesAccountStorage);
 // is enabled. If the feature is on, the new approach is used, which leans on
 // the state reported by IdentityManager. If false, the legacy approach is used,
 // which is based on preference prefs::kSyncRequested.
+// TODO(crbug.com/1219990): Remove this.
 BASE_DECLARE_FEATURE(kSyncIgnoreSyncRequestedPreference);
 #endif  // BUILDFLAG(!IS_CHROMEOS_ASH)
 
@@ -205,6 +206,18 @@ BASE_DECLARE_FEATURE(kSyncWebauthnCredentials);
 // If enabled, ignore GetUpdates retry delay command from the server.
 BASE_DECLARE_FEATURE(kSyncIgnoreGetUpdatesRetryDelay);
 
+// If enabled, uses a JsonPrefStore for account preferences.
+BASE_DECLARE_FEATURE(kSyncEnablePersistentStorageForAccountPreferences);
+
+// Flag to control if a user can enable sync for the #tab-groups-save feature.
+BASE_DECLARE_FEATURE(kTabGroupsSaveSyncIntegration);
+
+// If provided, changes the amount of time before we send messages to the sync
+// service.
+inline constexpr base::FeatureParam<base::TimeDelta>
+    kTabGroupsSaveCustomNudgeDelay(&kTabGroupsSaveSyncIntegration,
+                                   "TabGroupsSaveCustomNudgeDelay",
+                                   base::Seconds(11));
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_FEATURES_H_

@@ -43,6 +43,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
@@ -627,9 +628,8 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
   else if (manifest.short_name)
     web_app_info->title = *manifest.short_name;
 
-  if (manifest.id.has_value()) {
-    web_app_info->manifest_id =
-        absl::optional<std::string>(base::UTF16ToUTF8(manifest.id.value()));
+  if (manifest.id.is_valid()) {
+    web_app_info->manifest_id = manifest.id;
   }
 
   // Set the url based on the manifest value, if any.
@@ -757,6 +757,14 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
     home_tab.icons = FilterWebAppHomeTabIcons(home_tab.icons);
     web_app_info->tab_strip->home_tab = home_tab;
   }
+}
+
+WebAppInstallInfo CreateWebAppInfoFromManifest(
+    const blink::mojom::Manifest& manifest,
+    const GURL& manifest_url) {
+  WebAppInstallInfo info(manifest.id);
+  UpdateWebAppInfoFromManifest(manifest, manifest_url, &info);
+  return info;
 }
 
 namespace {
@@ -915,13 +923,6 @@ void PopulateProductIcons(WebAppInstallInfo* web_app_info,
     if (web_app_info->icon_bitmaps.any.count(item.first) == 0)
       web_app_info->icon_bitmaps.any[item.first] = std::move(item.second);
   }
-}
-
-void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {
-  webapps::AppBannerSettingsHelper::RecordBannerEvent(
-      contents, app_url, app_url.spec(),
-      webapps::AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
-      base::Time::Now());
 }
 
 void RecordDownloadedIconsResultAndHttpStatusCodes(
@@ -1156,7 +1157,13 @@ void SetWebAppManifestFields(const WebAppInstallInfo& web_app_info,
   web_app.SetName(base::UTF16ToUTF8(web_app_info.title));
 
   web_app.SetStartUrl(web_app_info.start_url);
-  web_app.SetManifestId(web_app_info.manifest_id);
+
+  // TODO(b/280862254): CHECK that the manifest_id isn't empty after the empty
+  // constructor is removed. Currently, `SetStartUrl` sets a default manifest_id
+  // based on the start_url.
+  if (web_app_info.manifest_id.is_valid()) {
+    web_app.SetManifestId(web_app_info.manifest_id);
+  }
 
   web_app.SetDisplayMode(web_app_info.display_mode);
   web_app.SetDisplayModeOverride(web_app_info.display_override);
@@ -1280,9 +1287,6 @@ void ApplyParamsToWebAppInstallInfo(const WebAppInstallParams& install_params,
                                     WebAppInstallInfo& web_app_info) {
   if (install_params.user_display_mode.has_value())
     web_app_info.user_display_mode = install_params.user_display_mode;
-
-  if (install_params.override_manifest_id.has_value())
-    web_app_info.manifest_id = install_params.override_manifest_id;
 
   // If `additional_search_terms` was a manifest property, it would be
   // sanitized while parsing the manifest. Since it's not, we sanitize it

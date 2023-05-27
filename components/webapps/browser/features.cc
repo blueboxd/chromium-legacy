@@ -109,5 +109,22 @@ bool SkipServiceWorkerForInstallPromotion() {
          base::FeatureList::IsEnabled(kSkipServiceWorkerForInstallPrompt);
 }
 
+// Keys to use when querying the variations params.
+BASE_FEATURE(kAppBannerTriggering,
+             "AppBannerTriggering",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+extern const base::FeatureParam<double> kBannerParamsEngagementTotalKey{
+    &kAppBannerTriggering, "site_engagement_total",
+    kDefaultTotalEngagementToTrigger};
+extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerDismissedKey{
+    &kAppBannerTriggering, "days_after_dismiss",
+    kMinimumBannerBlockedToBannerShown};
+extern const base::FeatureParam<int> kBannerParamsDaysAfterBannerIgnoredKey{
+    &kAppBannerTriggering, "days_after_ignore", kMinimumDaysBetweenBannerShows};
+
+BASE_FEATURE(kWebAppsMlUkmCollection,
+             "WebAppsMlUkmCollection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace features
 }  // namespace webapps

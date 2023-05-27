@@ -170,7 +170,6 @@ missing_new_fields,chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.cc
 missing_new_fields,chrome/browser/ui/webui/sanitized_image_source.cc
 missing_new_fields,chrome/browser/ui/webui/signin/ash/user_cloud_signin_restriction_policy_fetcher.cc
 missing_new_fields,chrome/browser/ui/webui/whats_new/whats_new_util.cc
-missing_new_fields,chrome/browser/video_tutorials/internal/tutorial_fetcher.cc
 missing_new_fields,chrome/services/sharing/nearby/platform/webrtc.cc
 missing_new_fields,chrome/services/sharing/nearby/platform/wifi_lan_medium.cc
 missing_new_fields,chromeos/ash/components/device_activity/device_activity_client.cc
@@ -244,7 +243,7 @@ missing_new_fields,components/security_interstitials/content/common_name_mismatc
 missing_new_fields,components/signin/internal/identity_manager/account_fetcher_service.cc
 missing_new_fields,components/signin/internal/identity_manager/gaia_cookie_manager_service.cc
 missing_new_fields,components/spellcheck/browser/spelling_service_client.cc
-missing_new_fields,components/sync/driver/sync_stopped_reporter.cc
+missing_new_fields,components/sync/service/sync_stopped_reporter.cc
 missing_new_fields,components/sync/engine/net/http_bridge.cc
 missing_new_fields,components/translate/core/browser/translate_url_fetcher.cc
 missing_new_fields,components/trusted_vault/trusted_vault_request.cc

@@ -8,7 +8,6 @@
 #include "ash/clipboard/clipboard_history_menu_model_adapter.h"
 #include "ash/shell.h"
 #include "base/path_service.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/ash/clipboard_history_test_util.h"
 #include "chrome/browser/ui/ash/clipboard_image_model_request.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,13 +39,6 @@ const std::list<ash::ClipboardHistoryItem>& GetClipboardItems() {
 // tests to fail, e.g., because the clipboard history menu closes.
 class ClipboardHistoryWebContentsInteractiveTest : public InProcessBrowserTest {
  public:
-  ClipboardHistoryWebContentsInteractiveTest() {
-    std::vector<base::test::FeatureRef> disabled_features = {
-        ash::features::kClipboardHistoryReorder};
-    feature_list_.InitWithFeatures(/*enabled_features=*/{}, disabled_features);
-  }
-  ~ClipboardHistoryWebContentsInteractiveTest() override = default;
-
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -57,9 +49,6 @@ class ClipboardHistoryWebContentsInteractiveTest : public InProcessBrowserTest {
         test_data_dir.AppendASCII("chrome/test/data/ash/clipboard_history"));
     ASSERT_TRUE(embedded_test_server()->Start());
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Verifies that the images rendered from the copied web contents show in the
@@ -74,13 +63,13 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWebContentsInteractiveTest,
   // Then copy the selected part to clipboard.
   auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   content::BoundingBoxUpdateWaiter select_part_one(web_contents);
-  ASSERT_TRUE(ExecuteScript(web_contents, "selectPart1();"));
+  ASSERT_TRUE(ExecJs(web_contents, "selectPart1();"));
   select_part_one.Wait();
 
   const auto& item_lists = GetClipboardItems();
   {
     clipboard_history::ScopedClipboardHistoryListUpdateWaiter scoped_waiter;
-    ASSERT_TRUE(ExecuteScript(web_contents, "copyToClipboard();"));
+    ASSERT_TRUE(ExecJs(web_contents, "copyToClipboard();"));
   }
   ASSERT_EQ(1u, item_lists.size());
 
@@ -118,12 +107,12 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWebContentsInteractiveTest,
   // Select another part. Wait until the selection region updates. Then copy
   // the selected HTML code to clipboard.
   content::BoundingBoxUpdateWaiter select_part_two(web_contents);
-  ASSERT_TRUE(ExecuteScript(web_contents, "selectPart2();"));
+  ASSERT_TRUE(ExecJs(web_contents, "selectPart2();"));
   select_part_two.Wait();
 
   {
     clipboard_history::ScopedClipboardHistoryListUpdateWaiter scoped_waiter;
-    ASSERT_TRUE(ExecuteScript(web_contents, "copyToClipboard();"));
+    ASSERT_TRUE(ExecJs(web_contents, "copyToClipboard();"));
   }
   ASSERT_EQ(2u, item_lists.size());
 
@@ -164,13 +153,13 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWebContentsInteractiveTest,
   // Then copy the selected part to clipboard.
   auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   content::BoundingBoxUpdateWaiter select_part_one(web_contents);
-  ASSERT_TRUE(ExecuteScript(web_contents, "selectPart1();"));
+  ASSERT_TRUE(ExecJs(web_contents, "selectPart1();"));
   select_part_one.Wait();
 
   const auto& item_lists = GetClipboardItems();
   {
     clipboard_history::ScopedClipboardHistoryListUpdateWaiter scoped_waiter;
-    ASSERT_TRUE(ExecuteScript(web_contents, "copyToClipboard();"));
+    ASSERT_TRUE(ExecJs(web_contents, "copyToClipboard();"));
   }
   ASSERT_EQ(1u, item_lists.size());
 

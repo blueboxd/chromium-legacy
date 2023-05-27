@@ -636,10 +636,7 @@ class InternalStandardStatsObserver : public webrtc::RTCStatsCollectorCallback {
         if (!member->is_defined() || member->name() == track_id_str) {
           continue;
         }
-        // Non-standardized / provisional stats which are not exposed
-        // to Javascript are postfixed with an asterisk.
-        std::string postfix = member->is_standardized() ? "" : "*";
-        name_value_pairs.Append(member->name() + postfix);
+        name_value_pairs.Append(member->name());
         name_value_pairs.Append(MemberToValue(*member));
       }
       stats_subdictionary.Set("values", std::move(name_value_pairs));
@@ -840,6 +837,14 @@ void PeerConnectionTracker::GetLegacyStats() {
     pair.key->GetStats(observer,
                        webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
                        nullptr);
+  }
+}
+
+void PeerConnectionTracker::GetCurrentState() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
+
+  for (const auto& pair : peer_connection_local_id_map_) {
+    pair.key->EmitCurrentStateForTracker();
   }
 }
 

@@ -12,6 +12,7 @@
 <translation id="1554731936187952550">નુકસાનકારક વેબસાઇટ સામે તમે Chromeની સૌથી સશક્ત સુરક્ષા ધરાવો છો</translation>
 <translation id="1682483655351012182">તમારા Chrome ડેટાને સિંક કરો</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1843217788865538014">જ્યારે પણ તમે મેસેજ, દસ્તાવેજો અને અન્ય ઍપમાંની લિંક પર ટૅપ કરો, ત્યારે ઑટોમૅટિક રીતે Chromeનો ઉપયોગ કરો.</translation>
 <translation id="1917964099031477364">આ ડિવાઇસ પરની Chrome અને અન્ય Google ઍપમાંથી આ એકાઉન્ટ અને સાચવવામાં ન આવ્યો હોય એવો કોઈપણ ડેટા કાઢી નાખવામાં આવશે.</translation>
 <translation id="2009224836393115614">Chrome તમારા પાસવર્ડ ચેક કરી શક્યું નથી. તમારું ઇન્ટરનેટ કનેક્શન ચેક કરવાનો પ્રયાસ કરો.</translation>
 <translation id="2056123005618757196">Google Chromeના સરળ, સુરક્ષિત અને અત્યાર સુધીના સૌથી ઝડપી વર્ઝન વડે વધુ કાર્યો પૂર્ણ કરો.</translation>
@@ -34,6 +35,7 @@
 <translation id="2732745070297234559">Chrome બધા પાસવર્ડ ચેક કરી શક્યું નથી. આવતી કાલે ફરી પ્રયાસ કરો.</translation>
 <translation id="2736805085127235148">તમારા ડિવાઇસ સેટિંગમાં Chromeના નોટિફિકેશન હાલમાં બંધ કરવામાં આવ્યા છે.</translation>
 <translation id="2767464022270041271">કોઈ સાચવેલો પાસવર્ડ નથી. જ્યારે તમે તમારા પાસવર્ડ સાચવો, ત્યારે Google Password Manager તેને ચેક કરી શકે છે.</translation>
+<translation id="2840432500933227975">iOSમાં Chrome સેટિંગ ખોલો, પછી "બ્રાઉઝર ડિફૉલ્ટ APP" પર ટૅપ કરો અને Chrome પસંદ કરો.</translation>
 <translation id="2869959624320573933">Chromeમાં સાઇન ઇન કરો</translation>
 <translation id="2957447865124070833"><ph name="BEGIN_BOLD" />Chrome <ph name="END_BOLD" />પસંદ કરો</translation>
 <translation id="3030414234702425231">કારણ કે તમે <ph name="SIGNOUT_MANAGED_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલ એકાઉન્ટમાંથી સાઇન આઉટ કરી રહ્યાં છો, આ ડિવાઇસમાંથી તમારા Chrome ડેટા ડિલીટ થઈ જશે. તમારો ડેટા તમારા Google એકાઉન્ટમાં જળવાઈ રહેશે.</translation>
@@ -49,6 +51,7 @@
 <translation id="3655656110921623717">આનો અર્થ છે કે Chrome દરેક વખતે મોબાઇલ સાઇટની વિનંતી કરશે.</translation>
 <translation id="3706101708757577809">હવે તમે મેસેજ, દસ્તાવેજો અને અન્ય ઍપમાં લિંક પર કોઈપણ સમયે ટૅપ કરીને Chromeનો ઉપયોગ કરી શકશો.</translation>
 <translation id="3720541637541300822">તમે Chrome બંધ કરો ત્યારે છૂપી ટૅબ લૉક કરો</translation>
+<translation id="3827545470516145620">તમે આ ડિવાઇસ માટે સ્ટૅન્ડર્ડ સુરક્ષા સંરક્ષણ મેળવી રહ્યા છો</translation>
 <translation id="384394811301901750">Google Chrome, અત્યારે તમારા કૅમેરાનો ઉપયોગ કરી શકતું નથી</translation>
 <translation id="3980220367029651214">તમે સિંક એકાઉન્ટ <ph name="USER_EMAIL1" />થી <ph name="USER_EMAIL2" /> પર સ્વિચ કરી રહ્યાં છો. તમારો અસ્તિત્વમાંનો Chrome ડેટા <ph name="DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે. આ ડિવાઇસ પરથી આ તમારા ડેટાને ડિલીટ કરશે, પરંતુ તમારો ડેટા <ph name="USER_EMAIL1" /> માં રહેશે.</translation>
 <translation id="3984746313391923992">તમારી સંસ્થા માટે જરૂરી છે કે તમે Chromeમાં સાઇન આઉટ કરીને રાખો.</translation>
@@ -58,6 +61,7 @@
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> Chromeનો ઉપયોગ કરી રહ્યાં હતા અને તેઓ આ ડિવાઇસ પર બુકમાર્ક, પાસવર્ડ અને અન્ય સેટિંગ છોડી ગયા છે.</translation>
 <translation id="424864128008805179">Chromeમાંથી સાઇન આઉટ કરીએ?</translation>
 <translation id="4249068189593983585">Chrome ટિપ. ટૅબના વધુ વિકલ્પો માટે, તમારી સ્ક્રીનના તળિયે અથવા ટોચે આવેલા ટૂલબારમાંના 'ટૅબ બતાવો' બટનને ટચ કરીને થોડીવાર દબાવી રાખો.</translation>
+<translation id="4508370294876102450">કોઈપણ ઍપમાંથી Chrome ખોલો</translation>
 <translation id="4523886039239821078">કેટલાંક એડ-ઓનને કારણે Chrome ક્રૅશ થાય છે. કૃપા કરી આને અનઇન્સ્ટૉલ કરો:</translation>
 <translation id="4633328489441962921">Chrome અપડેટ ચેક કરી શકતું નથી</translation>
 <translation id="4636900170638246267">આ સાઇટ અને Chromeમાં સાઇન ઇન કરો.</translation>
@@ -87,6 +91,7 @@
 <translation id="6110625574506755980">Chromeની અમુક સુવિધાઓ હવે ઉપલબ્ધ રહેશે નહીં.</translation>
 <translation id="6181930887571472871">Chrome પર સ્વિચ કરો</translation>
 <translation id="6238746320622508509">Chromeને તમારી છૂપી ટૅબ લૉક કરવા દો.</translation>
+<translation id="6247557882553405851">Google પાસવર્ડ મેનેજર</translation>
 <translation id="6412673304250309937">URLsને Chromeમાં સ્ટોર કરેલી અસુરક્ષિત સાઇટની સૂચિ સાથે ચેક કરે છે. જો કોઈ સાઇટ તમારો પાસવર્ડ ચોરી કરવાનો પ્રયાસ કરે અથવા તમે કોઈ નુકસાનકારક ફાઇલ ડાઉનલોડ કરો, ત્યારે Chrome પેજ કન્ટેન્ટના બિટની સાથોસાથ URLs પણ Safe Browsingને મોકલી શકે છે.</translation>
 <translation id="6427126399757991875">તમારી સંસ્થા Chromeનું સેટઅપ કરી રહી છે…</translation>
 <translation id="6600954340915313787">Chrome માં કોપી કરાયું</translation>
@@ -97,7 +102,6 @@
 <translation id="6822673484890854830">Chrome બધા પાસવર્ડ ચેક કરી શક્યું નથી. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="6964931465519938134">હવે તમે મેસેજ, દસ્તાવેજો અને અન્ય ઍપમાં લિંક પર કોઈપણ સમયે ટૅપ કરીને Chromeનો ઉપયોગ કરી શકશો.</translation>
 <translation id="6975725306479268850">ઑટોમૅટિક રીતે ભરવાની સુવિધા માટે Chrome પસંદ કરો</translation>
-<translation id="701356708427365932">નવા Chrome મેનૂ વિશે જાણો</translation>
 <translation id="7059914902409643750">Chrome કસ્ટમાઇઝ કરો</translation>
 <translation id="7124339256045485976">Chrome અપ ટૂ ડેટ રાખો</translation>
 <translation id="7161390184744336561">Google Chrome જૂનું થઈ ગયું છે</translation>
@@ -146,7 +150,6 @@
 <ph name="BEGIN_INDENT" />  • Chromeના તમારા વપરાશની માહિતી Googleને મોકલવામાં આવે છે, પણ તેને તમારી સાથે સાંકળવામાં આવતી નથી.
   • જો Chrome ક્રૅશ થાય, તો ક્રૅશની વિગતોમાં અમુક વ્યક્તિગત માહિતીનો સમાવેશ થઈ શકે છે
   • જો તમે સિંક કરવાની સુવિધા ચાલુ કરો, તો મેટ્રિકમાં તમે જે URLsની મુલાકાત લીધી હોય, તેની માહિતીનો પણ સમાવેશ થઈ શકે છે.<ph name="END_INDENT" /></translation>
-<translation id="9103442491611662960">તમે આ Chrome પ્રોફાઇલ માટે માનક સુરક્ષા સંરક્ષણ મેળવી રહ્યાં છો</translation>
 <translation id="9112744793181547300">Chromeને ડિફૉલ્ટ તરીકે સેટ કરીએ?</translation>
 <translation id="9122931302567044771">આનો અર્થ છે કે Chrome દરેક વખતે ડેસ્કટૉપ સાઇટની વિનંતી કરશે.</translation>
 </translationbundle>

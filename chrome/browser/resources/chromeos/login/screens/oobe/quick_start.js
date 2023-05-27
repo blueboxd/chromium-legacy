@@ -16,6 +16,8 @@ import {LoginScreenBehavior, LoginScreenBehaviorInterface} from '../../component
 import {MultiStepBehavior, MultiStepBehaviorInterface} from '../../components/behaviors/multi_step_behavior.js';
 import {OobeAdaptiveDialog} from '../../components/dialogs/oobe_adaptive_dialog.js';
 import {OobeTypes} from '../../components/oobe_types.js';
+import { OobeI18nBehavior, OobeI18nBehaviorInterface } from '../../components/behaviors/oobe_i18n_behavior.js';
+import { loadTimeData } from '../../i18n_setup.js';
 
 
 /**
@@ -26,6 +28,10 @@ const QuickStartUIState = {
   LOADING: 'loading',
   VERIFICATION: 'verification',
   FIGURES: 'figures',
+  CONNECTING_TO_WIFI: 'connecting_to_wifi',
+  CONNECTED_TO_WIFI: 'connected_to_wifi',
+  GAIA_CREDENTIALS: 'gaia_credentials',
+  FIDO_ASSERTION_RECEIVED: 'fido_assertion_received',
 };
 
 // Should be in sync with the C++ enum (ash::quick_start::Color).
@@ -44,10 +50,14 @@ const QR_CODE_FILL_STYLE = '#000000';
  * @extends {PolymerElement}
  * @implements {LoginScreenBehaviorInterface}
  * @implements {MultiStepBehaviorInterface}
+ * @implements {OobeI18nBehaviorInterface}
  */
 const QuickStartScreenBase =
-    mixinBehaviors([LoginScreenBehavior, MultiStepBehavior], PolymerElement);
+  mixinBehaviors([LoginScreenBehavior, MultiStepBehavior, OobeI18nBehavior], PolymerElement);
 
+/**
+ * @polymer
+ */
 class QuickStartScreen extends QuickStartScreenBase {
   static get is() {
     return 'quick-start-element';
@@ -70,6 +80,27 @@ class QuickStartScreen extends QuickStartScreenBase {
         type: Number,
         value: 0,
       },
+      ssid_: {
+        type: String,
+        value: '',
+      },
+      password_: {
+        type: String,
+        value: '',
+      },
+      discoverableName_: {
+        type: String,
+        value: '',
+      },
+      // Whether to show the PIN for verification instead of a QR code.
+      usePinInsteadOfQrForVerification_: {
+        type: Boolean,
+        value: false,
+      },
+      fidoAssertionEmail_: {
+        type: String,
+        value: '',
+      },
     };
   }
 
@@ -78,10 +109,32 @@ class QuickStartScreen extends QuickStartScreenBase {
     this.UI_STEPS = QuickStartUIState;
     this.figures_ = [];
     this.canvasSize_ = 0;
+    this.password_ = '';
+    this.ssid_ = '';
+    this.discoverableName_ = '';
+    this.usePinInsteadOfQrForVerification_ = false;
   }
 
   get EXTERNAL_API() {
-    return ['setFigures', 'setQRCode'];
+    return [
+      'setFigures',
+      'setQRCode',
+      'showConnectingToWifi',
+      'showConnectedToWifi',
+      'setDiscoverableName',
+      'showTransferringGaiaCredentials',
+      'showFidoAssertionReceived',
+    ];
+  }
+
+  getVerificationSubtitle(title) {
+    const stringId = this.usePinInsteadOfQrForVerification_ ?
+      'quickStartSetupSubtitlePinCode' :
+      'quickStartSetupSubtitleQrCode';
+    return this.i18nAdvanced(stringId, {
+      substitutions:
+        [loadTimeData.getString('deviceType'), this.discoverableName_],
+    });
   }
 
   /** @override */
@@ -103,6 +156,26 @@ class QuickStartScreen extends QuickStartScreenBase {
     this.figures_ = figures.map(x => {
       return {shape: x.shape, color: QuickStartColors[x.color], digit: x.digit};
     });
+  }
+
+  showConnectingToWifi() {
+    this.setUIStep(QuickStartUIState.CONNECTING_TO_WIFI);
+    this.$.spinnerWifi.playing = true;
+  }
+
+  onBeforeHide() {
+    this.$.spinnerWifi.playing = false;
+    this.$.spinnerGaia.playing = false;
+  }
+
+  /**
+   * @param {string} ssid
+   * @param {string} password
+   */
+  showConnectedToWifi(ssid, password) {
+    this.setUIStep(QuickStartUIState.CONNECTED_TO_WIFI);
+    this.ssid_ = ssid;
+    this.password_ = password;
   }
 
   /**
@@ -130,12 +203,30 @@ class QuickStartScreen extends QuickStartScreenBase {
     }
   }
 
+  setDiscoverableName(discoverableName) {
+    this.discoverableName_ = discoverableName;
+  }
+
+  showTransferringGaiaCredentials() {
+    this.$.spinnerGaia.playing = true;
+    this.setUIStep(QuickStartUIState.GAIA_CREDENTIALS);
+  }
+
+  showFidoAssertionReceived(email) {
+    this.fidoAssertionEmail_ = email;
+    this.setUIStep(QuickStartUIState.FIDO_ASSERTION_RECEIVED);
+  }
+
   getCanvasContext_() {
     return this.shadowRoot.querySelector('#qrCodeCanvas').getContext('2d');
   }
 
-  onNextClicked_() {
-    this.userActed('next');
+  onWifiConnectedNextClicked_() {
+    this.userActed('wifi_connected');
+  }
+
+  onCancelClicked_() {
+    this.userActed('cancel');
   }
 
   isEq_(a, b) {

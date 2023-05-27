@@ -51,10 +51,10 @@ int AttributionStorageDelegate::GetMaxReportsPerDestination(
   }
 }
 
-int AttributionStorageDelegate::GetMaxDestinationsPerSourceSiteReportingOrigin()
+int AttributionStorageDelegate::GetMaxDestinationsPerSourceSiteReportingSite()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return config_.max_destinations_per_source_site_reporting_origin;
+  return config_.max_destinations_per_source_site_reporting_site;
 }
 
 AttributionConfig::RateLimitConfig AttributionStorageDelegate::GetRateLimits()
@@ -66,6 +66,11 @@ AttributionConfig::RateLimitConfig AttributionStorageDelegate::GetRateLimits()
 int64_t AttributionStorageDelegate::GetAggregatableBudgetPerSource() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return config_.aggregate_limit.aggregatable_budget_per_source;
+}
+
+int AttributionStorageDelegate::GetMaxAggregatableReportsPerSource() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return config_.aggregate_limit.max_aggregatable_reports_per_source;
 }
 
 uint64_t AttributionStorageDelegate::SanitizeTriggerData(

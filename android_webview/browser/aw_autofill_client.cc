@@ -18,6 +18,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/android_autofill/browser/autofill_provider_android.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
@@ -357,7 +358,7 @@ bool AwAutofillClient::IsContextSecure() const {
            content::SSLStatus::RAN_INSECURE_CONTENT);
 }
 
-void AwAutofillClient::ExecuteCommand(int id) {
+void AwAutofillClient::ExecuteCommand(autofill::Suggestion::FrontendId id) {
   NOTIMPLEMENTED();
 }
 
@@ -443,7 +444,8 @@ void AwAutofillClient::ShowAutofillPopupImpl(
       label = ConvertUTF16ToJavaString(env, suggestions[i].labels[0][0].value);
 
     Java_AwAutofillClient_addToAutofillSuggestionArray(
-        env, data_array, i, name, label, suggestions[i].frontend_id);
+        env, data_array, i, name, label,
+        base::to_underlying(suggestions[i].frontend_id.as_popup_item_id()));
   }
   ui::ViewAndroid* view_android = GetWebContents().GetNativeView();
   if (!view_android)

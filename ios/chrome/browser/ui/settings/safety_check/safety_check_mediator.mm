@@ -27,8 +27,8 @@
 #import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/passwords/password_checkup_utils.h"
 #import "ios/chrome/browser/passwords/password_store_observer_bridge.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
@@ -73,14 +73,6 @@ namespace {
 
 // The size of leading symbol icons.
 constexpr NSInteger kLeadingSymbolImagePointSize = 22;
-
-constexpr char kSafetyCheckMetricsUpdates[] =
-    "Settings.SafetyCheck.UpdatesResult";
-constexpr char kSafetyCheckMetricsPasswords[] =
-    "Settings.SafetyCheck.PasswordsResult";
-constexpr char kSafetyCheckMetricsSafeBrowsing[] =
-    "Settings.SafetyCheck.SafeBrowsingResult";
-constexpr char kSafetyCheckInteractions[] = "Settings.SafetyCheck.Interactions";
 
 typedef NSArray<TableViewItem*>* ItemArray;
 
@@ -566,9 +558,11 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
     case PasswordCheckState::kCanceled:
     case PasswordCheckState::kIdle: {
       if (!IsPasswordCheckupEnabled() && !noInsecurePasswords) {
-        base::UmaHistogramEnumeration(
-            kSafetyCheckMetricsPasswords,
-            safety_check::PasswordsStatus::kCompromisedExist);
+        if (wasRunning) {
+          base::UmaHistogramEnumeration(
+              kSafetyCheckMetricsPasswords,
+              safety_check::PasswordsStatus::kCompromisedExist);
+        }
         return PasswordCheckRowStateUnmutedCompromisedPasswords;
       } else if (self.currentPasswordCheckState == PasswordCheckState::kIdle) {
         // Safe state is only possible after the state transitioned from
@@ -602,10 +596,19 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
           safety_check::PasswordsStatus::kCompromisedExist);
       return PasswordCheckRowStateUnmutedCompromisedPasswords;
     case WarningType::kReusedPasswordsWarning:
+      base::UmaHistogramEnumeration(
+          kSafetyCheckMetricsPasswords,
+          safety_check::PasswordsStatus::kReusedPasswordsExist);
       return PasswordCheckRowStateReusedPasswords;
     case WarningType::kWeakPasswordsWarning:
+      base::UmaHistogramEnumeration(
+          kSafetyCheckMetricsPasswords,
+          safety_check::PasswordsStatus::kWeakPasswordsExist);
       return PasswordCheckRowStateWeakPasswords;
     case WarningType::kDismissedWarningsWarning:
+      base::UmaHistogramEnumeration(
+          kSafetyCheckMetricsPasswords,
+          safety_check::PasswordsStatus::kMutedCompromisedExist);
       return PasswordCheckRowStateDismissedWarnings;
     case WarningType::kNoInsecurePasswordsWarning:
       base::UmaHistogramEnumeration(kSafetyCheckMetricsPasswords,
@@ -703,7 +706,7 @@ void ResetSettingsCheckItem(SettingsCheckItem* item) {
 
 // Computes whether user is capable to run password check in Google Account.
 - (BOOL)canUseAccountPasswordCheckup {
-  return self.syncService->CanSyncFeatureStart() &&
+  return self.syncService->IsSyncFeatureEnabled() &&
          !self.syncService->IsEncryptEverythingEnabled();
 }
 

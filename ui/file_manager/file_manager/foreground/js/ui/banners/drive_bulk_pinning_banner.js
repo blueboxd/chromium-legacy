@@ -29,10 +29,6 @@ export class DriveBulkPinningBanner extends EducationalBanner {
         .addEventListener('click', (e) => {
           e.preventDefault();
           const dialog = document.querySelector('xf-bulk-pinning-dialog');
-          // TODO (b/280693225) Get the actual data to display.
-          dialog.requiredBytes = 120000000000;
-          dialog.freeBytes = 300000000000;
-          dialog.state = 'LISTING';
           dialog.show();
         });
   }
@@ -40,6 +36,7 @@ export class DriveBulkPinningBanner extends EducationalBanner {
   /**
    * Returns the HTML template for the Drive Bulk Pinning educational banner.
    * @returns {!Node}
+   * @override
    */
   getTemplate() {
     return htmlTemplate.content.cloneNode(true);
@@ -49,6 +46,7 @@ export class DriveBulkPinningBanner extends EducationalBanner {
    * Only show the banner when the user has navigated to the Drive volume type
    * and the feature flag is enabled.
    * @returns {!Array<!Banner.AllowedVolume>}
+   * @override
    */
   allowedVolumes() {
     return [{
@@ -57,6 +55,11 @@ export class DriveBulkPinningBanner extends EducationalBanner {
     }];
   }
 
+  /**
+   * Show this banner for an unlimited number of sessions.
+   * @returns {number}
+   * @override
+   */
   showLimit() {
     return 0;
   }

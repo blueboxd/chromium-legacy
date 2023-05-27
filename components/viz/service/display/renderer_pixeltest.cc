@@ -38,8 +38,8 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/service/display/delegated_ink_point_pixel_test_helper.h"
 #include "components/viz/service/display/software_renderer.h"
@@ -2556,8 +2556,8 @@ TEST_P(RendererPixelTest, FastPassColorFilterAlpha) {
   matrix[18] = 1;
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateReferenceFilter(
-      sk_make_sp<cc::ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
-                                             nullptr)));
+      sk_make_sp<cc::ColorFilterPaintFilter>(
+          cc::ColorFilter::MakeMatrix(matrix), nullptr)));
 
   auto child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
@@ -2762,8 +2762,8 @@ TEST_P(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   matrix[18] = 1;
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateReferenceFilter(
-      sk_make_sp<cc::ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
-                                             nullptr)));
+      sk_make_sp<cc::ColorFilterPaintFilter>(
+          cc::ColorFilter::MakeMatrix(matrix), nullptr)));
 
   auto child_pass =
       CreateTestRenderPass(child_pass_id, pass_rect, transform_to_root);
@@ -4107,7 +4107,8 @@ TEST_F(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   gfx::Transform transform_to_root;
   auto pass = CreateTestRenderPass(id, viewport, transform_to_root);
 
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(2, 2);
+  sk_sp<SkSurface> surface =
+      SkSurfaces::Raster(SkImageInfo::MakeN32Premul(2, 2));
   ASSERT_NE(surface, nullptr);
   SkCanvas* canvas = surface->getCanvas();
   draw_point_color(canvas, 0, 0, SkColors::kGreen);
@@ -4156,7 +4157,8 @@ TEST_F(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   gfx::Transform transform_to_root;
   auto pass = CreateTestRenderPass(id, viewport, transform_to_root);
 
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(2, 2);
+  sk_sp<SkSurface> surface =
+      SkSurfaces::Raster(SkImageInfo::MakeN32Premul(2, 2));
   ASSERT_NE(surface, nullptr);
   SkCanvas* canvas = surface->getCanvas();
   draw_point_color(canvas, 0, 0, SkColors::kGreen);
@@ -5413,7 +5415,9 @@ class ColorTransformPixelTest
 
     gfx::ColorTransform::Options options;
     options.tone_map_pq_and_hlg_to_dst = true;
-    options.sdr_max_luminance_nits = gfx::ColorSpace::kDefaultSDRWhiteLevel;
+    gfx::ColorTransform::RuntimeOptions runtime_options;
+    runtime_options.sdr_max_luminance_nits =
+        gfx::ColorSpace::kDefaultSDRWhiteLevel;
     std::unique_ptr<gfx::ColorTransform> transform =
         gfx::ColorTransform::NewColorTransform(this->src_color_space_,
                                                this->dst_color_space_, options);
@@ -5427,7 +5431,7 @@ class ColorTransformPixelTest
       if (this->premultiplied_alpha_ && alpha > 0.0) {
         color.Scale(1.0f / alpha);
       }
-      transform->Transform(&color, 1);
+      transform->Transform(&color, 1, runtime_options);
       color.Scale(alpha);
       color.set_x(std::clamp(color.x(), 0.0f, 1.0f));
       color.set_y(std::clamp(color.y(), 0.0f, 1.0f));

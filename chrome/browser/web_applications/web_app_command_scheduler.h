@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_COMMAND_SCHEDULER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_COMMAND_SCHEDULER_H_
 
+#include <memory>
+
 #include "base/containers/flat_map.h"
+#include "base/functional/callback_forward.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
@@ -14,11 +17,13 @@
 #include "chrome/browser/web_applications/commands/fetch_installability_for_chrome_management.h"
 #include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
+#include "chrome/browser/web_applications/commands/navigate_and_trigger_install_dialog_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 class Profile;
@@ -26,6 +31,7 @@ class Profile;
 struct WebAppInstallInfo;
 
 namespace content {
+class StoragePartitionConfig;
 class WebContents;
 }  // namespace content
 
@@ -39,11 +45,13 @@ class ScopedProfileKeepAlive;
 namespace web_app {
 
 class IsolatedWebAppUrlInfo;
+class WebApp;
 class WebAppDataRetriever;
 class WebAppProvider;
-struct IsolationData;
-class WebApp;
+class WebAppUrlLoader;
+class WebContentsManager;
 enum class ApiApprovalState;
+struct IsolationData;
 struct SynchronizeOsOptions;
 
 // The command scheduler is the main API to access the web app system. The
@@ -64,6 +72,8 @@ class WebAppCommandScheduler {
 
   WebAppCommandScheduler(Profile& profile, WebAppProvider* provider);
   virtual ~WebAppCommandScheduler();
+
+  void Start();
 
   void Shutdown();
 
@@ -160,6 +170,13 @@ class WebAppCommandScheduler {
       FetchInstallabilityForChromeManagementCallback callback,
       const base::Location& location = FROM_HERE);
 
+  void ScheduleNavigateAndTriggerInstallDialog(
+      const GURL& install_url,
+      const GURL& origin_url,
+      bool is_renderer_initiated,
+      NavigateAndTriggerInstallDialogCommandCallback callback,
+      const base::Location& location = FROM_HERE);
+
   // Schedules a command that installs the Isolated Web App described by the
   // given IsolatedWebAppUrlInfo and IsolationData.
   virtual void InstallIsolatedWebApp(
@@ -174,6 +191,16 @@ class WebAppCommandScheduler {
   void GetIsolatedWebAppBrowsingData(
       base::OnceCallback<void(base::flat_map<url::Origin, int64_t>)> callback,
       const base::Location& call_location = FROM_HERE);
+
+  // Registers a <controlledframe>'s StoragePartition with the given Isolated
+  // Web App.
+  void GetControlledFramePartition(
+      const IsolatedWebAppUrlInfo& url_info,
+      const std::string& partition_name,
+      bool in_memory,
+      base::OnceCallback<void(absl::optional<content::StoragePartitionConfig>)>
+          callback,
+      const base::Location& location = FROM_HERE);
 
   // Scheduler a command that installs a web app from sync.
   void InstallFromSync(const WebApp& web_app,
@@ -299,9 +326,13 @@ class WebAppCommandScheduler {
 
   const raw_ref<Profile> profile_;
   // Safe because we live on the WebAppProvider.
-  raw_ptr<WebAppProvider, DanglingUntriaged> provider_;
+  // raw_ptr is required due to the FakeWebAppCommandScheduler not having a
+  // WebAppProvider.
+  const raw_ptr<WebAppProvider> provider_;
 
   bool is_in_shutdown_ = false;
+  // TODO(http://b/262606416): Remove this when fully transitioned to
+  // WebContentsManager.
   std::unique_ptr<WebAppUrlLoader> url_loader_;
 
   base::WeakPtrFactory<WebAppCommandScheduler> weak_ptr_factory_{this};

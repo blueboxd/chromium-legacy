@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AppManagementStore} from 'chrome://os-settings/chromeos/os_settings.js';
+import {AppManagementStore} from 'chrome://os-settings/os_settings.js';
 import {App, AppType, ExtensionAppPermissionMessage, OptionalBool, PageHandlerInterface, PageHandlerReceiver, PageHandlerRemote, PageRemote, Permission, PermissionType, PermissionValue, RunOnOsLoginMode, TriState, WindowMode} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {InstallReason, InstallSource} from 'chrome://resources/cr_components/app_management/constants.js';
 import {createBoolPermission, createTriStatePermission, getTriStatePermissionValue} from 'chrome://resources/cr_components/app_management/permission_util.js';
@@ -169,6 +169,11 @@ export class FakePageHandler implements PageHandlerInterface {
 
   async getApp(_appId: string): Promise<{app: App}> {
     assertNotReached();
+  }
+
+  async getSubAppToParentMap():
+      Promise<{subAppToParentMap: {[key: string]: string}}> {
+    return {subAppToParentMap: {}};
   }
 
   async getExtensionAppPermissionMessages(_appId: string):

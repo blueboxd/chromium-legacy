@@ -117,10 +117,12 @@ class PageInfoDelegate {
   virtual bool IsContentDisplayedInVrHeadset() = 0;
   virtual security_state::SecurityLevel GetSecurityLevel() = 0;
   virtual security_state::VisibleSecurityState GetVisibleSecurityState() = 0;
+  virtual void OnCookiesPageOpened() = 0;
 #if BUILDFLAG(IS_ANDROID)
   // Gets the name of the embedder.
   virtual const std::u16string GetClientApplicationName() = 0;
 #endif
+  virtual bool IsHttpsFirstModeEnabled() = 0;
 };
 
 #endif  // COMPONENTS_PAGE_INFO_PAGE_INFO_DELEGATE_H_

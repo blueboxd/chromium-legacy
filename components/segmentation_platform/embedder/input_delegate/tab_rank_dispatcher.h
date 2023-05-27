@@ -13,6 +13,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
+#include "components/segmentation_platform/embedder/tab_fetcher.h"
 #include "components/segmentation_platform/public/result.h"
 #include "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "components/sessions/core/session_types.h"
@@ -26,7 +27,8 @@ namespace segmentation_platform {
 class TabRankDispatcher : public base::SupportsUserData::Data {
  public:
   TabRankDispatcher(SegmentationPlatformService* segmentation_service,
-                    sync_sessions::SessionSyncService* session_sync_service);
+                    sync_sessions::SessionSyncService* session_sync_service,
+                    std::unique_ptr<TabFetcher> tab_fetcher);
   ~TabRankDispatcher() override;
 
   TabRankDispatcher(const TabRankDispatcher&) = delete;
@@ -34,12 +36,9 @@ class TabRankDispatcher : public base::SupportsUserData::Data {
 
   // Wrapper for SessionTab, includes a prediction score.
   struct RankedTab {
-    // Pointer to the tracked tab. Note: the tab is not owned and not guaranteed
-    // to be alive.
-    // TODO(ssid): Consider returning tab id instead of pointer.
-    const raw_ptr<sessions::SessionTab> tab = nullptr;
-    // Session tag to identify the associated synced session.
-    std::string session_tag;
+    // A tab entry. To access the tab details, use `fetcher()->FindTab(entry)`.
+    TabFetcher::TabEntry tab;
+
     // A score based on the ranking heuristic identified by `segmentation_key`.
     // Higher score is better.
     float model_score = -1;
@@ -54,30 +53,45 @@ class TabRankDispatcher : public base::SupportsUserData::Data {
   struct TabFilter {
     // When the last modified time of the tab is higher than the max value, then
     // tab is excluded from the ranking.
-    base::TimeDelta max_tab_age = base::Hours(1);
+    base::TimeDelta max_tab_age;
   };
 
   // Fetches a list of ranked tabs for a given feature or ranking heuristic
-  // identified by `segmentation_key`. The result is std::set, and can be
+  // identified by `segmentation_key`. The result is std::multiset, and can be
   // iterated in order of tab rank, from best to worst.
   using RankedTabsCallback =
-      base::OnceCallback<void(bool, std::set<RankedTab>)>;
+      base::OnceCallback<void(bool, std::multiset<RankedTab>)>;
   void GetTopRankedTabs(const std::string& segmentation_key,
                         const TabFilter& tab_filter,
                         RankedTabsCallback callback);
 
+  TabFetcher* tab_fetcher() { return tab_fetcher_.get(); }
+
  private:
   void GetNextResult(const std::string& segmentation_key,
                      std::queue<RankedTab> candidate_tabs,
-                     std::set<RankedTab> results,
+                     std::multiset<RankedTab> results,
                      RankedTabsCallback callback);
   void OnGetResult(const std::string& segmentation_key,
                    std::queue<RankedTab> candidate_tabs,
-                   std::set<RankedTab> results,
+                   std::multiset<RankedTab> results,
                    RankedTabsCallback callback,
                    RankedTab current_tab,
                    const AnnotatedNumericResult& result);
 
+  const std::unique_ptr<TabFetcher> tab_fetcher_;
+
+  // Subscribes to the sync session changes. SessionSyncService has a repeating
+  // callback to notify of all the session change updates.
+  void SubscribeToForeignSessionsChanged();
+
+  // Called every time when the sync session is updated. Using this to record
+  // few metrics for sync latency and cross device tabs count.
+  void OnForeignSessionUpdated();
+
+  base::Time chrome_startup_timestamp_;
+  int session_updated_counter_{0};
+  base::CallbackListSubscription foreign_session_updated_subscription_;
   const raw_ptr<SegmentationPlatformService> segmentation_service_;
   const raw_ptr<sync_sessions::SessionSyncService> session_sync_service_;
 

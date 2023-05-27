@@ -12,6 +12,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
 #include "base/run_loop.h"
+#include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "components/headless/command_handler/headless_command_handler.h"
 #include "components/headless/command_handler/headless_command_switches.h"
@@ -60,6 +62,8 @@ class HeadlessModeCommandBrowserTest : public HeadlessModeBrowserTest {
       run_loop_.reset();
     }
   }
+
+  bool test_complete() const { return test_complete_; }
 
  private:
   void FinishTest() {
@@ -138,6 +142,65 @@ IN_PROC_BROWSER_TEST_F(HeadlessModeDumpDomCommandBrowserTest,
   EXPECT_THAT(captured_stdout, testing::HasSubstr(kDomDump));
 }
 
+class HeadlessModeDumpDomCommandBrowserTestWithTimeout
+    : public HeadlessModeDumpDomCommandBrowserTest {
+ public:
+  HeadlessModeDumpDomCommandBrowserTestWithTimeout() = default;
+
+  void SetUp() override {
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &HeadlessModeDumpDomCommandBrowserTestWithTimeout::RequestHandler,
+        base::Unretained(this)));
+
+    HeadlessModeDumpDomCommandBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessModeDumpDomCommandBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kTimeout, "1000");
+  }
+
+ private:
+  std::unique_ptr<net::test_server::HttpResponse> RequestHandler(
+      const net::test_server::HttpRequest& request) {
+    if (request.relative_url == "/hello.html") {
+      // The target page is opened first from the browser startup sequence and
+      // then again from the command handler. We want to delay only the second
+      // request until the command processing is done.
+      if (++hello_request_number_ == 2) {
+        while (!test_complete()) {
+          base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+        }
+      }
+
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_code(net::HTTP_OK);
+      response->set_content_type("text/html");
+      response->set_content("<body>Hello headless world!</body>");
+    }
+
+    return nullptr;
+  }
+
+  int hello_request_number_ = 0;
+};
+
+// TODO(crbug.com/1446617): Reenable once deflaked.
+IN_PROC_BROWSER_TEST_F(HeadlessModeDumpDomCommandBrowserTestWithTimeout,
+                       DISABLED_HeadlessDumpDomWithTimeout) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  RunLoop();
+
+  capture_stdout_.StopCapture();
+
+  std::string captured_stdout = capture_stdout_.TakeCapturedData();
+
+  // Expect about:blank DOM, not the one we might have returned after a delay.
+  EXPECT_THAT(captured_stdout,
+              testing::HasSubstr("<html><head></head><body></body></html>"));
+}
+
 // Screenshot command tests -------------------------------------------
 
 class HeadlessModeScreenshotCommandBrowserTest
@@ -186,10 +249,10 @@ IN_PROC_BROWSER_TEST_F(HeadlessModeScreenshotCommandBrowserTest,
 
 // PrintToPDF command tests -------------------------------------------
 
-class HeadlessModePrintToPdfCommandBrowserTest
+class HeadlessModePrintToPdfCommandBrowserTestBase
     : public HeadlessModeCommandBrowserTestWithTempDir {
  public:
-  HeadlessModePrintToPdfCommandBrowserTest() = default;
+  HeadlessModePrintToPdfCommandBrowserTestBase() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessModeCommandBrowserTestWithTempDir::SetUpCommandLine(command_line);
@@ -199,15 +262,33 @@ class HeadlessModePrintToPdfCommandBrowserTest
     command_line->AppendSwitchPath(switches::kPrintToPDF,
                                    print_to_pdf_filename_);
     command_line->AppendSwitch(switches::kNoPDFHeaderFooter);
-    command_line->AppendArg(GetTargetUrl("/centered_blue_box.html").spec());
   }
 
  protected:
   base::FilePath print_to_pdf_filename_;
 };
 
+class HeadlessModePrintToPdfCommandBrowserTest
+    : public HeadlessModePrintToPdfCommandBrowserTestBase {
+ public:
+  HeadlessModePrintToPdfCommandBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessModePrintToPdfCommandBrowserTestBase::SetUpCommandLine(
+        command_line);
+
+    command_line->AppendArg(GetTargetUrl("/centered_blue_box.html").spec());
+  }
+};
+
+// TODO(crbug.com/1440917): Reenable once deflaked.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_HeadlessPrintToPdf DISABLED_HeadlessPrintToPdf
+#else
+#define MAYBE_HeadlessPrintToPdf HeadlessPrintToPdf
+#endif
 IN_PROC_BROWSER_TEST_F(HeadlessModePrintToPdfCommandBrowserTest,
-                       HeadlessPrintToPdf) {
+                       MAYBE_HeadlessPrintToPdf) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   RunLoop();
@@ -220,10 +301,43 @@ IN_PROC_BROWSER_TEST_F(HeadlessModePrintToPdfCommandBrowserTest,
       << print_to_pdf_filename_;
 
   PDFPageBitmap page_bitmap;
-  ASSERT_TRUE(page_bitmap.Render(pdf_data, 0));
+  ASSERT_TRUE(page_bitmap.Render(pdf_data, /*page_index=*/0));
 
   // Expect blue rectangle on white background.
   EXPECT_TRUE(page_bitmap.CheckColoredRect(SkColorSetRGB(0x00, 0x00, 0xff),
+                                           SkColorSetRGB(0xff, 0xff, 0xff)));
+}
+
+class HeadlessModeLazyLoadingPrintToPdfCommandBrowserTest
+    : public HeadlessModePrintToPdfCommandBrowserTestBase {
+ public:
+  HeadlessModeLazyLoadingPrintToPdfCommandBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessModePrintToPdfCommandBrowserTestBase::SetUpCommandLine(
+        command_line);
+    command_line->AppendArg(GetTargetUrl("/page_with_lazy_image.html").spec());
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(HeadlessModeLazyLoadingPrintToPdfCommandBrowserTest,
+                       HeadlessLazyLoadingPrintToPdf) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  RunLoop();
+
+  ASSERT_TRUE(base::PathExists(print_to_pdf_filename_))
+      << print_to_pdf_filename_;
+
+  std::string pdf_data;
+  ASSERT_TRUE(base::ReadFileToString(print_to_pdf_filename_, &pdf_data))
+      << print_to_pdf_filename_;
+
+  PDFPageBitmap page_bitmap;
+  ASSERT_TRUE(page_bitmap.Render(pdf_data, /*page_index=*/4));
+
+  // Expect green rectangle on white background.
+  EXPECT_TRUE(page_bitmap.CheckColoredRect(SkColorSetRGB(0x00, 0x64, 0x00),
                                            SkColorSetRGB(0xff, 0xff, 0xff)));
 }
 

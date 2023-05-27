@@ -27,6 +27,7 @@
 
 #include "base/check_op.h"
 #include "base/dcheck_is_on.h"
+#include "base/gtest_prod_util.h"
 #include "base/notreached.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -1148,13 +1149,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual void ComputeLogicalHeight(LayoutUnit logical_height,
                                     LayoutUnit logical_top,
                                     LogicalExtentComputedValues&) const;
-  // This function will compute the logical border-box height, without laying
-  // out the box. This means that the result is only "correct" when the height
-  // is explicitly specified. This function exists so that intrinsic width
-  // calculations have a way to deal with children that have orthogonal flows.
-  // When there is no explicit height, this function assumes a content height of
-  // zero (and returns just border+padding).
-  LayoutUnit ComputeLogicalHeightWithoutLayout() const;
 
   bool StretchesToViewport() const {
     NOT_DESTROYED();
@@ -1740,6 +1734,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // This should be called when the border-box size of this box is changed.
   void SizeChanged();
+
+  // Finds the target anchor element for the given name in the containing block.
+  // https://drafts.csswg.org/css-anchor-position-1/#target-anchor-element
+  const LayoutObject* FindTargetAnchor(const ScopedCSSName&) const;
+
+  // Returns this element's implicit anchor element if there is one and it is an
+  // acceptable anchor element.
+  // https://drafts.csswg.org/css-anchor-position-1/#ref-for-valdef-anchor-implicit
+  const LayoutObject* AcceptableImplicitAnchor() const;
 
  protected:
   ~LayoutBox() override;

@@ -73,12 +73,6 @@ class PersonalDataManagerCleaner {
     return DeleteDisusedCreditCards();
   }
 
-  // A wrapper around |ClearProfileNonSettingsOrigins()| used for testing
-  // purposes.
-  void ClearProfileNonSettingsOriginsForTesting() {
-    ClearProfileNonSettingsOrigins();
-  }
-
   // A wrapper around |ClearCreditCardNonSettingsOrigins()| used for testing
   // purposes.
   void ClearCreditCardNonSettingsOriginsForTesting() {
@@ -98,10 +92,6 @@ class PersonalDataManagerCleaner {
 
   // Applies various fixes and cleanups on autofill credit cards.
   void ApplyCardFixesAndCleanups();
-
-  // Runs the routine that removes the orphan rows in the autofill tables if
-  // it's never been done.
-  void RemoveOrphanAutofillTableRows();
 
   // Removes settings-inaccessible profiles values from all profiles stored in
   // the |personal_data_manager_|.
@@ -141,9 +131,8 @@ class PersonalDataManagerCleaner {
   // feature is enabled.
   bool DeleteDisusedCreditCards();
 
-  // Clears the value of the origin field of the autofill profiles or cards that
-  // were not created from the settings page.
-  void ClearProfileNonSettingsOrigins();
+  // Clears the value of the origin field of cards that were not created from
+  // the settings page.
   void ClearCreditCardNonSettingsOrigins();
 
   // True if autofill profile cleanup needs to be performed.

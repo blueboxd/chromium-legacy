@@ -5,9 +5,8 @@
 #ifndef CHROME_UPDATER_UTIL_MAC_UTIL_H_
 #define CHROME_UPDATER_UTIL_MAC_UTIL_H_
 
-#include <CoreFoundation/CoreFoundation.h>
+#include <string>
 
-#include "base/mac/scoped_cftyperef.h"
 #include "chrome/updater/updater_scope.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -45,12 +44,7 @@ bool RemoveWakeJobFromLaunchd(UpdaterScope scope);
 // Recursively remove quarantine attributes on the path.
 bool RemoveQuarantineAttributes(const base::FilePath& path);
 
-// Ensure that the LaunchAgents/LaunchDaemons directory contains the wake item
-// plist, with the specified contents. If not, the plist will be overwritten and
-// the item reloaded. May block.
-bool EnsureWakeLaunchItemPresence(
-    UpdaterScope scope,
-    base::ScopedCFTypeRef<CFDictionaryRef> contents);
+std::string GetDomain(UpdaterScope scope);
 
 }  // namespace updater
 

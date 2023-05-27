@@ -8,20 +8,40 @@
 #include <utility>
 #include <vector>
 
+#include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
+#include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_types.h"
+#include "ash/capture_mode/capture_mode_util.h"
+#include "ash/capture_mode/game_capture_bar_view.h"
+#include "ash/capture_mode/normal_capture_bar_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/projector/projector_controller_impl.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
+#include "base/task/single_thread_task_runner.h"
+#include "ui/aura/window_observer.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/message_center/public/cpp/notification.h"
 
 namespace ash {
 
 namespace {
+
+// Width of the full capture bar, which includes all the elements of the normal
+// capture bar.
+constexpr int kFullCaptureBarWidth = 376;
+
+// Width of the game capture bar.
+constexpr int kGameCaptureBarWidth = 260;
 
 // Returns the current configs before been overwritten by the client-initiated
 // capture mode session
@@ -49,10 +69,11 @@ void SetCaptureModeSessionConfigs(const CaptureModeSessionConfigs& configs) {
 class DefaultBehavior : public CaptureModeBehavior {
  public:
   DefaultBehavior()
-      : CaptureModeBehavior({CaptureModeType::kImage,
-                             CaptureModeSource::kRegion, RecordingType::kWebM,
-                             AudioRecordingMode::kOff,
-                             /*demo_tools_enabled=*/false}) {}
+      : CaptureModeBehavior(
+            {CaptureModeType::kImage, CaptureModeSource::kRegion,
+             RecordingType::kWebM, AudioRecordingMode::kOff,
+             /*demo_tools_enabled=*/false},
+            BehaviorType::kDefault) {}
 
   DefaultBehavior(const DefaultBehavior&) = delete;
   DefaultBehavior& operator=(const DefaultBehavior&) = delete;
@@ -69,7 +90,8 @@ class ProjectorBehavior : public CaptureModeBehavior {
       : CaptureModeBehavior(
             {CaptureModeType::kVideo, CaptureModeSource::kFullscreen,
              RecordingType::kWebM, AudioRecordingMode::kMicrophone,
-             /*demo_tools_enabled=*/true}) {}
+             /*demo_tools_enabled=*/true},
+            BehaviorType::kProjector) {}
 
   ProjectorBehavior(const ProjectorBehavior&) = delete;
   ProjectorBehavior& operator=(const ProjectorBehavior&) = delete;
@@ -120,6 +142,13 @@ class ProjectorBehavior : public CaptureModeBehavior {
   std::vector<RecordingType> GetSupportedRecordingTypes() const override {
     return std::vector<RecordingType>{RecordingType::kWebM};
   }
+  const char* GetClientMetricComponent() const override { return "Projector."; }
+
+ protected:
+  int GetCaptureBarWidth() const override {
+    return kFullCaptureBarWidth - capture_mode::kButtonSize.width() -
+           capture_mode::kSpaceBetweenCaptureModeTypeButtons;
+  }
 
  private:
   // Called when the Projector controller creates the DriveFS folder that will
@@ -143,7 +172,8 @@ class ProjectorBehavior : public CaptureModeBehavior {
 // GameDashboardBehavior:
 // Implements the `CaptureModeBehavior` interface with behaviors defined by the
 // game dashboard-initiated capture mode.
-class GameDashboardBehavior : public CaptureModeBehavior {
+class GameDashboardBehavior : public CaptureModeBehavior,
+                              public aura::WindowObserver {
  public:
   GameDashboardBehavior()
       : CaptureModeBehavior({CaptureModeType::kVideo,
@@ -151,13 +181,53 @@ class GameDashboardBehavior : public CaptureModeBehavior {
                              features::IsCaptureModeAudioMixingEnabled()
                                  ? AudioRecordingMode::kSystemAndMicrophone
                                  : AudioRecordingMode::kMicrophone,
-                             /*demo_tools_enabled=*/false}) {}
+                             /*demo_tools_enabled=*/false},
+                            BehaviorType::kGameDashboard) {}
 
   GameDashboardBehavior(const GameDashboardBehavior&) = delete;
   GameDashboardBehavior operator=(const GameDashboardBehavior&) = delete;
   ~GameDashboardBehavior() override = default;
 
   // CaptureModeBehavior:
+  void AttachToSession() override {
+    cached_configs_ = GetCaptureModeSessionConfigs();
+
+    // Overwrite the current capture mode session with the game dashboard
+    // configurations.
+    // TODO(b/280660443): Restore the previous game dashboard session configs
+    // instead of overwriting the session with fixed configs.
+    SetCaptureModeSessionConfigs(capture_mode_configs_);
+
+    CaptureModeController* controller = CaptureModeController::Get();
+    CaptureModeSession* session = controller->capture_mode_session();
+    CHECK(session);
+    if (!pre_selected_window_) {
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](base::WeakPtr<GameDashboardBehavior> game_dashboard_behavior,
+                 CaptureModeController* controller) {
+                if (controller->IsActive()) {
+                  controller->Stop();
+                }
+              },
+              weak_ptr_factory_.GetWeakPtr(), controller));
+    } else {
+      session->SetPreSelectedWindow(pre_selected_window_);
+    }
+  }
+
+  void DetachFromSession() override {
+    CHECK(cached_configs_);
+    SetCaptureModeSessionConfigs(cached_configs_.value());
+    cached_configs_.reset();
+
+    if (pre_selected_window_) {
+      pre_selected_window_->RemoveObserver(this);
+      pre_selected_window_ = nullptr;
+    }
+  }
+
   bool ShouldImageCaptureTypeBeAllowed() const override { return false; }
   bool ShouldFulscreenCaptureSourceBeAllowed() const override { return false; }
   bool ShouldRegionCaptureSourceBeAllowed() const override { return false; }
@@ -165,6 +235,60 @@ class GameDashboardBehavior : public CaptureModeBehavior {
   bool ShouldGifBeSupported() const override { return false; }
   bool ShouldShowUserNudge() const override { return false; }
   bool ShouldAutoSelectFirstCamera() const override { return true; }
+
+  std::unique_ptr<CaptureModeBarView> CreateCaptureModeBarView() override {
+    return std::make_unique<GameCaptureBarView>();
+  }
+
+  void SetPreSelectedWindow(aura::Window* pre_selected_window) override {
+    CHECK(!pre_selected_window_);
+    pre_selected_window_ = pre_selected_window;
+    pre_selected_window_->AddObserver(this);
+  }
+
+  const char* GetClientMetricComponent() const override {
+    return "GameDashboard.";
+  }
+
+  std::vector<message_center::ButtonInfo> GetNotificationButtonsInfo(
+      bool for_video) const override {
+    CHECK(for_video);
+
+    return {message_center::ButtonInfo{l10n_util::GetStringUTF16(
+                IDS_ASH_SCREEN_CAPTURE_SHARE_TO_YOUTUBE)},
+            message_center::ButtonInfo{l10n_util::GetStringUTF16(
+                IDS_ASH_SCREEN_CAPTURE_BUTTON_DELETE)}};
+  }
+
+  void OnAudioRecordingModeChanged() override {
+    capture_mode_configs_.audio_recording_mode =
+        CaptureModeController::Get()->audio_recording_mode();
+  }
+
+  void OnDemoToolsSettingsChanged() override {
+    capture_mode_configs_.demo_tools_enabled =
+        CaptureModeController::Get()->enable_demo_tools();
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    CHECK_EQ(window, pre_selected_window_);
+    pre_selected_window_->RemoveObserver(this);
+    pre_selected_window_ = nullptr;
+  }
+
+ protected:
+  // CaptureModeBehavior:
+  gfx::Rect GetBarAnchorBoundsInScreen(aura::Window* root) const override {
+    CHECK(pre_selected_window_);
+    return pre_selected_window_->GetBoundsInScreen();
+  }
+
+  int GetCaptureBarWidth() const override { return kGameCaptureBarWidth; }
+
+ private:
+  raw_ptr<aura::Window, ExperimentalAsh> pre_selected_window_ = nullptr;
+  base::WeakPtrFactory<GameDashboardBehavior> weak_ptr_factory_{this};
 };
 
 }  // namespace
@@ -173,8 +297,9 @@ class GameDashboardBehavior : public CaptureModeBehavior {
 // CaptureModeBehavior:
 
 CaptureModeBehavior::CaptureModeBehavior(
-    const CaptureModeSessionConfigs& configs)
-    : capture_mode_configs_(configs) {}
+    const CaptureModeSessionConfigs& configs,
+    const BehaviorType behavior_type)
+    : capture_mode_configs_(configs), behavior_type_(behavior_type) {}
 
 // static
 std::unique_ptr<CaptureModeBehavior> CaptureModeBehavior::Create(
@@ -279,5 +404,76 @@ std::vector<RecordingType> CaptureModeBehavior::GetSupportedRecordingTypes()
   }
   return supported_recording_types;
 }
+
+void CaptureModeBehavior::SetPreSelectedWindow(
+    aura::Window* pre_selected_window) {
+  NOTREACHED();
+}
+
+const char* CaptureModeBehavior::GetClientMetricComponent() const {
+  return "";
+}
+
+std::vector<message_center::ButtonInfo>
+CaptureModeBehavior::GetNotificationButtonsInfo(bool for_video) const {
+  std::vector<message_center::ButtonInfo> buttons_info;
+
+  if (!for_video &&
+      !Shell::Get()->session_controller()->IsUserSessionBlocked()) {
+    message_center::ButtonInfo edit_button(
+        l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_BUTTON_EDIT));
+    buttons_info.push_back(edit_button);
+  }
+  message_center::ButtonInfo delete_button(
+      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_BUTTON_DELETE));
+  buttons_info.push_back(delete_button);
+
+  return buttons_info;
+}
+
+std::unique_ptr<CaptureModeBarView>
+CaptureModeBehavior::CreateCaptureModeBarView() {
+  return std::make_unique<NormalCaptureBarView>(this);
+}
+
+gfx::Rect CaptureModeBehavior::GetCaptureBarBounds(aura::Window* root) const {
+  auto bounds = GetBarAnchorBoundsInScreen(root);
+  const int bar_y = bounds.bottom() - capture_mode::kCaptureBarBottomPadding -
+                    capture_mode::kCaptureBarHeight;
+  bounds.ClampToCenteredSize(
+      gfx::Size(GetCaptureBarWidth(), capture_mode::kCaptureBarHeight));
+  bounds.set_y(bar_y);
+  return bounds;
+}
+
+gfx::Rect CaptureModeBehavior::GetBarAnchorBoundsInScreen(
+    aura::Window* root) const {
+  CHECK(root);
+  auto bounds = root->GetBoundsInScreen();
+  int new_bottom = bounds.bottom();
+
+  Shelf* shelf = Shelf::ForWindow(root);
+  if (shelf->IsHorizontalAlignment()) {
+    // Get the widget which has the shelf icons. This is the hotseat widget if
+    // the hotseat is extended, shelf widget otherwise.
+    const bool hotseat_extended =
+        shelf->shelf_layout_manager()->hotseat_state() ==
+        HotseatState::kExtended;
+    views::Widget* shelf_widget =
+        hotseat_extended ? static_cast<views::Widget*>(shelf->hotseat_widget())
+                         : static_cast<views::Widget*>(shelf->shelf_widget());
+    new_bottom = shelf_widget->GetWindowBoundsInScreen().y();
+  }
+  bounds.set_height(new_bottom - bounds.y());
+  return bounds;
+}
+
+int CaptureModeBehavior::GetCaptureBarWidth() const {
+  return kFullCaptureBarWidth;
+}
+
+void CaptureModeBehavior::OnAudioRecordingModeChanged() {}
+
+void CaptureModeBehavior::OnDemoToolsSettingsChanged() {}
 
 }  // namespace ash

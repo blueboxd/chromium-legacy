@@ -56,9 +56,13 @@ namespace {
 const int kInputFrameFillY = 12;
 const int kInputFrameFillU = 23;
 const int kInputFrameFillV = 34;
-const uint16_t kInputFrameHeight = 234;
-const uint16_t kInputFrameWidth = 456;
+// 360p is a valid HW resolution.
+const uint16_t kInputFrameWidth = 480;
+const uint16_t kInputFrameHeight = 360;
 const uint16_t kStartBitrate = 100;
+// Less than 360p should result in SW fallback.
+const uint16_t kSoftwareFallbackInputFrameWidth = 479;
+const uint16_t kSoftwareFallbackInputFrameHeight = 359;
 
 const webrtc::VideoEncoder::Capabilities kVideoEncoderCapabilities(
     /* loss_notification= */ false);
@@ -593,6 +597,17 @@ TEST_P(RTCVideoEncoderInitTest, RepeatedInitSucceeds) {
             rtc_encoder_->InitEncode(&codec, kVideoEncoderSettings));
 }
 
+TEST_P(RTCVideoEncoderInitTest, SoftwareFallbackForLowResolution) {
+  const webrtc::VideoCodecType codec_type = GetParam().codec_type;
+  CreateEncoder(codec_type);
+  webrtc::VideoCodec codec = GetDefaultCodec();
+  codec.width = kSoftwareFallbackInputFrameWidth;
+  codec.height = kSoftwareFallbackInputFrameHeight;
+  codec.codecType = codec_type;
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE,
+            rtc_encoder_->InitEncode(&codec, kVideoEncoderSettings));
+}
+
 TEST_P(RTCVideoEncoderInitTest, CreateAndInitSucceedsForTemporalLayer) {
   const webrtc::VideoCodecType codec_type = GetParam().codec_type;
   if (codec_type == webrtc::kVideoCodecVP8)
@@ -633,15 +648,21 @@ class RTCVideoEncoderEncodeTest
     std::vector<base::test::FeatureRef> enabled_features = {
         features::kZeroCopyTabCapture,
     };
+    std::vector<base::test::FeatureRef> disabled_features;
+
     if (GetParam().init_on_first_frame) {
       enabled_features.push_back(
+          features::kWebRtcInitializeEncoderOnFirstFrame);
+    } else {
+      disabled_features.push_back(
           features::kWebRtcInitializeEncoderOnFirstFrame);
     }
     if (GetParam().async_encode) {
       enabled_features.push_back(features::kWebRtcEncoderAsyncEncode);
+    } else {
+      disabled_features.push_back(features::kWebRtcEncoderAsyncEncode);
     }
-    feature_list_.InitWithFeatures(enabled_features,
-                                   /*disabled_features=*/{});
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   ~RTCVideoEncoderEncodeTest() override = default;

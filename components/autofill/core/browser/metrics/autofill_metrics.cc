@@ -120,6 +120,8 @@ enum FieldTypeGroupForMetrics {
   GROUP_BIRTHDATE,
   GROUP_IBAN,
   GROUP_ADDRESS_HOME_LANDMARK,
+  GROUP_ADDRESS_HOME_BETWEEN_STREETS,
+  GROUP_ADDRESS_HOME_ADMIN_LEVEL2,
   // Add new entries here and update enums.xml.
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
@@ -243,6 +245,12 @@ int GetFieldTypeGroupPredictionQualityMetric(
           break;
         case ADDRESS_HOME_LANDMARK:
           group = GROUP_ADDRESS_HOME_LANDMARK;
+          break;
+        case ADDRESS_HOME_BETWEEN_STREETS:
+          group = GROUP_ADDRESS_HOME_BETWEEN_STREETS;
+          break;
+        case ADDRESS_HOME_ADMIN_LEVEL2:
+          group = GROUP_ADDRESS_HOME_ADMIN_LEVEL2;
           break;
         case UNKNOWN_TYPE:
           group = GROUP_UNKNOWN_TYPE;
@@ -836,6 +844,12 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(
     base::UmaHistogramEnumeration(
         "Autofill.CreditCardInfoBar" + destination + ".WithMultipleLegalLines",
         metric, NUM_INFO_BAR_METRICS);
+  }
+
+  if (options.has_same_last_four_as_server_card_but_different_expiration_date) {
+    base::UmaHistogramEnumeration("Autofill.CreditCardInfoBar" + destination +
+                                      ".WithSameLastFourButDifferentExpiration",
+                                  metric, NUM_INFO_BAR_METRICS);
   }
 }
 
@@ -2036,8 +2050,7 @@ void AutofillMetrics::LogCreditCardSeamlessnessAtFillTime(
     return field.origin != triggered_origin &&
            (field.origin != main_origin ||
             IsSensitiveFieldType(field.Type().GetStorableType())) &&
-           (triggered_origin == main_origin ||
-            features::kAutofillSharedAutofillRelaxedParam.Get());
+           triggered_origin == main_origin;
   };
 
   bool some_field_needs_shared_autofill = false;

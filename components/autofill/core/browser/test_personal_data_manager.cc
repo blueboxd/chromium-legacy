@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 
+#include <memory>
+
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
@@ -44,6 +46,8 @@ void TestPersonalDataManager::RecordUseOf(
 std::string TestPersonalDataManager::SaveImportedProfile(
     const AutofillProfile& imported_profile) {
   num_times_save_imported_profile_called_++;
+  last_save_imported_profile_ =
+      std::make_unique<AutofillProfile>(imported_profile);
   return PersonalDataManager::SaveImportedProfile(imported_profile);
 }
 
@@ -318,6 +322,13 @@ TestPersonalDataManager::GetProfileSaveStrikeDatabase() const {
 const AutofillProfileUpdateStrikeDatabase*
 TestPersonalDataManager::GetProfileUpdateStrikeDatabase() const {
   return &inmemory_profile_update_strike_database_;
+}
+
+bool TestPersonalDataManager::IsAutofillPaymentMethodsMandatoryReauthEnabled() {
+  if (autofill_payment_methods_mandatory_reauth_enabled_) {
+    return true;
+  }
+  return PersonalDataManager::IsAutofillPaymentMethodsMandatoryReauthEnabled();
 }
 
 void TestPersonalDataManager::ClearProfiles() {

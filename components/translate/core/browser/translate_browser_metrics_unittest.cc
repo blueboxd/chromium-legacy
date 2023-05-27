@@ -124,31 +124,6 @@ class MetricsRecorder {
                       kNoUiShownNotAutoTranslated)));
   }
 
-  void CheckTranslateHrefHintPrefsFilterStatus(
-      int expected_not_in_blocklists,
-      int expected_language_in_blocklist,
-      int expected_site_in_blocklist,
-      int expected_both_language_and_site_in_blocklist) {
-    Snapshot();
-
-    EXPECT_EQ(expected_not_in_blocklists,
-              GetCountWithoutSnapshot(static_cast<int>(
-                  TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                      kNotInBlocklists)));
-    EXPECT_EQ(expected_language_in_blocklist,
-              GetCountWithoutSnapshot(static_cast<int>(
-                  TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                      kLanguageInBlocklist)));
-    EXPECT_EQ(expected_site_in_blocklist,
-              GetCountWithoutSnapshot(static_cast<int>(
-                  TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                      kSiteInBlocklist)));
-    EXPECT_EQ(expected_both_language_and_site_in_blocklist,
-              GetCountWithoutSnapshot(static_cast<int>(
-                  TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-                      kBothLanguageAndSiteInBlocklist)));
-  }
-
   void CheckMenuTranslationUnavailableReason(
       int expected_kTranslate_disabled,
       int expected_network_offline,
@@ -326,36 +301,6 @@ TEST(TranslateBrowserMetricsTest, ReportedUnsupportedLanguageAtInitiation) {
   EXPECT_EQ(1, recorder.GetCount(ENGLISH));
 }
 
-TEST(TranslateBrowserMetricsTest, ReportedTranslateSourceLanguage) {
-  const int ENGLISH = -74147910;
-  const int FRENCH = 1704315002;
-
-  MetricsRecorder recorder("Translate.SourceLanguage");
-  EXPECT_EQ(0, recorder.GetTotalCount());
-
-  TranslateBrowserMetrics::ReportTranslateSourceLanguage("en");
-  TranslateBrowserMetrics::ReportTranslateSourceLanguage("fr");
-  TranslateBrowserMetrics::ReportTranslateSourceLanguage("en");
-
-  EXPECT_EQ(2, recorder.GetCount(ENGLISH));
-  EXPECT_EQ(1, recorder.GetCount(FRENCH));
-}
-
-TEST(TranslateBrowserMetricsTest, ReportedTranslateTargetLanguage) {
-  const int ENGLISH = -74147910;
-  const int FRENCH = 1704315002;
-
-  MetricsRecorder recorder("Translate.TargetLanguage");
-  EXPECT_EQ(0, recorder.GetTotalCount());
-
-  TranslateBrowserMetrics::ReportTranslateTargetLanguage("en");
-  TranslateBrowserMetrics::ReportTranslateTargetLanguage("fr");
-  TranslateBrowserMetrics::ReportTranslateTargetLanguage("en");
-
-  EXPECT_EQ(2, recorder.GetCount(ENGLISH));
-  EXPECT_EQ(1, recorder.GetCount(FRENCH));
-}
-
 TEST(TranslateBrowserMetricsTest, ReportTranslateHrefHintStatus) {
   MetricsRecorder recorder("Translate.HrefHint.Status");
   recorder.CheckTranslateHrefHintStatus(0, 0, 0, 0);
@@ -373,27 +318,6 @@ TEST(TranslateBrowserMetricsTest, ReportTranslateHrefHintStatus) {
       TranslateBrowserMetrics::HrefTranslateStatus::
           kNoUiShownNotAutoTranslated);
   recorder.CheckTranslateHrefHintStatus(1, 1, 1, 1);
-}
-
-TEST(TranslateBrowserMetricsTest, ReportTranslateHrefHintPrefsFilterStatus) {
-  MetricsRecorder recorder("Translate.HrefHint.PrefsFilterStatus");
-  recorder.CheckTranslateHrefHintPrefsFilterStatus(0, 0, 0, 0);
-  TranslateBrowserMetrics::ReportTranslateHrefHintPrefsFilterStatus(
-      TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-          kNotInBlocklists);
-  recorder.CheckTranslateHrefHintPrefsFilterStatus(1, 0, 0, 0);
-  TranslateBrowserMetrics::ReportTranslateHrefHintPrefsFilterStatus(
-      TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-          kLanguageInBlocklist);
-  recorder.CheckTranslateHrefHintPrefsFilterStatus(1, 1, 0, 0);
-  TranslateBrowserMetrics::ReportTranslateHrefHintPrefsFilterStatus(
-      TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-          kSiteInBlocklist);
-  recorder.CheckTranslateHrefHintPrefsFilterStatus(1, 1, 1, 0);
-  TranslateBrowserMetrics::ReportTranslateHrefHintPrefsFilterStatus(
-      TranslateBrowserMetrics::HrefTranslatePrefsFilterStatus::
-          kBothLanguageAndSiteInBlocklist);
-  recorder.CheckTranslateHrefHintPrefsFilterStatus(1, 1, 1, 1);
 }
 
 }  // namespace

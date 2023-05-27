@@ -15,83 +15,37 @@
  * visible page.
  */
 
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {isGuest, isKerberosEnabled, isPowerwashAllowed} from './common/load_time_booleans.js';
+import {OsPageAvailability} from './mojom-webui/routes.mojom-webui.js';
 
-export interface OsPageAvailability {
-  a11y: boolean;
-  apps: boolean;
-  bluetooth: boolean;
-  crostini: boolean;
-  dateTime: boolean;
-  device: boolean;
-  files: boolean;
-  internet: boolean;
-  kerberos: boolean;
-  languages: boolean;
-  multidevice: boolean;
-  onStartup: boolean;
-  people: boolean|{
-    googleAccounts: boolean,
-    lockScreen: boolean,
-  };
-  personalization: boolean;
-  printing: boolean;
-  privacy: boolean;
-  reset: boolean;
-  search: boolean;
-}
+export {OsPageAvailability};
 
-const isGuestMode = loadTimeData.getBoolean('isGuest');
-const isAccountManagerEnabled =
-    loadTimeData.valueExists('isAccountManagerEnabled') &&
-    loadTimeData.getBoolean('isAccountManagerEnabled');
-const isKerberosEnabled = loadTimeData.valueExists('isKerberosEnabled') &&
-    loadTimeData.getBoolean('isKerberosEnabled');
+/**
+ * Used to create the pageAvailability object.
+ *
+ * Can be used to create the pageAvailability object with expected values after
+ * overriding load time data within tests.
+ */
+export function createPageAvailability(): OsPageAvailability {
+  const isGuestMode = isGuest();
 
-export let osPageAvailability: OsPageAvailability;
-if (isGuestMode) {
-  osPageAvailability = {
-    a11y: true,
+  return {
     apps: true,
     bluetooth: true,
     crostini: true,
     dateTime: true,
     device: true,
-    files: false,
+    files: !isGuestMode,
     internet: true,
-    kerberos: isKerberosEnabled,
-    languages: true,
-    multidevice: false,
-    onStartup: false,
-    people: false,
-    personalization: false,
-    printing: true,
-    privacy: true,
-    reset: false,
-    search: true,
-  };
-} else {
-  osPageAvailability = {
-    a11y: true,
-    apps: true,
-    bluetooth: true,
-    crostini: true,
-    dateTime: true,
-    device: true,
-    files: true,
-    internet: true,
-    kerberos: isKerberosEnabled,
-    languages: true,
-    multidevice: true,
-    onStartup: true,
-    people: {
-      googleAccounts: isAccountManagerEnabled,
-      lockScreen: true,
-    },
-    personalization: true,
-    printing: true,
-    privacy: true,
-    reset: true,
-    search: true,
+    kerberos: isKerberosEnabled(),
+    multidevice: !isGuestMode,
+    osAccessibility: true,
+    osLanguages: true,
+    osPeople: !isGuestMode,
+    osPrinting: true,
+    osPrivacy: true,
+    osReset: isPowerwashAllowed(),
+    osSearch: true,
+    personalization: !isGuestMode,
   };
 }

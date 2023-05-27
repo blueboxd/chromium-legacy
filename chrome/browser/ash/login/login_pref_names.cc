@@ -96,9 +96,6 @@ const char kSamlPasswordExpirationAdvanceWarningDays[] =
 const char kLockScreenReauthenticationEnabled[] =
     "lock_screen_reauthentication_enabled";
 
-// SAML password sync token fetched from the external API.
-const char kSamlPasswordSyncToken[] = "saml.password_sync_token";
-
 const char kActivityTimeAfterOnboarding[] =
     "oobe.activity_time_after_onboarding";
 
@@ -111,6 +108,9 @@ const char kChoobeCompletedScreens[] = "oobe.choobe_completed_screens";
 
 //  A boolean pref of the drive pinning screen
 const char kOobeDrivePinningEnabledDeferred[] = "oobe.drive_pinning_defer";
+
+//  A double pref of the display size factor set in the display size screen.
+const char kOobeDisplaySizeFactorDeferred[] = "oobe.display_size_factor_defer";
 
 // *************** OOBE LOCAL STATE PREFS ***************
 
@@ -138,6 +138,9 @@ const char kOobeRevenUpdatedToFlex[] = "OobeRevenUpdatedToFlex";
 // metric when we exit the WelcomeScreen.
 const char kOobeLocaleChangedOnWelcomeScreen[] =
     "OobeLocaleChangedOnWelcomeScreen";
+
+// A boolean pref indicate if the critical update in OOBE applied.
+const char kOobeCriticalUpdate[] = "OobeCriticalUpdate";
 
 // A string pref containing url parameter name which can be used on SAML IdP web
 // page to autofill the username field.

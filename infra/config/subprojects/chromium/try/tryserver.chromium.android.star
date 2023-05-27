@@ -316,7 +316,9 @@ try_.orchestrator_builder(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
     ),
-    check_for_flakiness = True,
+    # crbug/1434778 - disabling due to high flake rate. See crbug/1422481 for
+    # root cause.
+    # check_for_flakiness = True,
     compilator = "android-nougat-x86-rel-compilator",
     coverage_test_types = ["unit", "overall"],
     experiments = {
@@ -374,8 +376,11 @@ try_.builder(
             "chrome/android/javatests/src/org/chromium/chrome/browser/vr/.+",
             "chrome/browser/android/vr/.+",
             "chrome/browser/vr/.+",
+            "components/webxr/.+",
             "content/browser/xr/.+",
-            "device/vr/android/.+",
+            "device/vr/.+",
+            "third_party/cardboard/.+",
+            "third_party/openxr/.+",
             "third_party/gvr-android-sdk/.+",
             "third_party/arcore-android-sdk/.+",
             "third_party/arcore-android-sdk-client/.+",

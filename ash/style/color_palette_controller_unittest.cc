@@ -332,7 +332,7 @@ TEST_F(ColorPaletteControllerTest, GenerateSampleScheme) {
       results,
       testing::UnorderedElementsAre(
           Sample(ColorScheme::kTonalSpot, SkColorSetRGB(0xff, 0xb3, 0xae)),
-          Sample(ColorScheme::kExpressive, SkColorSetRGB(0xa0, 0xd4, 0x8f))));
+          Sample(ColorScheme::kExpressive, SkColorSetRGB(0xc8, 0xbf, 0xff))));
 }
 
 TEST_F(ColorPaletteControllerTest, GenerateSampleScheme_AllValues_Teal) {
@@ -361,8 +361,8 @@ TEST_F(ColorPaletteControllerTest, GenerateSampleScheme_AllValues_Teal) {
   auto& result = results.front();
   EXPECT_THAT(result, testing::Eq(SampleColorScheme{
                           .scheme = ColorScheme::kVibrant,
-                          .primary = SkColorSetRGB(0x00, 0xe2, 0x97),
-                          .secondary = SkColorSetRGB(0x00, 0xa5, 0x6d),
+                          .primary = SkColorSetRGB(0x00, 0xc3, 0x82),
+                          .secondary = SkColorSetRGB(0x00, 0x88, 0x59),
                           .tertiary = SkColorSetRGB(0x70, 0xb7, 0xb7)}));
 }
 

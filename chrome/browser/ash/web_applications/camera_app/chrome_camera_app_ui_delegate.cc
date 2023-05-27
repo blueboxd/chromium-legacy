@@ -43,6 +43,7 @@
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -326,6 +327,18 @@ void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
                                       ash::features::kCameraAppTimeLapse));
   source->AddBoolean("jelly",
                      base::FeatureList::IsEnabled(chromeos::features::kJelly));
+
+  const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+  const char kTestImageRelease[] = "testimage-channel";
+
+  std::string track;
+  bool is_test_image =
+      base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &track) &&
+      track.find(kTestImageRelease) != std::string::npos;
+  source->AddBoolean("is_test_image", is_test_image);
+
+  source->AddString("browser_version",
+                    std::string(version_info::GetVersionNumber()));
 }
 
 bool ChromeCameraAppUIDelegate::IsMetricsAndCrashReportingEnabled() {

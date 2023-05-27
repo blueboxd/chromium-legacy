@@ -11,6 +11,7 @@
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
+#include "content/public/browser/navigation_handle.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -163,6 +164,35 @@ int64_t BucketizeBounceDelay(base::TimeDelta delta);
 // and may change.
 std::string GetSiteForDIPS(const GURL& url);
 
+// Returns `True` iff the `navigation_handle` represents a navigation happening
+// in an iframe of the primary frame tree.
+inline bool IsInPrimaryPageIFrame(
+    content::NavigationHandle* navigation_handle) {
+  return navigation_handle->GetParentFrame()
+             ? navigation_handle->GetParentFrame()->GetPage().IsPrimary()
+             : false;
+}
+
+// Returns `True` iff both urls return a similar outcome off of
+// `GetSiteForDIPS()`.
+inline bool IsSameSiteForDIPS(const GURL& url1, const GURL& url2) {
+  return GetSiteForDIPS(url1) == GetSiteForDIPS(url2);
+}
+
+// Returns `True` iff the `navigation_handle` represents a navigation happening
+// in any frame of the primary page.
+// NOTE: This does not include fenced frames.
+inline bool IsInPrimaryPage(content::NavigationHandle* navigation_handle) {
+  return navigation_handle->GetParentFrame()
+             ? navigation_handle->GetParentFrame()->GetPage().IsPrimary()
+             : navigation_handle->IsInPrimaryMainFrame();
+}
+
+// Returns `True` iff the 'rfh' represents a frame in the primary page.
+inline bool IsInPrimaryPage(content::RenderFrameHost* rfh) {
+  return rfh->GetPage().IsPrimary();
+}
+
 enum class DIPSRecordedEvent {
   kStorage,
   kInteraction,
@@ -201,6 +231,23 @@ enum class DIPSErrorCode {
   kRead_OpenEndedRange_NullEnd = 2,
   kRead_BounceTimesIsntSupersetOfStatefulBounces = 3,
   kMaxValue = kRead_BounceTimesIsntSupersetOfStatefulBounces,
+};
+
+// DIPSDeletionAction is used in UMA enum histograms to record the actual
+// deletion action taken on DIPS-eligible (incidental) site.
+//
+// When adding an action to this enum, update the DIPSDeletionAction enum in
+// tools/metrics/histograms/enums.xml as well.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DIPSDeletionAction {
+  kDisallowed = 0,
+  kExceptedAs1p = 1,
+  kExceptedAs3p = 2,
+  kEnforced = 3,
+  kIgnored = 4,
+  kMaxValue = kIgnored,
 };
 
 #endif  // CHROME_BROWSER_DIPS_DIPS_UTILS_H_

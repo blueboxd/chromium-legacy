@@ -5,9 +5,55 @@
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 
 #include "base/check_op.h"
+#include "base/sequence_checker.h"
 #include "services/device/public/cpp/geolocation/location_system_permission_status.h"
 
 namespace device {
+
+namespace {
+// This checks that all accesses to the global manager are done in sequence
+class CheckedAccessWrapper {
+ public:
+  static CheckedAccessWrapper& GetInstance() {
+    static CheckedAccessWrapper wrapper;
+    return wrapper;
+  }
+
+  void SetManager(std::unique_ptr<GeolocationManager> manager) {
+    DETACH_FROM_SEQUENCE(sequence_checker_);
+    manager_ = std::move(manager);
+  }
+
+  GeolocationManager* GetManager() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return manager_.get();
+  }
+
+ private:
+  std::unique_ptr<GeolocationManager> manager_;
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
+}  // namespace
+
+GeolocationManager* GeolocationManager::GetInstance() {
+  return CheckedAccessWrapper::GetInstance().GetManager();
+}
+
+void GeolocationManager::SetInstance(
+    std::unique_ptr<GeolocationManager> manager) {
+  CheckedAccessWrapper::GetInstance().SetManager(std::move(manager));
+}
+
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_CHROMEOS)
+
+void GeolocationManager::AppAttemptsToUseGeolocation() {
+  system_geolocation_source_->AppAttemptsToUseGeolocation();
+}
+
+void GeolocationManager::AppCeasesToUseGeolocation() {
+  system_geolocation_source_->AppCeasesToUseGeolocation();
+}
 
 GeolocationManager::GeolocationManager(
     std::unique_ptr<SystemGeolocationSource> system_geolocation_source)
@@ -59,16 +105,16 @@ GeolocationManager::GetObserverList() const {
   return observers_;
 }
 
-void GeolocationManager::AppAttemptsToUseGeolocation() {
-  system_geolocation_source_->AppAttemptsToUseGeolocation();
-}
-
-void GeolocationManager::AppCeasesToUseGeolocation() {
-  system_geolocation_source_->AppCeasesToUseGeolocation();
-}
-
 SystemGeolocationSource& GeolocationManager::SystemGeolocationSourceForTest() {
   return *system_geolocation_source_;
 }
+
+#else
+
+void GeolocationManager::AppAttemptsToUseGeolocation() {}
+
+void GeolocationManager::AppCeasesToUseGeolocation() {}
+
+#endif
 
 }  // namespace device

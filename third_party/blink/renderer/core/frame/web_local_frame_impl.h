@@ -251,6 +251,9 @@ class CORE_EXPORT WebLocalFrameImpl final
       int composition_end,
       const WebVector<ui::ImeTextSpan>& ime_text_spans) override;
   void ExtendSelectionAndDelete(int before, int after) override;
+  void ExtendSelectionAndReplace(int before,
+                                 int after,
+                                 const WebString& replacement_text) override;
   void MoveRangeSelectionExtent(const gfx::Point&) override;
   void ReplaceSelection(const WebString&) override;
   void DeleteSurroundingText(int before, int after) override;
@@ -308,7 +311,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                       const WebNode& constrain_to_node) override;
   bool WillPrintSoon() override;
   float GetPrintPageShrink(uint32_t page) override;
-  float PrintPage(uint32_t page_to_print, cc::PaintCanvas*) override;
+  void PrintPage(uint32_t page_to_print, cc::PaintCanvas*) override;
   void PrintEnd() override;
   void DispatchAfterPrintEvent() override;
   bool GetPrintPresetOptionsForPlugin(const WebNode&,
@@ -384,8 +387,8 @@ class CORE_EXPORT WebLocalFrameImpl final
           soft_navigation_heuristics_task_id) override;
   void SetIsNotOnInitialEmptyDocument() override;
   bool IsOnInitialEmptyDocument() override;
-  void WillPotentiallyStartOutermostMainFrameNavigation(
-      const WebURL&) const override;
+  void MaybeStartOutermostMainFrameNavigation(
+      const WebVector<WebURL>& urls) const override;
   bool WillStartNavigation(const WebNavigationInfo&) override;
   void DidDropNavigation() override;
   void DownloadURL(

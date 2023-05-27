@@ -10,8 +10,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "components/favicon/core/history_ui_favicon_request_handler_impl.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_utils.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_service_utils.h"
 #include "content/public/browser/browser_context.h"
 
 namespace {
@@ -46,7 +46,12 @@ HistoryUiFaviconRequestHandlerFactory::GetInstance() {
 HistoryUiFaviconRequestHandlerFactory::HistoryUiFaviconRequestHandlerFactory()
     : ProfileKeyedServiceFactory(
           "HistoryUiFaviconRequestHandler",
-          ProfileSelections::BuildRedirectedInIncognito()) {
+          ProfileSelections::Builder()
+              .WithRegular(ProfileSelection::kRedirectedToOriginal)
+              // TODO(crbug.com/1418376): Check if this service is needed in
+              // Guest mode.
+              .WithGuest(ProfileSelection::kRedirectedToOriginal)
+              .Build()) {
   DependsOn(FaviconServiceFactory::GetInstance());
   DependsOn(LargeIconServiceFactory::GetInstance());
   DependsOn(SyncServiceFactory::GetInstance());

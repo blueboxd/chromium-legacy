@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_sync_screen_provider.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
+#import "ios/chrome/browser/ui/first_run/history_sync/history_sync_screen_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/tangible_sync/tangible_sync_screen_coordinator.h"
 #import "ios/chrome/browser/ui/screen/screen_provider.h"
@@ -141,6 +142,12 @@
                                    browser:self.browser
                                   firstRun:NO
                                   delegate:self];
+    case kHistorySync:
+      return [[HistorySyncScreenCoordinator alloc]
+          initWithBaseNavigationController:_navigationController
+                                   browser:self.browser
+                                  firstRun:NO
+                                  delegate:self];
     case kDefaultBrowserPromo:
     case kStepsCompleted:
       break;
@@ -152,9 +159,12 @@
 // SigninCompletionInfo object that includes the given `identity`.
 - (void)finishWithResult:(SigninCoordinatorResult)result
                 identity:(id<SystemIdentity>)identity {
-  CHECK(_childCoordinator) << base::SysNSStringToUTF8([self description]);
-  [_childCoordinator stop];
-  _childCoordinator = nil;
+  // When this coordinator is interrupted, `_childCoordinator` needs to be
+  // stopped here.
+  if (_childCoordinator) {
+    [_childCoordinator stop];
+    _childCoordinator = nil;
+  }
   _navigationController = nil;
   _screenProvider = nil;
   SigninCompletionInfo* completionInfo =

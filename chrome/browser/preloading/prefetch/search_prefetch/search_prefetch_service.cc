@@ -39,6 +39,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/preloading_data.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
@@ -50,6 +51,28 @@
 using omnibox::mojom::NavigationPredictor;
 
 namespace {
+void SetIsNavigationInDomainCallback(content::PreloadingData* preloading_data) {
+  constexpr content::PreloadingPredictor kPredictors[] = {
+      chrome_preloading_predictor::kDefaultSearchEngine,
+      chrome_preloading_predictor::kOmniboxSearchSuggestDefaultMatch,
+      chrome_preloading_predictor::kOmniboxMousePredictor,
+      chrome_preloading_predictor::kOmniboxSearchPredictor};
+  for (const auto& predictor : kPredictors) {
+    preloading_data->SetIsNavigationInDomainCallback(
+        predictor,
+        base::BindRepeating(
+            [](content::NavigationHandle* navigation_handle) -> bool {
+              auto transition_type = navigation_handle->GetPageTransition();
+              return (transition_type & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) &&
+                     ui::PageTransitionCoreTypeIs(
+                         transition_type,
+                         ui::PageTransition::PAGE_TRANSITION_GENERATED);
+            }));
+  }
+}
+}  // namespace
+
+namespace {
 
 // Recomputes the destination URL for |match| with the updated prefetch
 // information (does not modify |destination_url|). Passing true to
@@ -58,10 +81,10 @@ namespace {
 GURL GetPreloadURLFromMatch(
     const TemplateURLRef::SearchTermsArgs& search_terms_args_from_match,
     TemplateURLService* template_url_service,
-    bool attach_prefetch_information) {
+    std::string prefetch_param) {
   // Copy the search term args, so we can modify them for just the prefetch.
   auto search_terms_args = search_terms_args_from_match;
-  search_terms_args.is_prefetch = attach_prefetch_information;
+  search_terms_args.prefetch_param = prefetch_param;
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
   DCHECK(default_provider);
@@ -247,7 +270,7 @@ bool SearchPrefetchService::MaybePrefetchURL(
 
   auto* preloading_data =
       content::PreloadingData::GetOrCreateForWebContents(web_contents);
-
+  SetIsNavigationInDomainCallback(preloading_data);
   // Create new PreloadingAttempt and pass all the values corresponding to
   // this DefaultSearchEngine or OmniboxSearchPredictor prefetch attempt when
   // |navigation_prefetch| is true.
@@ -686,6 +709,7 @@ void SearchPrefetchService::OnResultChanged(content::WebContents* web_contents,
     int64_t confidence = BaseSearchProvider::ShouldPrerender(match) ? 80 : 60;
     auto* preloading_data =
         content::PreloadingData::GetOrCreateForWebContents(web_contents);
+    SetIsNavigationInDomainCallback(preloading_data);
     GURL canonical_search_url;
     HasCanoncialPreloadingOmniboxSearchURL(match.destination_url, profile_,
                                            &canonical_search_url);
@@ -727,7 +751,7 @@ void SearchPrefetchService::OnResultChanged(content::WebContents* web_contents,
     if (BaseSearchProvider::ShouldPrefetch(match)) {
       MaybePrefetchURL(
           GetPreloadURLFromMatch(*match.search_terms_args, template_url_service,
-                                 /*attach_prefetch_information=*/true),
+                                 kSuggestPrefetchParam.Get()),
           web_contents);
     }
     if (prerender_utils::IsSearchSuggestionPrerenderEnabled() &&
@@ -814,9 +838,9 @@ void SearchPrefetchService::OnNavigationLikely(
     search_terms_args_for_prefetch = match.search_terms_args.get();
   }
 
-  GURL preload_url = GetPreloadURLFromMatch(
-      *search_terms_args_for_prefetch, template_url_service,
-      /*attach_prefetch_information=*/true);
+  GURL preload_url = GetPreloadURLFromMatch(*search_terms_args_for_prefetch,
+                                            template_url_service,
+                                            kNavigationPrefetchParam.Get());
 
   content::PreloadingURLMatchCallback same_url_matcher =
       base::BindRepeating(&IsSearchDestinationMatch, canonical_search_url,
@@ -834,7 +858,7 @@ void SearchPrefetchService::OnNavigationLikely(
         }
       };
   auto predictor = navigation_likely_event_to_predictor(navigation_predictor);
-
+  SetIsNavigationInDomainCallback(preloading_data);
   // Create PreloadingPrediction for this match. We set the confidence to 100 as
   // when the user changed the selected match, we always trigger prefetch.
   preloading_data->AddPreloadingPrediction(predictor, 100,
@@ -1030,7 +1054,7 @@ void SearchPrefetchService::CoordinatePrefetchWithPrerender(
   DCHECK(web_contents);
   GURL prefetch_url =
       GetPreloadURLFromMatch(*match.search_terms_args, template_url_service,
-                             /*attach_prefetch_information=*/true);
+                             kSuggestPrefetchParam.Get());
   MaybePrefetchURL(prefetch_url, web_contents);
   if (!BaseSearchProvider::ShouldPrerender(match))
     return;
@@ -1043,6 +1067,7 @@ void SearchPrefetchService::CoordinatePrefetchWithPrerender(
   // this prerendering attempt.
   auto* preloading_data =
       content::PreloadingData::GetOrCreateForWebContents(web_contents);
+  SetIsNavigationInDomainCallback(preloading_data);
   content::PreloadingAttempt* preloading_attempt =
       preloading_data->AddPreloadingAttempt(
           chrome_preloading_predictor::kDefaultSearchEngine,
@@ -1063,7 +1088,7 @@ void SearchPrefetchService::CoordinatePrefetchWithPrerender(
   // recognize prefetch traffic, because it should not send network requests.
   GURL prerender_url =
       GetPreloadURLFromMatch(*match.search_terms_args, template_url_service,
-                             /*attach_prefetch_information=*/false);
+                             /*prefetch_param=*/"");
   prefetch_request_iter->second->MaybeStartPrerenderSearchResult(
       *prerender_manager, prerender_url, *preloading_attempt);
 }

@@ -45,6 +45,7 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/shared_image_format.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -784,7 +785,7 @@ scoped_refptr<CanvasResource> DrawingBuffer::ExportLowLatencyCanvasResource(
       context_provider_->GetWeakPtr(), resource_provider,
       cc::PaintFlags::FilterQuality::kLow,
       /*is_origin_top_left=*/opengl_flip_y_extension_,
-      /*is_overlay_candidate=*/true);
+      /*is_overlay_candidate=*/canvas_resource_buffer->is_overlay_candidate);
 }
 
 scoped_refptr<CanvasResource> DrawingBuffer::ExportCanvasResource() {
@@ -1850,14 +1851,25 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     front_buffer_mailbox = mailboxes.front_buffer;
   } else {
     if (ShouldUseChromiumImage()) {
-      gfx::BufferFormat buffer_format =
-          BufferFormat(color_buffer_format_.resource_format());
-      if (buffer_format == gfx::BufferFormat::RGBX_8888 &&
+      auto gmb_si_format = color_buffer_format_;
+      // For Mac, explicitly specify BGRA/X instead of RGBA/X so that IOSurface
+      // format matches shared image format. This is necessary for Graphite.
+      // For ChromeOS explicitly specify BGRX instead of RGBX since some older
+      // Intel GPUs (i8xx) don't support RGBX overlays.
+      if (color_buffer_format_ == viz::SinglePlaneFormat::kRGBX_8888 &&
           gpu::IsImageFromGpuMemoryBufferFormatSupported(
               gfx::BufferFormat::BGRX_8888,
               ContextProvider()->GetCapabilities())) {
-        buffer_format = gfx::BufferFormat::BGRX_8888;
+        gmb_si_format = viz::SinglePlaneFormat::kBGRX_8888;
       }
+#if BUILDFLAG(IS_MAC)
+      if (color_buffer_format_ == viz::SinglePlaneFormat::kRGBA_8888 &&
+          gpu::IsImageFromGpuMemoryBufferFormatSupported(
+              gfx::BufferFormat::BGRA_8888,
+              ContextProvider()->GetCapabilities())) {
+        gmb_si_format = viz::SinglePlaneFormat::kBGRA_8888;
+      }
+#endif
       // TODO(crbug.com/911176): When RGB emulation is not needed, we should use
       // the non-GMB CreateSharedImage with gpu::SHARED_IMAGE_USAGE_SCANOUT in
       // order to allocate the GMB service-side and avoid a synchronous
@@ -1870,16 +1882,18 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
       }
 
       if (gpu::IsImageFromGpuMemoryBufferFormatSupported(
-              buffer_format, ContextProvider()->GetCapabilities())) {
+              viz::BufferFormat(gmb_si_format.resource_format()),
+              ContextProvider()->GetCapabilities())) {
         gpu_memory_buffer = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
-            size, buffer_format, buffer_usage, gpu::kNullSurfaceHandle,
-            nullptr);
+            size, viz::BufferFormat(gmb_si_format.resource_format()),
+            buffer_usage, gpu::kNullSurfaceHandle, nullptr);
         if (gpu_memory_buffer) {
           gpu_memory_buffer->SetColorSpace(color_space_);
           back_buffer_mailbox = sii->CreateSharedImage(
-              gpu_memory_buffer.get(), gpu_memory_buffer_manager, color_space_,
-              origin, back_buffer_alpha_type, usage | additional_usage_flags,
-              "WebGLDrawingBuffer");
+              gmb_si_format, size, color_space_, origin, back_buffer_alpha_type,
+              usage | additional_usage_flags, "WebGLDrawingBuffer",
+              gpu_memory_buffer->CloneHandle());
+          color_buffer_format_ = gmb_si_format;
 #if BUILDFLAG(IS_MAC)
           // A CHROMIUM_image backed texture requires a specialized set of
           // parameters on OSX.
@@ -1932,7 +1946,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     front_color_buffer_ = base::MakeRefCounted<ColorBuffer>(
         weak_factory_.GetWeakPtr(), size, color_space_, color_buffer_format_,
         back_buffer_alpha_type, texture_target, texture_id, nullptr,
-        /*is_overlay_candidate=*/false, front_buffer_mailbox);
+        /*is_overlay_candidate=*/true, front_buffer_mailbox);
   }
 
   // Import the backbuffer of swap chain or allocated SharedImage into GL.
@@ -1959,7 +1973,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
                               texture_target, 0, 0);
     gl_->DeleteFramebuffers(1, &fbo);
   }
-  const bool is_overlay_candidate = !!gpu_memory_buffer;
+  const bool is_overlay_candidate = !!gpu_memory_buffer || using_swap_chain_;
 
   return base::MakeRefCounted<ColorBuffer>(
       weak_factory_.GetWeakPtr(), size, color_space_, color_buffer_format_,

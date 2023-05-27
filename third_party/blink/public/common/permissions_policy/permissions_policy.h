@@ -26,6 +26,8 @@ struct ResourceRequest;
 
 namespace blink {
 
+class ResourceRequest;
+
 // Permissions Policy is a mechanism for controlling the availability of web
 // platform features in a frame, including all embedded frames. It can be used
 // to remove features, automatically refuse API permission requests, or modify
@@ -178,7 +180,7 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
   static std::unique_ptr<PermissionsPolicy> CreateForFencedFrame(
       const url::Origin& origin,
       base::span<const blink::mojom::PermissionsPolicyFeature>
-          required_permissions_to_load);
+          effective_enabled_permissions);
 
   static std::unique_ptr<PermissionsPolicy> CreateFromParsedPolicy(
       const ParsedPermissionsPolicy& parsed_policy,
@@ -249,7 +251,11 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
       mojom::PermissionsPolicyFeature feature) const;
 
  private:
+  friend class ResourceRequest;
   friend class PermissionsPolicyTest;
+
+  // List of features that have an explicit opt-in mechanism.
+  static const mojom::PermissionsPolicyFeature defined_opt_in_features_[];
 
   PermissionsPolicy(url::Origin origin,
                     const PermissionsPolicyFeatureList& feature_list);
@@ -268,7 +274,7 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
       const url::Origin& origin,
       const PermissionsPolicyFeatureList& features,
       base::span<const blink::mojom::PermissionsPolicyFeature>
-          required_permissions_to_load);
+          effective_enabled_permissions);
 
   // Returns whether or not the given feature is enabled by this policy for a
   // specific origin given a set of opt-in features. The opt-in features cannot
@@ -278,13 +284,23 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
       const url::Origin& origin,
       const std::set<mojom::PermissionsPolicyFeature>& opt_in_features) const;
 
+  // Returns whether or not the given feature is enabled by this policy for a
+  // specific origin, given that the feature is an opt-in feature, and the
+  // subresource request for which we are querying has opted-into this feature.
+  bool IsFeatureEnabledForSubresourceRequestAssumingOptIn(
+      mojom::PermissionsPolicyFeature feature,
+      const url::Origin& origin) const;
+
+  // Returns the inherited policy of the given feature for this document.
   bool InheritedValueForFeature(
       const PermissionsPolicy* parent_policy,
       std::pair<mojom::PermissionsPolicyFeature,
                 PermissionsPolicyFeatureDefault> feature,
       const ParsedPermissionsPolicy& container_policy) const;
 
-  // Returns the value of the given feature on the given origin.
+  // If the feature is in the declared policy, returns whether the given origin
+  // exists in its declared allowlist; otherwise, returns the value from
+  // inherited policy.
   bool GetFeatureValueForOrigin(mojom::PermissionsPolicyFeature feature,
                                 const url::Origin& origin) const;
 
@@ -306,6 +322,7 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
   // parent frame.
   PermissionsPolicyFeatureState inherited_policies_;
 
+  // The map of features to their default enable state.
   const raw_ref<const PermissionsPolicyFeatureList> feature_list_;
 };
 

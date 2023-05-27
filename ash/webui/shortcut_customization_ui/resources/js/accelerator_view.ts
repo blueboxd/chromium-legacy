@@ -110,6 +110,15 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
         type: Boolean,
         value: false,
       },
+
+      /**
+       * Conditionally show the edit-icon-container in `accelerator-view`, true
+       * for `accelerator-row`, false for `accelerator-edit-view`.
+       */
+      showEditIcon: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -120,6 +129,8 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   action: number;
   source: AcceleratorSource;
   sourceIsLocked: boolean;
+  showEditIcon: boolean;
+  categoryIsLocked: boolean;
   protected pendingAcceleratorInfo: StandardAcceleratorInfo;
   private modifiers: string[];
   private acceleratorOnHold: string;
@@ -127,6 +138,13 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   private shortcutProvider: ShortcutProviderInterface = getShortcutProvider();
   private lookupManager: AcceleratorLookupManager =
       AcceleratorLookupManager.getInstance();
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+
+    this.categoryIsLocked = this.lookupManager.isCategoryLocked(
+        this.lookupManager.getAcceleratorCategory(this.source, this.action));
+  }
 
   private getModifiers(): string[] {
     return getModifiersForAcceleratorInfo(this.acceleratorInfo);
@@ -294,6 +312,12 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
         this.hasError = true;
         return;
       }
+      case AcceleratorConfigResult.kMaximumAcceleratorsReached: {
+        // TODO(jimmyxgong): Localize this message.
+        this.statusMessage = 'Maximum accelerators have reached.';
+        this.hasError = true;
+        return;
+      }
       case AcceleratorConfigResult.kSuccess: {
         this.pendingAcceleratorInfo = createEmptyAcceleratorInfo();
         this.fireUpdateEvent();
@@ -433,12 +457,31 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   }
 
   private shouldShowLockIcon(): boolean {
-    if (isCustomizationDisabled()) {
+    // Do not show lock icon in each row if customization is disabled or its
+    // category is locked.
+    if (isCustomizationDisabled() || this.categoryIsLocked) {
       return false;
     }
-
+    // Show lock icon if accelerator is locked.
     return (this.acceleratorInfo && this.acceleratorInfo.locked) ||
         this.sourceIsLocked;
+  }
+
+  private shouldShowEditIcon(): boolean {
+    // Do not show edit icon in each row if customization is disabled, the row
+    // is displayed in edit-dialog(!showEditIcon) or category is locked.
+    if (isCustomizationDisabled() || !this.showEditIcon ||
+        this.categoryIsLocked) {
+      return false;
+    }
+    // Show edit icon if accelerator is not locked.
+    return !(this.acceleratorInfo && this.acceleratorInfo.locked) &&
+        !this.sourceIsLocked;
+  }
+
+  private onEditIconClicked(): void {
+    this.dispatchEvent(
+        new CustomEvent('edit-icon-clicked', {bubbles: true, composed: true}));
   }
 
   /**

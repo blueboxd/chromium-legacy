@@ -79,7 +79,7 @@ class BoxBorderPainter {
                                     float accumulated_opacity) const;
   void PaintSide(const ComplexBorderInfo&,
                  BoxSide,
-                 unsigned alpha,
+                 float alpha,
                  BorderEdgeFlags) const;
   void PaintOneBorderSide(const gfx::Rect& side_rect,
                           BoxSide,
@@ -160,7 +160,7 @@ class BoxBorderPainter {
   bool is_uniform_width_;
   bool is_uniform_color_;
   bool is_rounded_;
-  bool has_alpha_;
+  bool has_transparency_;
 };
 
 }  // namespace blink

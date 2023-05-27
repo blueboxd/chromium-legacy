@@ -13,9 +13,9 @@ import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/js/search_highlight_utils.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../os_about_page/os_about_page.js';
-import '../os_settings_page/os_settings_page.js';
-import '../../settings_shared.css.js';
-import '../../settings_vars.css.js';
+import '../main_page_container/main_page_container.js';
+import '../settings_shared.css.js';
+import '../settings_vars.css.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -93,20 +93,6 @@ export class OsSettingsMainElement extends OsSettingsMainElementBase {
        * Dictionary defining page availability.
        */
       pageAvailability: Object,
-
-      showAndroidApps: Boolean,
-
-      showArcvmManageUsb: Boolean,
-
-      showCrostini: Boolean,
-
-      showReset: Boolean,
-
-      showStartup: Boolean,
-
-      showKerberosSection: Boolean,
-
-      havePlayStoreApp: Boolean,
     };
   }
 
@@ -114,13 +100,6 @@ export class OsSettingsMainElement extends OsSettingsMainElementBase {
   advancedToggleExpanded: boolean;
   toolbarSpinnerActive: boolean;
   pageAvailability: OsPageAvailability;
-  showAndroidApps: boolean;
-  showArcvmManageUsb: boolean;
-  showCrostini: boolean;
-  showReset: boolean;
-  showStartup: boolean;
-  showKerberosSection: boolean;
-  havePlayStoreApp: boolean;
   private overscroll_: number;
   private showPages_: MainPageVisibility;
   private showingSubpage_: boolean;
@@ -195,9 +174,9 @@ export class OsSettingsMainElement extends OsSettingsMainElementBase {
   }
 
   /**
-   * A handler for the 'showing-section' event fired from os-settings-page,
-   * indicating that a section should be scrolled into view as a result of a
-   * navigation.
+   * A handler for the 'showing-section' event fired from
+   * main-page-container, indicating that a section should be
+   * scrolled into view as a result of a navigation.
    */
   private onShowingSection_(e: CustomEvent<HTMLElement>) {
     const section = e.detail;

@@ -17,6 +17,7 @@
 #include "chrome/browser/cart/cart_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_signals.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_context.h"
@@ -100,7 +101,9 @@ class HistoryClustersModuleServiceTest : public testing::Test {
     base::RunLoop run_loop;
     service().GetClusters(base::BindOnce(
         [](base::RunLoop* run_loop, std::vector<history::Cluster>* out_clusters,
-           std::vector<history::Cluster> clusters) {
+           std::vector<history::Cluster> clusters,
+           base::flat_map<int64_t, HistoryClustersModuleRankingSignals>
+               ranking_signals) {
           *out_clusters = std::move(clusters);
           run_loop->Quit();
         },
@@ -159,7 +162,16 @@ history::Cluster SampleCluster(int id,
   sample_non_srp_visit.score = 0.9;
 
   std::vector<history::ClusterVisit> visits;
-  visits.insert(visits.end(), srp_visits, sample_srp_visit);
+  if (srp_visits > 0) {
+    for (size_t i = 0; i < (srp_visits - 1u); i++) {
+      history::ClusterVisit sample_srp_visit_modified = sample_srp_visit;
+      sample_srp_visit.url_for_display =
+          u"https://default-engine.com/search?q=not+top+search";
+      sample_srp_visit.score = 0.3;
+      visits.push_back(sample_srp_visit_modified);
+    }
+    visits.push_back(sample_srp_visit);
+  }
   visits.insert(visits.end(), non_srp_visits, sample_non_srp_visit);
 
   std::string kSampleLabel = "LabelOne";
@@ -178,6 +190,14 @@ history::Cluster SampleCluster(int srp_visits,
                                const std::vector<std::string> related_searches =
                                    {"fruits", "red fruits", "healthy fruits"}) {
   return SampleCluster(1, srp_visits, non_srp_visits, related_searches);
+}
+
+TEST_F(HistoryClustersModuleServiceTest, GetClustersJourneysNotEnabled) {
+  test_history_clusters_service().SetIsJourneysEnabled(
+      /*is_journeys_enabled=*/false);
+
+  std::vector<history::Cluster> clusters = GetClusters();
+  EXPECT_TRUE(clusters.empty());
 }
 
 TEST_F(HistoryClustersModuleServiceTest, GetClusters) {
@@ -219,6 +239,31 @@ TEST_F(HistoryClustersModuleServiceTest, GetClusters) {
                                       1);
   histogram_tester.ExpectUniqueSample(
       "NewTabPage.HistoryClusters.NumRelatedSearches", 3, 1);
+}
+
+TEST_F(HistoryClustersModuleServiceTest, GetClustersLowScoreOrHiddenOrDone) {
+  base::HistogramTester histogram_tester;
+
+  history::Cluster kSampleCluster =
+      SampleCluster(/*srp_visits=*/3, /*non_srp_visits=*/3);
+  kSampleCluster.visits[0].score = 0.0;
+  kSampleCluster.visits[1].interaction_state =
+      history::ClusterVisit::InteractionState::kDone;
+  kSampleCluster.visits[2].interaction_state =
+      history::ClusterVisit::InteractionState::kHidden;
+  kSampleCluster.visits[3].score = 0.0;
+
+  test_history_clusters_service().SetClustersToReturn({kSampleCluster});
+
+  std::vector<history::Cluster> clusters = GetClusters();
+  ASSERT_TRUE(clusters.empty());
+
+  histogram_tester.ExpectUniqueSample(
+      "NewTabPage.HistoryClusters.IneligibleReason", 4, 1);
+  histogram_tester.ExpectUniqueSample(
+      "NewTabPage.HistoryClusters.HasClusterToShow", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "NewTabPage.HistoryClusters.NumClusterCandidates", 0, 1);
 }
 
 TEST_F(HistoryClustersModuleServiceTest, ClusterVisitsCulled) {

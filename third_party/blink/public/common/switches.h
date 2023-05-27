@@ -15,9 +15,16 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 BLINK_COMMON_EXPORT extern const char kAllowPreCommitInput[];
+BLINK_COMMON_EXPORT extern const char
+    kBeforeunloadEventCancelByPreventDefaultPolicy[];
+BLINK_COMMON_EXPORT extern const char
+    kBeforeunloadEventCancelByPreventDefaultPolicy_ForceDisable[];
+BLINK_COMMON_EXPORT extern const char
+    kBeforeunloadEventCancelByPreventDefaultPolicy_ForceEnable[];
 BLINK_COMMON_EXPORT extern const char kBlinkSettings[];
 BLINK_COMMON_EXPORT extern const char kConditionalFocusWindowMs[];
 BLINK_COMMON_EXPORT extern const char kDarkModeSettings[];
+BLINK_COMMON_EXPORT extern const char kDataUrlInSvgUseEnabled[];
 BLINK_COMMON_EXPORT extern const char kDefaultTileHeight[];
 BLINK_COMMON_EXPORT extern const char kDefaultTileWidth[];
 BLINK_COMMON_EXPORT extern const char kDisableImageAnimationResync[];

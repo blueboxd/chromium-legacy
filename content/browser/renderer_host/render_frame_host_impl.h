@@ -105,6 +105,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/sensor_provider.mojom-forward.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
@@ -281,7 +282,6 @@ class RenderWidgetHostView;
 class ServiceWorkerContainerHost;
 class SiteInfo;
 class SpeechSynthesisImpl;
-class SubresourceWebBundleNavigationInfo;
 class TimeoutMonitor;
 class WebAuthRequestSecurityChecker;
 class WebBluetoothServiceImpl;
@@ -2335,8 +2335,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             RunModalPromptDialogCallback callback) override;
   void RunBeforeUnloadConfirm(bool is_reload,
                               RunBeforeUnloadConfirmCallback callback) override;
-  void WillPotentiallyStartOutermostMainFrameNavigation(
-      const GURL& url) override;
+  void MaybeStartOutermostMainFrameNavigation(
+      const std::vector<GURL>& urls) override;
   void UpdateFaviconURL(
       std::vector<blink::mojom::FaviconURLPtr> favicon_urls) override;
   void DownloadURL(blink::mojom::DownloadURLParamsPtr params) override;
@@ -2403,12 +2403,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SendFencedFrameReportingBeacon(
       const std::string& event_data,
       const std::string& event_type,
-      const std::vector<blink::FencedFrame::ReportingDestination>& destinations)
-      override;
+      const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
+      network::AttributionReportingRuntimeFeatures
+          attribution_reporting_runtime_features) override;
   void SetFencedFrameAutomaticBeaconReportEventData(
       const std::string& event_data,
-      const std::vector<blink::FencedFrame::ReportingDestination>& destinations)
-      override;
+      const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
+      network::AttributionReportingRuntimeFeatures
+          attribution_reporting_runtime_features) override;
   void SendPrivateAggregationRequestsForFencedFrameEvent(
       const std::string& event_type) override;
   void CreatePortal(
@@ -2979,9 +2981,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           controller_service_worker_info,
       blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          prefetch_loader_factory,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          topics_loader_factory,
+          subresource_proxying_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           keep_alive_loader_factory,
       mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache_remote,
@@ -3143,6 +3143,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            KeepPrerenderRFHOwnerAfterActivation);
   FRIEND_TEST_ALL_PREFIXES(NavigationSuddenTerminationDisablerTypeBrowserTest,
                            RecordUma);
+  FRIEND_TEST_ALL_PREFIXES(
+      NavigationBrowserTest,
+      NavigationSuddenTerminationDisablerTypeRecordUmaNotHttp);
+  FRIEND_TEST_ALL_PREFIXES(
+      NavigationBrowserTest,
+      NavigationSuddenTerminationDisablerTypeRecordUmaInitialEmptyDocument);
   FRIEND_TEST_ALL_PREFIXES(
       NavigationBrowserTest,
       NavigationSuddenTerminationDisablerTypeRecordUmaSameOrigin);
@@ -3666,7 +3672,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   enum NavigationSuddenTerminationDisablerType : uint32_t {
     kMainFrame = 1 << 0,
     kUnload = 1 << 1,
-    kMaxValue = kUnload,
+    kInitialEmptyDocument = 1 << 2,
+    kNotHttp = 1 << 3,
+    kMaxValue = kNotHttp,
   };
   // Returns information to be recoreded in UMA about sudden termination
   // disablers presence.
@@ -3953,23 +3961,32 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // "reserved.top_navigation" beacon) will originate from the browser. All
   // other fenced frame beacon calls happen through a `fence.sendBeacon()`
   // JavaScript call which will originate from the renderer.
+  // `attribution_reporting_runtime_features` indicates whether Attribution
+  // Reporting API related runtime features are enabled and is needed for
+  // integration with Attribution Reporting API.
   void SendFencedFrameReportingBeaconInternal(
       const std::string& event_data,
       const std::string& event_type,
       blink::FencedFrame::ReportingDestination destination,
       bool from_renderer,
+      network::AttributionReportingRuntimeFeatures
+          attribution_reporting_features,
       absl::optional<int64_t> navigation_id = absl::nullopt);
 
   // Indicates whether this frame has third-party storage
   // partitioning enabled. This depends on the deprecation trial (which can
   // block), content browser client (which can block), and base feature (which
-  // can allow/block). `main_frame_for_storage_partitioning` indicates the top
-  // most frame that third-party storage partitioning is affected by (this can
-  // be the real main frame or it could be a subframe when taking into account
-  // special embedding cases, see CalculateStorageKey's implementation for more
-  // information.)
+  // can allow/block). The `new_rfh_origin` is the same one passed into
+  // CalculateStorageKey.
   bool IsThirdPartyStoragePartitioningEnabled(
-      RenderFrameHostImpl* main_frame_for_storage_partitioning);
+      const url::Origin& new_rfh_origin);
+
+  // Returns the recursive list of parent frames starting with `this` and ending
+  // with the top-level frame, or one frame before the top-level frame if the
+  // top-level frame is an extension. The `new_rfh_origin` is the same one
+  // passed into CalculateStorageKey.
+  std::vector<RenderFrameHostImpl*> GetAncestorChainForStorageKeyCalculation(
+      const url::Origin& new_rfh_origin);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -4663,11 +4680,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //    then the initial transient isolation info (i.e. the default value below)
   //    will be used.  This will match the opaque origin of such a frame.
   net::IsolationInfo isolation_info_ = net::IsolationInfo::CreateTransient();
-
-  // Subresource Web Bundle information that are kept around across
-  // same-document navigations.
-  std::unique_ptr<SubresourceWebBundleNavigationInfo>
-      subresource_web_bundle_navigation_info_;
 
   // Tainted once MediaStream access was granted.
   bool was_granted_media_access_ = false;

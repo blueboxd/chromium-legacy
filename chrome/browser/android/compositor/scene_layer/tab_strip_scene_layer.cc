@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/slim/layer.h"
 #include "cc/slim/solid_color_layer.h"
@@ -21,13 +20,13 @@
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
-bool tab_strip_redesign_enabled;
 
 namespace android {
 
 TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
                                        const JavaRef<jobject>& jobj,
-                                       jboolean is_tab_strip_redesign_enabled)
+                                       jboolean is_tab_strip_redesign_enabled,
+                                       jboolean is_tsr_btn_style_disabled)
     : SceneLayer(env, jobj),
       tab_strip_layer_(cc::slim::SolidColorLayer::Create()),
       scrollable_strip_layer_(cc::slim::Layer::Create()),
@@ -37,6 +36,8 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
       right_fade_(cc::slim::UIResourceLayer::Create()),
       model_selector_button_(cc::slim::UIResourceLayer::Create()),
       model_selector_button_background_(cc::slim::UIResourceLayer::Create()),
+      is_tab_strip_redesign_enabled_(is_tab_strip_redesign_enabled),
+      is_tsr_btn_style_disabled_(is_tsr_btn_style_disabled),
       write_index_(0),
       content_tree_(nullptr) {
   new_tab_button_->SetIsDrawable(true);
@@ -45,7 +46,6 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
   model_selector_button_background_->SetIsDrawable(true);
   left_fade_->SetIsDrawable(true);
   right_fade_->SetIsDrawable(true);
-  tab_strip_redesign_enabled = is_tab_strip_redesign_enabled;
 
   // When the ScrollingStripStacker is used, the new tab button and tabs scroll,
   // while the incognito button and left/ride fade stay fixed. Put the new tab
@@ -59,15 +59,14 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
   tab_strip_layer_->AddChild(model_selector_button_);
   tab_strip_layer_->AddChild(model_selector_button_background_);
   model_selector_button_background_->AddChild(model_selector_button_);
-  if (tab_strip_redesign_enabled) {
+  if (is_tab_strip_redesign_enabled_) {
     tab_strip_layer_->AddChild(new_tab_button_background_);
   }
   tab_strip_layer_->AddChild(new_tab_button_);
   layer()->AddChild(tab_strip_layer_);
 }
 
-TabStripSceneLayer::~TabStripSceneLayer() {
-}
+TabStripSceneLayer::~TabStripSceneLayer() = default;
 
 void TabStripSceneLayer::SetContentTree(
     JNIEnv* env,
@@ -116,7 +115,6 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
                                              jint width,
                                              jint height,
                                              jfloat y_offset,
-                                             jboolean should_readd_background,
                                              jint background_color) {
   gfx::RectF content(0, y_offset, width, height);
   layer()->SetPosition(gfx::PointF(0, y_offset));
@@ -127,20 +125,6 @@ void TabStripSceneLayer::UpdateTabStripLayer(JNIEnv* env,
   // Content tree should not be affected by tab strip scene layer visibility.
   if (content_tree_)
     content_tree_->layer()->SetPosition(gfx::PointF(0, -y_offset));
-
-  // Make sure tab strip changes are committed after rotating the device.
-  // See https://crbug.com/503930 for more details.
-  // InsertChild() forces the tree sync, which seems to fix the problem.
-  // Note that this is a workaround.
-  // TODO(changwan): find out why the update is not committed after rotation.
-  if (should_readd_background) {
-    int background_index = 0;
-    if (content_tree_ && content_tree_->layer()) {
-      background_index = 1;
-    }
-    DCHECK(layer()->children()[background_index] == tab_strip_layer_);
-    layer()->InsertChild(tab_strip_layer_, background_index);
-  }
 }
 
 void TabStripSceneLayer::UpdateNewTabButton(
@@ -168,7 +152,7 @@ void TabStripSceneLayer::UpdateNewTabButton(
   new_tab_button_->SetOpacity(button_alpha);
 
   // Set Tab Strip Redesign new tab button background
-  if (tab_strip_redesign_enabled) {
+  if (is_tab_strip_redesign_enabled_) {
     ui::Resource* button_background_resource =
         resource_manager->GetStaticResourceWithTint(bg_resource_id,
                                                     background_tint, true);
@@ -178,16 +162,23 @@ void TabStripSceneLayer::UpdateNewTabButton(
     float background_top_offset = (button_background_resource->size().height() -
                                    button_resource->size().height()) /
                                   2;
-    new_tab_button_background_->SetUIResourceId(
-        button_background_resource->ui_resource()->id());
-    new_tab_button_background_->SetPosition(gfx::PointF(x, y));
 
-    new_tab_button_background_->SetBounds(button_background_resource->size());
-    new_tab_button_background_->SetHideLayerAndSubtree(!visible);
-    new_tab_button_background_->SetOpacity(button_alpha);
-    new_tab_button_->SetPosition(
-        gfx::PointF(background_left_offset, background_top_offset));
-    new_tab_button_background_->AddChild(new_tab_button_);
+    // Do not show button bg if btn style disabled.
+    if (is_tsr_btn_style_disabled_) {
+      new_tab_button_->SetPosition(
+          gfx::PointF(x + background_left_offset, y + background_top_offset));
+    } else {
+      new_tab_button_background_->SetUIResourceId(
+          button_background_resource->ui_resource()->id());
+      new_tab_button_background_->SetPosition(gfx::PointF(x, y));
+
+      new_tab_button_background_->SetBounds(button_background_resource->size());
+      new_tab_button_background_->SetHideLayerAndSubtree(!visible);
+      new_tab_button_background_->SetOpacity(button_alpha);
+      new_tab_button_->SetPosition(
+          gfx::PointF(background_left_offset, background_top_offset));
+      new_tab_button_background_->AddChild(new_tab_button_);
+    }
   } else {
     // The touch target for the new tab button is skewed towards the end of the
     // strip. This ensures that the view itself is correctly aligned without
@@ -264,14 +255,20 @@ void TabStripSceneLayer::UpdateModelSelectorButtonBackground(
                                  button_resource->size().height()) /
                                 2;
 
-  model_selector_button_background_->SetPosition(gfx::PointF(x, y));
+  // Do not show button bg if btn style disabled.
+  if (is_tsr_btn_style_disabled_) {
+    model_selector_button_->SetPosition(
+        gfx::PointF(x + background_left_offset, y + background_top_offset));
+  } else {
+    model_selector_button_background_->SetPosition(gfx::PointF(x, y));
 
-  model_selector_button_background_->SetBounds(
-      button_background_resource->size());
-  model_selector_button_background_->SetHideLayerAndSubtree(!visible);
-  model_selector_button_background_->SetOpacity(button_alpha);
-  model_selector_button_->SetPosition(
-      gfx::PointF(background_left_offset, background_top_offset));
+    model_selector_button_background_->SetBounds(
+        button_background_resource->size());
+    model_selector_button_background_->SetHideLayerAndSubtree(!visible);
+    model_selector_button_background_->SetOpacity(button_alpha);
+    model_selector_button_->SetPosition(
+        gfx::PointF(background_left_offset, background_top_offset));
+  }
   model_selector_button_->SetBounds(button_resource->size());
   model_selector_button_->SetHideLayerAndSubtree(!visible);
   model_selector_button_->SetOpacity(button_alpha);
@@ -412,7 +409,7 @@ void TabStripSceneLayer::PutStripTabLayer(
       y, width, height, content_offset_x, content_offset_y, divider_offset_x,
       bottom_offset_y, close_button_padding, close_button_alpha,
       is_start_divider_visible, is_end_divider_visible, is_loading,
-      spinner_rotation, brightness, opacity, tab_strip_redesign_enabled);
+      spinner_rotation, brightness, opacity, is_tab_strip_redesign_enabled_);
 }
 
 scoped_refptr<TabHandleLayer> TabStripSceneLayer::GetNextLayer(
@@ -440,13 +437,13 @@ SkColor TabStripSceneLayer::GetBackgroundColor() {
   return SceneLayer::GetBackgroundColor();
 }
 
-static jlong JNI_TabStripSceneLayer_Init(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jobj,
-    jboolean is_tab_strip_redesign_enabled) {
+static jlong JNI_TabStripSceneLayer_Init(JNIEnv* env,
+                                         const JavaParamRef<jobject>& jobj,
+                                         jboolean is_tab_strip_redesign_enabled,
+                                         jboolean is_tsr_btn_style_disabled) {
   // This will automatically bind to the Java object and pass ownership there.
-  TabStripSceneLayer* scene_layer =
-      new TabStripSceneLayer(env, jobj, is_tab_strip_redesign_enabled);
+  TabStripSceneLayer* scene_layer = new TabStripSceneLayer(
+      env, jobj, is_tab_strip_redesign_enabled, is_tsr_btn_style_disabled);
   return reinterpret_cast<intptr_t>(scene_layer);
 }
 

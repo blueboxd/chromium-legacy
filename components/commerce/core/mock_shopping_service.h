@@ -7,11 +7,16 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace bookmarks {
+class BookmarkNode;
+}  // namespace bookmarks
 
 namespace commerce {
 
@@ -67,8 +72,21 @@ class MockShoppingService : public commerce::ShoppingService {
               IsSubscribedFromCache,
               (const CommerceSubscription& subscription),
               (override));
+  MOCK_METHOD(void,
+              GetAllPriceTrackedBookmarks,
+              (base::OnceCallback<
+                  void(std::vector<const bookmarks::BookmarkNode*>)> callback),
+              (override));
+  MOCK_METHOD(std::vector<const bookmarks::BookmarkNode*>,
+              GetAllShoppingBookmarks,
+              (),
+              (override));
   MOCK_METHOD(void, ScheduleSavedProductUpdate, (), (override));
   MOCK_METHOD(bool, IsShoppingListEligible, (), (override));
+  MOCK_METHOD(void,
+              WaitForReady,
+              (base::OnceCallback<void(ShoppingService*)>),
+              (override));
   MOCK_METHOD(void,
               IsClusterIdTrackedByUser,
               (uint64_t cluster_id, base::OnceCallback<void(bool)> callback),
@@ -87,8 +105,13 @@ class MockShoppingService : public commerce::ShoppingService {
   void SetGetAllSubscriptionsCallbackValue(
       std::vector<CommerceSubscription> subscriptions);
   void SetIsShoppingListEligible(bool enabled);
+  void SetIsReady(bool ready);
   void SetIsClusterIdTrackedByUserResponse(bool is_tracked);
   void SetIsMerchantViewerEnabled(bool is_enabled);
+  void SetGetAllPriceTrackedBookmarksCallbackValue(
+      std::vector<const bookmarks::BookmarkNode*> bookmarks);
+  void SetGetAllShoppingBookmarksValue(
+      std::vector<const bookmarks::BookmarkNode*> bookmarks);
 };
 
 }  // namespace commerce

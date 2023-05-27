@@ -21,7 +21,6 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
@@ -65,8 +64,6 @@ class SaveUpdateAddressProfilePromptControllerTest
     original_profile_ = test::GetFullProfile();
     original_profile_.SetInfo(NAME_FULL, u"John Doe", GetLocale());
     original_profile_.SetInfo(PHONE_HOME_WHOLE_NUMBER, u"", GetLocale());
-
-    CountryNames::SetLocaleString(GetLocale());
   }
 
   TestingProfile::TestingFactories GetTestingFactories() const override {
@@ -273,8 +270,7 @@ TEST_F(SaveUpdateAddressProfilePromptControllerTest,
        ReturnsCorrectStringsToDisplayWhenMigrateLocalAddress) {
   sync_service_->GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
-      /*types=*/syncer::UserSelectableTypeSet(
-          syncer::UserSelectableType::kPasswords));
+      /*types=*/{syncer::UserSelectableType::kPasswords});
   SigninUser();
   SetUpController(/*is_update=*/false, /*is_migration_to_account=*/true);
 
@@ -305,8 +301,7 @@ TEST_F(SaveUpdateAddressProfilePromptControllerTest,
        ReturnsCorrectStringsToDisplayWhenMigrateSyncAddress) {
   sync_service_->GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
-      /*types=*/syncer::UserSelectableTypeSet(
-          syncer::UserSelectableType::kAutofill));
+      /*types=*/{syncer::UserSelectableType::kAutofill});
   SigninUser();
   SetUpController(/*is_update=*/false, /*is_migration_to_account=*/true);
 

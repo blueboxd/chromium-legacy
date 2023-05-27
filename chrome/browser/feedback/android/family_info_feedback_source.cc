@@ -9,7 +9,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/notreached.h"
 #include "chrome/browser/feedback/android/jni_headers/FamilyInfoFeedbackSource_jni.h"
-#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -76,7 +75,7 @@ void FamilyInfoFeedbackSource::GetFamilyMembers() {
 }
 
 void FamilyInfoFeedbackSource::OnResponse(
-    KidsExternalFetcherStatus status,
+    supervised_user::ProtoFetcherStatus status,
     std::unique_ptr<kids_chrome_management::ListFamilyMembersResponse>
         response) {
   if (!status.IsOk()) {
@@ -100,8 +99,7 @@ void FamilyInfoFeedbackSource::OnSuccess(
     if (primary_account_gaia == member.user_id()) {
       // If a child is signed-in, report the parental control web filter.
       ScopedJavaLocalRef<jstring> child_web_filter_type = nullptr;
-      if (base::FeatureList::IsEnabled(kReportParentalControlSitesChild) &&
-          member.role() == kids_chrome_management::CHILD) {
+      if (member.role() == kids_chrome_management::CHILD) {
         supervised_user::SupervisedUserURLFilter::WebFilterType
             web_filter_type =
                 supervised_user_service_->GetURLFilter()->GetWebFilterType();
@@ -118,7 +116,8 @@ void FamilyInfoFeedbackSource::OnSuccess(
   OnComplete();
 }
 
-void FamilyInfoFeedbackSource::OnFailure(KidsExternalFetcherStatus status) {
+void FamilyInfoFeedbackSource::OnFailure(
+    supervised_user::ProtoFetcherStatus status) {
   DLOG(WARNING) << "ListFamilyMembers failed with status: "
                 << status.ToString();
   OnComplete();

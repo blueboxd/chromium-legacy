@@ -181,8 +181,7 @@ struct GPU_EXPORT Capabilities {
   // Used by OOP raster.
   bool context_supports_distance_field_text = true;
 
-  // Used only by NaCL graphics 3D.
-  bool use_shared_images_swapchain_for_ppapi = false;
+  bool using_vulkan_context = false;
 
   GpuMemoryBufferFormatSet gpu_memory_buffer_formats = {
       gfx::BufferFormat::BGR_565,   gfx::BufferFormat::RGBA_4444,

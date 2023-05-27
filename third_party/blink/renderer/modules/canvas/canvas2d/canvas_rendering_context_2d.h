@@ -169,6 +169,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
     return CanvasRenderingContext::WouldTaintOrigin(source);
   }
   void DisableAcceleration() override;
+  bool ShouldDisableAccelerationBecauseOfReadback() const override;
 
   int Width() const final;
   int Height() const final;
@@ -192,8 +193,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   sk_sp<PaintFilter> StateGetFilter() final;
   void SnapshotStateForFilter() final;
-
-  void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
   void FinalizeFrame(CanvasResourceProvider::FlushReason) override;
 

@@ -49,7 +49,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/service/sync_service_observer.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -463,6 +463,10 @@ class PersonalDataManager : public KeyedService,
   static void DedupeCreditCardToSuggest(
       std::list<CreditCard*>* cards_to_suggest);
 
+  // Check if `credit_card` has a duplicate card present in either Local or
+  // Server card lists.
+  bool IsCardPresentAsBothLocalAndServerCards(const CreditCard& credit_card);
+
   // Cancels any pending queries to the server web database.
   void CancelPendingServerQueries();
 
@@ -594,7 +598,7 @@ class PersonalDataManager : public KeyedService,
   bool IsSyncEnabledFor(syncer::UserSelectableType data_type) const;
 
   // Returns true if payments mandatory re-auth is enabled.
-  bool IsAutofillPaymentMethodsMandatoryReauthEnabled();
+  virtual bool IsAutofillPaymentMethodsMandatoryReauthEnabled();
 
   // Used to automatically import addresses without a prompt. Should only be
   // set to true in tests.

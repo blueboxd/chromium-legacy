@@ -5,10 +5,16 @@
 #ifndef CONTENT_BROWSER_INTEREST_GROUP_INTEREST_GROUP_PA_REPORT_UTIL_H_
 #define CONTENT_BROWSER_INTEREST_GROUP_INTEREST_GROUP_PA_REPORT_UTIL_H_
 
+#include <vector>
+
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom-forward.h"
+#include "third_party/blink/public/mojom/private_aggregation/private_aggregation_host.mojom-forward.h"
 
 namespace content {
 
@@ -36,6 +42,12 @@ struct CONTENT_EXPORT PrivateAggregationRequestWithEventType {
   absl::optional<std::string> event_type;
 };
 
+// Various timings that can be used as base values in private aggregation.
+struct CONTENT_EXPORT PrivateAggregationTimings {
+  base::TimeDelta script_run_time;
+  base::TimeDelta signals_fetch_time;
+};
+
 // If request's contribution is an AggregatableReportForEventContribution, fills
 // the contribution in with post-auction signals such as winning_bid, converts
 // it to an AggregatableReportHistogramContribution and returns the resulting
@@ -50,7 +62,14 @@ FillInPrivateAggregationRequest(
     double winning_bid,
     double highest_scoring_other_bid,
     const absl::optional<auction_worklet::mojom::RejectReason> reject_reason,
+    const PrivateAggregationTimings& timings,
     bool is_winner);
+
+// Splits a vector of requests into those with matching debug mode details and
+// then forwards to the provided mojo pipe.
+CONTENT_EXPORT void SplitContributionsIntoBatchesThenSendToHost(
+    std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr> requests,
+    mojo::Remote<blink::mojom::PrivateAggregationHost>& remote_host);
 
 }  // namespace content
 

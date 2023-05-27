@@ -57,6 +57,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -362,7 +363,7 @@ bool DownloadItemModel::MightBeMalicious() const {
 }
 
 // If you change this definition of malicious, also update
-// DownloadManagerImpl::NonMaliciousInProgressCount.
+// DownloadManagerImpl::BlockingShutdownCount.
 bool DownloadItemModel::IsMalicious() const {
   if (!MightBeMalicious())
     return false;
@@ -950,20 +951,21 @@ DownloadItemModel::GetBubbleUIInfoForTailoredWarning() const {
   if (danger_type == download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT &&
       tailored_verdict.tailored_verdict_type() ==
           TailoredVerdict::SUSPICIOUS_ARCHIVE) {
-    return DownloadUIModel::BubbleUIInfo(
-               l10n_util::GetStringUTF16(
-                   IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SUSPICIOUS_ARCHIVE))
-        .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
+    return DownloadUIModel::BubbleUIInfo()
+        .AddSubpageSummary(l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SUSPICIOUS_ARCHIVE))
+        .AddIconAndColor(features::IsChromeRefresh2023()
+                             ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                             : vector_icons::kNotSecureWarningIcon,
                          ui::kColorAlertMediumSeverityIcon)
         .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
         .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-        .AddSubpageButton(l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                          DownloadCommands::Command::DISCARD,
-                          /*is_prominent=*/true)
-        .AddSubpageButton(
+        .AddPrimarySubpageButton(
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
+            DownloadCommands::Command::DISCARD)
+        .AddSecondarySubpageButton(
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-            DownloadCommands::Command::KEEP,
-            /*is_prominent=*/false);
+            DownloadCommands::Command::KEEP, ui::kColorAlertMediumSeverityText);
   }
 
   // Cookie theft
@@ -984,28 +986,31 @@ DownloadItemModel::GetBubbleUIInfoForTailoredWarning() const {
           "SBClientDownload.TailoredWarning.HasVaidEmailForAccountInfo",
           !email.empty());
       if (!email.empty()) {
-        return DownloadUIModel::BubbleUIInfo(
-                   l10n_util::GetStringFUTF16(
-                       IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT_AND_ACCOUNT,
-                       base::ASCIIToUTF16(email)))
-            .AddIconAndColor(vector_icons::kDangerousIcon,
+        return DownloadUIModel::BubbleUIInfo()
+            .AddSubpageSummary(l10n_util::GetStringFUTF16(
+                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT_AND_ACCOUNT,
+                base::ASCIIToUTF16(email)))
+            .AddIconAndColor(features::IsChromeRefresh2023()
+                                 ? vector_icons::kDangerousChromeRefreshIcon
+                                 : vector_icons::kDangerousIcon,
                              ui::kColorAlertHighSeverity)
             .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-            .AddSubpageButton(
+            .AddPrimarySubpageButton(
                 l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                DownloadCommands::Command::DISCARD,
-                /*is_prominent=*/true);
+                DownloadCommands::Command::DISCARD);
       }
     }
-    return DownloadUIModel::BubbleUIInfo(
-               l10n_util::GetStringUTF16(
-                   IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT))
-        .AddIconAndColor(vector_icons::kDangerousIcon,
+    return DownloadUIModel::BubbleUIInfo()
+        .AddSubpageSummary(l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT))
+        .AddIconAndColor(features::IsChromeRefresh2023()
+                             ? vector_icons::kDangerousChromeRefreshIcon
+                             : vector_icons::kDangerousIcon,
                          ui::kColorAlertHighSeverity)
         .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-        .AddSubpageButton(l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                          DownloadCommands::Command::DISCARD,
-                          /*is_prominent=*/true);
+        .AddPrimarySubpageButton(
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
+            DownloadCommands::Command::DISCARD);
   }
 
   NOTREACHED();

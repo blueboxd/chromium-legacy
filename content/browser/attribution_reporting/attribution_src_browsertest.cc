@@ -34,6 +34,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -565,9 +566,9 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                      JsReplace("createAttributionSrcImg($1);", register_url)));
 
   register_response1->WaitForRequest();
-  ASSERT_EQ(register_response1->http_request()->headers.at(
-                "Attribution-Reporting-Eligible"),
-            "event-source, trigger");
+  ExpectValidAttributionReportingEligibleHeaderForImg(
+      register_response1->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
   ASSERT_FALSE(base::Contains(register_response1->http_request()->headers,
                               "Attribution-Reporting-Support"));
 
@@ -579,9 +580,9 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
 
   // Ensure that redirect requests also contain the header.
   register_response2->WaitForRequest();
-  ASSERT_EQ(register_response2->http_request()->headers.at(
-                "Attribution-Reporting-Eligible"),
-            "event-source, trigger");
+  ExpectValidAttributionReportingEligibleHeaderForImg(
+      register_response2->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
   ASSERT_FALSE(base::Contains(register_response2->http_request()->headers,
                               "Attribution-Reporting-Support"));
 }
@@ -709,7 +710,7 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicTriggerBrowserTest,
           attribution_reporting::AggregatableValues(),
           ::aggregation_service::mojom::AggregationCoordinator::kDefault,
           attribution_reporting::mojom::SourceRegistrationTimeConfig::
-              kInclude))));
+              kExclude))));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -1143,14 +1144,89 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcFencedFrameBrowserTest,
   EXPECT_EQ(data_host->source_data().size(), 1u);
 }
 
+// Tests to verify that cross app web is not enabled when base::Feature is
+// enabled but runtime feature is disabled (without
+// `features::kPrivacySandboxAdsAPIsOverride` override).
+class AttributionSrcCrossAppWebRuntimeDisabledBrowserTest
+    : public AttributionSrcBrowserTest {
+ public:
+  AttributionSrcCrossAppWebRuntimeDisabledBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{network::features::
+                                  kAttributionReportingCrossAppWeb},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Verify that the Attribution-Reporting-Support header setting is gated by the
+// runtime feature.
+IN_PROC_BROWSER_TEST_F(AttributionSrcCrossAppWebRuntimeDisabledBrowserTest,
+                       Img_SupportHeaderNotSet) {
+  // Create a separate server as we cannot register a `ControllableHttpResponse`
+  // after the server starts.
+  auto https_server = std::make_unique<net::EmbeddedTestServer>(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  net::test_server::RegisterDefaultHandlers(https_server.get());
+  https_server->ServeFilesFromSourceDirectory(
+      "content/test/data/attribution_reporting");
+  https_server->ServeFilesFromSourceDirectory("content/test/data");
+
+  auto register_response1 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/register_source1");
+  auto register_response2 =
+      std::make_unique<net::test_server::ControllableHttpResponse>(
+          https_server.get(), "/register_source2");
+  ASSERT_TRUE(https_server->Start());
+
+  GURL page_url =
+      https_server->GetURL("b.test", "/page_with_impression_creator.html");
+  ASSERT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  GURL register_url = https_server->GetURL("d.test", "/register_source1");
+  ASSERT_TRUE(ExecJs(web_contents(),
+                     JsReplace("createAttributionSrcImg($1);", register_url)));
+
+  register_response1->WaitForRequest();
+  ExpectValidAttributionReportingEligibleHeaderForImg(
+      register_response1->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
+  ASSERT_FALSE(base::Contains(register_response1->http_request()->headers,
+                              "Attribution-Reporting-Support"));
+
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->AddCustomHeader("Location", "/register_source2");
+  register_response1->Send(http_response->ToResponseString());
+  register_response1->Done();
+
+  // Ensure that redirect requests also don't contain the
+  // Attribution-Reporting-Support header.
+  register_response2->WaitForRequest();
+  ExpectValidAttributionReportingEligibleHeaderForImg(
+      register_response2->http_request()->headers.at(
+          "Attribution-Reporting-Eligible"));
+  ASSERT_FALSE(base::Contains(register_response2->http_request()->headers,
+                              "Attribution-Reporting-Support"));
+}
+
 class AttributionSrcCrossAppWebEnabledBrowserTest
     : public AttributionSrcBrowserTest {
  public:
-  AttributionSrcCrossAppWebEnabledBrowserTest() = default;
+  AttributionSrcCrossAppWebEnabledBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{network::features::
+                                  kAttributionReportingCrossAppWeb,
+                              features::kPrivacySandboxAdsAPIsOverride},
+        /*disabled_features=*/{});
+  }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list{
-      network::features::kAttributionReportingCrossAppWeb};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcCrossAppWebEnabledBrowserTest,
@@ -1320,8 +1396,8 @@ IN_PROC_BROWSER_TEST_F(
 struct OsRegistrationTestCase {
   const char* name;
   const char* header;
-  std::vector<GURL> expected_os_sources;
-  std::vector<GURL> expected_os_triggers;
+  std::vector<std::vector<GURL>> expected_os_sources;
+  std::vector<std::vector<GURL>> expected_os_triggers;
 };
 
 class AttributionSrcCrossAppWebEnabledOsRegistrationBrowserTest
@@ -1335,12 +1411,24 @@ INSTANTIATE_TEST_SUITE_P(
         OsRegistrationTestCase{
             .name = "source",
             .header = "Attribution-Reporting-Register-OS-Source",
-            .expected_os_sources = {GURL("https://r.test/x")},
+            .expected_os_sources =
+                {
+                    {
+                        GURL("https://r1.test/x"),
+                        GURL("https://r2.test/y"),
+                    },
+                },
         },
         OsRegistrationTestCase{
             .name = "trigger",
             .header = "Attribution-Reporting-Register-OS-Trigger",
-            .expected_os_triggers = {GURL("https://r.test/x")},
+            .expected_os_triggers =
+                {
+                    {
+                        GURL("https://r1.test/x"),
+                        GURL("https://r2.test/y"),
+                    },
+                },
         }),
     [](const auto& info) { return info.param.name; });  // test name generator
 
@@ -1388,7 +1476,8 @@ IN_PROC_BROWSER_TEST_P(
   register_response->WaitForRequest();
 
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
-  http_response->AddCustomHeader(test_case.header, R"("https://r.test/x")");
+  http_response->AddCustomHeader(test_case.header,
+                                 R"("https://r1.test/x", "https://r2.test/y")");
   register_response->Send(http_response->ToResponseString());
   register_response->Done();
 

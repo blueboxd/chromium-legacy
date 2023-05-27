@@ -37,7 +37,7 @@
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/sync/history_backend_for_sync.h"
 #include "components/history/core/browser/visit_tracker.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/service/sync_service.h"
 #include "sql/init_status.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
@@ -961,7 +961,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void NotifyURLsModified(const URLRows& changed_urls,
                           bool is_from_expiration) override;
   void NotifyURLsDeleted(DeletionInfo deletion_info) override;
-  void NotifyVisitUpdated(const VisitRow& visit) override;
+  void NotifyVisitUpdated(const VisitRow& visit,
+                          VisitUpdateReason reason) override;
   void NotifyVisitDeleted(const VisitRow& visit) override;
 
   // Deleting all history ------------------------------------------------------

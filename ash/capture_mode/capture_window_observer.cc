@@ -29,10 +29,11 @@ CaptureWindowObserver::~CaptureWindowObserver() {
 }
 
 void CaptureWindowObserver::UpdateSelectedWindowAtPosition(
-    const gfx::Point& location_in_screen,
-    const std::set<aura::Window*>& ignore_windows) {
-  if (capture_mode_session_->IsInCountDownAnimation())
+    const gfx::Point& location_in_screen) {
+  if (capture_mode_session_->IsInCountDownAnimation()) {
     return;
+  }
+
   location_in_screen_ = location_in_screen;
 
   SetSelectedWindow(
@@ -40,9 +41,17 @@ void CaptureWindowObserver::UpdateSelectedWindowAtPosition(
   capture_mode_session_->UpdateCursor(location_in_screen, /*is_touch=*/false);
 }
 
-void CaptureWindowObserver::SetSelectedWindow(aura::Window* window) {
-  if (window_ == window)
+void CaptureWindowObserver::SetSelectedWindow(aura::Window* window,
+                                              bool bar_anchored_to_window) {
+  if (window_ == window) {
     return;
+  }
+
+  if (window_ && bar_anchored_to_window_) {
+    return;
+  }
+
+  bar_anchored_to_window_ = bar_anchored_to_window;
 
   // Don't capture wallpaper window.
   if (window && window->parent() &&
@@ -84,32 +93,41 @@ void CaptureWindowObserver::OnWindowBoundsChanged(
   auto* controller = CaptureModeController::Get();
   if (!controller->is_recording_in_progress())
     controller->camera_controller()->MaybeUpdatePreviewWidget();
+
+  // The bounds of the capture bar should be updated accordingly if the bounds
+  // of the selected window has been updated.
+  if (bar_anchored_to_window_ &&
+      capture_mode_session_->capture_mode_bar_widget()) {
+    capture_mode_session_->RefreshBarWidgetBounds();
+  }
 }
 
 void CaptureWindowObserver::OnWindowVisibilityChanging(aura::Window* window,
                                                        bool visible) {
-  DCHECK_EQ(window, window_);
-  DCHECK(!visible);
-  if (capture_mode_session_->IsInCountDownAnimation()) {
+  CHECK_EQ(window, window_);
+  CHECK(!visible);
+  StopObserving();
+
+  if (bar_anchored_to_window_ ||
+      capture_mode_session_->IsInCountDownAnimation()) {
     CaptureModeController::Get()->Stop();
     return;
   }
 
-  StopObserving();
-  UpdateSelectedWindowAtPosition(location_in_screen_,
-                                 /*ignore_windows=*/{window});
+  UpdateSelectedWindowAtPosition(location_in_screen_);
 }
 
 void CaptureWindowObserver::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(window, window_);
-  if (capture_mode_session_->IsInCountDownAnimation()) {
+  CHECK_EQ(window, window_);
+  StopObserving();
+
+  if (bar_anchored_to_window_ ||
+      capture_mode_session_->IsInCountDownAnimation()) {
     CaptureModeController::Get()->Stop();
     return;
   }
 
-  StopObserving();
-  UpdateSelectedWindowAtPosition(location_in_screen_,
-                                 /*ignore_windows=*/{window});
+  UpdateSelectedWindowAtPosition(location_in_screen_);
 }
 
 void CaptureWindowObserver::OnWindowActivated(ActivationReason reason,
@@ -119,7 +137,7 @@ void CaptureWindowObserver::OnWindowActivated(ActivationReason reason,
   // may change the selected window to the activated window if it's under the
   // current event location. If there is no selected window at the moment, we
   // also want to check if new activated window should be focused.
-  UpdateSelectedWindowAtPosition(location_in_screen_, /*ignore_windows=*/{});
+  UpdateSelectedWindowAtPosition(location_in_screen_);
 }
 
 void CaptureWindowObserver::StartObserving(aura::Window* window) {

@@ -102,8 +102,9 @@ class BackForwardCacheBrowserTestAllowCacheControlNoStore
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnableFeatureAndSetParams(features::kBackForwardCache, "", "");
-    EnableFeatureAndSetParams(kCacheControlNoStoreEnterBackForwardCache,
-                              "level", "store-and-evict");
+    EnableFeatureAndSetParams(
+        features::kCacheControlNoStoreEnterBackForwardCache, "level",
+        "store-and-evict");
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };
@@ -143,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
   // Make sure that the tree result also has the same reason.
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
-                  NotRestoredReasons(NotRestoredReason::kCacheControlNoStore),
+                  NotRestoredReasons({NotRestoredReason::kCacheControlNoStore}),
                   BlockListedFeatures()));
 }
 
@@ -199,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
 }
 
@@ -248,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
   RenderFrameHostImplWrapper rfh_a_2(current_frame_host());
   rfh_a_2->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
@@ -264,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
                     FROM_HERE);
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
-                  NotRestoredReasons(NotRestoredReason::kCacheControlNoStore),
+                  NotRestoredReasons({NotRestoredReason::kCacheControlNoStore}),
                   BlockListedFeatures()));
 }
 
@@ -312,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(
                     FROM_HERE);
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
-                  NotRestoredReasons(NotRestoredReason::kCacheControlNoStore),
+                  NotRestoredReasons({NotRestoredReason::kCacheControlNoStore}),
                   BlockListedFeatures()));
 }
 
@@ -347,8 +348,8 @@ IN_PROC_BROWSER_TEST_F(
                     {}, {}, {}, {}, FROM_HERE);
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
-                  NotRestoredReasons(NotRestoredReason::kJavaScriptExecution,
-                                     NotRestoredReason::kCacheControlNoStore),
+                  NotRestoredReasons({NotRestoredReason::kJavaScriptExecution,
+                                      NotRestoredReason::kCacheControlNoStore}),
                   BlockListedFeatures()));
 }
 
@@ -386,10 +387,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
-          NotRestoredReasons(NotRestoredReason::kBlocklistedFeatures,
-                             NotRestoredReason::kCacheControlNoStore),
-          BlockListedFeatures(blink::scheduler::WebSchedulerTrackedFeature::
-                                  kBroadcastChannel)));
+          NotRestoredReasons({NotRestoredReason::kBlocklistedFeatures,
+                              NotRestoredReason::kCacheControlNoStore}),
+          BlockListedFeatures({blink::scheduler::WebSchedulerTrackedFeature::
+                                   kBroadcastChannel})));
 }
 
 // Test that a page with cache-control:no-store records eviction reasons along
@@ -423,8 +424,8 @@ IN_PROC_BROWSER_TEST_F(
                     {}, {}, {}, {}, FROM_HERE);
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
-                  NotRestoredReasons(NotRestoredReason::kJavaScriptExecution,
-                                     NotRestoredReason::kCacheControlNoStore),
+                  NotRestoredReasons({NotRestoredReason::kJavaScriptExecution,
+                                      NotRestoredReason::kCacheControlNoStore}),
                   BlockListedFeatures()));
 }
 
@@ -508,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
 }
 
@@ -567,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
           NotRestoredReasons(
-              NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified),
+              {NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified}),
           BlockListedFeatures()));
 }
 
@@ -632,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
           NotRestoredReasons(
-              NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified),
+              {NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified}),
           BlockListedFeatures()));
 
   RenderFrameHostImplWrapper rfh_a_2(current_frame_host());
@@ -649,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(
                     FROM_HERE);
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
-                  NotRestoredReasons(NotRestoredReason::kCacheControlNoStore),
+                  NotRestoredReasons({NotRestoredReason::kCacheControlNoStore}),
                   BlockListedFeatures()));
 }
 
@@ -937,8 +938,9 @@ class BackForwardCacheBrowserTestRestoreCacheControlNoStoreUnlessCookieChange
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnableFeatureAndSetParams(features::kBackForwardCache, "", "");
-    EnableFeatureAndSetParams(kCacheControlNoStoreEnterBackForwardCache,
-                              "level", "restore-unless-cookie-change");
+    EnableFeatureAndSetParams(
+        features::kCacheControlNoStoreEnterBackForwardCache, "level",
+        "restore-unless-cookie-change");
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };
@@ -1050,7 +1052,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
 }
 
@@ -1108,7 +1110,7 @@ IN_PROC_BROWSER_TEST_F(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
           NotRestoredReasons(
-              NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified),
+              {NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified}),
           BlockListedFeatures()));
 }
 
@@ -1192,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
 }
 
@@ -1235,7 +1237,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
 }
 
@@ -1283,7 +1285,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
 }
 
@@ -1372,7 +1374,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
 }
 
@@ -1417,7 +1419,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
               MatchesDocumentResult(
                   NotRestoredReasons(
-                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                      {NotRestoredReason::kCacheControlNoStoreCookieModified}),
                   BlockListedFeatures()));
 }
 
@@ -1426,9 +1428,9 @@ class BackForwardCacheBrowserTestRestoreUnlessHTTPOnlyCookieChange
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EnableFeatureAndSetParams(features::kBackForwardCache, "", "");
-    EnableFeatureAndSetParams(kCacheControlNoStoreEnterBackForwardCache,
-                              "level",
-                              "restore-unless-http-only-cookie-change");
+    EnableFeatureAndSetParams(
+        features::kCacheControlNoStoreEnterBackForwardCache, "level",
+        "restore-unless-http-only-cookie-change");
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };
@@ -1553,7 +1555,7 @@ IN_PROC_BROWSER_TEST_F(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
           NotRestoredReasons(
-              NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified),
+              {NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified}),
           BlockListedFeatures()));
 }
 
@@ -1610,7 +1612,7 @@ IN_PROC_BROWSER_TEST_F(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
           NotRestoredReasons(
-              NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified),
+              {NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified}),
           BlockListedFeatures()));
 }
 
@@ -1699,7 +1701,7 @@ IN_PROC_BROWSER_TEST_F(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
           NotRestoredReasons(
-              NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified),
+              {NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified}),
           BlockListedFeatures()));
 }
 
@@ -1763,7 +1765,7 @@ IN_PROC_BROWSER_TEST_F(
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
           NotRestoredReasons(
-              NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified),
+              {NotRestoredReason::kCacheControlNoStoreHTTPOnlyCookieModified}),
           BlockListedFeatures()));
 }
 

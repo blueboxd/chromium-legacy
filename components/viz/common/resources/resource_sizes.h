@@ -14,6 +14,7 @@
 #include "cc/base/math_util.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/viz_resource_format_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -21,13 +22,6 @@ namespace viz {
 
 class VIZ_RESOURCE_FORMAT_EXPORT ResourceSizes {
  public:
-  // Returns true if the width is valid and fits in bytes, false otherwise.
-  template <typename T>
-  static bool VerifyWidthInBytes(int width, ResourceFormat format);
-  // Returns true if the size is valid and fits in bytes, false otherwise.
-  template <typename T>
-  static bool VerifySizeInBytes(const gfx::Size& size, ResourceFormat format);
-
   // Returns true if the width is valid and fits in bytes, false otherwise.
   // Sets the bytes result in the out parameter |bytes|.
   template <typename T>
@@ -109,23 +103,6 @@ class VIZ_RESOURCE_FORMAT_EXPORT ResourceSizes {
   // Not instantiable.
   ResourceSizes() = delete;
 };
-
-template <typename T>
-bool ResourceSizes::VerifyWidthInBytes(int width, ResourceFormat format) {
-  VerifyType<T>();
-  if (width <= 0)
-    return false;
-  return VerifyWidthInBytesInternal<T>(width, format, false);
-}
-
-template <typename T>
-bool ResourceSizes::VerifySizeInBytes(const gfx::Size& size,
-                                      ResourceFormat format) {
-  VerifyType<T>();
-  if (size.IsEmpty())
-    return false;
-  return VerifySizeInBytesInternal<T>(size, format, false);
-}
 
 template <typename T>
 bool ResourceSizes::MaybeWidthInBytes(int width,

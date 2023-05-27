@@ -244,7 +244,8 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
                         uint32_t usage,
                         GLenum gl_target,
                         bool framebuffer_attachment_angle,
-                        bool is_cleared);
+                        bool is_cleared,
+                        bool retain_gl_texture);
   IOSurfaceImageBacking(const IOSurfaceImageBacking& other) = delete;
   IOSurfaceImageBacking& operator=(const IOSurfaceImageBacking& other) = delete;
   ~IOSurfaceImageBacking() override;
@@ -309,7 +310,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
 
   // Updates the read and write accesses tracker variables on BeginAccess and
   // waits on `release_fence_` if fence is not null.
-  void HandleBeginAccessSync(bool readonly);
+  bool HandleBeginAccessSync(bool readonly);
   // Updates the read and write accesses tracker variables on EndAccess.
   void HandleEndAccessSync(bool readonly);
 

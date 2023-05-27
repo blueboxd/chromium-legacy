@@ -220,8 +220,7 @@ void CreateTestFormField(const char* label,
                          FormFieldData* field) {
   CreateTestFormField(label, name, value, type, field);
   field->autocomplete_attribute = autocomplete;
-  field->parsed_autocomplete =
-      ParseAutocompleteAttribute(autocomplete, field->max_length);
+  field->parsed_autocomplete = ParseAutocompleteAttribute(autocomplete);
 }
 
 void CreateTestFormField(const char* label,
@@ -265,8 +264,7 @@ void CreateTestSelectField(const char* label,
                            FormFieldData* field) {
   CreateTestSelectField(label, name, value, values, contents, field);
   field->autocomplete_attribute = autocomplete;
-  field->parsed_autocomplete =
-      ParseAutocompleteAttribute(autocomplete, field->max_length);
+  field->parsed_autocomplete = ParseAutocompleteAttribute(autocomplete);
 }
 
 void CreateTestSelectField(const std::vector<const char*>& values,
@@ -1230,7 +1228,7 @@ void AddFieldPredictionsToForm(
   }
 }
 
-Suggestion CreateAutofillSuggestion(int frontend_id,
+Suggestion CreateAutofillSuggestion(Suggestion::FrontendId frontend_id,
                                     const std::u16string& main_text_value,
                                     const Suggestion::Payload& payload) {
   Suggestion suggestion;

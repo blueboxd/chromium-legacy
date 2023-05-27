@@ -7,16 +7,54 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/protocol/webauthn_credential_specifics.pb.h"
 
 namespace password_manager {
 
+namespace {
+
+std::vector<uint8_t> ProtobufBytesToVector(const std::string& bytes) {
+  return std::vector<uint8_t>(bytes.begin(), bytes.end());
+}
+
+}  // namespace
+
+// static
+std::vector<PasskeyCredential> PasskeyCredential::FromCredentialSpecifics(
+    base::span<const sync_pb::WebauthnCredentialSpecifics> passkeys) {
+  base::flat_set<std::string> shadowed_credential_ids;
+  for (const sync_pb::WebauthnCredentialSpecifics& passkey : passkeys) {
+    for (const std::string& id : passkey.newly_shadowed_credential_ids()) {
+      shadowed_credential_ids.emplace(id);
+    }
+  }
+  std::vector<password_manager::PasskeyCredential> credentials;
+  for (const sync_pb::WebauthnCredentialSpecifics& passkey : passkeys) {
+    if (shadowed_credential_ids.contains(passkey.credential_id())) {
+      continue;
+    }
+    credentials.emplace_back(
+        password_manager::PasskeyCredential::Source::kAndroidPhone,
+        RpId(passkey.rp_id()),
+        CredentialId(ProtobufBytesToVector(passkey.credential_id())),
+        UserId(ProtobufBytesToVector(passkey.user_id())),
+        Username(passkey.has_user_name() ? passkey.user_name() : ""),
+        DisplayName(passkey.has_user_display_name()
+                        ? passkey.user_display_name()
+                        : ""));
+  }
+  return credentials;
+}
+
 PasskeyCredential::PasskeyCredential(Source source,
-                                     std::string rp_id,
-                                     std::vector<uint8_t> credential_id,
-                                     std::vector<uint8_t> user_id,
-                                     std::string username,
-                                     std::string display_name)
+                                     RpId rp_id,
+                                     CredentialId credential_id,
+                                     UserId user_id,
+                                     Username username,
+                                     DisplayName display_name)
     : source_(source),
       rp_id_(std::move(rp_id)),
       credential_id_(std::move(credential_id)),

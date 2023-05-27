@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 // Implementations of methods in Shorthand subclasses that aren't generated.
 
@@ -3191,8 +3192,8 @@ const CSSValue* ScrollPaddingInline::CSSValueFromComputedStyleInternal(
 
 namespace {
 
-// Consume a single name and a single axis, and append the result to
-// `name_list` and `axis_list` respectively.
+// Consume a single name, axis, and attachment, then append the result to
+// `name_list`, `axis_list`, and `attachment_list` respectively.
 bool ConsumeTimelineItemInto(CSSParserTokenRange& range,
                              const CSSParserContext& context,
                              CSSValueList* name_list,
@@ -3211,12 +3212,26 @@ bool ConsumeTimelineItemInto(CSSParserTokenRange& range,
     return false;
   }
 
-  CSSValue* axis = ConsumeSingleTimelineAxis(range);
+  // Axis and attachment may appear in any order.
+  CSSValue* axis = nullptr;
+  CSSValue* attachment = nullptr;
+
+  while (true) {
+    if (!axis && (axis = ConsumeSingleTimelineAxis(range))) {
+      continue;
+    }
+    if (RuntimeEnabledFeatures::ScrollTimelineAttachmentEnabled()) {
+      if (!attachment &&
+          (attachment = ConsumeSingleTimelineAttachment(range))) {
+        continue;
+      }
+    }
+    break;
+  }
+
   if (!axis) {
     axis = CSSIdentifierValue::Create(CSSValueID::kBlock);
   }
-
-  CSSValue* attachment = ConsumeSingleTimelineAttachment(range);
   if (!attachment) {
     attachment = CSSIdentifierValue::Create(CSSValueID::kLocal);
   }
@@ -3239,8 +3254,6 @@ bool ParseTimelineShorthand(CSSPropertyID shorthand_id,
   using css_parsing_utils::ConsumeCommaIncludingWhitespace;
   using css_parsing_utils::IsImplicitProperty;
 
-  DCHECK_EQ(3u, shorthand.length());
-
   CSSValueList* name_list = CSSValueList::CreateCommaSeparated();
   CSSValueList* axis_list = CSSValueList::CreateCommaSeparated();
   CSSValueList* attachment_list = CSSValueList::CreateCommaSeparated();
@@ -3258,13 +3271,17 @@ bool ParseTimelineShorthand(CSSPropertyID shorthand_id,
   DCHECK_EQ(name_list->length(), axis_list->length());
   DCHECK_EQ(name_list->length(), attachment_list->length());
 
+  DCHECK_GE(shorthand.length(), 2u);
   AddProperty(shorthand.properties()[0]->PropertyID(), shorthand_id, *name_list,
               important, IsImplicitProperty::kNotImplicit, properties);
   AddProperty(shorthand.properties()[1]->PropertyID(), shorthand_id, *axis_list,
               important, IsImplicitProperty::kNotImplicit, properties);
-  AddProperty(shorthand.properties()[2]->PropertyID(), shorthand_id,
-              *attachment_list, important, IsImplicitProperty::kNotImplicit,
-              properties);
+  if (RuntimeEnabledFeatures::ScrollTimelineAttachmentEnabled()) {
+    DCHECK_EQ(shorthand.length(), 3u);
+    AddProperty(shorthand.properties()[2]->PropertyID(), shorthand_id,
+                *attachment_list, important, IsImplicitProperty::kNotImplicit,
+                properties);
+  }
 
   return range.AtEnd();
 }
@@ -3294,6 +3311,89 @@ static CSSValue* CSSValueForTimelineShorthand(
 
 }  // namespace
 
+bool ScrollStart::ParseShorthand(
+    bool important,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
+    HeapVector<CSSPropertyValue, 64>& properties) const {
+  CSSValue* block_value = css_parsing_utils::ConsumeScrollStart(range, context);
+  if (!block_value) {
+    return false;
+  }
+  CSSValue* inline_value =
+      css_parsing_utils::ConsumeScrollStart(range, context);
+  if (!inline_value) {
+    inline_value = CSSIdentifierValue::Create(CSSValueID::kStart);
+  }
+  AddProperty(scrollStartShorthand().properties()[0]->PropertyID(),
+              scrollStartShorthand().id(), *block_value, important,
+              css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  AddProperty(scrollStartShorthand().properties()[1]->PropertyID(),
+              scrollStartShorthand().id(), *inline_value, important,
+              css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  return range.AtEnd();
+}
+
+const CSSValue* ScrollStart::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  const CSSValue* block_value =
+      scrollStartShorthand().properties()[0]->CSSValueFromComputedStyle(
+          style, layout_object, allow_visited_style);
+  const CSSValue* inline_value =
+      scrollStartShorthand().properties()[1]->CSSValueFromComputedStyle(
+          style, layout_object, allow_visited_style);
+  if (!(IsA<CSSIdentifierValue>(inline_value) &&
+        To<CSSIdentifierValue>(*inline_value).GetValueID() ==
+            CSSValueID::kStart)) {
+    return MakeGarbageCollected<CSSValuePair>(
+        block_value, inline_value, CSSValuePair::kDropIdenticalValues);
+  }
+  return block_value;
+}
+
+bool ScrollStartTarget::ParseShorthand(
+    bool important,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
+    HeapVector<CSSPropertyValue, 64>& properties) const {
+  CSSValue* block_value = css_parsing_utils::ConsumeScrollStartTarget(range);
+  if (!block_value) {
+    return false;
+  }
+  CSSValue* inline_value = css_parsing_utils::ConsumeScrollStartTarget(range);
+  if (!inline_value) {
+    inline_value = CSSIdentifierValue::Create(CSSValueID::kNone);
+  }
+  AddProperty(scrollStartTargetShorthand().properties()[0]->PropertyID(),
+              scrollStartTargetShorthand().id(), *block_value, important,
+              css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  AddProperty(scrollStartTargetShorthand().properties()[1]->PropertyID(),
+              scrollStartTargetShorthand().id(), *inline_value, important,
+              css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  return range.AtEnd();
+}
+
+const CSSValue* ScrollStartTarget::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  const CSSValue* block_value =
+      scrollStartTargetShorthand().properties()[0]->CSSValueFromComputedStyle(
+          style, layout_object, allow_visited_style);
+  const CSSValue* inline_value =
+      scrollStartTargetShorthand().properties()[1]->CSSValueFromComputedStyle(
+          style, layout_object, allow_visited_style);
+  if (To<CSSIdentifierValue>(*inline_value).GetValueID() != CSSValueID::kNone) {
+    return MakeGarbageCollected<CSSValuePair>(
+        block_value, inline_value, CSSValuePair::kDropIdenticalValues);
+  }
+  return block_value;
+}
+
 bool ScrollTimeline::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
@@ -3314,7 +3414,10 @@ const CSSValue* ScrollTimeline::CSSValueFromComputedStyleInternal(
                                  : HeapVector<Member<const ScopedCSSName>>{};
   const Vector<TimelineAxis>& axis_vector = style.ScrollTimelineAxis();
   const Vector<TimelineAttachment>& attachment_vector =
-      style.ScrollTimelineAttachment();
+      RuntimeEnabledFeatures::ScrollTimelineAttachmentEnabled()
+          ? style.ScrollTimelineAttachment()
+          : Vector<TimelineAttachment>(name_vector.size(),
+                                       TimelineAttachment::kLocal);
   return CSSValueForTimelineShorthand(name_vector, axis_vector,
                                       attachment_vector);
 }
@@ -3482,7 +3585,10 @@ const CSSValue* ViewTimeline::CSSValueFromComputedStyleInternal(
                                : HeapVector<Member<const ScopedCSSName>>{};
   const Vector<TimelineAxis>& axis_vector = style.ViewTimelineAxis();
   const Vector<TimelineAttachment>& attachment_vector =
-      style.ViewTimelineAttachment();
+      RuntimeEnabledFeatures::ScrollTimelineAttachmentEnabled()
+          ? style.ViewTimelineAttachment()
+          : Vector<TimelineAttachment>(name_vector.size(),
+                                       TimelineAttachment::kLocal);
   return CSSValueForTimelineShorthand(name_vector, axis_vector,
                                       attachment_vector);
 }

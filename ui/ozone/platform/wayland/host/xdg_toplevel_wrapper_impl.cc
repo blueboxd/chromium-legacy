@@ -410,6 +410,19 @@ void XDGToplevelWrapperImpl::InitializeXdgDecoration() {
   }
 }
 
+wl::Object<wl_region> XDGToplevelWrapperImpl::CreateAndAddRegion(
+    const std::vector<gfx::Rect>& shape) {
+  wl::Object<wl_region> region(
+      wl_compositor_create_region(connection_->compositor()));
+
+  for (const auto& rect : shape) {
+    wl_region_add(region.get(), rect.x(), rect.y(), rect.width(),
+                  rect.height());
+  }
+
+  return region;
+}
+
 XDGSurfaceWrapperImpl* XDGToplevelWrapperImpl::xdg_surface_wrapper() const {
   DCHECK(xdg_surface_wrapper_.get());
   return xdg_surface_wrapper_.get();
@@ -498,9 +511,8 @@ bool XDGToplevelWrapperImpl::SupportsScreenCoordinates() const {
              ZAURA_TOPLEVEL_SET_SUPPORTS_SCREEN_COORDINATES_SINCE_VERSION;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
 void XDGToplevelWrapperImpl::EnableScreenCoordinates() {
-  if (!features::IsWaylandScreenCoordinatesEnabled())
-    return;
   if (!SupportsScreenCoordinates()) {
     LOG(WARNING) << "Server implementation of wayland is incompatible, "
                     "WaylandScreenCoordinatesEnabled has no effect.";
@@ -514,6 +526,7 @@ void XDGToplevelWrapperImpl::EnableScreenCoordinates() {
   zaura_toplevel_add_listener(aura_toplevel_.get(), &aura_toplevel_listener,
                               this);
 }
+#endif
 
 void XDGToplevelWrapperImpl::SetZOrder(ZOrderLevel z_order) {
   if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
@@ -626,6 +639,15 @@ void XDGToplevelWrapperImpl::SetPersistable(bool persistable) const {
   if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
                             ZAURA_TOPLEVEL_SET_PERSISTABLE_SINCE_VERSION) {
     zaura_toplevel_set_persistable(aura_toplevel_.get(), persistable_enum);
+  }
+}
+
+void XDGToplevelWrapperImpl::SetShape(std::unique_ptr<ShapeRects> shape_rects) {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_SHAPE_SINCE_VERSION) {
+    zaura_toplevel_set_shape(
+        aura_toplevel_.get(),
+        shape_rects ? CreateAndAddRegion(*shape_rects).get() : nullptr);
   }
 }
 

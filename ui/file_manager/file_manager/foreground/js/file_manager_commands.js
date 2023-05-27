@@ -21,7 +21,7 @@ import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_ap
 import {State} from '../../externs/ts/state.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
-import {getStore} from '../../state/store.js';
+import {getFileData, getStore} from '../../state/store.js';
 
 import {ActionsModel} from './actions_model.js';
 import {constants} from './constants.js';
@@ -420,10 +420,37 @@ CommandUtil.isDriveEntries = (entries, volumeManager) => {
 };
 
 /**
- * Returns true if the current root is Trash. Items in Trash are a fake
- * representation of a file + its metadata. Some actions are infeasible and
- * items should be restored to enable these actions.
- * @param {!CommandHandlerDeps} fileManager file manager command handler.
+ * Returns true if all entries descend from the My Drive root (e.g. not located
+ * within Shared with me or Shared drives).
+ *
+ * @param {!Array<!Entry|!FilesAppEntry>} entries
+ * @param {!State} state
+ * @return {boolean}
+ */
+CommandUtil.isOnlyMyDriveEntries = (entries, state) => {
+  if (!entries.length) {
+    return false;
+  }
+
+  for (const entry of entries) {
+    const fileData = getFileData(state, entry.toURL());
+    if (!fileData) {
+      return false;
+    }
+    if (fileData.rootType !== VolumeManagerCommon.RootType.DRIVE) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
+ * Returns true if the current root is Trash. Items in
+ * Trash are a fake representation of a file + its
+ * metadata. Some actions are infeasible and items should
+ * be restored to enable these actions.
+ * @param {!CommandHandlerDeps} fileManager file manager
+ *     command handler.
  * @returns {boolean}
  */
 CommandUtil.isOnTrashRoot = fileManager => {
@@ -2240,10 +2267,17 @@ CommandHandler.COMMANDS_['dlp-restriction-details'] =
  */
 CommandHandler.COMMANDS_['search'] = new (class extends FilesCommand {
   execute(event, fileManager) {
-    // Cancel item selection.
-    fileManager.directoryModel.clearSelection();
-    // Open the query input via the search container.
-    fileManager.ui.searchContainer.openSearch();
+    // If the current root is Trash we do nothing on search command. Preventing
+    // it from execution (in canExecute) does not work correctly, as then chrome
+    // start native search for an app window. Thus we always allow it and do
+    // nothing in trash.
+    const currentRootType = fileManager.directoryModel.getCurrentRootType();
+    if (currentRootType !== VolumeManagerCommon.RootType.TRASH) {
+      // Cancel item selection.
+      fileManager.directoryModel.clearSelection();
+      // Open the query input via the search container.
+      fileManager.ui.searchContainer.openSearch();
+    }
   }
 
   /** @override */
@@ -2320,7 +2354,7 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new (class extends FilesCommand {
     if (util.isDriveFsBulkPinningEnabled()) {
       const state = /** @type {State} */ (getStore().getState());
       const bulkPinningPref = state.preferences.driveFsBulkPinningEnabled;
-      if (bulkPinningPref) {
+      if (bulkPinningPref && CommandUtil.isOnlyMyDriveEntries(entries, state)) {
         command.setHidden(true);
         command.canExecute = false;
         return;

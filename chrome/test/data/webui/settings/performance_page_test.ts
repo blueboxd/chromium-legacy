@@ -2,36 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://settings/lazy_load.js';
 import 'chrome://settings/settings.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {CrIconButtonElement} from 'chrome://settings/lazy_load.js';
-import {HIGH_EFFICIENCY_MODE_PREF, HighEfficiencyModeExceptionListAction, HighEfficiencyModeState, PerformanceBrowserProxyImpl, PerformanceMetricsProxyImpl, SettingsPerformancePageElement, TAB_DISCARD_EXCEPTIONS_MANAGED_PREF, TAB_DISCARD_EXCEPTIONS_OVERFLOW_SIZE, TAB_DISCARD_EXCEPTIONS_PREF, TabDiscardExceptionAddDialogElement, TabDiscardExceptionEditDialogElement, TabDiscardExceptionEntryElement, TabDiscardExceptionListElement} from 'chrome://settings/settings.js';
+import {CrCheckboxElement, CrIconButtonElement, IronCollapseElement, SettingsRadioGroupElement} from 'chrome://settings/lazy_load.js';
+import {HIGH_EFFICIENCY_MODE_PREF, HighEfficiencyModeExceptionListAction, HighEfficiencyModeState, PerformanceBrowserProxyImpl, PerformanceMetricsProxyImpl, SettingsDropdownMenuElement, SettingsPerformancePageElement, TAB_DISCARD_EXCEPTIONS_MANAGED_PREF, TAB_DISCARD_EXCEPTIONS_OVERFLOW_SIZE, TAB_DISCARD_EXCEPTIONS_PREF, TabDiscardExceptionAddDialogElement, TabDiscardExceptionEditDialogElement, TabDiscardExceptionEntryElement, TabDiscardExceptionListElement, TabDiscardExceptionTabbedAddDialogElement} from 'chrome://settings/settings.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {TestPerformanceBrowserProxy} from './test_performance_browser_proxy.js';
 import {TestPerformanceMetricsProxy} from './test_performance_metrics_proxy.js';
 
-suite('PerformancePage', function() {
-  const CrPolicyStrings = {
-    controlledSettingPolicy: 'policy',
-  };
-  let performancePage: SettingsPerformancePageElement;
-  let performanceBrowserProxy: TestPerformanceBrowserProxy;
-  let performanceMetricsProxy: TestPerformanceMetricsProxy;
-  let tabDiscardExceptionsList: TabDiscardExceptionListElement;
+const highEfficiencyModeDummyPrefs = {
+  high_efficiency_mode: {
+    state: {
+      type: chrome.settingsPrivate.PrefType.NUMBER,
+      value: HighEfficiencyModeState.DISABLED,
+    },
+    time_before_discard_in_minutes: {
+      type: chrome.settingsPrivate.PrefType.NUMBER,
+      value: 1,
+    },
+  },
+};
 
-  suiteSetup(function() {
-    // Without this, cr-policy-pref-indicators will not have any text, making it
-    // so that they cannot be shown.
-    Object.assign(window, {CrPolicyStrings});
-  });
+/**
+ * Constructs dummy prefs for tab discarding. Needs to be a function so that
+ * list pref values are recreated and not shared between test suites.
+ */
+function tabDiscardingDummyPrefs(): Record<
+    string, Record<string, Omit<chrome.settingsPrivate.PrefObject, 'key'>>> {
+  return {
+    tab_discarding: {
+      exceptions: {
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: [],
+      },
+      exceptions_managed: {
+        enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+        controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
+        type: chrome.settingsPrivate.PrefType.LIST,
+        value: [],
+      },
+    },
+  };
+}
+
+suite('PerformancePage', function() {
+  let performancePage: SettingsPerformancePageElement;
+  let performanceMetricsProxy: TestPerformanceMetricsProxy;
 
   setup(function() {
-    performanceBrowserProxy = new TestPerformanceBrowserProxy();
-    PerformanceBrowserProxyImpl.setInstance(performanceBrowserProxy);
-
     performanceMetricsProxy = new TestPerformanceMetricsProxy();
     PerformanceMetricsProxyImpl.setInstance(performanceMetricsProxy);
 
@@ -39,30 +63,12 @@ suite('PerformancePage', function() {
     performancePage = document.createElement('settings-performance-page');
     performancePage.set('prefs', {
       performance_tuning: {
-        high_efficiency_mode: {
-          state: {
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: HighEfficiencyModeState.DISABLED,
-          },
-        },
-        tab_discarding: {
-          exceptions: {
-            type: chrome.settingsPrivate.PrefType.LIST,
-            value: [],
-          },
-          exceptions_managed: {
-            enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
-            controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
-            type: chrome.settingsPrivate.PrefType.LIST,
-            value: [],
-          },
-        },
+        ...highEfficiencyModeDummyPrefs,
+        ...tabDiscardingDummyPrefs(),
       },
     });
     document.body.appendChild(performancePage);
     flush();
-
-    tabDiscardExceptionsList = performancePage.$.tabDiscardExceptionsList;
   });
 
   test('testHighEfficiencyModeEnabled', function() {
@@ -77,7 +83,7 @@ suite('PerformancePage', function() {
     assertFalse(performancePage.$.toggleButton.checked);
   });
 
-  test('testHighEfficiencyModeMetrics', async function() {
+  test('testHighEfficiencyModeChangeState', async function() {
     performancePage.setPrefValue(
         HIGH_EFFICIENCY_MODE_PREF, HighEfficiencyModeState.DISABLED);
 
@@ -85,12 +91,178 @@ suite('PerformancePage', function() {
     let state = await performanceMetricsProxy.whenCalled(
         'recordHighEfficiencyModeChanged');
     assertEquals(state, HighEfficiencyModeState.ENABLED_ON_TIMER);
+    assertEquals(
+        performancePage.getPref(HIGH_EFFICIENCY_MODE_PREF).value,
+        HighEfficiencyModeState.ENABLED_ON_TIMER);
 
     performanceMetricsProxy.reset();
     performancePage.$.toggleButton.click();
     state = await performanceMetricsProxy.whenCalled(
         'recordHighEfficiencyModeChanged');
     assertEquals(state, HighEfficiencyModeState.DISABLED);
+    assertEquals(
+        performancePage.getPref(HIGH_EFFICIENCY_MODE_PREF).value,
+        HighEfficiencyModeState.DISABLED);
+  });
+});
+
+suite('PerformancePageMultistate', function() {
+  let performancePage: SettingsPerformancePageElement;
+  let performanceMetricsProxy: TestPerformanceMetricsProxy;
+  let enabledOnTimerButton: HTMLElement;
+  let radioGroup: SettingsRadioGroupElement;
+  let radioGroupCollapse: IronCollapseElement;
+  let discardTimeDropdown: SettingsDropdownMenuElement;
+
+  const DISCARD_TIME_PREF =
+      'performance_tuning.high_efficiency_mode.time_before_discard_in_minutes';
+
+  /**
+   * Used to get elements form the performance page that may or may not exist,
+   * such as those inside a dom-if.
+   * TODO(charlesmeng): remove once kHighEfficiencyMultistateMode flag is
+   * cleaned up, since elements can then be selected with $ interface
+   */
+  function getPerformancePageElement<T extends HTMLElement = HTMLElement>(
+      id: string): T {
+    const el = performancePage.shadowRoot!.querySelector<T>(`#${id}`);
+    assertTrue(!!el);
+    assertTrue(el instanceof HTMLElement);
+    return el;
+  }
+
+  setup(function() {
+    performanceMetricsProxy = new TestPerformanceMetricsProxy();
+    PerformanceMetricsProxyImpl.setInstance(performanceMetricsProxy);
+
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    performancePage = document.createElement('settings-performance-page');
+    performancePage.set('prefs', {
+      performance_tuning: {
+        ...highEfficiencyModeDummyPrefs,
+        ...tabDiscardingDummyPrefs(),
+      },
+    });
+    document.body.appendChild(performancePage);
+    flush();
+
+    enabledOnTimerButton = getPerformancePageElement('enabledOnTimerButton');
+    radioGroup = getPerformancePageElement('radioGroup');
+    radioGroupCollapse = getPerformancePageElement('radioGroupCollapse');
+    discardTimeDropdown = getPerformancePageElement('discardTimeDropdown');
+  });
+
+  test('testHighEfficiencyModeDisabled', function() {
+    performancePage.setPrefValue(
+        HIGH_EFFICIENCY_MODE_PREF, HighEfficiencyModeState.DISABLED);
+    assertFalse(performancePage.$.toggleButton.checked);
+    assertFalse(radioGroupCollapse.opened);
+    assertTrue(discardTimeDropdown.disabled);
+  });
+
+  test('testHighEfficiencyModeEnabled', function() {
+    performancePage.setPrefValue(
+        HIGH_EFFICIENCY_MODE_PREF, HighEfficiencyModeState.ENABLED);
+    assertTrue(performancePage.$.toggleButton.checked);
+    assertTrue(radioGroupCollapse.opened);
+    assertEquals(String(HighEfficiencyModeState.ENABLED), radioGroup.selected);
+    assertTrue(discardTimeDropdown.disabled);
+  });
+
+  test('testHighEfficiencyModeEnabledOnTimer', function() {
+    performancePage.setPrefValue(
+        HIGH_EFFICIENCY_MODE_PREF, HighEfficiencyModeState.ENABLED_ON_TIMER);
+    assertTrue(performancePage.$.toggleButton.checked);
+    assertTrue(radioGroupCollapse.opened);
+    assertEquals(
+        String(HighEfficiencyModeState.ENABLED_ON_TIMER), radioGroup.selected);
+    assertFalse(discardTimeDropdown.disabled);
+  });
+
+  test('testHighEfficiencyModeDiscardTime', async function() {
+    performancePage.setPrefValue(
+        HIGH_EFFICIENCY_MODE_PREF, HighEfficiencyModeState.ENABLED_ON_TIMER);
+    performancePage.setPrefValue(DISCARD_TIME_PREF, 120);
+    // Need to wait for dropdown menu to update its selection using a microtask
+    await flushTasks();
+    assertTrue(!!discardTimeDropdown.$.dropdownMenu.options[4]);
+    assertTrue(discardTimeDropdown.$.dropdownMenu.options[4].selected);
+    assertEquals(
+        performancePage.getPref(DISCARD_TIME_PREF).value,
+        Number(discardTimeDropdown.$.dropdownMenu.value));
+
+    assertTrue(!!discardTimeDropdown.$.dropdownMenu.options[3]);
+    const newDiscardTime = discardTimeDropdown.$.dropdownMenu.options[3].value;
+    discardTimeDropdown.$.dropdownMenu.options[3].selected = true;
+    discardTimeDropdown.$.dropdownMenu.dispatchEvent(new CustomEvent('change'));
+    assertEquals(
+        Number(newDiscardTime),
+        performancePage.getPref(DISCARD_TIME_PREF).value);
+  });
+
+  test('testHighEfficiencyModeChangeState', async function() {
+    performancePage.setPrefValue(
+        HIGH_EFFICIENCY_MODE_PREF, HighEfficiencyModeState.DISABLED);
+
+    performancePage.$.toggleButton.click();
+    let state = await performanceMetricsProxy.whenCalled(
+        'recordHighEfficiencyModeChanged');
+    assertEquals(state, HighEfficiencyModeState.ENABLED);
+    assertEquals(
+        performancePage.getPref(HIGH_EFFICIENCY_MODE_PREF).value,
+        HighEfficiencyModeState.ENABLED);
+
+    performanceMetricsProxy.reset();
+    enabledOnTimerButton.click();
+    state = await performanceMetricsProxy.whenCalled(
+        'recordHighEfficiencyModeChanged');
+    assertEquals(state, HighEfficiencyModeState.ENABLED_ON_TIMER);
+    assertEquals(
+        performancePage.getPref(HIGH_EFFICIENCY_MODE_PREF).value,
+        HighEfficiencyModeState.ENABLED_ON_TIMER);
+
+    performanceMetricsProxy.reset();
+    performancePage.$.toggleButton.click();
+    state = await performanceMetricsProxy.whenCalled(
+        'recordHighEfficiencyModeChanged');
+    assertEquals(state, HighEfficiencyModeState.DISABLED);
+    assertEquals(
+        performancePage.getPref(HIGH_EFFICIENCY_MODE_PREF).value,
+        HighEfficiencyModeState.DISABLED);
+  });
+});
+
+suite('TabDiscardExceptionList', function() {
+  const CrPolicyStrings = {
+    controlledSettingPolicy: 'policy',
+  };
+  let performancePage: SettingsPerformancePageElement;
+  let performanceBrowserProxy: TestPerformanceBrowserProxy;
+  let performanceMetricsProxy: TestPerformanceMetricsProxy;
+  let tabDiscardExceptionsList: TabDiscardExceptionListElement;
+
+  suiteSetup(function() {
+    // Without this, cr-policy-pref-indicator will not have any text, making it
+    // so that it cannot be shown.
+    Object.assign(window, {CrPolicyStrings});
+  });
+
+  setup(function() {
+    performanceBrowserProxy = new TestPerformanceBrowserProxy();
+    PerformanceBrowserProxyImpl.setInstance(performanceBrowserProxy);
+
+    performanceMetricsProxy = new TestPerformanceMetricsProxy();
+    PerformanceMetricsProxyImpl.setInstance(performanceMetricsProxy);
+
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    performancePage = document.createElement('settings-performance-page');
+    performancePage.set('prefs', {
+      performance_tuning: tabDiscardingDummyPrefs(),
+    });
+    document.body.appendChild(performancePage);
+    flush();
+
+    tabDiscardExceptionsList = performancePage.$.tabDiscardExceptionsList;
   });
 
   function assertExceptionListEquals(rules: string[], message?: string) {
@@ -201,74 +373,118 @@ suite('PerformancePage', function() {
     assertExceptionListEquals([]);
   });
 
-  function getAddDialog(): TabDiscardExceptionAddDialogElement|null {
-    return tabDiscardExceptionsList.shadowRoot!.querySelector(
+  async function getAddDialog():
+      Promise<TabDiscardExceptionAddDialogElement|
+              TabDiscardExceptionTabbedAddDialogElement> {
+    if (loadTimeData.getBoolean('isDiscardExceptionsImprovementsEnabled')) {
+      return await getTabbedAddDialog();
+    }
+    const dialog = tabDiscardExceptionsList.shadowRoot!.querySelector(
         'tab-discard-exception-add-dialog');
+    assertTrue(!!dialog);
+    return dialog;
   }
 
-  function getEditDialog(): TabDiscardExceptionEditDialogElement|null {
-    return tabDiscardExceptionsList.shadowRoot!.querySelector(
+  async function getTabbedAddDialog():
+      Promise<TabDiscardExceptionTabbedAddDialogElement> {
+    await performanceBrowserProxy.whenCalled('getCurrentOpenSites');
+    const dialog = tabDiscardExceptionsList.shadowRoot!.querySelector(
+        'tab-discard-exception-tabbed-add-dialog');
+    assertTrue(!!dialog);
+    return dialog;
+  }
+
+  function getEditDialog(): TabDiscardExceptionEditDialogElement {
+    const dialog = tabDiscardExceptionsList.shadowRoot!.querySelector(
         'tab-discard-exception-edit-dialog');
+    assertTrue(!!dialog);
+    return dialog;
+  }
+
+  function assertAddDialogDoesNotExist() {
+    if (loadTimeData.getBoolean('isDiscardExceptionsImprovementsEnabled')) {
+      assertTabbedAddDialogDoesNotExist();
+    }
+    const dialog = tabDiscardExceptionsList.shadowRoot!.querySelector(
+        'tab-discard-exception-add-dialog');
+    assertFalse(!!dialog);
+  }
+
+  function assertTabbedAddDialogDoesNotExist() {
+    assertEquals(
+        0, performanceBrowserProxy.getCallCount('getCurrentOpenSites'));
+    const dialog = tabDiscardExceptionsList.shadowRoot!.querySelector(
+        'tab-discard-exception-tabbed-add-dialog');
+    assertFalse(!!dialog);
+  }
+
+  function assertEditDialogDoesNotExist() {
+    const dialog = tabDiscardExceptionsList.shadowRoot!.querySelector(
+        'tab-discard-exception-edit-dialog');
+    assertFalse(!!dialog);
   }
 
   async function inputDialog(
       dialog: TabDiscardExceptionAddDialogElement|
+      TabDiscardExceptionTabbedAddDialogElement|
       TabDiscardExceptionEditDialogElement,
       input: string) {
-    const inputEvent = eventToPromise('input', dialog.$.input);
-    dialog.$.input.value = input;
-    dialog.$.input.dispatchEvent(new CustomEvent('input'));
+    const inputEvent = eventToPromise('input', dialog.$.input.$.input);
+    dialog.$.input.$.input.value = input;
+    dialog.$.input.$.input.dispatchEvent(new CustomEvent('input'));
     await inputEvent;
     dialog.$.actionButton.click();
-    await performanceBrowserProxy.whenCalled('validateTabDiscardExceptionRule');
   }
 
   test('testTabDiscardExceptionsListAdd', async function() {
     setupExceptionListEntries(['foo']);
-    let addDialog = getAddDialog();
-    assertFalse(!!addDialog);
+    assertAddDialogDoesNotExist();
 
     tabDiscardExceptionsList.$.addButton.click();
     flush();
 
-    addDialog = getAddDialog();
-    assertTrue(!!addDialog);
+    const addDialog = await getAddDialog();
     assertTrue(addDialog.$.dialog.open);
-    assertEquals('', addDialog.$.input.value);
+    assertEquals('', addDialog.$.input.$.input.value);
+    const addExceptionEvent = eventToPromise('add-exception', addDialog);
     await inputDialog(addDialog, 'bar');
+    await addExceptionEvent;
+    assertEquals(
+        HighEfficiencyModeExceptionListAction.ADD,
+        await performanceMetricsProxy.whenCalled('recordExceptionListAction'));
     assertExceptionListEquals(['foo', 'bar']);
   });
 
   test('testTabDiscardExceptionsListEdit', async function() {
     setupExceptionListEntries(['foo', 'bar']);
     const entry = getExceptionListEntry(1);
-    let editDialog = getEditDialog();
-    assertFalse(!!editDialog);
+    assertEditDialogDoesNotExist();
 
     clickMoreActionsButton(entry);
     clickEditMenuItem();
     flush();
 
-    editDialog = getEditDialog();
-    assertTrue(!!editDialog);
+    const editDialog = getEditDialog();
     assertTrue(editDialog.$.dialog.open);
-    assertEquals(entry.entry.site, editDialog.$.input.value);
+    assertEquals(entry.entry.site, editDialog.$.input.$.input.value);
     await inputDialog(editDialog, 'baz');
+    assertEquals(
+        HighEfficiencyModeExceptionListAction.EDIT,
+        await performanceMetricsProxy.whenCalled('recordExceptionListAction'));
     assertExceptionListEquals(['foo', 'baz']);
   });
 
-  test('testTabDiscardExceptionsListAddAfterMenuClick', function() {
+  test('testTabDiscardExceptionsListAddAfterMenuClick', async function() {
     setupExceptionListEntries(['foo']);
     clickMoreActionsButton(getExceptionListEntry(0));
     tabDiscardExceptionsList.$.addButton.click();
     flush();
 
-    const dialog = getAddDialog();
-    assertTrue(!!dialog);
-    assertEquals('', dialog.$.input.value);
+    const addDialog = await getAddDialog();
+    assertEquals('', addDialog.$.input.$.input.value);
   });
 
-  test('testTabDiscardExceptionsListOverflow', async function() {
+  test('testTabDiscardExceptionsListAddExceptionOverflow', async function() {
     assertTrue(tabDiscardExceptionsList.$.expandButton.hidden);
 
     const entries = [
@@ -288,11 +504,37 @@ suite('PerformancePage', function() {
     flush();
 
     const newRule = `rule${TAB_DISCARD_EXCEPTIONS_OVERFLOW_SIZE + 1}`;
-    const addDialog = getAddDialog();
-    assertTrue(!!addDialog);
+    const addDialog = await getAddDialog();
     await inputDialog(addDialog, newRule);
     assertTrue(tabDiscardExceptionsList.$.collapse.opened);
     assertExceptionListEquals([...entries, newRule]);
+  });
+
+  test('testTabDiscardExceptionsListAddExceptionsOverflow', async function() {
+    if (!loadTimeData.getBoolean('isDiscardExceptionsImprovementsEnabled')) {
+      return;
+    }
+    performanceBrowserProxy.setCurrentOpenSites([
+      ...Array(3).keys(),
+    ].map(index => `rule${index}`));
+    tabDiscardExceptionsList.$.addButton.click();
+    flush();
+
+    const addDialog = await getTabbedAddDialog();
+    flush();
+
+    addDialog.$.list.$.list
+        .querySelectorAll<CrCheckboxElement>('cr-checkbox:not([hidden])')
+        .forEach(checkboxElement => {
+          checkboxElement.click();
+        });
+    const addExceptionEvent = eventToPromise('add-exception', addDialog);
+    assertFalse(addDialog.$.actionButton.disabled);
+    addDialog.$.actionButton.click();
+    await addExceptionEvent;
+    flush();
+
+    assertTrue(tabDiscardExceptionsList.$.collapse.opened);
   });
 
   test('testTabDiscardExceptionsListOverflowEdit', async function() {
@@ -306,15 +548,13 @@ suite('PerformancePage', function() {
     clickEditMenuItem();
     flush();
     const editDialog = getEditDialog();
-    assertTrue(!!editDialog);
-    assertEquals(entry.entry.site, editDialog.$.input.value);
+    assertEquals(entry.entry.site, editDialog.$.input.$.input.value);
     await inputDialog(editDialog, 'foo');
     assertExceptionListEquals([...entries.slice(0, -1), 'foo']);
 
     clickMoreActionsButton(entry);
     clickEditMenuItem();
     flush();
-    assertTrue(!!editDialog);
     await inputDialog(editDialog, getExceptionListEntry(0).entry.site);
     assertExceptionListEquals(entries.slice(0, -1));
   });

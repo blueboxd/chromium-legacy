@@ -192,18 +192,13 @@ dependencies {
     // Depended on by downstream guava_java rewrite.
     androidTestCompile "org.checkerframework:checker-qual:3.25.0"
 
-    String robolectricVersion = '4.10.2'
+    String robolectricVersion = '4.10.3'
     // Use testCompile to avoid having support_android = true set on
     // robolectric dependencies.
     testCompile "org.robolectric:robolectric:${robolectricVersion}"
     testCompile "org.robolectric:shadows-multidex:${robolectricVersion}"
     testCompile "org.robolectric:shadows-playservices:${robolectricVersion}"
     testCompile "org.robolectric:utils:${robolectricVersion}"
-
-    // TODO(1404995): Remove after robolectric is update to 4.9.2 as nothing
-    // else depends on this, so we want it removed when robolectric doesn't
-    //need it anymore.
-    testCompile "org.conscrypt:conscrypt-openjdk-uber:2.5.2"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {

@@ -21,10 +21,13 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/commands/launch_web_app_command.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
@@ -36,6 +39,7 @@
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -43,10 +47,12 @@
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
+#include "content/public/browser/navigation_handle.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "ui/base/page_transition_types.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/shelf_model.h"
@@ -82,7 +88,7 @@ void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
   std::unique_ptr<ScopedKeepAlive> scoped_keep_alive =
       std::make_unique<ScopedKeepAlive>(KeepAliveOrigin::WEB_APP_UNINSTALL,
                                         KeepAliveRestartOption::DISABLED);
-  if (provider->install_finalizer().CanUserUninstallWebApp(app_id)) {
+  if (provider->registrar_unsafe().CanUserUninstallWebApp(app_id)) {
     WebAppUiManagerImpl::Get(provider)->dialog_manager().UninstallWebApp(
         app_id, webapps::WebappUninstallSource::kOsSettings,
         gfx::kNullNativeWindow,
@@ -315,6 +321,22 @@ void WebAppUiManagerImpl::MaybeTransferAppAttributes(
                                                       to_app);
   }
 #endif
+}
+
+content::WebContents* WebAppUiManagerImpl::CreateNewTab() {
+  NavigateParams params(profile_, GURL(url::kAboutBlankURL),
+                        ui::PAGE_TRANSITION_FROM_API);
+  base::WeakPtr<content::NavigationHandle> handle = Navigate(&params);
+  return handle->GetWebContents();
+}
+
+void WebAppUiManagerImpl::TriggerInstallDialog(
+    content::WebContents* web_contents) {
+  web_app::CreateWebAppFromManifest(
+      web_contents, /*bypass_service_worker_check=*/true,
+      // TODO(issuetracker.google.com/283034487): Consider passing in the
+      // install source from the caller.
+      webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON, base::DoNothing());
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {

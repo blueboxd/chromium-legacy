@@ -6,7 +6,7 @@
 
 #include <IOKit/IOCFPlugIn.h>
 
-#include "base/mac/bridging.h"
+#include "base/apple/bridging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -107,9 +107,9 @@ static bool FindDeviceWithVendorAndProductIds(int vendor_id,
   base::ScopedCFTypeRef<CFMutableDictionaryRef> query_dictionary(
       IOServiceMatching(kIOUSBDeviceClassName));
   CFDictionarySetValue(query_dictionary, CFSTR(kUSBVendorName),
-                       base::mac::NSToCFPtrCast(@(vendor_id)));
+                       base::apple::NSToCFPtrCast(@(vendor_id)));
   CFDictionarySetValue(query_dictionary, CFSTR(kUSBProductName),
-                       base::mac::NSToCFPtrCast(@(product_id)));
+                       base::apple::NSToCFPtrCast(@(product_id)));
 
   kern_return_t kr = IOServiceGetMatchingServices(
       kIOMasterPortDefault, query_dictionary.release(), usb_iterator);
@@ -294,12 +294,12 @@ static ScopedIOUSBInterfaceInterface OpenVideoClassSpecificControlInterface(
   IOReturn ret = (*control_interface)->USBInterfaceOpen(control_interface);
   if (ret != kIOReturnSuccess) {
     VLOG(1) << "Unable to open control interface";
-    // On macOS 12+, VDCAssistant takes ownership of USB devices. So, we should
-    // not bail out if kIOReturnExclusiveAccess is returned from
-    // USBInterfaceOpen().
-    if (!(base::mac::IsAtLeastOS12() && ret == kIOReturnExclusiveAccess)) {
-      return ScopedIOUSBInterfaceInterface();
-    }
+
+    // Temporary additional debug logging for crbug.com/1270335
+    VLOG_IF(1, base::mac::IsAtLeastOS12() && ret == kIOReturnExclusiveAccess)
+        << "Camera USBInterfaceOpen failed with "
+        << "kIOReturnExclusiveAccess";
+    return ScopedIOUSBInterfaceInterface();
   }
   return control_interface;
 }

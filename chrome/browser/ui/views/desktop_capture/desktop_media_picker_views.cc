@@ -18,6 +18,7 @@
 #include "chrome/browser/media/webrtc/desktop_capture_devices_util.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker_utils.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
@@ -85,19 +86,6 @@ BASE_FEATURE(kWarnUserOfSystemWideLocalAudioSuppression,
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum class GDMPreferCurrentTabResult {
-  kDialogDismissed = 0,                  // Tab/window closed, navigation, etc.
-  kUserCancelled = 1,                    // User explicitly cancelled.
-  kUserSelectedScreen = 2,               // Screen selected.
-  kUserSelectedWindow = 3,               // Window selected.
-  kUserSelectedOtherTab = 4,             // Other tab selected from tab-list.
-  kUserSelectedThisTabAsGenericTab = 5,  // Current tab selected from tab-list.
-  kUserSelectedThisTab = 6,  // Current tab selected from current-tab menu.
-  kMaxValue = kUserSelectedThisTab
-};
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
 enum class GDMResult {
   kDialogDismissed = 0,       // Tab/window closed, navigation, etc.
   kUserCancelled = 1,         // User explicitly cancelled.
@@ -107,11 +95,6 @@ enum class GDMResult {
   kUserSelectedThisTab = 5,   // Current tab selected from tab-list.
   kMaxValue = kUserSelectedThisTab
 };
-
-void RecordUma(GDMPreferCurrentTabResult result) {
-  base::UmaHistogramEnumeration(
-      "Media.Ui.GetDisplayMedia.PreferCurrentTabFlow.UserInteraction", result);
-}
 
 void RecordUma(GDMResult result) {
   base::UmaHistogramEnumeration(
@@ -295,6 +278,12 @@ bool ShouldSelectTab(DesktopMediaList::Type type,
 }
 
 }  // namespace
+
+// Enable an updated dialog UI for the getDisplayMedia picker dialog under the
+// preferCurrentTab constraint.
+BASE_FEATURE(kShareThisTabDialog,
+             "ShareThisTabDialog",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(DesktopMediaPickerDialogView,
                                       kDesktopMediaPickerDialogViewIdentifier);
@@ -998,7 +987,7 @@ void DesktopMediaPickerViews::NotifyDialogResult(const DesktopMediaID& source) {
 // static
 std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create(
     const content::MediaStreamRequest* request) {
-  if (base::FeatureList::IsEnabled(media::kShareThisTabDialog) &&
+  if (base::FeatureList::IsEnabled(kShareThisTabDialog) && request &&
       request->video_type ==
           blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB) {
     return std::make_unique<ShareThisTabDialogViews>();

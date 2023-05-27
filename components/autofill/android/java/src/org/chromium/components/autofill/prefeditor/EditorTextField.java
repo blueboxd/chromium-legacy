@@ -24,21 +24,17 @@ import android.widget.TextView.OnEditorActionListener;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.view.ViewCompat;
 
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.chromium.components.autofill.R;
-import org.chromium.components.browser_ui.widget.TintedDrawable;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.chromium.ui.text.EmptyTextWatcher;
 
 /** Handles validation and display of one field from the {@link EditorFieldModel}. */
 // TODO(b/173103628): Re-enable this
 //@VisibleForTesting
-public class EditorTextField extends FrameLayout implements EditorFieldView, View.OnClickListener {
+public class EditorTextField extends FrameLayout implements EditorFieldView {
     // TODO(crbug.com/1300201): Replace with EditorDialog field once migrated.
     /** The indicator for input fields that are required. */
     public static final String REQUIRED_FIELD_INDICATOR = "*";
@@ -46,20 +42,20 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
     @Nullable
     private static EditorObserverForTest sObserverForTest;
 
+    @Nullable
+    private final TextWatcher mFormatter;
+
     private EditorFieldModel mEditorFieldModel;
     private OnEditorActionListener mEditorActionListener;
     private TextInputLayout mInputLayout;
     private AutoCompleteTextView mInput;
     private View mIconsLayer;
     private ImageView mActionIcon;
-    private ImageView mValueIcon;
-    private int mValueIconId;
     private boolean mHasFocusedAtLeastOnce;
 
     public EditorTextField(Context context, final EditorFieldModel fieldModel,
-            OnEditorActionListener actionListener, @Nullable InputFilter filter,
-            @Nullable TextWatcher formatter, boolean focusAndShowKeyboard,
-            boolean hasRequiredIndicator) {
+            OnEditorActionListener actionListener, @Nullable TextWatcher formatter,
+            boolean focusAndShowKeyboard, boolean hasRequiredIndicator) {
         super(context);
         assert fieldModel.getInputTypeHint() != EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
         mEditorFieldModel = fieldModel;
@@ -104,22 +100,6 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
             }
         });
 
-        if (fieldModel.getActionIconAction() != null) {
-            mActionIcon = (ImageView) mIconsLayer.findViewById(R.id.action_icon);
-            mActionIcon.setImageDrawable(TintedDrawable.constructTintedDrawable(context,
-                    fieldModel.getActionIconResourceId(),
-                    R.color.default_icon_color_accent1_tint_list));
-            mActionIcon.setContentDescription(context.getResources().getString(
-                    fieldModel.getActionIconDescriptionForAccessibility()));
-            mActionIcon.setOnClickListener(this);
-            mActionIcon.setVisibility(VISIBLE);
-        }
-
-        if (fieldModel.getValueIconGenerator() != null) {
-            mValueIcon = (ImageView) mIconsLayer.findViewById(R.id.value_icon);
-            mValueIcon.setVisibility(VISIBLE);
-        }
-
         mInput.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -149,12 +129,11 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
         });
 
         // Update the model as the user edits the field.
-        mInput.addTextChangedListener(new TextWatcher() {
+        mInput.addTextChangedListener(new EmptyTextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 fieldModel.setValue(s.toString());
                 updateDisplayedError(false);
-                updateFieldValueIcon(false);
                 if (sObserverForTest != null) {
                     sObserverForTest.onEditorTextUpdate();
                 }
@@ -166,9 +145,6 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
                             new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                 }
             }
-
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -185,39 +161,23 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
             mInput.setThreshold(0);
         }
 
-        List<InputFilter> filters = new ArrayList<>();
-        if (filter != null) filters.add(filter);
         if (mEditorFieldModel.hasLengthCounter()) {
             // Limit input length for field and counter.
-            filters.add(new InputFilter.LengthFilter(mEditorFieldModel.getLengthCounterLimit()));
+            mInput.setFilters(new InputFilter[] {
+                    new InputFilter.LengthFilter(mEditorFieldModel.getLengthCounterLimit())});
             mInputLayout.setCounterMaxLength(mEditorFieldModel.getLengthCounterLimit());
         }
-        InputFilter[] filtersArr = new InputFilter[filters.size()];
-        filters.toArray(filtersArr);
-        mInput.setFilters(filtersArr);
+
+        mFormatter = formatter;
         if (formatter != null) {
             mInput.addTextChangedListener(formatter);
             formatter.afterTextChanged(mInput.getText());
         }
 
         switch (fieldModel.getInputTypeHint()) {
-            case EditorFieldModel.INPUT_TYPE_HINT_CREDIT_CARD:
-            // Intentionally fall through.
-            //
-            // There's no keyboard that allows numbers, spaces, and "-" only, so use the phone
-            // keyboard instead. The phone keyboard has more symbols than necessary. A filter
-            // should be used to prevent input of phone number symbols that are not relevant for
-            // credit card numbers, e.g., "+", "*", and "#".
-            //
-            // The number keyboard is not suitable, because it filters out everything except
-            // digits.
             case EditorFieldModel.INPUT_TYPE_HINT_PHONE:
                 // Show the keyboard with numbers and phone-related symbols.
                 mInput.setInputType(InputType.TYPE_CLASS_PHONE);
-                break;
-            case EditorFieldModel.INPUT_TYPE_HINT_NUMERIC:
-                // Show the keyboard with only numbers.
-                mInput.setInputType(InputType.TYPE_CLASS_NUMBER);
                 break;
             case EditorFieldModel.INPUT_TYPE_HINT_EMAIL:
                 mInput.setInputType(
@@ -242,18 +202,6 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
                 mInput.setInputType(InputType.TYPE_CLASS_TEXT
                         | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
                         | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
-                break;
-            case EditorFieldModel.INPUT_TYPE_HINT_PASSWORD:
-                // Password field with an option to toggle the visibility
-                mInput.setInputType(
-                        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                mInputLayout.setPasswordVisibilityToggleEnabled(true);
-                break;
-            case EditorFieldModel.INPUT_TYPE_HINT_NUMERIC_PIN:
-                // Numeric pin field with an option to toggle the visibility
-                mInput.setInputType(
-                        InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD);
-                mInputLayout.setPasswordVisibilityToggleEnabled(true);
                 break;
             default:
                 mInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
@@ -287,18 +235,6 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
                     - (float) mIconsLayer.getHeight() - mIconsLayer.getTop();
             mIconsLayer.setTranslationY(offset);
         }
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasWindowFocus) {
-        super.onWindowFocusChanged(hasWindowFocus);
-
-        if (hasWindowFocus) updateFieldValueIcon(true);
-    }
-
-    @Override
-    public void onClick(View v) {
-        mEditorFieldModel.getActionIconAction().run();
     }
 
     /** @return The EditorFieldModel that the TextView represents. */
@@ -339,17 +275,9 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
         mInput.setText(mEditorFieldModel.getValue());
     }
 
-    private void updateFieldValueIcon(boolean force) {
-        if (mValueIcon == null) return;
-
-        int iconId = mEditorFieldModel.getValueIconGenerator().getIconResourceId(mInput.getText());
-        if (mValueIconId == iconId && !force) return;
-        mValueIconId = iconId;
-        if (mValueIconId == 0) {
-            mValueIcon.setVisibility(GONE);
-        } else {
-            mValueIcon.setImageDrawable(AppCompatResources.getDrawable(getContext(), mValueIconId));
-            mValueIcon.setVisibility(VISIBLE);
+    public void removeTextChangedListeners() {
+        if (mFormatter != null) {
+            mInput.removeTextChangedListener(mFormatter);
         }
     }
 

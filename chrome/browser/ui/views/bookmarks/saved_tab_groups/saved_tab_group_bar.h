@@ -69,10 +69,12 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
   // SavedTabGroupModelObserver
   void SavedTabGroupAddedLocally(const base::Uuid& guid) override;
   void SavedTabGroupRemovedLocally(const SavedTabGroup* removed_group) override;
+  void SavedTabGroupLocalIdChanged(const base::Uuid& saved_group_id) override;
   void SavedTabGroupUpdatedLocally(
       const base::Uuid& group_guid,
       const absl::optional<base::Uuid>& tab_guid = absl::nullopt) override;
   void SavedTabGroupReorderedLocally() override;
+  void SavedTabGroupReorderedFromSync() override;
   void SavedTabGroupAddedFromSync(const base::Uuid& guid) override;
   void SavedTabGroupRemovedFromSync(
       const SavedTabGroup* removed_group) override;
@@ -102,6 +104,10 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
   // Updates the button (color, name, tab list) denoted by `guid` in the
   // `SavedTabGroupBar` if the `guid` exists in `saved_tab_group_model_`.
   void SavedTabGroupUpdated(const base::Uuid& guid);
+
+  // Reorders all groups in the bookmarks to match the state of
+  // `saved_tab_group_model_`.
+  void SavedTabGroupReordered();
 
   // Adds the button to the child views for a new tab group at a specific index.
   // This function then verifies if the added button and overflow button should
@@ -139,6 +145,9 @@ class SavedTabGroupBar : public views::AccessiblePaneView,
 
   // Updates the drop index in `drag_data_` based on the current drag location.
   void UpdateDropIndex();
+
+  // Returns the drop index for the current drag session, if any.
+  absl::optional<size_t> GetDropIndex() const;
 
   // Reorders the dragged group to its new index.
   void HandleDrop();

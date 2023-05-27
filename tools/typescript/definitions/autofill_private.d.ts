@@ -132,6 +132,8 @@ declare global {
       export function getUpiIdList(): Promise<string[]>;
       export function addVirtualCard(cardId: string): void;
       export function removeVirtualCard(cardId: string): void;
+      export function authenticateUserAndFlipMandatoryAuthToggle(): void;
+      export function authenticateUserToEditLocalCard(): Promise<boolean>;
 
       export const onPersonalDataChanged: ChromeEvent<
           (addresses: AddressEntry[], creditCards: CreditCardEntry[],

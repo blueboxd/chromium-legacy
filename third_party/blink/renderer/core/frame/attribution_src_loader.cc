@@ -26,6 +26,7 @@
 #include "components/attribution_reporting/trigger_registration_error.mojom-shared.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/attribution_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/trigger_verification.h"
@@ -137,11 +138,14 @@ struct AttributionSrcLoader::AttributionHeaders {
   AtomicString os_trigger;
   uint64_t request_id;
 
-  AttributionHeaders(const HTTPHeaderMap& map, uint64_t request_id)
+  AttributionHeaders(const HTTPHeaderMap& map,
+                     uint64_t request_id,
+                     bool cross_app_web_runtime_enabled)
       : web_source(map.Get(http_names::kAttributionReportingRegisterSource)),
         web_trigger(map.Get(http_names::kAttributionReportingRegisterTrigger)),
         request_id(request_id) {
-    if (base::FeatureList::IsEnabled(
+    if (cross_app_web_runtime_enabled &&
+        base::FeatureList::IsEnabled(
             network::features::kAttributionReportingCrossAppWeb)) {
       os_source = map.Get(http_names::kAttributionReportingRegisterOSSource);
       os_trigger = map.Get(http_names::kAttributionReportingRegisterOSTrigger);
@@ -324,7 +328,9 @@ absl::optional<Impression> AttributionSrcLoader::RegisterNavigationInternal(
   const Impression impression{
       .nav_type = element
                       ? mojom::blink::AttributionNavigationType::kAnchor
-                      : mojom::blink::AttributionNavigationType::kWindowOpen};
+                      : mojom::blink::AttributionNavigationType::kWindowOpen,
+      .runtime_features = GetRuntimeFeatures(),
+  };
 
   if (CreateAndSendRequests(std::move(attribution_src_urls), element,
                             impression.attribution_src_token)) {
@@ -530,6 +536,17 @@ network::mojom::AttributionSupport AttributionSrcLoader::GetSupport() const {
   return Platform::Current()->GetAttributionReportingSupport();
 }
 
+network::AttributionReportingRuntimeFeatures
+AttributionSrcLoader::GetRuntimeFeatures() const {
+  network::AttributionReportingRuntimeFeatures runtime_features;
+  if (RuntimeEnabledFeatures::AttributionReportingCrossAppWebEnabled(
+          local_frame_->DomWindow())) {
+    runtime_features.Put(
+        network::AttributionReportingRuntimeFeature::kCrossAppWeb);
+  }
+  return runtime_features;
+}
+
 bool AttributionSrcLoader::MaybeRegisterAttributionHeaders(
     const ResourceRequest& request,
     const ResourceResponse& response,
@@ -548,7 +565,10 @@ bool AttributionSrcLoader::MaybeRegisterAttributionHeaders(
   }
 
   const uint64_t request_id = request.InspectorId();
-  AttributionHeaders headers(response.HttpHeaderFields(), request_id);
+  AttributionHeaders headers(
+      response.HttpHeaderFields(), request_id,
+      RuntimeEnabledFeatures::AttributionReportingCrossAppWebEnabled(
+          local_frame_->DomWindow()));
 
   // Only handle requests which are attempting to invoke the API.
   if (headers.count() == 0) {
@@ -676,7 +696,10 @@ void AttributionSrcLoader::ResourceClient::Finish() {
 void AttributionSrcLoader::ResourceClient::HandleResponseHeaders(
     const ResourceResponse& response,
     uint64_t request_id) {
-  AttributionHeaders headers(response.HttpHeaderFields(), request_id);
+  AttributionHeaders headers(
+      response.HttpHeaderFields(), request_id,
+      RuntimeEnabledFeatures::AttributionReportingCrossAppWebEnabled(
+          loader_->local_frame_->DomWindow()));
   if (headers.count() == 0) {
     return;
   }
@@ -788,16 +811,17 @@ void AttributionSrcLoader::ResourceClient::HandleSourceRegistration(
   UseCounter::Count(loader_->local_frame_->DomWindow(),
                     mojom::blink::WebFeature::kAttributionReportingCrossAppWeb);
 
-  GURL registration_url = attribution_reporting::ParseOsSourceOrTriggerHeader(
-      StringUTF8Adaptor(headers.os_source).AsStringPiece());
-  if (!registration_url.is_valid()) {
+  std::vector<GURL> registration_urls =
+      attribution_reporting::ParseOsSourceOrTriggerHeader(
+          StringUTF8Adaptor(headers.os_source).AsStringPiece());
+  if (registration_urls.empty()) {
     LogAuditIssue(loader_->local_frame_->DomWindow(),
                   AttributionReportingIssueType::kInvalidRegisterOsSourceHeader,
                   /*element=*/nullptr, headers.request_id,
                   /*invalid_parameter=*/headers.os_source);
     return;
   }
-  data_host_->OsSourceDataAvailable(KURL(registration_url));
+  data_host_->OsSourceDataAvailable(std::move(registration_urls));
   ++num_registrations_;
 }
 
@@ -845,9 +869,10 @@ void AttributionSrcLoader::ResourceClient::HandleTriggerRegistration(
   UseCounter::Count(loader_->local_frame_->DomWindow(),
                     mojom::blink::WebFeature::kAttributionReportingCrossAppWeb);
 
-  GURL registration_url = attribution_reporting::ParseOsSourceOrTriggerHeader(
-      StringUTF8Adaptor(headers.os_trigger).AsStringPiece());
-  if (!registration_url.is_valid()) {
+  std::vector<GURL> registration_urls =
+      attribution_reporting::ParseOsSourceOrTriggerHeader(
+          StringUTF8Adaptor(headers.os_trigger).AsStringPiece());
+  if (registration_urls.empty()) {
     LogAuditIssue(
         loader_->local_frame_->DomWindow(),
         AttributionReportingIssueType::kInvalidRegisterOsTriggerHeader,
@@ -855,7 +880,7 @@ void AttributionSrcLoader::ResourceClient::HandleTriggerRegistration(
         /*invalid_parameter=*/headers.os_trigger);
     return;
   }
-  data_host_->OsTriggerDataAvailable(KURL(registration_url));
+  data_host_->OsTriggerDataAvailable(std::move(registration_urls));
   ++num_registrations_;
 }
 

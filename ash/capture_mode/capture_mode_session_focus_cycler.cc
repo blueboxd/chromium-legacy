@@ -21,6 +21,7 @@
 #include "ash/capture_mode/recording_type_menu_view.h"
 #include "ash/shell.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
@@ -280,8 +281,11 @@ void CaptureModeSessionFocusCycler::HighlightableView::PseudoFocus() {
                                     : StyleUtil::SetUpFocusRingForView(view);
     // Use a custom focus predicate as the default one checks if |view| actually
     // has focus which won't be happening since our widgets are not activatable.
-    focus_ring_->SetHasFocusPredicate(
-        [&](views::View* view) { return view->GetVisible() && has_focus_; });
+    focus_ring_->SetHasFocusPredicate(base::BindRepeating(
+        [](const HighlightableView* highlightable, const views::View* view) {
+          return view->GetVisible() && highlightable->has_focus_;
+        },
+        base::Unretained(this)));
   }
 
   if (needs_highlight_path_) {
@@ -446,6 +450,10 @@ CaptureModeSessionFocusCycler::CaptureModeSessionFocusCycler(
       groups_for_window_{FocusGroup::kNone, FocusGroup::kTypeSource,
                          FocusGroup::kCaptureWindow, FocusGroup::kSettingsMenu,
                          FocusGroup::kSettingsClose},
+      groups_for_game_capture_{
+          FocusGroup::kNone, FocusGroup::kStartRecordingButton,
+          FocusGroup::kCameraPreview, FocusGroup::kSettingsMenu,
+          FocusGroup::kSettingsClose},
       session_(session),
       scoped_a11y_overrider_(
           std::make_unique<ScopedA11yOverrideWindowSetter>()) {
@@ -581,8 +589,10 @@ bool CaptureModeSessionFocusCycler::OnSpacePressed() {
   // currently has focus and we are already in region mode, as we still want to
   // create a default region in this case.
   CaptureModeBarView* bar_view = session_->capture_mode_bar_view_;
-  if (view->GetView() ==
-          bar_view->capture_source_view()->region_toggle_button() &&
+  if (const CaptureModeSourceView* capture_source_view =
+          bar_view->GetCaptureSourceView();
+      capture_source_view &&
+      view->GetView() == capture_source_view->region_toggle_button() &&
       CaptureModeController::Get()->source() == CaptureModeSource::kRegion) {
     return false;
   }
@@ -600,6 +610,7 @@ bool CaptureModeSessionFocusCycler::RegionGroupFocused() const {
 
 bool CaptureModeSessionFocusCycler::CaptureBarFocused() const {
   return current_focus_group_ == FocusGroup::kTypeSource ||
+         current_focus_group_ == FocusGroup::kStartRecordingButton ||
          current_focus_group_ == FocusGroup::kSettingsClose ||
          current_focus_group_ == FocusGroup::kPendingSettings;
 }
@@ -739,6 +750,11 @@ CaptureModeSessionFocusCycler::GetNextGroup(bool reverse) const {
 
 const std::vector<CaptureModeSessionFocusCycler::FocusGroup>&
 CaptureModeSessionFocusCycler::GetCurrentGroupList() const {
+  if (session_->active_behavior()->behavior_type() ==
+      BehaviorType::kGameDashboard) {
+    return groups_for_game_capture_;
+  }
+
   switch (session_->controller_->source()) {
     case CaptureModeSource::kFullscreen:
       return groups_for_fullscreen_;
@@ -752,11 +768,16 @@ CaptureModeSessionFocusCycler::GetCurrentGroupList() const {
 bool CaptureModeSessionFocusCycler::IsGroupAvailable(FocusGroup group) const {
   switch (group) {
     case FocusGroup::kNone:
-    case FocusGroup::kTypeSource:
     case FocusGroup::kSettingsClose:
     case FocusGroup::kPendingSettings:
     case FocusGroup::kPendingRecordingType:
       return true;
+    case FocusGroup::kTypeSource: {
+      CaptureModeBarView* bar_view = session_->capture_mode_bar_view_;
+      return bar_view->GetCaptureTypeView() && bar_view->GetCaptureSourceView();
+    }
+    case FocusGroup::kStartRecordingButton:
+      return session_->capture_mode_bar_view_->GetStartRecordingButton();
     case FocusGroup::kSelection:
     case FocusGroup::kCaptureButton: {
       // The selection UI and capture button are focusable only when it is
@@ -799,8 +820,9 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
       break;
     case FocusGroup::kTypeSource: {
       CaptureModeBarView* bar_view = session_->capture_mode_bar_view_;
-      CaptureModeTypeView* type_view = bar_view->capture_type_view();
-      CaptureModeSourceView* source_view = bar_view->capture_source_view();
+      CaptureModeTypeView* type_view = bar_view->GetCaptureTypeView();
+      CaptureModeSourceView* source_view = bar_view->GetCaptureSourceView();
+      CHECK(type_view && source_view);
       for (auto* button :
            {type_view->image_toggle_button(), type_view->video_toggle_button(),
             source_view->fullscreen_toggle_button(),
@@ -812,6 +834,15 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
           items.push_back(highlight_helper);
         }
       }
+      break;
+    }
+    case FocusGroup::kStartRecordingButton: {
+      auto* start_recording_button =
+          session_->capture_mode_bar_view_->GetStartRecordingButton();
+      CHECK(start_recording_button);
+      auto* highlight_helper = HighlightHelper::Get(start_recording_button);
+      CHECK(highlight_helper);
+      items.push_back(highlight_helper);
       break;
     }
     case FocusGroup::kCaptureButton: {
@@ -892,6 +923,7 @@ aura::Window* CaptureModeSessionFocusCycler::GetA11yOverrideWindow() const {
       return session_->capture_mode_settings_widget()->GetNativeWindow();
     case FocusGroup::kNone:
     case FocusGroup::kTypeSource:
+    case FocusGroup::kStartRecordingButton:
     case FocusGroup::kSelection:
     case FocusGroup::kCaptureWindow:
     case FocusGroup::kSettingsClose:

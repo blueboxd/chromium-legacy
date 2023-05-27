@@ -31,7 +31,7 @@
 #include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
-#include "content/browser/loader/prefetch_url_loader_service.h"
+#include "content/browser/loader/subresource_proxying_url_loader_service.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/preloading/prefetch/prefetch_url_loader_interceptor.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -85,6 +85,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/request_destination.h"
@@ -263,13 +264,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info.common_params->referrer->policy);
   new_request->headers.AddHeadersFromString(request_info.begin_params->headers);
   new_request->cors_exempt_headers = request_info.cors_exempt_headers;
-  if (request_info.begin_params->web_bundle_token) {
-    DCHECK(frame_tree_node->parent());
-    int render_process_id = frame_tree_node->parent()->GetProcess()->GetID();
-    new_request->web_bundle_token_params =
-        request_info.begin_params->web_bundle_token;
-    new_request->web_bundle_token_params->render_process_id = render_process_id;
-  }
   new_request->devtools_accepted_stream_types =
       request_info.devtools_accepted_stream_types;
   // For ResourceType purposes, fenced frames are considered a kSubFrame.
@@ -333,6 +327,11 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       request_info.begin_params->impression.has_value()
           ? network::mojom::AttributionReportingEligibility::kNavigationSource
           : network::mojom::AttributionReportingEligibility::kUnset;
+
+  if (request_info.begin_params->impression.has_value()) {
+    new_request->attribution_reporting_runtime_features =
+        request_info.begin_params->impression->runtime_features;
+  }
 
   return new_request;
 }
@@ -532,9 +531,19 @@ void NavigationURLLoaderImpl::CreateInterceptors(
   }
 
   // Set up an interceptor for prefetch.
+
+  // TODO(crbug.com/1431387): Do not depend on the initiator liveness, e.g. by
+  // plumbing `GlobalRenderFrameHostId` or switching to `LocalFrameToken`. See
+  // https://chromium-review.googlesource.com/c/chromium/src/+/4372403/comment/ff141ba3_0ffd99ff/
+  // for more details.
+  GlobalRenderFrameHostId initiator_render_frame_host_id;
+  if (RenderFrameHost* initiator_render_frame_host =
+          initiator_document_.AsRenderFrameHostIfValid()) {
+    initiator_render_frame_host_id = initiator_render_frame_host->GetGlobalId();
+  }
   std::unique_ptr<PrefetchURLLoaderInterceptor> prefetch_interceptor =
       content::PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
-          frame_tree_node_id_, request_info_->previous_render_frame_host_id);
+          frame_tree_node_id_, initiator_render_frame_host_id);
   if (prefetch_interceptor) {
     interceptors_.push_back(std::move(prefetch_interceptor));
   }
@@ -717,11 +726,7 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest() {
   // further refactor the factory getters to avoid this.
   scoped_refptr<network::SharedURLLoaderFactory> factory;
 
-  const bool should_be_handled_by_network_service =
-      network::IsURLHandledByNetworkService(resource_request_->url) ||
-      resource_request_->web_bundle_token_params.has_value();
-
-  if (!should_be_handled_by_network_service) {
+  if (!network::IsURLHandledByNetworkService(resource_request_->url)) {
     if (known_schemes_.find(resource_request_->url.scheme()) ==
         known_schemes_.end()) {
       mojo::PendingRemote<network::mojom::URLLoaderFactory> loader_factory;

@@ -6,6 +6,7 @@ AccessibilityExtension*
 Autoclick*
 AshTtsApiTest*
 BrowserAppShelfControllerBrowserTest*
+ChromeAppKioskLacrosTest*
 ChromeVox*
 DemoAshRequiresLacrosTest*
 DesksTemplatesClientLacrosTest*
@@ -16,6 +17,7 @@ SelectToSpeak*
 SwitchAccess*
 VpnExtensionObserverBrowserTest*
 WebAppsCrosapiBrowserTest*
+WebAppPreloadInstallerLacrosBrowserTest*
 WebAppProviderBridgeBrowserTest*
 WebKioskAcceleratorLacrosTest*
 WebKioskLacrosTest*

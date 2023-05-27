@@ -20,8 +20,6 @@
 #if BUILDFLAG(IS_APPLE)
 #ifdef __OBJC__
 @class NSString;
-#else
-class NSString;
 #endif
 #endif  // BUILDFLAG(IS_APPLE)
 

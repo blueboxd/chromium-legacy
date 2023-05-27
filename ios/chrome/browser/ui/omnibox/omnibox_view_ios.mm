@@ -24,11 +24,13 @@
 #import "components/open_from_clipboard/clipboard_recent_content.h"
 #import "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
 #import "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_metrics_helper.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
@@ -517,6 +519,12 @@ void OmniboxViewIOS::OnDidChange(bool processing_user_event) {
 
 void OmniboxViewIOS::OnAccept() {
   base::RecordAction(UserMetricsAction("MobileOmniboxUse"));
+  NewTabPageTabHelper* NTPTabHelper =
+      NewTabPageTabHelper::FromWebState(edit_model_delegate_->GetWebState());
+  if (NTPTabHelper->IsActive()) {
+    RecordHomeAction(IOSHomeActionType::kOmnibox,
+                     NTPTabHelper->ShouldShowStartSurface());
+  }
 
   if (model()) {
     model()->OpenSelection();
@@ -614,8 +622,6 @@ void OmniboxViewIOS::OnDeleteBackward() {
       // never sets the input-in-progress flag.
       if (model())
         model()->SetInputInProgress(YES);
-    } else {
-      RemoveQueryRefinementChip();
     }
   }
 }
@@ -625,11 +631,8 @@ void OmniboxViewIOS::ClearText() {
   // user can start typing a new query.
   if (![field_ isFirstResponder])
     [field_ becomeFirstResponder];
-  if (field_.text.length == 0) {
-    // If `field_` is empty, remove the query refinement chip.
-    RemoveQueryRefinementChip();
-  } else {
-    // Otherwise, just remove the text in the omnibox.
+  if (field_.text.length != 0) {
+    // Remove the text in the omnibox.
     // Calling -[UITextField setText:] does not trigger
     // -[id<UITextFieldDelegate> textDidChange] so it must be called explicitly.
     OnClear();
@@ -639,10 +642,6 @@ void OmniboxViewIOS::ClearText() {
   // Calling OnDidChange() can trigger a scroll event, which removes focus from
   // the omnibox.
   [field_ becomeFirstResponder];
-}
-
-void OmniboxViewIOS::RemoveQueryRefinementChip() {
-  edit_model_delegate_->OnChanged();
 }
 
 void OmniboxViewIOS::EndEditing() {

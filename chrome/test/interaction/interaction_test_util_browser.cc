@@ -6,12 +6,14 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/test/test_browser_ui.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -19,6 +21,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/interaction/tracked_element_webcontents.h"
 #include "chrome/test/interaction/webcontents_interaction_test_util.h"
+#include "content/public/common/content_switches.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/interaction_test_util.h"
 #include "ui/base/test/ui_controls.h"
@@ -35,17 +38,7 @@
 #include "ui/base/interaction/interaction_test_util_mac.h"
 #endif
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#define SUPPORTS_PIXEL_TESTS 1
-#include "base/command_line.h"
-#include "chrome/browser/ui/test/test_browser_ui.h"
-#else
-#define SUPPORTS_PIXEL_TESTS 0
-#endif
-
 namespace {
-
-#if SUPPORTS_PIXEL_TESTS
 
 // Facilitates pixel testing with more versatile naming than TestBrowserUi.
 class PixelTestUi : public TestBrowserUi {
@@ -61,6 +54,10 @@ class PixelTestUi : public TestBrowserUi {
   void WaitForUserDismissal() override { NOTREACHED(); }
 
   bool VerifyUi() override {
+    return VerifyUiWithResult() != ui::test::ActionResult::kFailed;
+  }
+
+  ui::test::ActionResult VerifyUiWithResult() {
     auto* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     const std::string test_name =
@@ -77,8 +74,6 @@ class PixelTestUi : public TestBrowserUi {
   std::string screenshot_name_;
   std::string baseline_;
 };
-
-#endif  // SUPPORTS_PIXEL_TESTS
 
 // Special handler for browsers and browser tab strips that enables SelectTab().
 class InteractionTestUtilSimulatorBrowser
@@ -246,12 +241,11 @@ ui::test::ActionResult InteractionTestUtilBrowser::CompareScreenshot(
     return ui::test::ActionResult::kNotAttempted;
   }
 
-#if SUPPORTS_PIXEL_TESTS
   // pixel_browser_tests and pixel_interactive_ui_tests specify this command
   // line, which is checked by TestBrowserUi before attempting any screen
   // capture; otherwise screenshotting is a silent no-op.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          "browser-ui-tests-verify-pixels")) {
+          switches::kVerifyPixels)) {
     LOG(WARNING)
         << "Cannot take screenshot: pixel test command line not set. This is "
            "normal for non-pixel-test jobs such as vanilla browser_tests.";
@@ -259,10 +253,9 @@ ui::test::ActionResult InteractionTestUtilBrowser::CompareScreenshot(
   }
 
   PixelTestUi pixel_test_ui(view, screenshot_name, baseline);
-  return pixel_test_ui.VerifyUi() ? ui::test::ActionResult::kSucceeded
-                                  : ui::test::ActionResult::kFailed;
-#else  // !SUPPORTS_PIXEL_TESTS
-  LOG(WARNING) << "Current platform does not support pixel tests.";
-  return ui::test::ActionResult::kKnownIncompatible;
-#endif
+  ui::test::ActionResult result = pixel_test_ui.VerifyUiWithResult();
+  if (result == ui::test::ActionResult::kKnownIncompatible) {
+    LOG(WARNING) << "Current platform does not support pixel tests.";
+  }
+  return result;
 }

@@ -31,6 +31,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -80,7 +81,9 @@
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom-shared.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/startup/startup_switches.h"
+#include "components/account_id/account_id.h"
 #include "components/crash/core/app/crashpad.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -96,6 +99,7 @@
 #include "components/user_manager/user_type.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/media_switches.h"
 #include "media/capture/capture_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -459,6 +463,30 @@ void RecordDataVerForPrimaryUser() {
   crosapi::browser_util::RecordDataVer(g_browser_process->local_state(),
                                        user_id_hash,
                                        version_info::GetVersion());
+}
+
+// Waits for the device owner being fetched from `UserManager` and then executes
+// a callback with `params`. If Lacros is launched at the login screen, this
+// just executes the callback directly.
+void WaitForDeviceOwnerFetchedAndThen(base::OnceClosure cb,
+                                      bool launching_at_login_screen) {
+  if (!user_manager::UserManager::IsInitialized()) {
+    // The `UserManager` is only unavailable in tests.
+    CHECK_IS_TEST();
+    std::move(cb).Run();
+    return;
+  }
+
+  if (!launching_at_login_screen) {
+    std::move(cb).Run();
+    return;
+  }
+
+  // Delay start of Lacros until the owner id is fetched. The owner id is
+  // unused here and synchronously read from `UserManager` at a later point.
+  // This just ensures the owner id has been set.
+  user_manager::UserManager::Get()->GetOwnerAccountIdAsync(
+      base::IgnoreArgs<const AccountId&>(std::move(cb)));
 }
 
 // The delegate keeps track of the most recent lacros-chrome binary version
@@ -967,14 +995,22 @@ void BrowserManager::Start(bool launching_at_login_screen) {
       base::BindOnce(&DoLacrosBackgroundWorkPreLaunch, lacros_path_,
                      is_initial_lacros_launch_after_reboot_,
                      launching_at_login_screen),
-      base::BindOnce(&BrowserManager::StartWithLogFile,
-                     weak_factory_.GetWeakPtr()));
-
+      base::BindOnce(
+          [](base::WeakPtr<BrowserManager> manager,
+             bool launching_at_login_screen,
+             LaunchParamsFromBackground params) {
+            WaitForDeviceOwnerFetchedAndThen(
+                base::BindOnce(&BrowserManager::StartWithLogFile, manager,
+                               launching_at_login_screen, std::move(params)),
+                launching_at_login_screen);
+          },
+          weak_factory_.GetWeakPtr(), launching_at_login_screen));
   // Set false to prepare for the next Lacros launch.
   is_initial_lacros_launch_after_reboot_ = false;
 }
 
-void BrowserManager::StartWithLogFile(LaunchParamsFromBackground params) {
+void BrowserManager::StartWithLogFile(bool launching_at_login_screen,
+                                      LaunchParamsFromBackground params) {
   DCHECK_EQ(state_, State::CREATING_LOG_FILE);
 
   // Shutdown() might have been called after Start() posted the StartWithLogFile
@@ -1072,6 +1108,16 @@ void BrowserManager::StartWithLogFile(LaunchParamsFromBackground params) {
     argv.push_back("--use-cras");
   }
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kSystemDevMode)) {
+    argv.push_back("--system-developer-mode");
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowRAInDevMode)) {
+    argv.push_back("--allow-ra-in-dev-mode");
+  }
+
 #if BUILDFLAG(ENABLE_NACL)
   // This switch is forwarded to nacl_helper and is needed before zygote fork.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1119,7 +1165,7 @@ void BrowserManager::StartWithLogFile(LaunchParamsFromBackground params) {
     argv.push_back(
         "--vmodule=command_storage_backend=1,session_service_commands=1");
 
-    if (launch_at_login_screen_ &&
+    if (launching_at_login_screen &&
         !command_line->HasSwitch(switches::kDisableLoggingRedirect)) {
       // Redirect logs to cryptohome after login on non-test images.
       argv.push_back(base::StringPrintf(
@@ -1139,16 +1185,12 @@ void BrowserManager::StartWithLogFile(LaunchParamsFromBackground params) {
   // startup if we're not launching at login screen.
   // Vice versa, if we're launching at login screen, we want to split
   // the parameters in pre-login and post-login.
-  bool pass_post_login_params =
-      launch_at_login_screen_ &&
-      !user_manager::UserManager::Get()->IsUserLoggedIn();
-
   base::ScopedFD startup_fd = browser_util::CreateStartupData(
       environment_provider_.get(),
       browser_util::InitialBrowserAction(
           mojom::InitialBrowserAction::kDoNotOpenWindow),
       !keep_alive_features_.empty(), lacros_selection_,
-      !pass_post_login_params);
+      !launching_at_login_screen);
   if (startup_fd.is_valid()) {
     // Hardcoded to use FD 3 to make the ash-chrome's behavior more predictable.
     // Lacros-chrome should not depend on the hardcoded value though. Instead
@@ -1162,7 +1204,7 @@ void BrowserManager::StartWithLogFile(LaunchParamsFromBackground params) {
   // If at login screen, open an anonymous pipe to pass post-login parameters to
   // Lacros later on.
   base::ScopedFD read_pipe_fd;
-  if (pass_post_login_params) {
+  if (launching_at_login_screen) {
     bool success = base::CreatePipe(&read_pipe_fd, &postlogin_pipe_fd_);
     DCHECK(success);
 
@@ -1222,7 +1264,7 @@ void BrowserManager::StartWithLogFile(LaunchParamsFromBackground params) {
     SetState(State::UNAVAILABLE);
     return;
   }
-  SetState(pass_post_login_params ? State::PRE_LAUNCHED : State::STARTING);
+  SetState(launching_at_login_screen ? State::PRE_LAUNCHED : State::STARTING);
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
   channel.RemoteProcessLaunchAttempted();
 }
@@ -1246,8 +1288,20 @@ void BrowserManager::OnBrowserServiceConnected(
   DCHECK(!browser_service_.has_value());
   browser_service_ =
       BrowserServiceInfo{mojo_id, browser_service, browser_service_version};
-  base::UmaHistogramMediumTimes("ChromeOS.Lacros.StartTime",
-                                base::TimeTicks::Now() - lacros_launch_time_);
+
+  if (!lacros_resume_time_.is_null()) {
+    // When pre-launching Lacros at login screen, it would be misleading to
+    // measure the start time from when the moment the binary was launched,
+    // as that would include the time spent idle at login screen.
+    // We record a different metric instead, which measures the time from
+    // when Lacros is resumed to when the browser service is connected.
+    base::UmaHistogramMediumTimes("ChromeOS.Lacros.ResumeTime",
+                                  base::TimeTicks::Now() - lacros_resume_time_);
+  } else {
+    base::UmaHistogramMediumTimes("ChromeOS.Lacros.StartTime",
+                                  base::TimeTicks::Now() - lacros_launch_time_);
+  }
+
   // Set the launch-on-login pref every time lacros-chrome successfully starts,
   // instead of once during ash-chrome shutdown, so we have the right value
   // even if ash-chrome crashes.
@@ -1381,7 +1435,7 @@ void BrowserManager::OnSessionStateChanged() {
     return;
   }
 
-  if (launch_at_login_screen_ && postlogin_pipe_fd_.is_valid()) {
+  if (state_ == State::PRE_LAUNCHED) {
     // Resume Lacros launch after login, if it was pre-launched.
     ResumeLaunch();
   } else {
@@ -1513,6 +1567,14 @@ void BrowserManager::ResumeLaunch() {
   // the following action will be executed.
   pending_actions_.Push(BrowserAction::GetActionForSessionStart());
 
+  WaitForDeviceOwnerFetchedAndThen(
+      base::BindOnce(&BrowserManager::WritePostLoginData,
+                     weak_factory_.GetWeakPtr()),
+      /*launching_at_login_screen=*/false);
+}
+
+void BrowserManager::WritePostLoginData() {
+  lacros_resume_time_ = base::TimeTicks::Now();
   // Write post-login parameters into the anonymous pipe.
   bool write_success = browser_util::WritePostLoginData(
       postlogin_pipe_fd_.get(), environment_provider_.get(),

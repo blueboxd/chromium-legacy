@@ -40,6 +40,9 @@ class MockPasswordAccessoryController : public PasswordAccessoryController {
               (override));
   MOCK_METHOD(void, DidNavigateMainFrame, ());
   MOCK_METHOD(void,
+              UpdateCredManReentryUi,
+              (autofill::mojom::FocusedFieldType));
+  MOCK_METHOD(void,
               RegisterFillingSourceObserver,
               (FillingSourceObserver),
               (override));

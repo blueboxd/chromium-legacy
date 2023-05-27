@@ -29,7 +29,7 @@
 #include "sql/transaction.h"
 
 #if BUILDFLAG(IS_APPLE)
-#include "base/mac/backup_util.h"
+#include "base/apple/backup_util.h"
 #endif
 
 namespace history {
@@ -39,7 +39,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 63;
+const int kCurrentVersionNumber = 65;
 const int kCompatibleVersionNumber = 16;
 
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
@@ -117,7 +117,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
 
 #if BUILDFLAG(IS_APPLE)
   // Exclude the history file from backups.
-  base::mac::SetBackupExclusion(history_name);
+  base::apple::SetBackupExclusion(history_name);
 #endif
 
   // Prime the cache.
@@ -936,6 +936,24 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 62) {
     if (!MigrateVisitsAddConsiderForNewTabPageMostVisitedColumn()) {
       return LogMigrationFailure(62);
+    }
+    cur_version++;
+    // TODO(crbug.com/1414092): Handle failure instead of ignoring it.
+    std::ignore = meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 63) {
+    if (!MigrateDownloadByWebApp()) {
+      return LogMigrationFailure(63);
+    }
+    cur_version++;
+    // TODO(crbug.com/1414092): Handle failure instead of ignoring it.
+    std::ignore = meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 64) {
+    if (!MigrateClustersAndVisitsAddInteractionState()) {
+      return LogMigrationFailure(65);
     }
     cur_version++;
     // TODO(crbug.com/1414092): Handle failure instead of ignoring it.

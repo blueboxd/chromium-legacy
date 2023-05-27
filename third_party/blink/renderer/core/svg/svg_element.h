@@ -23,6 +23,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_H_
 
 #include "base/dcheck_is_on.h"
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
@@ -138,7 +139,7 @@ class CORE_EXPORT SVGElement : public Element {
   };
   virtual void SvgAttributeChanged(const SvgAttributeChangedParams&);
 
-  SVGAnimatedPropertyBase* PropertyFromAttribute(
+  virtual SVGAnimatedPropertyBase* PropertyFromAttribute(
       const QualifiedName& attribute_name) const;
   static AnimatedPropertyType AnimatedPropertyTypeForCSSAttribute(
       const QualifiedName& attribute_name);
@@ -160,7 +161,7 @@ class CORE_EXPORT SVGElement : public Element {
   void SetCorrespondingElement(SVGElement*);
   SVGUseElement* GeneratingUseElement() const;
 
-  void SynchronizeSVGAttribute(const QualifiedName&) const;
+  virtual void SynchronizeSVGAttribute(const QualifiedName&) const;
   void CollectExtraStyleForPresentationAttribute(
       MutableCSSPropertyValueSet*) override;
 
@@ -179,8 +180,6 @@ class CORE_EXPORT SVGElement : public Element {
   virtual bool HaveLoadedRequiredResources();
 
   void InvalidateRelativeLengthClients();
-
-  void AddToPropertyMap(SVGAnimatedPropertyBase*);
 
   SVGAnimatedString* className() { return class_name_.Get(); }
 
@@ -233,6 +232,11 @@ class CORE_EXPORT SVGElement : public Element {
 
   bool HasSVGParent() const;
 
+  // Utility function for implementing SynchronizeSVGAttribute() in children
+  // (and mixins such as SVGTests).
+  static void SynchronizeAllSVGAttributes(
+      const base::span<SVGAnimatedPropertyBase*> attributes);
+
  protected:
   SVGElement(const QualifiedName&,
              Document&,
@@ -259,6 +263,7 @@ class CORE_EXPORT SVGElement : public Element {
   }
   void UpdateRelativeLengthsInformation(bool has_relative_lengths, SVGElement*);
   static void MarkForLayoutAndParentResourceInvalidation(LayoutObject&);
+  void NotifyResourceClients() const;
 
   virtual bool SelfHasRelativeLengths() const { return false; }
 
@@ -297,10 +302,6 @@ class CORE_EXPORT SVGElement : public Element {
   void UpdateWebAnimatedAttributeOnBaseValChange(const QualifiedName&);
 
   HeapHashSet<WeakMember<SVGElement>> elements_with_relative_lengths_;
-
-  typedef HeapHashMap<QualifiedName, Member<SVGAnimatedPropertyBase>>
-      AttributeToPropertyMap;
-  AttributeToPropertyMap attribute_to_property_map_;
 
 #if DCHECK_IS_ON()
   bool in_relative_length_clients_invalidation_ = false;

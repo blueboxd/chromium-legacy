@@ -27,7 +27,8 @@ ManifestUpdateCheckCommand::ManifestUpdateCheckCommand(
     base::Time check_time,
     base::WeakPtr<content::WebContents> web_contents,
     CompletedCallback callback,
-    std::unique_ptr<WebAppDataRetriever> data_retriever)
+    std::unique_ptr<WebAppDataRetriever> data_retriever,
+    std::unique_ptr<WebAppIconDownloader> icon_downloader)
     : WebAppCommandTemplate<AppLock>("ManifestUpdateCheckCommand"),
       url_(url),
       app_id_(app_id),
@@ -35,7 +36,8 @@ ManifestUpdateCheckCommand::ManifestUpdateCheckCommand(
       completed_callback_(std::move(callback)),
       lock_description_(app_id),
       web_contents_(web_contents),
-      data_retriever_(std::move(data_retriever)) {}
+      data_retriever_(std::move(data_retriever)),
+      icon_downloader_(std::move(icon_downloader)) {}
 
 ManifestUpdateCheckCommand::~ManifestUpdateCheckCommand() = default;
 
@@ -144,11 +146,13 @@ void ManifestUpdateCheckCommand::StashNewManifestJson(
     return;
   }
   DCHECK(opt_manifest);
+  CHECK(!new_install_info_);
 
-  UpdateWebAppInfoFromManifest(*opt_manifest, manifest_url, &new_install_info_);
+  new_install_info_ = std::make_unique<WebAppInstallInfo>(
+      CreateWebAppInfoFromManifest(*opt_manifest, manifest_url));
+  CHECK(new_install_info_->manifest_id.is_valid());
 
-  if (app_id_ != GenerateAppId(new_install_info_.manifest_id,
-                               new_install_info_.start_url)) {
+  if (app_id_ != GenerateAppIdFromManifestId(new_install_info_->manifest_id)) {
     CompleteCommandAndSelfDestruct(ManifestUpdateCheckResult::kAppIdMismatch);
     return;
   }
@@ -166,14 +170,14 @@ void ManifestUpdateCheckCommand::DownloadNewIconBitmaps(
     return;
   }
 
+  CHECK(new_install_info_);
   base::flat_set<GURL> icon_urls =
-      GetValidIconUrlsToDownload(new_install_info_);
+      GetValidIconUrlsToDownload(*new_install_info_);
 
   IconDownloaderOptions options = {.skip_page_favicons = true,
                                    .fail_all_if_any_fail = true};
-  icon_downloader_.emplace(web_contents_.get(), std::move(icon_urls),
-                           std::move(next_step_callback), options);
-  icon_downloader_->Start();
+  icon_downloader_->Start(web_contents_.get(), icon_urls,
+                          std::move(next_step_callback), options);
 }
 
 void ManifestUpdateCheckCommand::StashNewIconBitmaps(
@@ -193,8 +197,8 @@ void ManifestUpdateCheckCommand::StashNewIconBitmaps(
     return;
   }
 
-  PopulateOtherIcons(&new_install_info_, icons_map);
-  PopulateProductIcons(&new_install_info_, &icons_map);
+  PopulateOtherIcons(new_install_info_.get(), icons_map);
+  PopulateProductIcons(new_install_info_.get(), &icons_map);
 
   std::move(next_step_callback).Run();
 }
@@ -209,12 +213,12 @@ void ManifestUpdateCheckCommand::ValidateNewScopeExtensions(
     return;
   }
 
-  GURL web_app_identity = GURL(GenerateAppIdUnhashed(
-      new_install_info_.manifest_id, new_install_info_.start_url));
-  ScopeExtensions new_scope_extensions = new_install_info_.scope_extensions;
+  CHECK(new_install_info_);
+  CHECK(new_install_info_->manifest_id.is_valid());
+  ScopeExtensions new_scope_extensions = new_install_info_->scope_extensions;
 
   lock_->origin_association_manager().GetWebAppOriginAssociations(
-      web_app_identity, std::move(new_scope_extensions),
+      new_install_info_->manifest_id, std::move(new_scope_extensions),
       std::move(next_step_callback));
 }
 
@@ -229,7 +233,7 @@ void ManifestUpdateCheckCommand::StashValidatedScopeExtensions(
     return;
   }
 
-  new_install_info_.validated_scope_extensions =
+  new_install_info_->validated_scope_extensions =
       absl::make_optional(std::move(validated_scope_extensions));
   std::move(next_step_callback).Run();
 }
@@ -313,9 +317,10 @@ void ManifestUpdateCheckCommand::CompareManifestData(
   const WebApp* web_app = lock_->registrar().GetAppById(app_id_);
   DCHECK(web_app);
 
+  CHECK(new_install_info_);
   manifest_data_changes_ = GetManifestDataChanges(
       GetWebApp(), &existing_app_icon_bitmaps_,
-      &existing_shortcuts_menu_icon_bitmaps_, new_install_info_);
+      &existing_shortcuts_menu_icon_bitmaps_, *new_install_info_);
 
   std::move(next_step_callback).Run();
 }
@@ -452,7 +457,7 @@ void ManifestUpdateCheckCommand::ConfirmAppIdentityUpdate(
       /*icon_change=*/
       manifest_data_changes_.app_icon_identity_change.has_value(),
       /*old_title=*/base::UTF8ToUTF16(GetWebApp().untranslated_name()),
-      /*new_title=*/new_install_info_.title,
+      /*new_title=*/new_install_info_->title,
       /*old_icon=*/*before_icon,
       /*new_icon=*/*after_icon, web_contents_.get(),
       base::BindOnce(
@@ -494,7 +499,7 @@ void ManifestUpdateCheckCommand::RevertIdentityChangesIfNeeded() {
     // Revert to WebApp::untranslated_name() instead of
     // WebAppRegistrar::GetAppShortName() because that's the field
     // WebAppInstallInfo::title gets written to (see SetWebAppManifestFields()).
-    new_install_info_.title =
+    new_install_info_->title =
         base::UTF8ToUTF16(GetWebApp().untranslated_name());
     manifest_data_changes_.app_name_changed = false;
   }
@@ -503,9 +508,9 @@ void ManifestUpdateCheckCommand::RevertIdentityChangesIfNeeded() {
           IdentityUpdateDecision::kRevert &&
       manifest_data_changes_.app_icon_identity_change) {
     const WebApp& web_app = GetWebApp();
-    new_install_info_.manifest_icons = web_app.manifest_icons();
-    new_install_info_.icon_bitmaps = existing_app_icon_bitmaps_;
-    new_install_info_.is_generated_icon = web_app.is_generated_icon();
+    new_install_info_->manifest_icons = web_app.manifest_icons();
+    new_install_info_->icon_bitmaps = existing_app_icon_bitmaps_;
+    new_install_info_->is_generated_icon = web_app.is_generated_icon();
     manifest_data_changes_.app_icon_identity_change.reset();
     manifest_data_changes_.any_app_icon_changed = false;
   }
@@ -561,7 +566,7 @@ void ManifestUpdateCheckCommand::CompleteCommandAndSelfDestruct(
       base::BindOnce(std::move(completed_callback_), check_result,
                      check_result == ManifestUpdateCheckResult::kAppUpdateNeeded
                          ? absl::make_optional<WebAppInstallInfo>(
-                               std::move(new_install_info_))
+                               std::move(*new_install_info_))
                          : absl::nullopt));
 }
 

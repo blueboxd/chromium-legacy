@@ -42,7 +42,6 @@
 #include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/country_data.h"
-#include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/manual_testing_import.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
@@ -71,14 +70,62 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/base/user_selectable_type.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_utils.h"
-#include "components/sync/driver/sync_user_settings.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_service_utils.h"
+#include "components/sync/service/sync_user_settings.h"
 #include "components/version_info/version_info.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
+
+namespace {
+// Checks the order of preference of the `original_card` with the
+// `duplicate_card` and returns whether to dedupe/erase the `duplicate_card`
+// based on the order of preference. We assume that both the cards in params are
+// duplicates of each other.
+//
+// This function returns true in the following situations:
+// Case 1: `original_card` = LOCAL_CARD
+//         `duplicate_card` = MASKED_SERVER_CARD
+//         `should_suggest_server_cards_for_deduped_cards` = false
+//
+// Case 2: `original_card` = FULL_SERVER_CARD
+//         `duplicate_card` = LOCAL_CARD
+//         `should_suggest_server_cards_for_deduped_cards` = irrelevant
+//
+// Case 3: `original_card` = MASKED_SERVER_CARD
+//         `duplicate_card` = LOCAL_CARD
+//         `should_suggest_server_cards_for_deduped_cards` = true
+bool ShouldDedupeDuplicateCard(autofill::CreditCard* original_card,
+                               autofill::CreditCard* duplicate_card) {
+  // FULL_SERVER_CARDs have the highest priority and should never be removed
+  // from the suggestion list.
+  if (duplicate_card->record_type() == autofill::CreditCard::FULL_SERVER_CARD) {
+    return false;
+  }
+  const bool should_suggest_server_cards_for_deduped_cards =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillSuggestServerCardInsteadOfLocalCard);
+
+  // Delete duplicated MASKED_SERVER_CARD if the original_card is a LOCAL_CARD
+  // and we are NOT suggesting MASKED_SERVER_CARD for duplicates.
+  if (duplicate_card->record_type() ==
+          autofill::CreditCard::MASKED_SERVER_CARD &&
+      original_card->record_type() == autofill::CreditCard::LOCAL_CARD &&
+      !should_suggest_server_cards_for_deduped_cards) {
+    return true;
+  }
+  // Delete duplicated LOCAL_CARD if the original_card is a FULL_SERVER_CARD
+  // or we are suggesting MASKED_SERVER_CARD for duplicates.
+  if (duplicate_card->record_type() == autofill::CreditCard::LOCAL_CARD &&
+      (original_card->record_type() == autofill::CreditCard::FULL_SERVER_CARD ||
+       should_suggest_server_cards_for_deduped_cards)) {
+    return true;
+  }
+  return false;
+}
+}  // namespace
 
 namespace autofill {
 
@@ -319,7 +366,6 @@ void PersonalDataManager::Init(
     StrikeDatabaseBase* strike_database,
     AutofillImageFetcher* image_fetcher,
     bool is_off_the_record) {
-  CountryNames::SetLocaleString(app_locale_);
   database_helper_->Init(profile_database, account_database);
 
   SetPrefService(pref_service);
@@ -1680,33 +1726,41 @@ const std::string& PersonalDataManager::GetCountryCodeForExperimentGroup()
   return experiment_country_code_;
 }
 
+// The priority ranking for deduping a duplicate card is:
+// 1. FULL_SERVER_CARD
+// 2. LOCAL_CARD
+// 3. MASKED_SERVER_CARD
+// Note: 2 & 3 are swapped if experiment
+// kAutofillSuggestServerCardInsteadOfLocalCard is enabled.
 // static
 void PersonalDataManager::DedupeCreditCardToSuggest(
     std::list<CreditCard*>* cards_to_suggest) {
   for (auto outer_it = cards_to_suggest->begin();
        outer_it != cards_to_suggest->end(); ++outer_it) {
-    // If considering a full server card, look for local cards that are
-    // duplicates of it and remove them.
-    if ((*outer_it)->record_type() == CreditCard::FULL_SERVER_CARD) {
-      for (auto inner_it = cards_to_suggest->begin();
-           inner_it != cards_to_suggest->end();) {
-        auto inner_it_copy = inner_it++;
-        if ((*inner_it_copy)->IsLocalDuplicateOfServerCard(**outer_it))
-          cards_to_suggest->erase(inner_it_copy);
+    for (auto inner_it = cards_to_suggest->begin();
+         inner_it != cards_to_suggest->end();) {
+      auto inner_it_copy = inner_it++;
+      if (outer_it == inner_it_copy) {
+        continue;
       }
-      // If considering a local card, look for masked server cards that are
-      // duplicates of it and remove them.
-    } else if ((*outer_it)->record_type() == CreditCard::LOCAL_CARD) {
-      for (auto inner_it = cards_to_suggest->begin();
-           inner_it != cards_to_suggest->end();) {
-        auto inner_it_copy = inner_it++;
-        if ((*inner_it_copy)->record_type() == CreditCard::MASKED_SERVER_CARD &&
-            (*outer_it)->IsLocalDuplicateOfServerCard(**inner_it_copy)) {
-          cards_to_suggest->erase(inner_it_copy);
-        }
+      // Check if the cards are local or server duplicate of each other. If yes,
+      // then check if we can dedupe/erase the duplicate card.
+      if ((*inner_it_copy)->IsLocalOrServerDuplicateOf(**outer_it) &&
+          ShouldDedupeDuplicateCard(*outer_it, *inner_it_copy)) {
+        cards_to_suggest->erase(inner_it_copy);
       }
     }
   }
+}
+
+bool PersonalDataManager::IsCardPresentAsBothLocalAndServerCards(
+    const CreditCard& credit_card) {
+  for (CreditCard* card_from_list : GetCreditCards()) {
+    if (credit_card.IsLocalOrServerDuplicateOf(*card_from_list)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void PersonalDataManager::SetProfilesForAllSources(
@@ -1870,7 +1924,7 @@ void PersonalDataManager::RemoveStrikesToBlockProfileUpdate(
 
 bool PersonalDataManager::IsSyncEnabledFor(
     syncer::UserSelectableType data_type) const {
-  return sync_service_ != nullptr && sync_service_->CanSyncFeatureStart() &&
+  return sync_service_ != nullptr && sync_service_->IsSyncFeatureEnabled() &&
          sync_service_->GetUserSettings()->GetSelectedTypes().Has(data_type);
 }
 

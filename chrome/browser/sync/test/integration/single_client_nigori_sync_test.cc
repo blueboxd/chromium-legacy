@@ -1284,7 +1284,12 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
   ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-  ASSERT_TRUE(SetupSync());
+  // TODO(crbug.com/1448448): SetupSync(WAIT_FOR_COMMITS_TO_COMPLETE) (e.g. with
+  // default argument) causes test flakiness here due to unrelated issue in
+  // SharingService. From this test perspective it doesn't matter whether to use
+  // WAIT_FOR_COMMITS_TO_COMPLETE or WAIT_FOR_SYNC_SETUP_TO_COMPLETE, but it
+  // would be nice to use default argument once the issue is resolved.
+  ASSERT_TRUE(SetupSync(WAIT_FOR_SYNC_SETUP_TO_COMPLETE));
 
   ASSERT_TRUE(GetSyncService(0)
                   ->GetUserSettings()

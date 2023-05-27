@@ -255,6 +255,8 @@ TEST_F(HighEfficiencyBubbleViewTest,
   AddNewTab(kMemorySavingsKilobytes,
             ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(2, tab_strip_model->GetTabCount());
 
   SetTabDiscardState(0, true);
@@ -262,11 +264,13 @@ TEST_F(HighEfficiencyBubbleViewTest,
 
   EXPECT_TRUE(GetPageActionIconView()->ShouldShowLabel());
   tab_strip_model->SelectNextTab();
+  web_contents->WasHidden();
 
   EXPECT_TRUE(GetPageActionIconView()->ShouldShowLabel());
   ClickPageActionChip();
 
   tab_strip_model->SelectPreviousTab();
+  web_contents->WasShown();
   EXPECT_FALSE(GetPageActionIconView()->ShouldShowLabel());
 }
 
@@ -288,9 +292,9 @@ class HighEfficiencyBubbleViewMemorySavingsImprovementsTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-// The memory savings should be rendered within the dialog.
+// The memory savings should be rendered within the resource view.
 TEST_F(HighEfficiencyBubbleViewMemorySavingsImprovementsTest,
-       ShouldRenderMemorySavingsInDialog) {
+       ShouldRenderMemorySavingsInResourceView) {
   SetTabDiscardState(0, true);
 
   ClickPageActionChip();
@@ -300,4 +304,23 @@ TEST_F(HighEfficiencyBubbleViewMemorySavingsImprovementsTest,
           kHighEfficiencyResourceViewMemorySavingsElementId);
   EXPECT_TRUE(label->GetText().find(ui::FormatBytes(
                   kMemorySavingsKilobytes * 1024)) != std::string::npos);
+}
+
+// The memory savings should not be rendered within the text above the resource
+// view.
+TEST_F(HighEfficiencyBubbleViewMemorySavingsImprovementsTest,
+       ShouldNotRenderMemorySavingsInDialogBodyText) {
+  SetTabDiscardState(0, true);
+
+  ClickPageActionChip();
+
+  views::Label* label = GetDialogLabel<views::Label>(
+      HighEfficiencyBubbleView::kHighEfficiencyDialogBodyElementId);
+  EXPECT_EQ(
+      label->GetText().find(ui::FormatBytes(kMemorySavingsKilobytes * 1024)),
+      std::string::npos);
+
+  EXPECT_NE(
+      label->GetText().find(u"Memory Saver freed up memory for other tasks"),
+      std::string::npos);
 }

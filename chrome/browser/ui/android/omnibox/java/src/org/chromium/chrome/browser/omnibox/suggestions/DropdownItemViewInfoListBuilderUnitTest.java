@@ -45,6 +45,7 @@ import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.components.omnibox.GroupsProto.GroupsInfo;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
+import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.ShadowGURL;
 
@@ -65,7 +66,6 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     private @Mock SuggestionProcessor mMockSuggestionProcessor;
     private @Mock HeaderProcessor mMockHeaderProcessor;
     private @Mock DividerLineProcessor mMockDividerLineProcessor;
-    private @Mock ActionChipsDelegate mMockActionChipsDelegate;
     @Mock
     private HistoryClustersProcessor.OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
     DropdownItemViewInfoListBuilder mBuilder;
@@ -81,7 +81,7 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         when(mMockHeaderProcessor.getViewTypeId()).thenReturn(OmniboxSuggestionUiType.HEADER);
 
         mBuilder = new DropdownItemViewInfoListBuilder(
-                () -> null, (url) -> false, mMockActionChipsDelegate, mOpenHistoryClustersDelegate);
+                () -> null, (url) -> false, mOpenHistoryClustersDelegate);
         mBuilder.registerSuggestionProcessor(mMockSuggestionProcessor);
         mBuilder.setHeaderProcessorForTest(mMockHeaderProcessor);
     }

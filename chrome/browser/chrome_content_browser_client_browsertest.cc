@@ -77,7 +77,12 @@
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h"  // nogncheck
 #endif
+
+#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 
 namespace {
 
@@ -307,8 +312,7 @@ IN_PROC_BROWSER_TEST_F(OpenWindowFromNTPBrowserTest,
   GURL generic_url(https_test_server().GetURL("ntp.com", "/title1.html"));
   content::TestNavigationObserver opened_tab_observer(nullptr);
   opened_tab_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(
-      ExecuteScript(ntp_tab, "window.open('" + generic_url.spec() + "');"));
+  EXPECT_TRUE(ExecJs(ntp_tab, "window.open('" + generic_url.spec() + "');"));
   opened_tab_observer.Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
@@ -722,6 +726,12 @@ class IsClipboardPasteContentAllowedTest : public InProcessBrowserTest {
 
   base::ScopedTempDir temp_dir_;
   raw_ptr<ChromeContentBrowserClient> client_ = nullptr;
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  // This installs a fake SDK manager that creates fake SDK clients when
+  // its GetClient() method is called. This is needed so that calls to
+  // ContentAnalysisSdkManager::Get()->GetClient() do not fail.
+  enterprise_connectors::FakeContentAnalysisSdkManager sdk_manager_;
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, TextAllowed) {

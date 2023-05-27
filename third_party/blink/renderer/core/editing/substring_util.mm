@@ -33,7 +33,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/bridging.h"
+#include "base/apple/bridging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -117,7 +117,7 @@ NSAttributedString* AttributedSubstringFromRange(LocalFrame* frame,
         @(primaryFont->GetFontMetrics().Descent() * page_scale_factor);
 
     NSFont* original_font =
-        base::mac::CFToNSPtrCast(font_platform_data.CtFont());
+        base::apple::CFToNSPtrCast(font_platform_data.CtFont());
     const CGFloat desired_size =
         font_platform_data.size() * page_scale_factor / device_scale_factor;
 
@@ -147,14 +147,15 @@ NSAttributedString* AttributedSubstringFromRange(LocalFrame* frame,
     }
     attrs[NSFontAttributeName] = font;
 
-    if (style->VisitedDependentColor(GetCSSPropertyColor()).AlphaAsInteger()) {
+    if (!style->VisitedDependentColor(GetCSSPropertyColor())
+             .IsFullyTransparent()) {
       attrs[NSForegroundColorAttributeName] =
           NsColor(style->VisitedDependentColor(GetCSSPropertyColor()));
     } else {
       [attrs removeObjectForKey:NSForegroundColorAttributeName];
     }
-    if (style->VisitedDependentColor(GetCSSPropertyBackgroundColor())
-            .AlphaAsInteger()) {
+    if (!style->VisitedDependentColor(GetCSSPropertyBackgroundColor())
+             .IsFullyTransparent()) {
       attrs[NSBackgroundColorAttributeName] = NsColor(
           style->VisitedDependentColor(GetCSSPropertyBackgroundColor()));
     } else {
@@ -215,7 +216,7 @@ SubstringUtil::AttributedWordAtPoint(WebFrameWidgetImpl* frame_widget,
   NSAttributedString* string = AttributedSubstringFromRange(frame, word_range);
   baseline_point = GetBaselinePoint(frame->View(), word_range, string);
   return base::ScopedCFTypeRef<CFAttributedStringRef>(
-      base::mac::NSToCFOwnershipCast(string));
+      base::apple::NSToCFOwnershipCast(string));
 }
 
 base::ScopedCFTypeRef<CFAttributedStringRef>
@@ -239,7 +240,7 @@ SubstringUtil::AttributedSubstringInRange(LocalFrame* frame,
       AttributedSubstringFromRange(frame, ephemeral_range);
   baseline_point = GetBaselinePoint(frame->View(), ephemeral_range, string);
   return base::ScopedCFTypeRef<CFAttributedStringRef>(
-      base::mac::NSToCFOwnershipCast(string));
+      base::apple::NSToCFOwnershipCast(string));
 }
 
 }  // namespace blink

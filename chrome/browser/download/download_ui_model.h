@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
@@ -115,9 +116,14 @@ class DownloadUIModel {
       std::u16string label;
       bool is_prominent = false;
 
+      // Controls the text color of the button. Only applied for secondary
+      // buttons.
+      absl::optional<ui::ColorId> color;
+
       SubpageButton(DownloadCommands::Command command,
                     std::u16string label,
-                    bool is_prominent);
+                    bool is_prominent,
+                    absl::optional<ui::ColorId> color = absl::nullopt);
     };
 
     struct QuickAction {
@@ -144,11 +150,9 @@ class DownloadUIModel {
     raw_ptr<const gfx::VectorIcon> icon_model_override = nullptr;
 
     // Subpage summary of the download warning
-    bool has_subpage = false;
     std::u16string warning_summary;
 
     // Label for the checkbox, empty if no checkbox is needed
-    bool has_checkbox = false;
     std::u16string checkbox_label;
 
     // The command for the primary button
@@ -160,13 +164,11 @@ class DownloadUIModel {
     // Subpage buttons
     std::vector<SubpageButton> subpage_buttons;
 
-    // The subpage exists if the summary exists.
-    explicit BubbleUIInfo(const std::u16string& summary);
-    // If no subpage, the progress bar may exist.
-    explicit BubbleUIInfo(bool has_progress_bar);
     BubbleUIInfo();
     ~BubbleUIInfo();
     BubbleUIInfo(const BubbleUIInfo&);
+    BubbleUIInfo& AddSubpageSummary(const std::u16string& summary);
+    BubbleUIInfo& AddProgressBar();
     BubbleUIInfo& AddIconAndColor(const gfx::VectorIcon& vector_icon,
                                   ui::ColorId color_id);
     BubbleUIInfo& AddSecondaryTextColor(ui::ColorId color_id);
@@ -175,14 +177,18 @@ class DownloadUIModel {
     // Add button to the subpage. Only two buttons are supported.
     // The first one added is the primary, and the second one the secondary.
     // The checkbox, if present, controls the secondary.
-    BubbleUIInfo& AddSubpageButton(const std::u16string& label,
-                                   DownloadCommands::Command command,
-                                   bool is_prominent);
+    BubbleUIInfo& AddPrimarySubpageButton(const std::u16string& label,
+                                          DownloadCommands::Command command);
+    BubbleUIInfo& AddSecondarySubpageButton(const std::u16string& label,
+                                            DownloadCommands::Command command,
+                                            ui::ColorId color);
     BubbleUIInfo& SetProgressBarLooping();
     BubbleUIInfo& AddQuickAction(DownloadCommands::Command command,
                                  const std::u16string& label,
                                  const gfx::VectorIcon* icon);
     ui::ColorId GetColorForSecondaryText() const;
+    bool HasSubpage() const;
+    bool HasCheckbox() const;
   };
 #endif
 

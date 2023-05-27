@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "mojo/public/cpp/bindings/direct_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
@@ -611,6 +612,12 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
     params->compositor_task_runner = main_thread_compositor_task_runner_;
   }
 
+  if (base::FeatureList::IsEnabled(features::kDirectCompositorThreadIpc) &&
+      !for_web_tests && params->compositor_task_runner &&
+      mojo::IsDirectReceiverSupported()) {
+    params->use_direct_client_receiver = true;
+  }
+
   // The renderer runs animations and layout for animate_only BeginFrames.
   params->wants_animate_only_begin_frames = true;
 
@@ -619,8 +626,13 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
   // back begin frame source, but using a synthetic begin frame source here
   // reduces latency when in this mode (at least for frames starting--it
   // potentially increases it for input on the other hand.)
-  if (LayerTreeHost()->GetSettings().disable_frame_rate_limit)
+  // TODO(b/221220344): Support dynamically setting the BeginFrameSource per VRR
+  // state changes.
+  const cc::LayerTreeSettings& settings = LayerTreeHost()->GetSettings();
+  if (settings.disable_frame_rate_limit ||
+      settings.enable_variable_refresh_rate) {
     params->synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
+  }
 
   mojo::PendingReceiver<viz::mojom::blink::CompositorFrameSink>
       compositor_frame_sink_receiver = CrossVariantMojoReceiver<
@@ -633,7 +645,10 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
       viz::mojom::blink::CompositorFrameSinkClientInterfaceBase>(
       compositor_frame_sink_client.InitWithNewPipeAndPassReceiver());
 
-  if (Platform::Current()->IsGpuCompositingDisabled()) {
+  static const bool gpu_channel_always_allowed =
+      base::FeatureList::IsEnabled(::features::kSharedBitmapToSharedImage);
+  if (Platform::Current()->IsGpuCompositingDisabled() &&
+      !gpu_channel_always_allowed) {
     DCHECK(!for_web_tests);
     widget_host_->CreateFrameSink(std::move(compositor_frame_sink_receiver),
                                   std::move(compositor_frame_sink_client));
@@ -642,7 +657,8 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
         std::move(render_frame_metadata_observer_remote));
     std::move(callback).Run(
         std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-            nullptr, nullptr, params.get()),
+            /*context_provider=*/nullptr, /*worker_context_provider=*/nullptr,
+            /*shared_image_interface=*/nullptr, params.get()),
         std::move(render_frame_metadata_observer));
     return;
   }
@@ -684,16 +700,33 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
         params,
     LayerTreeFrameSinkCallback callback,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
-  if (Platform::Current()->IsGpuCompositingDisabled()) {
-    // GPU compositing was disabled after the check in
-    // WidgetBase::RequestNewLayerTreeFrameSink(). Fail and let it retry.
+  if (!gpu_channel_host) {
+    // Wait and try again. We may hear that the compositing mode has switched
+    // to software in the meantime.
     std::move(callback).Run(nullptr, nullptr);
     return;
   }
 
-  if (!gpu_channel_host) {
-    // Wait and try again. We may hear that the compositing mode has switched
-    // to software in the meantime.
+  static const bool gpu_channel_always_allowed =
+      base::FeatureList::IsEnabled(::features::kSharedBitmapToSharedImage);
+  if (Platform::Current()->IsGpuCompositingDisabled() &&
+      gpu_channel_always_allowed) {
+    widget_host_->CreateFrameSink(std::move(compositor_frame_sink_receiver),
+                                  std::move(compositor_frame_sink_client));
+    widget_host_->RegisterRenderFrameMetadataObserver(
+        std::move(render_frame_metadata_observer_client_receiver),
+        std::move(render_frame_metadata_observer_remote));
+    std::move(callback).Run(
+        std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
+            /*context_provider=*/nullptr, /*worker_context_provider=*/nullptr,
+            gpu_channel_host->CreateClientSharedImageInterface(), params.get()),
+        std::move(render_frame_metadata_observer));
+    return;
+  }
+
+  if (Platform::Current()->IsGpuCompositingDisabled()) {
+    // GPU compositing was disabled after the check in
+    // WidgetBase::RequestNewLayerTreeFrameSink(). Fail and let it retry.
     std::move(callback).Run(nullptr, nullptr);
     return;
   }
@@ -789,7 +822,8 @@ void WidgetBase::FinishRequestNewLayerTreeFrameSink(
   std::move(callback).Run(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider),
-          std::move(worker_context_provider_wrapper), params.get()),
+          std::move(worker_context_provider_wrapper),
+          gpu_channel_host->CreateClientSharedImageInterface(), params.get()),
       std::move(render_frame_metadata_observer));
 }
 

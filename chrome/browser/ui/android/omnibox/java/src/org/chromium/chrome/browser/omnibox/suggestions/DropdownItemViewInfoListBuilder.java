@@ -53,7 +53,6 @@ class DropdownItemViewInfoListBuilder {
 
     private final @NonNull List<SuggestionProcessor> mPriorityOrderedSuggestionProcessors;
     private final @NonNull Supplier<Tab> mActivityTabSupplier;
-    private final @NonNull ActionChipsDelegate mActionChipsDelegate;
 
     private @Nullable DividerLineProcessor mDividerLineProcessor;
     private @Nullable HeaderProcessor mHeaderProcessor;
@@ -67,13 +66,11 @@ class DropdownItemViewInfoListBuilder {
     private OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
 
     DropdownItemViewInfoListBuilder(@NonNull Supplier<Tab> tabSupplier, BookmarkState bookmarkState,
-            @NonNull ActionChipsDelegate actionChipsDelegate,
             OpenHistoryClustersDelegate openHistoryClustersDelegate) {
         mPriorityOrderedSuggestionProcessors = new ArrayList<>();
         mDropdownHeight = DROPDOWN_HEIGHT_UNKNOWN;
         mActivityTabSupplier = tabSupplier;
         mBookmarkState = bookmarkState;
-        mActionChipsDelegate = actionChipsDelegate;
         mOpenHistoryClustersDelegate = openHistoryClustersDelegate;
     }
 
@@ -105,19 +102,18 @@ class DropdownItemViewInfoListBuilder {
         mHeaderProcessor = new HeaderProcessor(context);
         registerSuggestionProcessor(new EditUrlSuggestionProcessor(
                 context, host, delegate, mFaviconFetcher, mActivityTabSupplier, shareSupplier));
-        registerSuggestionProcessor(new AnswerSuggestionProcessor(
-                context, host, mActionChipsDelegate, textProvider, imageFetcherSupplier));
+        registerSuggestionProcessor(
+                new AnswerSuggestionProcessor(context, host, textProvider, imageFetcherSupplier));
         registerSuggestionProcessor(
                 new ClipboardSuggestionProcessor(context, host, mFaviconFetcher));
         registerSuggestionProcessor(new HistoryClustersProcessor(mOpenHistoryClustersDelegate,
                 context, host, textProvider, mFaviconFetcher, mBookmarkState));
-        registerSuggestionProcessor(new EntitySuggestionProcessor(
-                context, host, mActionChipsDelegate, imageFetcherSupplier));
         registerSuggestionProcessor(
-                new TailSuggestionProcessor(context, host, mActionChipsDelegate));
+                new EntitySuggestionProcessor(context, host, imageFetcherSupplier));
+        registerSuggestionProcessor(new TailSuggestionProcessor(context, host));
         registerSuggestionProcessor(new MostVisitedTilesProcessor(context, host, mFaviconFetcher));
-        registerSuggestionProcessor(new BasicSuggestionProcessor(context, host,
-                mActionChipsDelegate, textProvider, mFaviconFetcher, mBookmarkState));
+        registerSuggestionProcessor(new BasicSuggestionProcessor(
+                context, host, textProvider, mFaviconFetcher, mBookmarkState));
     }
 
     void destroy() {

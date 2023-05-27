@@ -29,7 +29,9 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/openscreen/src/cast/common/channel/proto/cast_channel.pb.h"
 
@@ -129,6 +131,8 @@ class MirroringActivity : public CastActivity,
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, Play);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, OnRemotingStateChanged);
   FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest, GetTargetPlayoutDelay);
+  FRIEND_TEST_ALL_PREFIXES(MirroringActivityTest,
+                           MultipleMediaControllersNotified);
 
   void HandleParseJsonResult(const std::string& route_id,
                              data_decoder::DataDecoder::ValueOrError result);
@@ -142,7 +146,11 @@ class MirroringActivity : public CastActivity,
 
   void SetPlayState(mojom::MediaStatus::PlayState play_state);
 
-  void NotifyMediaStatusObserver();
+  void NotifyMediaStatusObservers();
+
+  // Invoked when mirroring is paused / resumed, for metrics.
+  void OnMirroringPaused();
+  void OnMirroringResumed();
 
   // Scrubs AES related data in messages with type "OFFER".
   static std::string GetScrubbedLogMessage(const base::Value::Dict& message);
@@ -150,7 +158,6 @@ class MirroringActivity : public CastActivity,
   // Starts the mirroring service via the Ui thread. Can only be called on the
   // Ui thread.
   void StartOnUiThread(
-      base::WeakPtr<mirroring::MirroringServiceHost> host,
       mirroring::mojom::SessionParametersPtr session_params,
       mojo::PendingRemote<mirroring::mojom::SessionObserver> observer,
       mojo::PendingRemote<mirroring::mojom::CastMessageChannel>
@@ -195,15 +202,16 @@ class MirroringActivity : public CastActivity,
   // receiver.
   mojo::Receiver<mirroring::mojom::CastMessageChannel> channel_receiver_{this};
 
-  // To handle freeze and unfreeze requests from the mirroring media controller
-  // host to the mirroring service host.
-  mojo::Receiver<mojom::MediaController> media_controller_receiver_{this};
+  // To handle freeze and unfreeze requests from media controllers.
+  mojo::ReceiverSet<mojom::MediaController> media_controller_receivers_;
 
-  // Sends media status updates with mirroring information needed for freezing
-  // the session.
-  mojo::Remote<mojom::MediaStatusObserver> media_status_observer_;
+  // Sends media status updates with mirroring information to observers.
+  mojo::RemoteSet<mojom::MediaStatusObserver> media_status_observers_;
 
+  // Info for mirroring state transitions like pause / resume.
   mojom::MediaStatusPtr media_status_;
+  int mirroring_pause_count_ = 0;
+  absl::optional<base::Time> mirroring_pause_timestamp_;
 
   // Set before and after a mirroring session is established, for metrics.
   absl::optional<base::Time> will_start_mirroring_timestamp_;

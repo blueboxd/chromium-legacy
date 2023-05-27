@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
-#include "chrome/browser/ui/side_panel/side_panel_open_trigger.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/translate/partial_translate_bubble_model.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -266,11 +266,6 @@ class BrowserWindow : public ui::BaseWindow {
   // in OnTabStripModelChanged(); the Browser will call this method.
   virtual void OnTabDetached(content::WebContents* contents,
                              bool was_active) = 0;
-
-  // Called when the user restores a tab. |command_id| may be IDC_RESTORE_TAB or
-  // the menu command, depending on whether the tab was restored via keyboard or
-  // main menu.
-  virtual void OnTabRestored(int command_id) = 0;
 
   // Called to force the zoom state to for the active tab to be recalculated.
   // |can_show_bubble| is true when a user presses the zoom up or down keyboard
@@ -645,11 +640,8 @@ class BrowserWindow : public ui::BaseWindow {
   // of a full titlebar. This is only supported for desktop web apps.
   virtual bool IsBorderlessModeEnabled() const = 0;
 
-  // Shows the side panel. If `entry_id` is not provided, shows the last active
-  // entry.
-  virtual void ShowSidePanel(
-      absl::optional<SidePanelEntryId> entry_id = absl::nullopt,
-      absl::optional<SidePanelOpenTrigger> open_trigger = absl::nullopt) = 0;
+  // Shows the Chrome Labs bubble if enabled.
+  virtual void ShowChromeLabs() = 0;
 
  protected:
   friend class BrowserCloseManager;

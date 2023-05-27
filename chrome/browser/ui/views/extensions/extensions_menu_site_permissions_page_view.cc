@@ -132,7 +132,7 @@ int GetSiteAccessButtonIndex(PermissionsManager::UserSiteAccess site_access) {
 ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
     Browser* browser,
     extensions::ExtensionId extension_id,
-    ExtensionsMenuHandler* navigation_handler)
+    ExtensionsMenuHandler* menu_handler)
     : browser_(browser), extension_id_(extension_id) {
   // TODO(crbug.com/1390952): Same stretch specification as
   // ExtensionsMenuMainPageView. Move to a shared file.
@@ -159,7 +159,7 @@ ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
                     .SetImageLabelSpacing(icon_label_spacing)
                     .SetCallback(base::BindRepeating(
                         &ExtensionsMenuHandler::OnSiteAccessSelected,
-                        base::Unretained(navigation_handler), extension_id,
+                        base::Unretained(menu_handler), extension_id,
                         site_access)),
                 views::Builder<views::Label>()
                     .SetText(GetSiteAccessRadioButtonDescription(site_access))
@@ -186,7 +186,7 @@ ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
                       views::CreateVectorImageButtonWithNativeTheme(
                           base::BindRepeating(
                               &ExtensionsMenuHandler::OpenMainPage,
-                              base::Unretained(navigation_handler)),
+                              base::Unretained(menu_handler)),
                           vector_icons::kArrowBackIcon))
                       .SetTooltipText(
                           l10n_util::GetStringUTF16(IDS_ACCNAME_BACK))
@@ -213,7 +213,7 @@ ExtensionsMenuSitePermissionsPageView::ExtensionsMenuSitePermissionsPageView(
                       views::BubbleFrameView::CreateCloseButton(
                           base::BindRepeating(
                               &ExtensionsMenuHandler::CloseBubble,
-                              base::Unretained(navigation_handler))))),
+                              base::Unretained(menu_handler))))),
           // Content.
           views::Builder<views::BoxLayoutView>()
               .SetOrientation(views::BoxLayout::Orientation::kVertical)
@@ -272,7 +272,9 @@ void ExtensionsMenuSitePermissionsPageView::Update(
     const ui::ImageModel& extension_icon,
     const std::u16string& current_site,
     PermissionsManager::UserSiteAccess user_site_access,
-    bool is_show_requests_toggle_on) {
+    bool is_show_requests_toggle_on,
+    bool is_on_site_enabled,
+    bool is_on_all_sites_enabled) {
   extension_icon_->SetImage(extension_icon);
   extension_name_->SetText(extension_name);
 
@@ -288,6 +290,12 @@ void ExtensionsMenuSitePermissionsPageView::Update(
           PermissionsManager::UserSiteAccess::kOnSite, current_site));
     }
   }
+
+  // Enable the site access buttons accordingly. The extension is guaranteed to
+  // at least have "on click" enabled when this page is opened.
+  site_access_buttons[kOnSiteButtonIndex]->SetEnabled(is_on_site_enabled);
+  site_access_buttons[kOnAllSitesButtonIndex]->SetEnabled(
+      is_on_all_sites_enabled);
 
   UpdateShowRequestsToggle(is_show_requests_toggle_on);
 }

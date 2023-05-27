@@ -83,7 +83,8 @@ class WebGLConformanceIntegrationTestBase(
 
   websocket_server = None
 
-  def _SuiteSupportsParallelTests(self) -> bool:
+  @classmethod
+  def _SuiteSupportsParallelTests(cls) -> bool:
     return True
 
   def _GetSerialGlobs(self) -> Set[str]:
@@ -282,21 +283,15 @@ class WebGLConformanceIntegrationTestBase(
       url = self.UrlOfStaticFilePath(TEST_PAGE_RELPATH)
       self.tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
       self.tab.WaitForDocumentReadyStateToBeComplete(timeout=5)
-      # TODO(crbug.com/1432592): Remove this special casing once the flaky adb
-      # issues are investigated/resolved.
-      if self.browser.platform.GetOSName() != 'android':
-        self.tab.action_runner.EvaluateJavaScript(
-            'connectWebsocket("%d")' %
-            self.__class__.websocket_server.server_port,
-            timeout=WEBSOCKET_JAVASCRIPT_TIMEOUT_S)
-        self.__class__.websocket_server.WaitForConnection()
-        response = self.__class__.websocket_server.Receive(
-            WEBSOCKET_JAVASCRIPT_TIMEOUT_S)
-        response = json.loads(response)
-        assert response['type'] == 'CONNECTION_ACK'
-      else:
-        self.tab.action_runner.EvaluateJavaScript(
-            'eatWebsocketMessages()', timeout=WEBSOCKET_JAVASCRIPT_TIMEOUT_S)
+      self.tab.action_runner.EvaluateJavaScript(
+          'connectWebsocket("%d")' %
+          self.__class__.websocket_server.server_port,
+          timeout=WEBSOCKET_JAVASCRIPT_TIMEOUT_S)
+      self.__class__.websocket_server.WaitForConnection()
+      response = self.__class__.websocket_server.Receive(
+          WEBSOCKET_JAVASCRIPT_TIMEOUT_S)
+      response = json.loads(response)
+      assert response['type'] == 'CONNECTION_ACK'
       self.__class__.page_loaded = True
 
     gpu_info = self.browser.GetSystemInfo().gpu
@@ -311,13 +306,6 @@ class WebGLConformanceIntegrationTestBase(
     self.tab.action_runner.EvaluateJavaScript('runTest("%s")' % url)
 
   def _HandleMessageLoop(self, test_timeout: float) -> None:
-    # TODO(crbug.com/1432592): Remove this special casing once the flaky adb
-    # issues are investigated/resolved.
-    if self.browser.platform.GetOSName() == 'android':
-      self.tab.action_runner.WaitForJavaScriptCondition(
-          'webglTestHarness._finished', timeout=test_timeout)
-      return
-
     got_test_started = False
     start_time = time.time()
     try:
@@ -466,12 +454,6 @@ class WebGLConformanceIntegrationTestBase(
         # Force-enable SharedArrayBuffer to be able to test its
         # support in WEBGL_multi_draw.
         '--enable-blink-features=SharedArrayBuffer',
-        # When running tests in parallel, windows can be treated as occluded if
-        # a newly opened window fully covers a previous one, which can cause
-        # issues in a few tests. This is practically only an issue on Windows
-        # since Linux/Mac stagger new windows, but pass in on all platforms
-        # since it could technically be hit on any platform.
-        '--disable-backgrounding-occluded-windows',
     ])
     # Note that the overriding of the default --js-flags probably
     # won't interact well with RestartBrowserIfNecessaryWithArgs, but

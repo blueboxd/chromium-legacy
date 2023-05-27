@@ -52,7 +52,6 @@ class BookmarkCodecTest;
 class BookmarkLoadDetails;
 class BookmarkModelObserver;
 class BookmarkStorage;
-class BookmarkUndoDelegate;
 class ModelLoader;
 class ScopedGroupBookmarkActions;
 class TestBookmarkClient;
@@ -91,7 +90,7 @@ class BookmarkModel final : public BookmarkUndoProvider,
   // most heavy-lifting taking place in a background sequence. Upon completion,
   // loaded() will return true and observers will be notified via
   // BookmarkModelLoaded(). Uses different files depending on
-  // |sync_storage_type| to support local and account storages.
+  // |storage_type| to support local and account storages.
   // Please note that for the time being the local storage is also used when
   // sync is on.
   // TODO(crbug.com/1422201): Update the note above when the local storage is
@@ -371,11 +370,14 @@ class BookmarkModel final : public BookmarkUndoProvider,
   // Returns the client used by this BookmarkModel.
   BookmarkClient* client() const { return client_.get(); }
 
-  void SetUndoDelegate(BookmarkUndoDelegate* undo_delegate);
-
   base::WeakPtr<BookmarkModel> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  // Attempts to delete the account storage file in case the account storage
+  // support was rolled back. If the account storage support wasn't enabled -
+  // this is a no-op. Deletion is done asynchronously on a background thread.
+  static void WipeAccountStorageForRollback(const base::FilePath& profile_path);
 
  private:
   friend class BookmarkCodecTest;
@@ -390,7 +392,8 @@ class BookmarkModel final : public BookmarkUndoProvider,
                           std::unique_ptr<BookmarkNode> node) override;
 
   // Notifies the observers for adding every descendant of |node|.
-  void NotifyNodeAddedForAllDescendants(const BookmarkNode* node);
+  void NotifyNodeAddedForAllDescendants(const BookmarkNode* node,
+                                        bool added_by_user);
 
   // Removes the node from internal maps and recurses through all children. If
   // the node is a url, its url is added to removed_urls.
@@ -452,8 +455,6 @@ class BookmarkModel final : public BookmarkUndoProvider,
   // decoding since during decoding codec assigns node IDs.
   void set_next_node_id(int64_t id) { next_node_id_ = id; }
 
-  BookmarkUndoDelegate* undo_delegate() const;
-
   // Implementation of `UpdateLastUsedTime` which gives the option to skip
   // saving the change to `BookmarkStorage. Used to efficiently make changes
   // to multiple bookmarks.
@@ -508,9 +509,6 @@ class BookmarkModel final : public BookmarkUndoProvider,
   int extensive_changes_ = 0;
 
   std::set<std::string> non_cloned_keys_;
-
-  raw_ptr<BookmarkUndoDelegate, DanglingUntriaged> undo_delegate_ = nullptr;
-  std::unique_ptr<BookmarkUndoDelegate> empty_undo_delegate_;
 
   scoped_refptr<ModelLoader> model_loader_;
 

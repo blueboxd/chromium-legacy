@@ -7,20 +7,26 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.BOTTOM_CONTROLS_HEIGHT;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.BOTTOM_PADDING;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.FOCUS_TAB_INDEX_FOR_ACCESSIBILITY;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.MODE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_OFFSET;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_MARGIN;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.UNFOCUS_TAB_INDEX_FOR_ACCESSIBILITY;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import android.app.Activity;
 import android.graphics.Rect;
+import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.theme.ThemeUtils;
@@ -43,6 +49,7 @@ class TabListContainerViewBinder {
     public static void bind(
             PropertyModel model, TabListRecyclerView view, PropertyKey propertyKey) {
         if (IS_VISIBLE == propertyKey) {
+            updateMargins(model, view);
             if (model.get(IS_VISIBLE)) {
                 view.startShowing(model.get(ANIMATE_VISIBILITY_CHANGES));
             } else {
@@ -63,21 +70,45 @@ class TabListContainerViewBinder {
             ((LinearLayoutManager) view.getLayoutManager())
                     .scrollToPositionWithOffset(index, offset);
         } else if (TOP_MARGIN == propertyKey) {
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
-            final int newTopMargin = model.get(TOP_MARGIN);
-            if (newTopMargin == params.topMargin) return;
-
-            params.topMargin = newTopMargin;
-            ViewUtils.requestLayout(view, "TabListContainerViewBinder.bind TOP_MARGIN");
+            updateMargins(model, view);
         } else if (BOTTOM_CONTROLS_HEIGHT == propertyKey) {
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
-            params.bottomMargin = model.get(BOTTOM_CONTROLS_HEIGHT);
-            ViewUtils.requestLayout(view, "TabListContainerViewBinder.bind BOTTOM_CONTROLS_HEIGHT");
+            updateMargins(model, view);
         } else if (SHADOW_TOP_OFFSET == propertyKey) {
             view.setShadowTopOffset(model.get(SHADOW_TOP_OFFSET));
         } else if (BOTTOM_PADDING == propertyKey) {
             view.setBottomPadding(model.get(BOTTOM_PADDING));
+        } else if (FOCUS_TAB_INDEX_FOR_ACCESSIBILITY == propertyKey) {
+            updateAccessibilityFocus(model.get(FOCUS_TAB_INDEX_FOR_ACCESSIBILITY), view,
+                    AccessibilityEvent.TYPE_VIEW_FOCUSED, /*shouldFocus=*/true);
+        } else if (UNFOCUS_TAB_INDEX_FOR_ACCESSIBILITY == propertyKey) {
+            updateAccessibilityFocus(model.get(UNFOCUS_TAB_INDEX_FOR_ACCESSIBILITY), view,
+                    AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE, /*shouldFocus=*/false);
         }
+    }
+
+    private static void updateMargins(PropertyModel model, TabListRecyclerView view) {
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
+        final int oldTopMargin = params.topMargin;
+        final int oldBottomMargin = params.bottomMargin;
+        if (model.get(IS_VISIBLE)) {
+            params.topMargin = model.get(TOP_MARGIN);
+            params.bottomMargin = model.get(BOTTOM_CONTROLS_HEIGHT);
+        } else {
+            // Treat the bottom margin as 0 to avoid layout shift in tab shrink animations.
+            // IS_VISIBLE will be set to true after the tab shrink animation see
+            // {@link TabSwitcherMediator#showTabSwitcherView(boolean)}.
+            params.bottomMargin = 0;
+
+            // Leave the top margin unchanged to avoid relayouts during scrolls and for top
+            // toolbar indicators while the view is not visible. Once visible the offset will
+            // adjust accordingly.
+        }
+        if (!model.get(IS_VISIBLE)
+                || (oldTopMargin == params.topMargin && oldBottomMargin == params.bottomMargin)) {
+            return;
+        }
+
+        ViewUtils.requestLayout(view, "TabListContainerViewBinder.bind updateMargins");
     }
 
     private static int computeOffset(TabListRecyclerView view, PropertyModel model) {
@@ -126,5 +157,18 @@ class TabListContainerViewBinder {
         }
         assert false : "Unexpected MODE when setting INITIAL_SCROLL_INDEX.";
         return 0;
+    }
+
+    private static void updateAccessibilityFocus(int index, @NonNull TabListRecyclerView view,
+            int accessibilityEventType, boolean shouldFocus) {
+        RecyclerView.ViewHolder selectedViewHolder = view.findViewHolderForAdapterPosition(index);
+        if (selectedViewHolder == null) return;
+        View focusView = selectedViewHolder.itemView;
+        if (shouldFocus) {
+            focusView.requestFocus();
+        } else {
+            focusView.clearFocus();
+        }
+        focusView.sendAccessibilityEvent(accessibilityEventType);
     }
 }

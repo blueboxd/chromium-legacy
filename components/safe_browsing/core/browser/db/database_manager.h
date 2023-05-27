@@ -184,25 +184,29 @@ class SafeBrowsingDatabaseManager
                                             Client* client) = 0;
 
   // Called on the IO thread to check whether |url| is safe by checking if it
-  // appears on a high-confidence allowlist. The return value is true if it
-  // matches the allowlist, and is false if it does not. The high confidence
-  // allowlist is a list of full hashes of URLs that are expected to be safe so
-  // in the case of a match on this list, the realtime full URL Safe Browsing
-  // lookup isn't performed. |metric_variation| is used for logging purposes to
-  // specify the consumer mechanism performing this check in histograms.
-  virtual bool CheckUrlForHighConfidenceAllowlist(
+  // appears on a high-confidence allowlist. `callback` is run asynchronously
+  // with true if it matches the allowlist, and is false if it does not. The
+  // high confidence allowlist is a list of full hashes of URLs that are
+  // expected to be safe so in the case of a match on this list, the realtime
+  // full URL Safe Browsing lookup isn't performed. |metric_variation| is used
+  // for logging purposes to specify the consumer mechanism performing this
+  // check in histograms.
+  virtual void CheckUrlForHighConfidenceAllowlist(
       const GURL& url,
-      const std::string& metric_variation) = 0;
+      const std::string& metric_variation,
+      base::OnceCallback<void(bool)> callback) = 0;
 
   //
   // Match*(): Methods to synchronously check if various types are safe.
   //
 
   // Check if the |url| matches any of the full-length hashes from the download
-  // allowlist.  Returns true if there was a match and false otherwise. To make
-  // sure we are conservative we will return true if an error occurs.  This
-  // method must be called on the IO thread.
-  virtual bool MatchDownloadAllowlistUrl(const GURL& url) = 0;
+  // allowlist. Runs `callback` asynchronously with true if there was a match
+  // and false otherwise. To make sure we are conservative we will return true
+  // if an error occurs.  This method must be called on the IO thread.
+  virtual void MatchDownloadAllowlistUrl(
+      const GURL& url,
+      base::OnceCallback<void(bool)> callback) = 0;
 
   //
   // Methods to check the config of the DatabaseManager.

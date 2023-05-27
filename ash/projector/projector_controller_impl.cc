@@ -23,8 +23,10 @@
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/safe_base_name.h"
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
@@ -162,8 +164,9 @@ ProjectorControllerImpl::ProjectorControllerImpl()
 }
 
 ProjectorControllerImpl::~ProjectorControllerImpl() {
-  projector_session_->RemoveObserver(this);
+  CaptureModeController::Get()->RemoveObserver(this);
   CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  projector_session_->RemoveObserver(this);
 }
 
 // static
@@ -180,21 +183,21 @@ void ProjectorControllerImpl::RegisterProfilePrefs(
 }
 
 void ProjectorControllerImpl::StartProjectorSession(
-    const std::string& storage_dir) {
-  DCHECK_EQ(GetNewScreencastPrecondition().state,
-            NewScreencastPreconditionState::kEnabled);
+    const base::SafeBaseName& storage_dir) {
+  CHECK_EQ(GetNewScreencastPrecondition().state,
+           NewScreencastPreconditionState::kEnabled);
 
   auto* controller = CaptureModeController::Get();
   if (!controller->is_recording_in_progress()) {
     // A capture mode session can be blocked by many factors, such as policy,
     // DLP, ... etc. We don't start a Projector session until we're sure a
     // capture session started.
-    controller->Start(CaptureModeEntryType::kProjector);
+    controller->Start(
+        CaptureModeEntryType::kProjector,
+        base::BindOnce(&ProjectorControllerImpl::OnSessionStartAttempted,
+                       weak_factory_.GetWeakPtr(), storage_dir));
+
     dlp_restriction_checked_completed_ = false;
-    if (controller->IsActive()) {
-      projector_session_->Start(storage_dir);
-      client_->MinimizeProjectorApp();
-    }
   }
 }
 
@@ -568,6 +571,15 @@ void ProjectorControllerImpl::ForceEndSpeechRecognition() {
             SpeechRecognitionState::kRecognitionStopping);
 
   client_->ForceEndSpeechRecognition();
+}
+
+void ProjectorControllerImpl::OnSessionStartAttempted(
+    const base::SafeBaseName& storage_dir,
+    bool success) {
+  if (success) {
+    projector_session_->Start(storage_dir);
+    client_->MinimizeProjectorApp();
+  }
 }
 
 void ProjectorControllerImpl::OnContainerFolderCreated(

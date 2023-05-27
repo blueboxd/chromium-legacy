@@ -21,69 +21,25 @@ namespace base {
 namespace sequence_manager {
 
 TaskQueue::QueueEnabledVoter::QueueEnabledVoter(
-    scoped_refptr<TaskQueue> task_queue)
-    : task_queue_(std::move(task_queue)), enabled_(true) {
-  task_queue_->AddQueueEnabledVoter(enabled_);
+    WeakPtr<internal::TaskQueueImpl> task_queue)
+    : task_queue_(std::move(task_queue)) {
+  task_queue_->AddQueueEnabledVoter(enabled_, *this);
 }
 
 TaskQueue::QueueEnabledVoter::~QueueEnabledVoter() {
-  task_queue_->RemoveQueueEnabledVoter(enabled_);
+  if (task_queue_) {
+    task_queue_->RemoveQueueEnabledVoter(enabled_, *this);
+  }
 }
 
 void TaskQueue::QueueEnabledVoter::SetVoteToEnable(bool enabled) {
-  if (enabled == enabled_)
+  if (enabled == enabled_) {
     return;
+  }
   enabled_ = enabled;
-  task_queue_->OnQueueEnabledVoteChanged(enabled_);
-}
-
-void TaskQueue::AddQueueEnabledVoter(bool voter_is_enabled) {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  ++voter_count_;
-  if (voter_is_enabled)
-    ++enabled_voter_count_;
-}
-
-void TaskQueue::RemoveQueueEnabledVoter(bool voter_is_enabled) {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  // Voters and task queues are often stored in pairs, and the voter is often
-  // destroyed after the queue is shut down.
-  if (!impl_) {
-    return;
+  if (task_queue_) {
+    task_queue_->OnQueueEnabledVoteChanged(enabled_);
   }
-
-  bool was_enabled = AreAllQueueEnabledVotersEnabled();
-  if (voter_is_enabled) {
-    --enabled_voter_count_;
-    DCHECK_GE(enabled_voter_count_, 0);
-  }
-
-  --voter_count_;
-  DCHECK_GE(voter_count_, 0);
-
-  bool is_enabled = AreAllQueueEnabledVotersEnabled();
-  if (was_enabled != is_enabled)
-    impl_->SetQueueEnabled(is_enabled);
-}
-
-bool TaskQueue::AreAllQueueEnabledVotersEnabled() const {
-  return enabled_voter_count_ == voter_count_;
-}
-
-void TaskQueue::OnQueueEnabledVoteChanged(bool enabled) {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  bool was_enabled = AreAllQueueEnabledVotersEnabled();
-  if (enabled) {
-    ++enabled_voter_count_;
-    DCHECK_LE(enabled_voter_count_, voter_count_);
-  } else {
-    --enabled_voter_count_;
-    DCHECK_GE(enabled_voter_count_, 0);
-  }
-
-  bool is_enabled = AreAllQueueEnabledVotersEnabled();
-  if (was_enabled != is_enabled)
-    impl_->SetQueueEnabled(is_enabled);
 }
 
 TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
@@ -97,10 +53,6 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
       name_(impl_->GetProtoName()) {}
 
 TaskQueue::~TaskQueue() {
-  ShutdownTaskQueueGracefully();
-}
-
-void TaskQueue::ShutdownTaskQueueGracefully() {
   // scoped_refptr guarantees us that this object isn't used.
   if (!impl_)
     return;
@@ -109,8 +61,7 @@ void TaskQueue::ShutdownTaskQueueGracefully() {
 
   // If we've not been unregistered then this must occur on the main thread.
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  impl_->ResetThrottler();
-  impl_->sequence_manager()->ShutdownTaskQueueGracefully(TakeTaskQueueImpl());
+  ShutdownTaskQueue();
 }
 
 TaskQueue::TaskTiming::TaskTiming(bool has_wall_time, bool has_thread_time)
@@ -165,7 +116,7 @@ std::unique_ptr<TaskQueue::QueueEnabledVoter>
 TaskQueue::CreateQueueEnabledVoter() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(impl_);
-  return WrapUnique(new QueueEnabledVoter(this));
+  return impl_->CreateQueueEnabledVoter();
 }
 
 bool TaskQueue::IsQueueEnabled() const {

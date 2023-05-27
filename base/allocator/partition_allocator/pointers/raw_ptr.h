@@ -168,14 +168,6 @@ struct TraitsToImpl;
 template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
 class raw_ptr;
 
-#if BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
-template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
-using raw_ptr_experimental = raw_ptr<T, Traits>;
-#else
-template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
-using raw_ptr_experimental = T*;
-#endif  // BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
-
 }  // namespace base
 
 // This type is to be used internally, or in callbacks arguments when it is
@@ -559,6 +551,8 @@ template <typename T, RawPtrTraits Traits>
 class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
  public:
   using Impl = typename raw_ptr_traits::TraitsToImpl<Traits>::Impl;
+  // Needed to make gtest Pointee matcher work with raw_ptr.
+  using element_type = T;
 
 #if !BUILDFLAG(USE_PARTITION_ALLOC)
   // See comment at top about `PA_RAW_PTR_CHECK()`.
@@ -1156,7 +1150,6 @@ using RemovePointerT = typename RemovePointer<T>::type;
 }  // namespace base
 
 using base::raw_ptr;
-using base::raw_ptr_experimental;
 
 // DisableDanglingPtrDetection option for raw_ptr annotates
 // "intentional-and-safe" dangling pointers. It is meant to be used at the
@@ -1233,7 +1226,6 @@ struct iterator_traits<raw_ptr<T, Traits>> {
   using iterator_category = std::random_access_iterator_tag;
 };
 
-#if defined(_LIBCPP_VERSION)
 // Specialize std::pointer_traits. The latter is required to obtain the
 // underlying raw pointer in the std::to_address(pointer) overload.
 // Implementing the pointer_traits is the standard blessed way to customize
@@ -1258,7 +1250,6 @@ struct pointer_traits<::raw_ptr<T, Traits>> {
     return p.get();
   }
 };
-#endif  // defined(_LIBCPP_VERSION)
 
 }  // namespace std
 

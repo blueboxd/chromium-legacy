@@ -37,11 +37,13 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmarks.ImprovedBookmarkRowProperties.StartImageVisibility;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
+import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.CurrencyFormatterJni;
 import org.chromium.components.power_bookmarks.ProductPrice;
@@ -93,6 +95,8 @@ public class ImprovedBookmarkRowRenderTest {
 
     @Mock
     private CurrencyFormatter.Natives mCurrencyFormatterJniMock;
+    @Mock
+    private ShoppingService mShoppingService;
 
     private final boolean mUseVisualRowLayout;
 
@@ -121,8 +125,7 @@ public class ImprovedBookmarkRowRenderTest {
                 .format(anyLong(), any(), any());
 
         int bitmapSize = mActivityTestRule.getActivity().getResources().getDimensionPixelSize(
-                mUseVisualRowLayout ? R.dimen.improved_bookmark_icon_visual_size
-                                    : R.dimen.default_favicon_size);
+                R.dimen.improved_bookmark_favicon_display_size);
         mBitmap = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
         mBitmap.eraseColor(Color.GREEN);
 
@@ -142,12 +145,16 @@ public class ImprovedBookmarkRowRenderTest {
             mModel = new PropertyModel.Builder(ImprovedBookmarkRowProperties.ALL_KEYS)
                              .with(ImprovedBookmarkRowProperties.TITLE, "test title")
                              .with(ImprovedBookmarkRowProperties.DESCRIPTION, "test description")
-                             .with(ImprovedBookmarkRowProperties.ICON,
+                             .with(ImprovedBookmarkRowProperties.START_ICON_DRAWABLE,
                                      new BitmapDrawable(
                                              mActivityTestRule.getActivity().getResources(),
                                              mBitmap))
                              .with(ImprovedBookmarkRowProperties.SELECTED, false)
-                             .with(ImprovedBookmarkRowProperties.LIST_MENU, buildListMenu())
+                             .with(ImprovedBookmarkRowProperties.LIST_MENU_BUTTON_DELEGATE,
+                                     () -> buildListMenu())
+                             .with(ImprovedBookmarkRowProperties.START_IMAGE_VISIBILITY,
+                                     StartImageVisibility.DRAWABLE)
+                             .with(ImprovedBookmarkRowProperties.START_ICON_TINT, null)
                              .build();
 
             PropertyModelChangeProcessor.create(
@@ -184,7 +191,7 @@ public class ImprovedBookmarkRowRenderTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testNormal_withAccessoryView() throws IOException {
+    public void testNormal_withPriceTrackingEnabled() throws IOException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ShoppingSpecifics specifics =
                     ShoppingSpecifics.newBuilder()
@@ -197,15 +204,43 @@ public class ImprovedBookmarkRowRenderTest {
                                             .setCurrencyCode("USD")
                                             .setAmountMicros(100 * MICRO_CURRENCY_QUOTIENT)
                                             .build())
-                            .setIsPriceTracked(true)
                             .build();
-            ShoppingAccessoryCoordinator coordinator =
-                    new ShoppingAccessoryCoordinator(mActivityTestRule.getActivity(), specifics);
+            ShoppingAccessoryCoordinator coordinator = new ShoppingAccessoryCoordinator(
+                    mActivityTestRule.getActivity(), specifics, mShoppingService);
+            coordinator.setPriceTrackingEnabled(true);
 
             if (mUseVisualRowLayout) {
                 mModel.set(ImprovedBookmarkRowProperties.ACCESSORY_VIEW, coordinator.getView());
             }
         });
-        mRenderTestRule.render(mContentView, "normal_with_accessory");
+        mRenderTestRule.render(mContentView, "normal_with_price_tracking_enabled");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    public void testNormal_withPriceTrackingDisabled() throws IOException {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ShoppingSpecifics specifics =
+                    ShoppingSpecifics.newBuilder()
+                            .setCurrentPrice(ProductPrice.newBuilder()
+                                                     .setCurrencyCode("USD")
+                                                     .setAmountMicros(50 * MICRO_CURRENCY_QUOTIENT)
+                                                     .build())
+                            .setPreviousPrice(
+                                    ProductPrice.newBuilder()
+                                            .setCurrencyCode("USD")
+                                            .setAmountMicros(100 * MICRO_CURRENCY_QUOTIENT)
+                                            .build())
+                            .build();
+            ShoppingAccessoryCoordinator coordinator = new ShoppingAccessoryCoordinator(
+                    mActivityTestRule.getActivity(), specifics, mShoppingService);
+            coordinator.setPriceTrackingEnabled(false);
+
+            if (mUseVisualRowLayout) {
+                mModel.set(ImprovedBookmarkRowProperties.ACCESSORY_VIEW, coordinator.getView());
+            }
+        });
+        mRenderTestRule.render(mContentView, "normal_with_price_tracking_disabled");
     }
 }

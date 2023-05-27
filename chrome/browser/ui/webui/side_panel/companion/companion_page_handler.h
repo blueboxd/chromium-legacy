@@ -9,8 +9,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/companion/core/constants.h"
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
-#include "chrome/browser/companion/core/msbb_delegate.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "components/lens/buildflags.h"
+#include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -27,9 +29,10 @@ class CompanionUrlBuilder;
 class PromoHandler;
 class SigninDelegate;
 
-class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
-                             public content::WebContentsObserver,
-                             public MsbbDelegate {
+class CompanionPageHandler
+    : public side_panel::mojom::CompanionPageHandler,
+      public content::WebContentsObserver,
+      public unified_consent::UrlKeyedDataCollectionConsentHelper::Observer {
  public:
   CompanionPageHandler(
       mojo::PendingReceiver<side_panel::mojom::CompanionPageHandler> receiver,
@@ -42,34 +45,39 @@ class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
   // side_panel::mojom::CompanionPageHandler:
   void ShowUI() override;
   void OnPromoAction(side_panel::mojom::PromoType promo_type,
-                     side_panel::mojom::PromoAction promo_action) override;
+                     side_panel::mojom::PromoAction promo_action,
+                     const absl::optional<GURL>& exps_promo_url) override;
   void OnRegionSearchClicked() override;
   void OnExpsOptInStatusAvailable(bool is_exps_opted_in) override;
-  void OnOpenInNewTabButtonURLChanged(const ::GURL& url_to_open) override;
+  void OnOpenInNewTabButtonURLChanged(const GURL& url_to_open) override;
   void RecordUiSurfaceShown(side_panel::mojom::UiSurface ui_surface,
-                            uint32_t child_element_count) override;
-  void RecordUiSurfaceClicked(side_panel::mojom::UiSurface ui_surface) override;
+                            uint32_t ui_surface_position,
+                            uint32_t child_element_available_count,
+                            uint32_t child_element_shown_count) override;
+  void RecordUiSurfaceClicked(side_panel::mojom::UiSurface ui_surface,
+                              int32_t click_position) override;
   void OnCqCandidatesAvailable(
       const std::vector<std::string>& text_directives) override;
-  void OnPhFeedback(side_panel::mojom::PhFeedback ph_feedback) override;
+  void OnPhFeedback(side_panel::mojom::PhFeedback ph_feedback,
+                    const absl::optional<GURL>& reporting_url) override;
   void OnCqJumptagClicked(const std::string& text_directive) override;
 
-  // content::WebContentsObserver:
-  void PrimaryPageChanged(content::Page& page) override;
+  // content::WebContentsObserver overrides.
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
+
+  // UrlKeyedDataCollectionConsentHelper::Observer overrides.
+  void OnUrlKeyedDataCollectionConsentStateChanged(
+      unified_consent::UrlKeyedDataCollectionConsentHelper* consent_helper)
+      override;
 
   // Informs the page handler that a new text query to initialize / reload the
   // page with was sent from client.
   void OnSearchTextQuery(const std::string& text_query);
   void OnImageQuery(side_panel::mojom::ImageQuery image_query);
 
-  // Returns the latest set url to be used for the 'open in new tab' button in
-  // the side panel header.
-  GURL GetNewTabButtonUrl();
-
  private:
-  // MsbbDelegate overrides.
-  void EnableMsbb(bool enable_msbb) override;
-
   // Notifies the companion side panel about the URL of the main frame. Based on
   // the call site, either does a full reload of the side panel or does a
   // postmessage() update. Reload is done during initial load of the side panel,
@@ -87,16 +95,24 @@ class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
   void DidFinishFindingCqTexts(
       const std::vector<std::pair<std::string, bool>>& text_found_vec);
 
+  // Helper method to determine whether the user has met all the access
+  // requirements, i.e. signed in, msbb enabled, and has exps access.
+  bool MeetsAllAccessRequirements();
+
   mojo::Receiver<side_panel::mojom::CompanionPageHandler> receiver_;
   mojo::Remote<side_panel::mojom::CompanionPage> page_;
   raw_ptr<CompanionSidePanelUntrustedUI> companion_untrusted_ui_ = nullptr;
   std::unique_ptr<SigninDelegate> signin_delegate_;
   std::unique_ptr<CompanionUrlBuilder> url_builder_;
   std::unique_ptr<PromoHandler> promo_handler_;
-  GURL open_in_new_tab_url_;
+  std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
+      consent_helper_;
 
   // Logs metrics for companion page. Reset when there is a new navigation.
   std::unique_ptr<CompanionMetricsLogger> metrics_logger_;
+
+  // The current URL of the main frame.
+  GURL page_url_;
 
   base::WeakPtrFactory<CompanionPageHandler> weak_ptr_factory_{this};
 };

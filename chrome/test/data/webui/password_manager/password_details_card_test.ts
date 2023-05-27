@@ -4,42 +4,60 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {EditPasswordDialogElement, Page, PasswordDetailsCardElement, PasswordManagerImpl, PasswordViewPageInteractions, Router} from 'chrome://password-manager/password_manager.js';
+import {EditPasswordDialogElement, Page, PasswordDetailsCardElement, PasswordManagerImpl, PasswordViewPageInteractions, Router, SyncBrowserProxyImpl} from 'chrome://password-manager/password_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
+import {TestSyncBrowserProxy} from './test_sync_browser_proxy.js';
 import {createAffiliatedDomain, createPasswordEntry} from './test_util.js';
+
+async function createCardElement(
+    password: chrome.passwordsPrivate.PasswordUiEntry|null =
+        null): Promise<PasswordDetailsCardElement> {
+  if (!password) {
+    password = createPasswordEntry(
+        {url: 'test.com', username: 'vik', password: 'password47'});
+  }
+
+  const card = document.createElement('password-details-card');
+  card.password = password;
+  document.body.appendChild(card);
+  await flushTasks();
+  return card;
+}
 
 suite('PasswordDetailsCardTest', function() {
   let passwordManager: TestPasswordManagerProxy;
+  let syncProxy: TestSyncBrowserProxy;
 
   setup(function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.setInstance(passwordManager);
+    syncProxy = new TestSyncBrowserProxy();
+    SyncBrowserProxyImpl.setInstance(syncProxy);
     Router.getInstance().navigateTo(Page.PASSWORDS);
     return flushTasks();
   });
 
   test('Content displayed properly', async function() {
-    const password = createPasswordEntry(
-        {url: 'test.com', username: 'vik', password: 'password69'});
+    const password = createPasswordEntry({
+      url: 'test.com',
+      username: 'vik',
+      password: 'password69',
+      note: 'note',
+    });
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertEquals(password.username, card.$.usernameValue.value);
     assertEquals(password.password, card.$.passwordValue.value);
     assertEquals('password', card.$.passwordValue.type);
     assertTrue(isVisible(card.$.noteValue));
-    assertEquals(
-        loadTimeData.getString('emptyNote'),
-        card.$.noteValue.textContent!.trim());
+    assertEquals(password.note, card.$.noteValue.note);
     assertTrue(isVisible(card.$.copyUsernameButton));
     assertTrue(isVisible(card.$.showPasswordButton));
     assertTrue(isVisible(card.$.copyPasswordButton));
@@ -51,11 +69,7 @@ suite('PasswordDetailsCardTest', function() {
     const password = createPasswordEntry(
         {url: 'test.com', username: 'vik', federationText: 'federation.com'});
 
-    const card: PasswordDetailsCardElement =
-        document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertEquals(password.username, card.$.usernameValue.value);
     assertEquals(password.federationText, card.$.passwordValue.value);
@@ -71,10 +85,7 @@ suite('PasswordDetailsCardTest', function() {
   test('Copy username', async function() {
     const password = createPasswordEntry({url: 'test.com', username: 'vik'});
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertTrue(isVisible(card.$.copyUsernameButton));
     assertFalse(card.$.toast.open);
@@ -95,10 +106,7 @@ suite('PasswordDetailsCardTest', function() {
     const password = createPasswordEntry(
         {id: 1, url: 'test.com', username: 'vik', password: 'password69'});
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertTrue(isVisible(card.$.copyPasswordButton));
     assertFalse(card.$.toast.open);
@@ -128,10 +136,7 @@ suite('PasswordDetailsCardTest', function() {
       createAffiliatedDomain('m.test.com'),
     ];
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     const listItemElements =
         card.shadowRoot!.querySelectorAll<HTMLAnchorElement>('a.site-link');
@@ -150,10 +155,7 @@ suite('PasswordDetailsCardTest', function() {
     const password = createPasswordEntry(
         {id: 1, url: 'test.com', username: 'vik', password: 'password69'});
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertEquals(
         loadTimeData.getString('showPassword'),
@@ -182,10 +184,7 @@ suite('PasswordDetailsCardTest', function() {
         {id: 1, url: 'test.com', username: 'vik', password: 'password69'});
     password.affiliatedDomains = [createAffiliatedDomain('test.com')];
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     card.$.editButton.click();
     await eventToPromise('cr-dialog-open', card);
@@ -209,10 +208,7 @@ suite('PasswordDetailsCardTest', function() {
       id: 0,
     });
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertTrue(isVisible(card.$.deleteButton));
 
@@ -224,51 +220,6 @@ suite('PasswordDetailsCardTest', function() {
     const params = await passwordManager.whenCalled('removeSavedPassword');
     assertEquals(params.id, password.id);
     assertEquals(params.fromStores, password.storedIn);
-  });
-
-  test('short note is shown fully', async function() {
-    const password = createPasswordEntry({
-      id: 1,
-      url: 'test.com',
-      username: 'vik',
-      note: 'This is just a short note. It is cold out there.',
-    });
-
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
-
-    assertEquals(password.note, card.$.noteValue.textContent!.trim());
-    assertTrue(card.$.showMore.hidden);
-  });
-
-  test('long note is shown fully', async function() {
-    const password = createPasswordEntry({
-      id: 1,
-      url: 'test.com',
-      username: 'vik',
-      note:
-          'It is a long established fact that a reader will be distracted by ' +
-          'the readable content of a page when looking at its layout. The ' +
-          'point of using Lorem Ipsum is that it has a more-or-less normal ' +
-          'distribution of letters, as opposed to using \'Content here, ' +
-          'content here\', making it look like readable English.',
-    });
-
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
-
-    assertEquals(password.note, card.$.noteValue.textContent!.trim());
-    assertTrue(card.$.noteValue.hasAttribute('limit-note'));
-    assertFalse(card.$.showMore.hidden);
-
-    // Open note fully
-    card.$.showMore.click();
-    assertFalse(card.$.noteValue.hasAttribute('limit-note'));
-    await passwordManager.whenCalled('extendAuthValidity');
   });
 
   [chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT,
@@ -289,10 +240,7 @@ suite('PasswordDetailsCardTest', function() {
                 password.storedIn =
                     chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT;
 
-                const card = document.createElement('password-details-card');
-                card.password = password;
-                document.body.appendChild(card);
-                await flushTasks();
+                const card = await createCardElement(password);
 
                 assertTrue(isVisible(card.$.deleteButton));
 
@@ -339,10 +287,7 @@ suite('PasswordDetailsCardTest', function() {
       createAffiliatedDomain('m.test.com'),
     ];
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertTrue(isVisible(card.$.deleteButton));
 
@@ -376,10 +321,7 @@ suite('PasswordDetailsCardTest', function() {
       },
     ];
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertEquals(
         card.$.domainLabel.textContent!.trim(),
@@ -397,10 +339,7 @@ suite('PasswordDetailsCardTest', function() {
       },
     ];
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertEquals(
         card.$.domainLabel.textContent!.trim(),
@@ -423,13 +362,57 @@ suite('PasswordDetailsCardTest', function() {
       },
     ];
 
-    const card = document.createElement('password-details-card');
-    card.password = password;
-    document.body.appendChild(card);
-    await flushTasks();
+    const card = await createCardElement(password);
 
     assertEquals(
         card.$.domainLabel.textContent!.trim(),
         loadTimeData.getString('sitesAndAppsLabel'));
+  });
+
+  test('share button available when sync enabled', async function() {
+    loadTimeData.overrideValues({enableSendPasswords: true});
+
+    syncProxy.syncInfo = {
+      isEligibleForAccountStorage: false,
+      isSyncingPasswords: true,
+    };
+
+    const card = await createCardElement();
+
+    const shareButton =
+        card.shadowRoot!.querySelector<HTMLElement>('#shareButton');
+    assertTrue(!!shareButton);
+    assertTrue(isVisible(shareButton));
+    assertEquals(shareButton.textContent!.trim(), card.i18n('share'));
+  });
+
+  test('sharing unavailable without enableSendPasswords', async function() {
+    loadTimeData.overrideValues({enableSendPasswords: false});
+
+    syncProxy.syncInfo = {
+      isEligibleForAccountStorage: false,
+      isSyncingPasswords: true,
+    };
+
+    const card = await createCardElement();
+
+    const shareButton =
+        card.shadowRoot!.querySelector<HTMLElement>('#shareButton');
+    assertFalse(!!shareButton);
+  });
+
+  test('share button unavailable when sync disabled', async function() {
+    loadTimeData.overrideValues({enableSendPasswords: true});
+
+    syncProxy.syncInfo = {
+      isEligibleForAccountStorage: false,
+      isSyncingPasswords: false,
+    };
+
+    const card = await createCardElement();
+
+    const shareButton =
+        card.shadowRoot!.querySelector<HTMLElement>('#shareButton');
+    assertFalse(!!shareButton);
   });
 });

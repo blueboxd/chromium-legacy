@@ -411,6 +411,14 @@ class TestAutofillClientTemplate : public T {
     autofill_error_dialog_context_ = context;
   }
 
+  void CloseAutofillProgressDialog(
+      bool show_confirmation_before_closing,
+      base::OnceClosure no_user_perceived_authentication_callback) override {
+    if (no_user_perceived_authentication_callback) {
+      std::move(no_user_perceived_authentication_callback).Run();
+    }
+  }
+
   bool IsAutocompleteEnabled() const override { return true; }
 
   bool IsPasswordManagerEnabled() override { return true; }
@@ -432,7 +440,7 @@ class TestAutofillClientTemplate : public T {
     return form_origin_.SchemeIs("https");
   }
 
-  void ExecuteCommand(int id) override {}
+  void ExecuteCommand(Suggestion::FrontendId id) override {}
 
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override {}
 

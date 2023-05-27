@@ -10,18 +10,21 @@
 
 #include <limits>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/base/filename_util.h"
 #include "skia/ext/skia_utils_base.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -33,12 +36,17 @@
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace ui {
 
@@ -47,39 +55,56 @@ namespace {
 NSPasteboard* GetPasteboard() {
   // The pasteboard can always be nil, since there is a finite amount of storage
   // that must be shared between all pasteboards.
-  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+  NSPasteboard* pasteboard = NSPasteboard.generalPasteboard;
   return pasteboard;
 }
 
-base::scoped_nsobject<NSImage> GetNSImage(NSPasteboard* pasteboard) {
+NSImage* GetNSImage(NSPasteboard* pasteboard) {
   // If the pasteboard's image data is not to its liking, the guts of NSImage
   // may throw, and that exception will leak. Prevent a crash in that case;
   // a blank image is better.
-  base::scoped_nsobject<NSImage> image;
+  NSImage* image;
   @try {
-    if (pasteboard)
-      image.reset([[NSImage alloc] initWithPasteboard:pasteboard]);
+    if (pasteboard) {
+      image = [[NSImage alloc] initWithPasteboard:pasteboard];
+    }
   } @catch (id exception) {
   }
-  if (!image)
-    return base::scoped_nsobject<NSImage>();
-  if ([[image representations] count] == 0u)
-    return base::scoped_nsobject<NSImage>();
+  if (!image) {
+    return nil;
+  }
+  if (image.representations.count == 0u) {
+    return nil;
+  }
   return image;
 }
 
 // Read raw PNG bytes from the clipboard.
 std::vector<uint8_t> GetPngFromPasteboard(NSPasteboard* pasteboard) {
-  if (!pasteboard)
-    return std::vector<uint8_t>();
+  if (!pasteboard) {
+    return {};
+  }
 
   NSData* data = [pasteboard dataForType:NSPasteboardTypePNG];
-  if (!data)
-    return std::vector<uint8_t>();
+  if (!data) {
+    return {};
+  }
 
   const uint8_t* bytes = static_cast<const uint8_t*>(data.bytes);
   std::vector<uint8_t> png(bytes, bytes + data.length);
   return png;
+}
+
+std::vector<uint8_t> EncodeGfxImageToPng(gfx::Image image) {
+  base::AssertLongCPUWorkAllowed();
+
+  if (image.IsEmpty()) {
+    return {};
+  }
+
+  scoped_refptr<base::RefCountedMemory> mem = image.As1xPNGBytes();
+  std::vector<uint8_t> image_data(mem->data(), mem->data() + mem->size());
+  return image_data;
 }
 
 }  // namespace
@@ -130,8 +155,9 @@ bool ClipboardMac::IsFormatAvailable(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
-  // https://crbug.com/1016740#c21
-  base::scoped_nsobject<NSArray> types([[GetPasteboard() types] retain]);
+  // https://crbug.com/1016740#c21: The pasteboard types array may end up going
+  // away; make a copy.
+  NSArray* types = [GetPasteboard().types copy];
 
   // Safari only places RTF on the pasteboard, never HTML. We can convert RTF
   // to HTML, so the presence of either indicates success when looking for HTML.
@@ -312,7 +338,7 @@ void ClipboardMac::ReadPng(ClipboardBuffer buffer,
                            const DataTransferEndpoint* data_dst,
                            ReadPngCallback callback) const {
   RecordRead(ClipboardFormatMetric::kPng);
-  std::move(callback).Run(ReadPngInternal(buffer, GetPasteboard()));
+  ReadPngInternal(buffer, GetPasteboard(), std::move(callback));
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other
@@ -466,13 +492,7 @@ void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {
   // security CHECK.
   DCHECK_EQ(bitmap.colorType(), kN32_SkColorType);
 
-  NSImage* image = skia::SkBitmapToNSImageWithColorSpace(
-      bitmap, base::mac::GetSystemColorSpace());
-  if (!image) {
-    NOTREACHED() << "SkBitmapToNSImageWithColorSpace failed";
-    return;
-  }
-  [GetPasteboard() writeObjects:@[ image ]];
+  WriteBitmapInternal(bitmap, GetPasteboard());
 }
 
 void ClipboardMac::WriteData(const ClipboardFormatType& format,
@@ -489,29 +509,80 @@ void ClipboardMac::WriteWebSmartPaste() {
   [GetPasteboard() setData:nil forType:format];
 }
 
-std::vector<uint8_t> ClipboardMac::ReadPngInternal(
-    ClipboardBuffer buffer,
-    NSPasteboard* pasteboard) const {
+void ClipboardMac::ReadPngInternal(ClipboardBuffer buffer,
+                                   NSPasteboard* pasteboard,
+                                   ReadPngCallback callback) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
   std::vector<uint8_t> png = GetPngFromPasteboard(pasteboard);
-  if (!png.empty())
-    return png;
+  if (!png.empty()) {
+    std::move(callback).Run(std::move(png));
+    return;
+  }
 
   // If we can’t read a PNG, try reading for an NSImage, and if successful,
   // transcode it to PNG.
-  base::scoped_nsobject<NSImage> image = GetNSImage(pasteboard);
-  if (!image)
-    return std::vector<uint8_t>();
+  NSImage* image = GetNSImage(pasteboard);
+  if (!image) {
+    std::move(callback).Run({});
+    return;
+  }
 
   auto gfx_image = gfx::Image(image);
-  if (gfx_image.IsEmpty())
-    return std::vector<uint8_t>();
+  if (gfx_image.IsEmpty()) {
+    std::move(callback).Run({});
+    return;
+  }
 
-  scoped_refptr<base::RefCountedMemory> mem = gfx_image.As1xPNGBytes();
-  std::vector<uint8_t> image_data(mem->data(), mem->data() + mem->size());
-  return image_data;
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&EncodeGfxImageToPng, std::move(gfx_image)),
+      std::move(callback));
+}
+
+void ClipboardMac::WriteBitmapInternal(const SkBitmap& bitmap,
+                                       NSPasteboard* pasteboard) {
+  // The bitmap type is sanitized to be N32 before we get here. The conversion
+  // to an NSImage would not explode if we got this wrong, so this is not a
+  // security CHECK.
+  DCHECK_EQ(bitmap.colorType(), kN32_SkColorType);
+
+  if (!base::FeatureList::IsEnabled(features::kMacClipboardWriteImageWithPng)) {
+    NSImage* image = skia::SkBitmapToNSImageWithColorSpace(
+        bitmap, base::mac::GetSystemColorSpace());
+    if (!image) {
+      NOTREACHED() << "SkBitmapToNSImageWithColorSpace failed";
+      return;
+    }
+    [pasteboard writeObjects:@[ image ]];
+    return;
+  }
+
+  NSBitmapImageRep* image_rep = skia::SkBitmapToNSBitmapImageRepWithColorSpace(
+      bitmap, base::mac::GetSystemColorSpace());
+  if (!image_rep) {
+    NOTREACHED() << "SkBitmapToNSBitmapImageRepWithColorSpace failed";
+    return;
+  }
+  // Attempt to format the image representation as a PNG, and write it directly
+  // to the clipboard if this succeeds. This will write both a PNG and a TIFF.
+  NSData* data = [image_rep representationUsingType:NSBitmapImageFileTypePNG
+                                         properties:@{}];
+  if (data) {
+    NSPasteboardItem* pasteboard_item = [[NSPasteboardItem alloc] init];
+    [pasteboard_item setData:data forType:NSPasteboardTypePNG];
+    if ([pasteboard writeObjects:@[ pasteboard_item ]]) {
+      return;
+    }
+  }
+
+  // Otherwise, fall back to writing the NSImage directly to the clipboard,
+  // which will write only a TIFF.
+  NSImage* image = [[NSImage alloc] init];
+  [image addRepresentation:image_rep];
+  [image setSize:NSMakeSize(bitmap.width(), bitmap.height())];
+  [pasteboard writeObjects:@[ image ]];
 }
 
 }  // namespace ui

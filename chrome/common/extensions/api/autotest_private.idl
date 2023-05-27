@@ -447,6 +447,7 @@ namespace autotestPrivate {
     ShelfItemStatus status;
     boolean showsTooltip;
     boolean pinnedByPolicy;
+    boolean pinStateForcedByType;
     boolean hasNotification;
   };
 
@@ -818,6 +819,8 @@ namespace autotestPrivate {
 
   // Callback invoked when the temporary directory was removed.
   callback RemoveFuseboxTempDirCallback = void();
+
+  callback IsFeatureEnabledCallback = void(boolean enabled);
 
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
@@ -1559,6 +1562,19 @@ namespace autotestPrivate {
     // Ends frame counting in viz and return the collected data.
     [supportsPromises] static void stopFrameCounting(
         StopFrameCountingCallback  callback);
+
+    // Install a bruschetta VM.
+    [supportsPromises] static void installBruschetta(
+      DOMString vm_name, VoidCallback callback);
+
+    // Delete a bruschetta VM.
+    [supportsPromises] static void removeBruschetta(
+      DOMString vm_name, VoidCallback callback);
+
+    // Returns whether a base::Feature is enabled. The state may change because
+    // a Chrome uprev into ChromeOS changed the default feature state.
+    [supportsPromises] static void isFeatureEnabled(
+      DOMString feature_name, IsFeatureEnabledCallback callback);
   };
 
   interface Events {

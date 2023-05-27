@@ -164,7 +164,11 @@ class Response {
 
 }  // namespace
 
-class CrdHostDelegateTest : public ::testing::Test {
+// A test class used for testing the CrdHostDelegate class.
+// Use this class as fixture for parametrized tests over boolean value.
+// The value is used to verify the correct delivery of individual boolean fields
+// of `ChromeOsEnterpriseParams`.
+class CrdHostDelegateTest : public testing::TestWithParam<bool> {
  public:
   CrdHostDelegateTest() = default;
   CrdHostDelegateTest(const CrdHostDelegateTest&) = delete;
@@ -282,10 +286,9 @@ TEST_F(CrdHostDelegateTest, ShouldPassUserNameToRemotingService) {
   EXPECT_EQ(actual_parameters->user_name, "<the-user-name>");
 }
 
-TEST_F(CrdHostDelegateTest,
-       ShouldPassShowConfirmationDialogTrueToRemotingService) {
+TEST_P(CrdHostDelegateTest, ShouldPassShowConfirmationDialogToRemotingService) {
   SessionParameters parameters;
-  parameters.show_confirmation_dialog = true;
+  parameters.show_confirmation_dialog = GetParam();
 
   remoting::ChromeOsEnterpriseParams actual_parameters;
   EXPECT_CALL(remoting_service(), StartSession)
@@ -295,14 +298,13 @@ TEST_F(CrdHostDelegateTest,
                                     error_callback(),
                                     session_finished_callback());
 
-  EXPECT_EQ(actual_parameters.suppress_notifications, false);
-  EXPECT_EQ(actual_parameters.suppress_user_dialogs, false);
+  EXPECT_NE(actual_parameters.suppress_notifications, GetParam());
+  EXPECT_NE(actual_parameters.suppress_user_dialogs, GetParam());
 }
 
-TEST_F(CrdHostDelegateTest,
-       ShouldPassShowConfirmationDialogFalseToRemotingService) {
+TEST_P(CrdHostDelegateTest, ShouldPassTerminateUponInputToRemotingService) {
   SessionParameters parameters;
-  parameters.show_confirmation_dialog = false;
+  parameters.terminate_upon_input = GetParam();
 
   remoting::ChromeOsEnterpriseParams actual_parameters;
   EXPECT_CALL(remoting_service(), StartSession)
@@ -312,14 +314,12 @@ TEST_F(CrdHostDelegateTest,
                                     error_callback(),
                                     session_finished_callback());
 
-  EXPECT_EQ(actual_parameters.suppress_notifications, true);
-  EXPECT_EQ(actual_parameters.suppress_user_dialogs, true);
+  EXPECT_EQ(actual_parameters.terminate_upon_input, GetParam());
 }
 
-TEST_F(CrdHostDelegateTest,
-       ShouldPassTerminateUponInputFalseToRemotingService) {
+TEST_P(CrdHostDelegateTest, ShouldPassAllowReconnectionsToRemotingService) {
   SessionParameters parameters;
-  parameters.terminate_upon_input = false;
+  parameters.allow_reconnections = GetParam();
 
   remoting::ChromeOsEnterpriseParams actual_parameters;
   EXPECT_CALL(remoting_service(), StartSession)
@@ -329,22 +329,7 @@ TEST_F(CrdHostDelegateTest,
                                     error_callback(),
                                     session_finished_callback());
 
-  EXPECT_EQ(actual_parameters.terminate_upon_input, false);
-}
-
-TEST_F(CrdHostDelegateTest, ShouldPassTerminateUponInputTrueToRemotingService) {
-  SessionParameters parameters;
-  parameters.terminate_upon_input = true;
-
-  remoting::ChromeOsEnterpriseParams actual_parameters;
-  EXPECT_CALL(remoting_service(), StartSession)
-      .WillOnce(SaveParamAndInvokeCallback(&actual_parameters));
-
-  delegate().StartCrdHostAndGetCode(parameters, success_callback(),
-                                    error_callback(),
-                                    session_finished_callback());
-
-  EXPECT_EQ(actual_parameters.terminate_upon_input, true);
+  EXPECT_EQ(actual_parameters.allow_reconnections, GetParam());
 }
 
 TEST_F(CrdHostDelegateTest, ShouldPassAdminEmailToRemotingService) {
@@ -362,10 +347,10 @@ TEST_F(CrdHostDelegateTest, ShouldPassAdminEmailToRemotingService) {
   EXPECT_EQ(actual_parameters->authorized_helper, "the.admin@email.com");
 }
 
-TEST_F(CrdHostDelegateTest,
-       ShouldPassCurtainLocalUserSessionFalseToRemotingService) {
+TEST_P(CrdHostDelegateTest,
+       ShouldPassCurtainLocalUserSessionToRemotingService) {
   SessionParameters parameters;
-  parameters.curtain_local_user_session = false;
+  parameters.curtain_local_user_session = GetParam();
 
   remoting::ChromeOsEnterpriseParams actual_parameters;
   EXPECT_CALL(remoting_service(), StartSession)
@@ -375,13 +360,13 @@ TEST_F(CrdHostDelegateTest,
                                     error_callback(),
                                     session_finished_callback());
 
-  EXPECT_EQ(actual_parameters.curtain_local_user_session, false);
+  EXPECT_EQ(actual_parameters.curtain_local_user_session, GetParam());
 }
 
-TEST_F(CrdHostDelegateTest,
-       ShouldPassCurtainLocalUserSessionTrueToRemotingService) {
+TEST_P(CrdHostDelegateTest,
+       ShouldPassAllowTroubleshootingToolsToRemotingService) {
   SessionParameters parameters;
-  parameters.curtain_local_user_session = true;
+  parameters.allow_troubleshooting_tools = GetParam();
 
   remoting::ChromeOsEnterpriseParams actual_parameters;
   EXPECT_CALL(remoting_service(), StartSession)
@@ -391,7 +376,7 @@ TEST_F(CrdHostDelegateTest,
                                     error_callback(),
                                     session_finished_callback());
 
-  EXPECT_EQ(actual_parameters.curtain_local_user_session, true);
+  EXPECT_EQ(actual_parameters.allow_troubleshooting_tools, GetParam());
 }
 
 TEST_F(CrdHostDelegateTest, ShouldReportErrorIfStartSessionReturnsError) {
@@ -535,5 +520,9 @@ TEST_F(
   EXPECT_EQ("enterprise remote support disabled", response.error_message());
   EXPECT_EQ(ResultCode::FAILURE_DISABLED_BY_POLICY, response.error_code());
 }
+
+INSTANTIATE_TEST_SUITE_P(CrdHostDelegateTest,
+                         CrdHostDelegateTest,
+                         testing::Bool());
 
 }  // namespace policy

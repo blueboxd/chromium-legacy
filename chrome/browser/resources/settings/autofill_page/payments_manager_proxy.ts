@@ -87,6 +87,18 @@ export interface PaymentsManagerProxy {
    * A null response means that there is no platform authenticator.
    */
   isUserVerifyingPlatformAuthenticatorAvailable(): Promise<boolean|null>;
+
+  /**
+   * Authenticate the user via device authentication and flip the mandatory auth
+   * toggle is successful.
+   */
+  authenticateUserAndFlipMandatoryAuthToggle(): void;
+
+  /**
+   * Authenticate the user via device authentication and display the edit dialog
+   * for local card if the auth is successful.
+   */
+  authenticateUserToEditLocalCard(): Promise<boolean>;
 }
 
 /**
@@ -164,6 +176,14 @@ export class PaymentsManagerImpl implements PaymentsManagerProxy {
 
     return window.PublicKeyCredential
         .isUserVerifyingPlatformAuthenticatorAvailable();
+  }
+
+  authenticateUserAndFlipMandatoryAuthToggle() {
+    chrome.autofillPrivate.authenticateUserAndFlipMandatoryAuthToggle();
+  }
+
+  authenticateUserToEditLocalCard() {
+    return chrome.autofillPrivate.authenticateUserToEditLocalCard();
   }
 
   static getInstance(): PaymentsManagerProxy {

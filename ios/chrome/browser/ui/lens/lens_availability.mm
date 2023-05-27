@@ -7,8 +7,8 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "components/prefs/pref_service.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/public/provider/chrome/browser/lens/lens_api.h"
 #import "ui/base/device_form_factor.h"
@@ -54,6 +54,20 @@ bool CheckAndLogAvailabilityForLensEntryPoint(
         flag_enabled = NO;
       }
       // Home screen widget cannot log availailability.
+      break;
+    case LensEntrypoint::AppIconLongPress:
+      // App icon entrypoint is controlled by the home screen widget flag.
+      if (!base::FeatureList::IsEnabled(kEnableLensInHomeScreenWidget)) {
+        flag_enabled = NO;
+      }
+      // App icon long press cannot log availailability.
+      break;
+    case LensEntrypoint::Spotlight:
+      // Spotlight entrypoint is controlled by the home screen widget flag.
+      if (!base::FeatureList::IsEnabled(kEnableLensInHomeScreenWidget)) {
+        flag_enabled = NO;
+      }
+      // Spotlight cannot log availailability.
       break;
     default:
       NOTREACHED() << "Unsupported Lens Entry Point.";

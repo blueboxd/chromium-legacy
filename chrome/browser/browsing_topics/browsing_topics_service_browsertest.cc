@@ -59,7 +59,6 @@ constexpr base::Time kTime1 =
 constexpr base::Time kTime2 =
     base::Time::FromDeltaSinceWindowsEpoch(base::Days(2));
 
-constexpr size_t kTaxonomySize = 349;
 constexpr int kTaxonomyVersion = 1;
 constexpr int64_t kModelVersion = 2;
 constexpr size_t kPaddedTopTopicsStartIndex = 5;
@@ -72,17 +71,9 @@ constexpr char kExpectedApiResult[] =
     "\"configVersion\":\"chrome.1\",\"modelVersion\":\"2\","
     "\"taxonomyVersion\":\"1\",\"topic\":10,\"version\":\"chrome.1:1:2\"};]";
 
-constexpr char kExpectedHeaderValueForSiteA[] =
-    "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
-    "\"2\";taxonomy_version=\"1\", "
-    "10;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
-    "\"2\";taxonomy_version=\"1\"";
+constexpr char kExpectedHeaderValueForSiteA[] = "1;v=\"chrome.1:1:2\", 10";
 
-constexpr char kExpectedHeaderValueForSiteB[] =
-    "1;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
-    "\"2\";taxonomy_version=\"1\", "
-    "7;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
-    "\"2\";taxonomy_version=\"1\"";
+constexpr char kExpectedHeaderValueForSiteB[] = "1;v=\"chrome.1:1:2\", 7";
 
 static constexpr char kBrowsingTopicsApiActionTypeHistogramId[] =
     "BrowsingTopics.ApiActionType";
@@ -99,8 +90,8 @@ EpochTopics CreateTestEpochTopics(
   }
 
   return EpochTopics(std::move(top_topics_and_observing_domains),
-                     kPaddedTopTopicsStartIndex, kTaxonomySize,
-                     kTaxonomyVersion, kModelVersion, calculation_time);
+                     kPaddedTopTopicsStartIndex, kTaxonomyVersion,
+                     kModelVersion, calculation_time);
 }
 
 class PortalActivationWaiter : public content::WebContentsObserver {
@@ -1233,9 +1224,8 @@ IN_PROC_BROWSER_TEST_F(
   // away later.
   content::TestNavigationObserver popup_observer(main_frame_url);
   popup_observer.StartWatchingNewWebContents();
-  EXPECT_TRUE(
-      ExecuteScript(web_contents()->GetPrimaryMainFrame(),
-                    content::JsReplace("window.open($1)", main_frame_url)));
+  EXPECT_TRUE(ExecJs(web_contents()->GetPrimaryMainFrame(),
+                     content::JsReplace("window.open($1)", main_frame_url)));
   popup_observer.Wait();
 
   GURL new_url =

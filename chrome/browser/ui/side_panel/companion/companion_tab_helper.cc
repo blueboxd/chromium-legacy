@@ -36,7 +36,8 @@ void CompanionTabHelper::ShowCompanionSidePanelForSearchURL(
     const GURL& search_url) {
   CHECK(delegate_);
   SetTextQuery(GetTextQueryFromSearchUrl(search_url));
-  delegate_->ShowCompanionSidePanel();
+  delegate_->ShowCompanionSidePanel(
+      SidePanelOpenTrigger::kContextMenuSearchOption);
 }
 
 void CompanionTabHelper::ShowCompanionSidePanelForImage(
@@ -65,7 +66,6 @@ void CompanionTabHelper::ShowCompanionSidePanelForImage(
   auto image_query = side_panel::mojom::ImageQuery(
       upload_url, src_url, content_type, thumbnail_data, original_size.height(),
       original_size.width(), downscaled_size.height(), downscaled_size.width());
-
   if (companion_page_handler_) {
     // Send request immediately if page handler already exists.
     companion_page_handler_->OnImageQuery(image_query);
@@ -76,7 +76,7 @@ void CompanionTabHelper::ShowCompanionSidePanelForImage(
   }
 
   // Show the side panel.
-  delegate_->ShowCompanionSidePanel();
+  delegate_->ShowCompanionSidePanel(SidePanelOpenTrigger::kLensContextMenu);
 }
 
 GURL CompanionTabHelper::SetImageTranslateQueryParams(GURL upload_url) {
@@ -116,6 +116,10 @@ CompanionTabHelper::GetCompanionPageHandler() {
   return companion_page_handler_;
 }
 
+content::WebContents* CompanionTabHelper::GetCompanionWebContentsForTesting() {
+  return delegate_->GetCompanionWebContentsForTesting();  // IN-TEST
+}
+
 std::unique_ptr<side_panel::mojom::ImageQuery>
 CompanionTabHelper::GetImageQuery() {
   return std::move(image_query_);
@@ -135,13 +139,16 @@ void CompanionTabHelper::SetTextQuery(const std::string& text_query) {
   }
 }
 
-void CompanionTabHelper::UpdateNewTabButtonState() {
-  delegate_->UpdateNewTabButtonState();
+void CompanionTabHelper::CreateAndRegisterEntry() {
+  delegate_->CreateAndRegisterEntry();
 }
 
-GURL CompanionTabHelper::GetNewTabButtonUrl() {
-  return companion_page_handler_ ? companion_page_handler_->GetNewTabButtonUrl()
-                                 : GURL();
+void CompanionTabHelper::DeregisterEntry() {
+  delegate_->DeregisterEntry();
+}
+
+void CompanionTabHelper::UpdateNewTabButton(GURL url_to_open) {
+  delegate_->UpdateNewTabButton(url_to_open);
 }
 
 std::string CompanionTabHelper::GetTextQueryFromSearchUrl(
@@ -167,6 +174,18 @@ void CompanionTabHelper::StartRegionSearch(content::WebContents* web_contents,
                                         /*is_google_default_search_provider=*/
                                         true);
 #endif
+}
+
+void CompanionTabHelper::SetMostRecentSidePanelOpenTrigger(
+    absl::optional<SidePanelOpenTrigger> side_panel_open_trigger) {
+  side_panel_open_trigger_ = side_panel_open_trigger;
+}
+
+absl::optional<SidePanelOpenTrigger>
+CompanionTabHelper::GetAndResetMostRecentSidePanelOpenTrigger() {
+  auto copy = side_panel_open_trigger_;
+  side_panel_open_trigger_ = absl::nullopt;
+  return copy;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(CompanionTabHelper);

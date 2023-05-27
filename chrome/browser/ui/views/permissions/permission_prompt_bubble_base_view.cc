@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,12 +34,15 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "extensions/common/constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -141,9 +145,9 @@ PermissionPromptBubbleBaseView::PermissionPromptBubbleBaseView(
         l10n_util::GetStringUTF16(block_message_id));
 
     if (features::IsChromeRefresh2023()) {
-      allow_once_button->SetStyle(views::MdTextButton::Style::kTonal);
-      allow_always_button->SetStyle(views::MdTextButton::Style::kTonal);
-      block_button->SetStyle(views::MdTextButton::Style::kTonal);
+      allow_once_button->SetStyle(ui::ButtonStyle::kTonal);
+      allow_always_button->SetStyle(ui::ButtonStyle::kTonal);
+      block_button->SetStyle(ui::ButtonStyle::kTonal);
     }
 
     buttons_container->AddChildView(std::move(allow_once_button));
@@ -164,9 +168,8 @@ PermissionPromptBubbleBaseView::PermissionPromptBubbleBaseView(
                        base::Unretained(this)));
 
     if (features::IsChromeRefresh2023()) {
-      SetButtonStyle(ui::DIALOG_BUTTON_OK, views::MdTextButton::Style::kTonal);
-      SetButtonStyle(ui::DIALOG_BUTTON_CANCEL,
-                     views::MdTextButton::Style::kTonal);
+      SetButtonStyle(ui::DIALOG_BUTTON_OK, ui::ButtonStyle::kTonal);
+      SetButtonStyle(ui::DIALOG_BUTTON_CANCEL, ui::ButtonStyle::kTonal);
     }
   }
 
@@ -176,6 +179,11 @@ PermissionPromptBubbleBaseView::PermissionPromptBubbleBaseView(
 PermissionPromptBubbleBaseView::~PermissionPromptBubbleBaseView() = default;
 
 void PermissionPromptBubbleBaseView::Show() {
+  CreateWidget();
+  ShowWidget();
+}
+
+void PermissionPromptBubbleBaseView::CreateWidget() {
   DCHECK(browser_->window());
 
   UpdateAnchorPosition();
@@ -190,13 +198,15 @@ void PermissionPromptBubbleBaseView::Show() {
   if (base::FeatureList::IsEnabled(views::features::kWidgetLayering)) {
     widget->SetZOrderSublevel(ChromeWidgetSublevel::kSublevelSecurity);
   }
+}
 
+void PermissionPromptBubbleBaseView::ShowWidget() {
   // If a browser window (or popup) other than the bubble parent has focus,
   // don't take focus.
   if (browser_->window()->IsActive()) {
-    widget->Show();
+    GetWidget()->Show();
   } else {
-    widget->ShowInactive();
+    GetWidget()->ShowInactive();
   }
 
   SizeToContents();
@@ -259,6 +269,23 @@ std::u16string PermissionPromptBubbleBaseView::GetWindowTitle() const {
 std::u16string PermissionPromptBubbleBaseView::GetAccessibleWindowTitle()
     const {
   return accessible_window_title_;
+}
+
+bool PermissionPromptBubbleBaseView::ShouldIgnoreButtonPressedEventHandling(
+    View* button,
+    const ui::Event& event) const {
+  // Ignore the key pressed event if the button row bounds intersect with PiP
+  // windows bounds.
+  if (!event.IsKeyEvent()) {
+    return false;
+  }
+
+  absl::optional<gfx::Rect> pip_window_bounds =
+      PictureInPictureWindowManager::GetInstance()
+          ->GetPictureInPictureWindowBounds();
+
+  return pip_window_bounds &&
+         pip_window_bounds->Intersects(button->GetBoundsInScreen());
 }
 
 void PermissionPromptBubbleBaseView::AcceptPermission() {

@@ -14,6 +14,7 @@
 #include "ash/shutdown_reason.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/style_util.h"
 #include "ash/style/typography.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -345,6 +346,7 @@ PowerButtonContainer::PowerButtonContainer(PressedCallback callback)
       kUnifiedMenuPowerIcon, cros_tokens::kCrosSysOnSurface));
   power_icon_->SetImageSize(kIconSize);
   arrow_icon_ = AddChildView(std::make_unique<views::ImageView>());
+  arrow_icon_->SetID(VIEW_ID_QS_POWER_BUTTON_CHEVRON_ICON);
   arrow_icon_->SetImage(ui::ImageModel::FromVectorIcon(
       kChevronDownSmallIcon, cros_tokens::kCrosSysOnSurface));
   arrow_icon_->SetImageSize(kIconSize);
@@ -367,8 +369,8 @@ void PowerButtonContainer::UpdateIconColor(bool is_active) {
                                  : cros_tokens::kCrosSysOnSurface;
   power_icon_->SetImage(
       ui::ImageModel::FromVectorIcon(kUnifiedMenuPowerIcon, icon_color_id));
-  arrow_icon_->SetImage(
-      ui::ImageModel::FromVectorIcon(kChevronDownSmallIcon, icon_color_id));
+  arrow_icon_->SetImage(ui::ImageModel::FromVectorIcon(
+      is_active ? kChevronUpSmallIcon : kChevronDownSmallIcon, icon_color_id));
 }
 
 PowerButton::PowerButton(UnifiedSystemTrayController* tray_controller)
@@ -394,12 +396,16 @@ PowerButton::PowerButton(UnifiedSystemTrayController* tray_controller)
   set_context_menu_controller(context_menu_.get());
 
   // Installs the customized focus ring path generator for the button.
-  views::FocusRing::Install(button_content_);
-  views::FocusRing::Get(button_content_)
-      ->SetPathGenerator(
-          std::make_unique<HighlightPathGenerator>(/*power_button=*/this));
+  views::HighlightPathGenerator::Install(
+      button_content_,
+      std::make_unique<HighlightPathGenerator>(/*power_button=*/this));
   views::FocusRing::Get(button_content_)
       ->SetColorId(cros_tokens::kCrosSysPrimary);
+
+  // Ripple.
+  StyleUtil::SetUpInkDropForButton(button_content_, gfx::Insets(),
+                                   /*highlight_on_hover=*/false,
+                                   /*highlight_on_focus=*/false);
 }
 
 PowerButton::~PowerButton() = default;

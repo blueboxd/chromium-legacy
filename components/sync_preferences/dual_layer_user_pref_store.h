@@ -86,6 +86,9 @@ class DualLayerUserPrefStore : public PersistentPrefStore {
   void SchedulePendingLossyWrites() override;
   void OnStoreDeletionFromDisk() override;
 
+  // Return the set of active pref types.
+  base::flat_set<syncer::ModelType> GetActiveTypesForTest() const;
+
  protected:
   ~DualLayerUserPrefStore() override;
 
@@ -117,8 +120,8 @@ class DualLayerUserPrefStore : public PersistentPrefStore {
 
   bool IsInitializationSuccessful() const;
 
-  // Returns whether the pref with the given `key` is registered as syncable.
-  bool IsPrefKeySyncable(const std::string& key) const;
+  // Returns whether the pref with the given `key` should be synced.
+  bool ShouldSyncPref(const std::string& key) const;
 
   // Returns whether the pref with the given `key` is mergeable.
   // TODO(crbug.com/1416479): This does not cover prefs with custom merge logic
@@ -141,6 +144,9 @@ class DualLayerUserPrefStore : public PersistentPrefStore {
   std::pair<base::Value, base::Value> UnmergeValue(const std::string& pref_name,
                                                    base::Value value,
                                                    uint32_t flags) const;
+
+  // Get all prefs currently present in the account store.
+  std::vector<std::string> GetPrefNamesInAccountStore() const;
 
   // The two underlying pref stores, scoped to this device/profile and to the
   // user's signed-in account, respectively.

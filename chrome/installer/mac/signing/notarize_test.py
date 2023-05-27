@@ -8,8 +8,8 @@ import subprocess
 import unittest
 from unittest import mock
 
-from . import notarize, test_config
-from .model import CodeSignedProduct, NotarizationTool, Paths
+from signing import notarize, test_config
+from signing.model import CodeSignedProduct, NotarizationTool, Paths
 
 
 @mock.patch.multiple(
@@ -267,6 +267,29 @@ class TestSubmitNotarytool(unittest.TestCase):
             '/fun/bin/notarytool.custom', 'submit', '/tmp/file.dmg',
             '--apple-id', '[NOTARY-USER]', '--team-id', '[NOTARY-TEAM]',
             '--no-wait', '--output-format', 'plist'
+        ], '[NOTARY-PASSWORD]')
+
+    @mock.patch('signing.commands.run_password_command_output')
+    def test_valid_upload_config_team_id_override(self,
+                                                  run_password_command_output):
+        run_password_command_output.return_value = plistlib.dumps(
+            {'id': '13807708-0970-4b25-b1af-34438149f22a'})
+
+        class OverrideTeamID(test_config.TestConfig):
+
+            @property
+            def notary_team_id(self):
+                return 'TeamOverride'
+
+        config = OverrideTeamID(notarization_tool=NotarizationTool.NOTARYTOOL)
+
+        uuid = notarize.submit('/tmp/file.dmg', config)
+
+        self.assertEqual('13807708-0970-4b25-b1af-34438149f22a', uuid)
+        run_password_command_output.assert_called_once_with([
+            'xcrun', 'notarytool', 'submit', '/tmp/file.dmg', '--apple-id',
+            '[NOTARY-USER]', '--team-id', 'TeamOverride', '--no-wait',
+            '--output-format', 'plist'
         ], '[NOTARY-PASSWORD]')
 
 

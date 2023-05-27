@@ -4,6 +4,8 @@
 
 #include "chrome/browser/apps/app_service/publishers/arc_apps.h"
 
+#include <functional>
+
 #include "ash/components/arc/mojom/app.mojom.h"
 #include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
@@ -14,6 +16,7 @@
 #include "ash/constants/ash_features.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -39,6 +42,7 @@
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list_handle.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/external_mount_points.h"
@@ -350,6 +354,66 @@ TEST_F(ArcAppsPublisherTest, SetSupportedLinksAllowsPlayStoreDefault) {
 
   ASSERT_EQ(arc::kPlayStoreAppId, preferred_apps().FindPreferredAppForUrl(
                                       GURL("https://play.google.com/foo")));
+}
+
+// Verifies that ARC permissions are published to App Service correctly.
+TEST_F(ArcAppsPublisherTest, PublishPermission) {
+  constexpr char kPackageName[] = "com.test.package";
+  constexpr char kActivityName[] = "com.test.package.activity";
+
+  const std::string kAppId =
+      ArcAppListPrefs::GetAppId(kPackageName, kActivityName);
+
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.push_back(
+      arc::mojom::AppInfo::New("Fake app", kPackageName, kActivityName));
+  arc_test()->app_instance()->SendRefreshAppList(apps);
+
+  std::vector<arc::mojom::ArcPackageInfoPtr> packages;
+
+  auto package = arc::mojom::ArcPackageInfo::New(
+      kPackageName, /*package_version=*/1, /*last_backup_android_id=*/1,
+      /*last_backup_time=*/1, /*sync=*/true);
+
+  base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
+      permissions;
+
+  permissions.emplace(arc::mojom::AppPermission::CAMERA,
+                      arc::mojom::PermissionState::New(
+                          /*granted=*/true, /*managed=*/false,
+                          /*details=*/absl::nullopt, /*one_time=*/true));
+  permissions.emplace(
+      arc::mojom::AppPermission::LOCATION,
+      arc::mojom::PermissionState::New(/*granted=*/true, /*managed=*/true,
+                                       /*details=*/"While in use"));
+
+  package->permission_states = std::move(permissions);
+  packages.push_back(std::move(package));
+
+  arc_test()->app_instance()->SendRefreshPackageList(std::move(packages));
+
+  apps::Permissions result;
+  bool found = app_service_proxy()->AppRegistryCache().ForOneApp(
+      kAppId, [&result](const apps::AppUpdate& update) {
+        result = ClonePermissions(update.Permissions());
+      });
+  ASSERT_TRUE(found);
+
+  EXPECT_EQ(result.size(), 2ul);
+
+  // Sort permissions by permission type.
+  base::ranges::sort(result, std::less<>(), &apps::Permission::permission_type);
+
+  EXPECT_EQ(result[0]->permission_type, apps::PermissionType::kCamera);
+  EXPECT_EQ(absl::get<apps::TriState>(result[0]->value->value),
+            apps::TriState::kAsk);
+  EXPECT_FALSE(result[0]->is_managed);
+  EXPECT_EQ(result[0]->details, absl::nullopt);
+
+  EXPECT_EQ(result[1]->permission_type, apps::PermissionType::kLocation);
+  EXPECT_TRUE(result[1]->value->IsPermissionEnabled());
+  EXPECT_TRUE(result[1]->is_managed);
+  EXPECT_EQ(result[1]->details, "While in use");
 }
 
 TEST_F(ArcAppsPublisherTest,

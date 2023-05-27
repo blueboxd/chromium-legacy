@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/performance_controls/high_efficiency_resource_view.h"
+#include <string>
 
 #include "base/numerics/math_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -28,11 +29,49 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(
 namespace {
 
 constexpr int kMemoryLabelSizeDelta = 12;
-constexpr int kGaugeRadius = 80;
+constexpr int kGaugeRadius = 70;
 constexpr int kStrokeWidth = 8;
 constexpr int kTickStrokeWidth = 2;
 constexpr int kBucketCount = 4;
 constexpr double kBucketWidthDegrees = 180 / kBucketCount;
+
+// Enum to represent memory savings quartiles.
+enum MemorySavingsQuartile {
+  kLow = 0,
+  kMedium = 1,
+  kHigh = 2,
+  kVeryHigh = 3,
+  kMaxValue = kVeryHigh,
+};
+
+// Each element represents the label for the chart when memory savings are in
+// the quartile represented by `MemorySavingsQuartile`.
+constexpr int kQuartilesLabels[] = {
+    IDS_HIGH_EFFICIENCY_DIALOG_SMALL_SAVINGS_LABEL,
+    IDS_HIGH_EFFICIENCY_DIALOG_MEDIUM_SAVINGS_LABEL,
+    IDS_HIGH_EFFICIENCY_DIALOG_LARGE_SAVINGS_LABEL,
+    IDS_HIGH_EFFICIENCY_DIALOG_VERY_LARGE_SAVINGS_LABEL};
+
+// Returns which of the four quartiles of memory savings this number falls into.
+// The lowest memory usage quartile (0-24th percentile) returns 0 and the
+// highest quartile (75-99 percentile) returns 3.
+int GetMemorySavingsQuartile(const int memory_savings_bytes) {
+  if (memory_savings_bytes <
+      performance_manager::features::kHighEfficiencyChartPmf25PercentileBytes
+          .Get()) {
+    return MemorySavingsQuartile::kLow;
+  } else if (memory_savings_bytes <
+             performance_manager::features::
+                 kHighEfficiencyChartPmf50PercentileBytes.Get()) {
+    return MemorySavingsQuartile::kMedium;
+  } else if (memory_savings_bytes <
+             performance_manager::features::
+                 kHighEfficiencyChartPmf75PercentileBytes.Get()) {
+    return MemorySavingsQuartile::kHigh;
+  } else {
+    return MemorySavingsQuartile::kVeryHigh;
+  }
+}
 
 class GaugeView : public views::FlexLayoutView {
  public:
@@ -61,25 +100,12 @@ class GaugeView : public views::FlexLayoutView {
     // Map the memory savings to which of the 4 buckets it falls into and then
     // draw an arc to the middle of the corresponding bucket. This is why the
     // 0.5 parts of the multipliers are needed.
-    int memory_angle;
-    if (memory_savings_bytes_ <
-        performance_manager::features::kHighEfficiencyChartPmf25PercentileBytes
-            .Get()) {
-      memory_angle = 0.5 * kBucketWidthDegrees;
-    } else if (memory_savings_bytes_ <
-               performance_manager::features::
-                   kHighEfficiencyChartPmf50PercentileBytes.Get()) {
-      memory_angle = 1.5 * kBucketWidthDegrees;
-    } else if (memory_savings_bytes_ <
-               performance_manager::features::
-                   kHighEfficiencyChartPmf75PercentileBytes.Get()) {
-      memory_angle = 2.5 * kBucketWidthDegrees;
-    } else {
-      memory_angle = 3.5 * kBucketWidthDegrees;
-    }
+    const int memory_angle =
+        (GetMemorySavingsQuartile(memory_savings_bytes_) + 0.5) *
+        kBucketWidthDegrees;
 
     DrawArc(canvas, center, memory_angle,
-            GetColorProvider()->GetColor(ui::kColorAccent));
+            GetColorProvider()->GetColor(ui::kColorButtonBackgroundProminent));
 
     const SkColor tick_color =
         GetColorProvider()->GetColor(ui::kColorDialogBackground);
@@ -149,14 +175,18 @@ HighEfficiencyResourceView::HighEfficiencyResourceView(
   auto* gauge_view =
       AddChildView(std::make_unique<GaugeView>(memory_savings_bytes));
 
+  std::u16string formatted_savings = ui::FormatBytes(memory_savings_bytes);
   auto* memory_label = gauge_view->AddChildView(
-      std::make_unique<views::Label>(ui::FormatBytes(memory_savings_bytes)));
+      std::make_unique<views::Label>(formatted_savings));
   memory_label->SetProperty(views::kElementIdentifierKey,
                             kHighEfficiencyResourceViewMemorySavingsElementId);
   memory_label->SetFontList(
       memory_label->font_list().DeriveWithSizeDelta(kMemoryLabelSizeDelta));
+  memory_label->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_HIGH_EFFICIENCY_DIALOG_SAVINGS_ACCNAME, {formatted_savings}));
 
   AddChildView(std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_HIGH_EFFICIENCY_DIALOG_SAVINGS_LABEL),
+      l10n_util::GetStringUTF16(
+          kQuartilesLabels[GetMemorySavingsQuartile(memory_savings_bytes)]),
       views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
 }

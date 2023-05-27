@@ -8,11 +8,13 @@
 #include <memory>
 
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/events/keyboard_capability_delegate_impl.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/ranges/algorithm.h"
@@ -395,7 +397,7 @@ TEST_F(KeyboardCapabilityTest, TestHasLauncherButton) {
   EXPECT_FALSE(keyboard_capability_->HasLauncherButton(fake_keyboard1));
   // Do not provide specific keyboard. Launcher button depends on if any one
   // of the keyboards is layout2 type.
-  EXPECT_FALSE(keyboard_capability_->HasLauncherButton());
+  EXPECT_FALSE(keyboard_capability_->HasLauncherButtonOnAnyKeyboard());
 
   // Add a layout2 keyboard.
   ui::KeyboardDevice fake_keyboard2(
@@ -406,7 +408,7 @@ TEST_F(KeyboardCapabilityTest, TestHasLauncherButton) {
 
   EXPECT_FALSE(keyboard_capability_->HasLauncherButton(fake_keyboard1));
   EXPECT_TRUE(keyboard_capability_->HasLauncherButton(fake_keyboard2));
-  EXPECT_TRUE(keyboard_capability_->HasLauncherButton());
+  EXPECT_TRUE(keyboard_capability_->HasLauncherButtonOnAnyKeyboard());
 }
 
 TEST_F(KeyboardCapabilityTest, TestHasSixPackKey) {
@@ -453,6 +455,21 @@ TEST_F(KeyboardCapabilityTest, TestRemoveDevicesFromList) {
 
   ui::DeviceDataManagerTestApi().SetKeyboardDevices({});
   ASSERT_EQ(0u, keyboard_capability_->keyboard_info_map().size());
+}
+
+TEST_F(KeyboardCapabilityTest, TestIdentifyRevenKeyboard) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kRevenBranding);
+
+  ui::KeyboardDevice internal_keyboard(
+      /*id=*/2, /*type=*/ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+      /*name=*/"internal keyboard");
+  internal_keyboard.sys_path = base::FilePath("path1");
+  fake_keyboard_manager_->AddFakeKeyboard(internal_keyboard,
+                                          kKbdTopRowLayoutUnspecified);
+
+  EXPECT_EQ(ui::KeyboardCapability::DeviceType::kDeviceInternalRevenKeyboard,
+            keyboard_capability_->GetDeviceType(internal_keyboard));
 }
 
 TEST_F(KeyboardCapabilityTest, TestIsTopRowKey) {
@@ -1104,6 +1121,8 @@ class TopRowLayoutCustomTest
         return CustomTopRowScanCode::kPreviousTrack;
       case ui::TopRowActionKey::kPlayPause:
         return CustomTopRowScanCode::kPlayPause;
+      case ui::TopRowActionKey::kPrivacyScreenToggle:
+        return CustomTopRowScanCode::kPrivacyScreenToggle;
       case ui::TopRowActionKey::kAllApplications:
       case ui::TopRowActionKey::kEmojiPicker:
       case ui::TopRowActionKey::kDictation:
@@ -1162,6 +1181,7 @@ INSTANTIATE_TEST_SUITE_P(
             ui::TopRowActionKey::kBack,
             ui::TopRowActionKey::kForward,
             ui::TopRowActionKey::kRefresh,
+            ui::TopRowActionKey::kPrivacyScreenToggle,
         },
         {
             ui::TopRowActionKey::kMicrophoneMute,
@@ -1176,7 +1196,6 @@ TEST_P(TopRowLayoutCustomTest, TopRowLayout) {
                               "Internal Keyboard");
   fake_keyboard_manager_->AddFakeKeyboard(keyboard, custom_layout_string_,
                                           /*has_custom_top_row=*/true);
-
   for (ui::TopRowActionKey action_key = ui::TopRowActionKey::kMinValue;
        action_key <= ui::TopRowActionKey::kMaxValue;
        action_key =

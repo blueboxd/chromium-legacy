@@ -59,7 +59,6 @@
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 #include "content/browser/browsing_topics/browsing_topics_site_data_manager_impl.h"
-#include "content/browser/browsing_topics/browsing_topics_url_loader_service.h"
 #include "content/browser/buckets/bucket_manager.h"
 #include "content/browser/cache_storage/cache_storage_control_wrapper.h"
 #include "content/browser/code_cache/generated_code_cache.h"
@@ -76,10 +75,11 @@
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/loader/keep_alive_url_loader_service.h"
-#include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_cache_manager.h"
+#include "content/browser/loader/subresource_proxying_url_loader_service.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/navigation_or_document_handle.h"
+#include "content/browser/network/shared_dictionary_util.h"
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_app_context_impl.h"
@@ -144,6 +144,7 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "url/scheme_host_port.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/java_interfaces.h"
@@ -1408,13 +1409,8 @@ void StoragePartitionImpl::Initialize(
         blob_context, blob_url_registry_->AsWeakPtr());
   }
 
-  prefetch_url_loader_service_ =
-      std::make_unique<PrefetchURLLoaderService>(browser_context_);
-
-  if (base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
-    browsing_topics_url_loader_service_ =
-        std::make_unique<BrowsingTopicsURLLoaderService>();
-  }
+  subresource_proxying_url_loader_service_ =
+      std::make_unique<SubresourceProxyingURLLoaderService>(browser_context_);
 
   if (base::FeatureList::IsEnabled(
           blink::features::kKeepAliveInBrowserMigration)) {
@@ -1744,15 +1740,10 @@ storage::BlobUrlRegistry* StoragePartitionImpl::GetBlobUrlRegistry() {
   return blob_url_registry_.get();
 }
 
-PrefetchURLLoaderService* StoragePartitionImpl::GetPrefetchURLLoaderService() {
+SubresourceProxyingURLLoaderService*
+StoragePartitionImpl::GetSubresourceProxyingURLLoaderService() {
   DCHECK(initialized_);
-  return prefetch_url_loader_service_.get();
-}
-
-BrowsingTopicsURLLoaderService*
-StoragePartitionImpl::GetBrowsingTopicsURLLoaderService() {
-  DCHECK(initialized_);
-  return browsing_topics_url_loader_service_.get();
+  return subresource_proxying_url_loader_service_.get();
 }
 
 KeepAliveURLLoaderService*
@@ -2007,6 +1998,37 @@ void StoragePartitionImpl::OnAuthRequired(
       }
     }
   }
+
+  WebContents* current_web_contents = GetWebContents(context);
+  if (current_web_contents) {
+    // Evict all the BFCache entries that
+    // 1): are stored in the same BrowserContext
+    // 2): contain CCNS header
+    // 3): match the challenger information of the page that requires HTTP
+    // authentication.
+    for (WebContentsImpl* web_contents : WebContentsImpl::GetAllWebContents()) {
+      if (web_contents->GetBrowserContext()->UniqueId() ==
+          current_web_contents->GetBrowserContext()->UniqueId()) {
+        for (const std::unique_ptr<BackForwardCacheImpl::Entry>& entry :
+             web_contents->GetController().GetBackForwardCache().GetEntries()) {
+          RenderFrameHostImpl* rfh = entry->render_frame_host();
+          const GURL& last_committed_url = rfh->GetLastCommittedURL();
+          if (rfh->GetBackForwardCacheDisablingFeatures().Has(
+                  blink::scheduler::WebSchedulerTrackedFeature::
+                      kMainResourceHasCacheControlNoStore) &&
+              auth_info.challenger ==
+                  url::SchemeHostPort(last_committed_url.scheme(),
+                                      last_committed_url.host(),
+                                      last_committed_url.IntPort())) {
+            rfh->EvictFromBackForwardCacheWithReason(
+                BackForwardCacheMetrics::NotRestoredReason::
+                    kCacheControlNoStore);
+          }
+        }
+      }
+    }
+  }
+
   OnAuthRequiredContinuation(
       process_id, request_id, url, *is_primary_main_frame, first_auth_attempt,
       auth_info, head_headers, std::move(auth_challenge_responder),
@@ -3103,6 +3125,19 @@ void StoragePartitionImpl::InitNetworkContext() {
   variations::UpdateCorsExemptHeaderForVariations(context_params.get());
 
   cors_exempt_header_list_ = context_params->cors_exempt_header_list;
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kCompressionDictionaryTransportBackend)) {
+    context_params->shared_dictionary_enabled = true;
+    if (!is_in_memory()) {
+      context_params->shared_dictionary_directory =
+          partition_path_.Append(FILE_PATH_LITERAL("Shared Dictionary"));
+    }
+    if (context_params->shared_dictionary_cache_max_size == 0u) {
+      CalculateAndSetSharedDictionaryCacheMaxSize(
+          GetWeakPtr(), is_in_memory() ? base::FilePath() : partition_path_);
+    }
+  }
 
   network_context_.reset();
   CreateNetworkContextInNetworkService(

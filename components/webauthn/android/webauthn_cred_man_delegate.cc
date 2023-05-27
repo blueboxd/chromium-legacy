@@ -6,12 +6,14 @@
 
 #include <memory>
 #include <utility>
+#include "base/android/build_info.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"
+#include "device/fido/features.h"
 
 namespace content {
 class RenderFrameHost;
@@ -31,12 +33,38 @@ void WebAuthnCredManDelegate::OnCredManConditionalRequestPending(
   full_assertion_request_ = std::move(full_assertion_request);
 }
 
+void WebAuthnCredManDelegate::OnCredManUiClosed(bool success) {
+  if (!request_completion_callback_.is_null()) {
+    request_completion_callback_.Run(success);
+  }
+}
+
 void WebAuthnCredManDelegate::TriggerFullRequest() {
-  std::move(full_assertion_request_).Run();
+  if (full_assertion_request_.is_null() || !HasResults()) {
+    OnCredManUiClosed(false);
+    return;
+  }
+  full_assertion_request_.Run();
 }
 
 bool WebAuthnCredManDelegate::HasResults() {
   return has_results_;
+}
+
+void WebAuthnCredManDelegate::CleanUpConditionalRequest() {
+  full_assertion_request_.Reset();
+  has_results_ = false;
+}
+
+void WebAuthnCredManDelegate::SetRequestCompletionCallback(
+    base::RepeatingCallback<void(bool)> callback) {
+  request_completion_callback_ = std::move(callback);
+}
+
+// static
+bool WebAuthnCredManDelegate::IsCredManEnabled() {
+  return base::android::BuildInfo::GetInstance()->is_at_least_u() &&
+         base::FeatureList::IsEnabled(device::kWebAuthnAndroidCredMan);
 }
 
 // static

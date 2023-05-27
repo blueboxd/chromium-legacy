@@ -7,11 +7,12 @@
 #include <inttypes.h>
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "build/chromeos_buildflags.h"
-#include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -22,7 +23,7 @@
 #include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/raw_draw_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
-#include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/shared_memory_image_backing_factory.h"
@@ -103,6 +104,31 @@ const char* GmbTypeToString(gfx::GpuMemoryBufferType type) {
   NOTREACHED();
 }
 
+#if defined(USE_OZONE)
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum FormatPixmapSupport { kNone = 0, kNV12 = 1, kYV12 = 2, kMaxValue = kYV12 };
+
+// Return the supported format in order of fallback support.
+FormatPixmapSupport GetFormatPixmapSupport(
+    std::vector<gfx::BufferFormat> supported_formats) {
+  FormatPixmapSupport val = FormatPixmapSupport::kNone;
+  for (auto format : supported_formats) {
+    if (format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+      val = FormatPixmapSupport::kNV12;
+      break;
+    } else if (format == gfx::BufferFormat::YVU_420) {
+      val = FormatPixmapSupport::kYV12;
+    }
+  }
+  return val;
+}
+
+// Set bool only once as formats supported on platform don't change on factory
+// creation.
+bool set_format_supported_metric = false;
+#endif
+
 }  // namespace
 
 // Overrides for flat_set lookups:
@@ -137,6 +163,28 @@ SharedImageFactory::SharedImageFactory(
       is_for_display_compositor_(is_for_display_compositor),
       gr_context_type_(context_state ? context_state->gr_context_type()
                                      : GrContextType::kGL) {
+#if defined(USE_OZONE)
+  if (!set_format_supported_metric) {
+    bool is_pixmap_supported = ui::OzonePlatform::GetInstance()
+                                   ->GetPlatformRuntimeProperties()
+                                   .supports_native_pixmaps;
+    // Only log histogram for formats that are used with real GMBs containing
+    // native pixmap.
+    if (is_pixmap_supported) {
+      auto* factory =
+          ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
+      if (factory) {
+        // Get all formats that are supported by platform.
+        auto supported_formats = factory->GetSupportedFormatsForTexturing();
+        auto format = GetFormatPixmapSupport(supported_formats);
+        base::UmaHistogramEnumeration("GPU.SharedImage.FormatPixmapSupport",
+                                      format);
+      }
+    }
+    set_format_supported_metric = true;
+  }
+#endif
+
   auto shared_memory_backing_factory =
       std::make_unique<SharedMemoryImageBackingFactory>();
   factories_.push_back(std::move(shared_memory_backing_factory));
@@ -152,7 +200,8 @@ SharedImageFactory::SharedImageFactory(
   }
 
   if (!feature_info) {
-    // For some unit tests, shared_context_state_ could be nullptr.
+    // For some unit tests like SharedImageFactoryTest, |shared_context_state_|
+    // could be nullptr.
     bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
                            gles2::PassthroughCommandDecoderSupported();
     feature_info = new gles2::FeatureInfo(workarounds, gpu_feature_info);
@@ -290,12 +339,21 @@ SharedImageFactory::SharedImageFactory(
 #endif  // BUILDFLAG(IS_OZONE)
 
 #if BUILDFLAG(IS_APPLE)
-  auto iosurface_backing_factory =
-      std::make_unique<IOSurfaceImageBackingFactory>(
-          gpu_preferences, workarounds, feature_info.get(),
-          shared_context_state_ ? shared_context_state_->progress_reporter()
-                                : nullptr);
-  factories_.push_back(std::move(iosurface_backing_factory));
+  {
+    // For some unit tests like SharedImageFactoryTest, |shared_context_state_|
+    // could be nullptr.
+    int32_t max_texture_size = shared_context_state_
+                                   ? shared_context_state_->GetMaxTextureSize()
+                                   : 8192;
+    auto* progress_reporter = shared_context_state_
+                                  ? shared_context_state_->progress_reporter()
+                                  : nullptr;
+    auto iosurface_backing_factory =
+        std::make_unique<IOSurfaceImageBackingFactory>(
+            gpu_preferences.gr_context_type, max_texture_size,
+            feature_info.get(), progress_reporter);
+    factories_.push_back(std::move(iosurface_backing_factory));
+  }
 #endif
 }
 
@@ -383,9 +441,9 @@ bool SharedImageFactory::CreateSharedImage(
     uint32_t usage,
     std::string debug_label,
     gfx::GpuMemoryBufferHandle buffer_handle) {
-  if (!format.is_multi_plane()) {
-    // Only use this for new multi-planar path for now. All legacy multi-planar
-    // and single planar GMBs can go through CreateSharedImage() that takes
+  if (format.IsLegacyMultiplanar()) {
+    // Use this for multi-planar and real single-planar formats. All legacy
+    // multi-planar GMBs must go through CreateSharedImage() that takes
     // BufferPlane parameter.
     LOG(ERROR) << "Invalid format " << format.ToString();
     return false;

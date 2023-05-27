@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/apple/bridging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/notreached.h"

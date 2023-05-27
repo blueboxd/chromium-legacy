@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_WEBAUTHN_ANDROID_WEBAUTHN_CRED_MAN_DELEGATE_H_
 #define COMPONENTS_WEBAUTHN_ANDROID_WEBAUTHN_CRED_MAN_DELEGATE_H_
 
-#include <vector>
-
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/supports_user_data.h"
@@ -35,11 +33,24 @@ class WebAuthnCredManDelegate : public base::SupportsUserData::Data {
       bool has_results,
       base::RepeatingClosure full_assertion_request);
 
+  // Called when the CredMan UI is closed.
+  void OnCredManUiClosed(bool success);
+
   // Called when the user focuses a webauthn login form. This will trigger
   // CredMan UI.
   void TriggerFullRequest();
 
   bool HasResults();
+
+  void CleanUpConditionalRequest();
+
+  // The setter for |request_completion_callback_|. Classes can set
+  // |request_completion_callback_| to be notified about when CredMan UI is
+  // closed (i.e. to show / hide keyboard).
+  void SetRequestCompletionCallback(
+      base::RepeatingCallback<void(bool)> callback);
+
+  static bool IsCredManEnabled();
 
   // Returns a delegate associated with the |web_contents|. It creates one if
   // one does not already exist.
@@ -49,8 +60,9 @@ class WebAuthnCredManDelegate : public base::SupportsUserData::Data {
       content::WebContents* web_contents);
 
  private:
-  bool has_results_;
+  bool has_results_ = false;
   base::RepeatingClosure full_assertion_request_;
+  base::RepeatingCallback<void(bool)> request_completion_callback_;
 };
 
 #endif  // COMPONENTS_WEBAUTHN_ANDROID_WEBAUTHN_CRED_MAN_DELEGATE_H_

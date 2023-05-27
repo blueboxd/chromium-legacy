@@ -26,11 +26,13 @@
 #include "chrome/browser/web_applications/commands/install_placeholder_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
+#include "chrome/browser/web_applications/commands/navigate_and_trigger_install_dialog_command.h"
 #include "chrome/browser/web_applications/commands/os_integration_synchronize_command.h"
 #include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/commands/update_file_handler_command.h"
 #include "chrome/browser/web_applications/commands/update_protocol_handler_approval_command.h"
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
+#include "chrome/browser/web_applications/isolated_web_apps/get_controlled_frame_partition_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/get_isolated_web_app_browsing_data_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
@@ -46,11 +48,14 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
+#include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/webapps/browser/installable/installable_manager.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
 namespace {
@@ -70,9 +75,7 @@ std::unique_ptr<content::WebContents> CreateIsolatedWebAppWebContents(
 
 WebAppCommandScheduler::WebAppCommandScheduler(Profile& profile,
                                                WebAppProvider* provider)
-    : profile_(profile),
-      provider_(provider),
-      url_loader_(std::make_unique<WebAppUrlLoader>()) {}
+    : profile_(profile), provider_(provider) {}
 
 WebAppCommandScheduler::~WebAppCommandScheduler() = default;
 
@@ -100,7 +103,7 @@ void WebAppCommandScheduler::FetchManifestAndInstall(
       std::make_unique<FetchManifestAndInstallCommand>(
           install_surface, std::move(contents), bypass_service_worker_check,
           std::move(dialog_callback), std::move(callback), use_fallback,
-          std::make_unique<WebAppDataRetriever>()),
+          provider_->web_contents_manager().CreateDataRetriever()),
       location);
 }
 
@@ -224,7 +227,7 @@ void WebAppCommandScheduler::InstallPlaceholder(
   provider_->command_manager().ScheduleCommand(
       std::make_unique<InstallPlaceholderCommand>(
           &profile_.get(), install_options, std::move(callback), web_contents,
-          std::make_unique<WebAppDataRetriever>()),
+          provider_->web_contents_manager().CreateDataRetriever()),
       location);
 }
 
@@ -263,7 +266,8 @@ void WebAppCommandScheduler::ScheduleManifestUpdateCheck(
   provider_->command_manager().ScheduleCommand(
       std::make_unique<ManifestUpdateCheckCommand>(
           url, app_id, check_time, contents, std::move(callback),
-          std::make_unique<WebAppDataRetriever>()),
+          provider_->web_contents_manager().CreateDataRetriever(),
+          provider_->web_contents_manager().CreateIconDownloader()),
       location);
 }
 
@@ -307,9 +311,33 @@ void WebAppCommandScheduler::FetchInstallabilityForChromeManagement(
 
   provider_->command_manager().ScheduleCommand(
       std::make_unique<web_app::FetchInstallabilityForChromeManagement>(
-          url, web_contents, std::make_unique<web_app::WebAppUrlLoader>(),
-          std::make_unique<web_app::WebAppDataRetriever>(),
+          url, web_contents,
+          provider_->web_contents_manager().CreateUrlLoader(),
+          provider_->web_contents_manager().CreateDataRetriever(),
           std::move(callback)),
+      location);
+}
+
+void WebAppCommandScheduler::ScheduleNavigateAndTriggerInstallDialog(
+    const GURL& install_url,
+    const GURL& origin,
+    bool is_renderer_initiated,
+    NavigateAndTriggerInstallDialogCommandCallback callback,
+    const base::Location& location) {
+  if (IsShuttingDown()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       NavigateAndTriggerInstallDialogCommandResult::kFailure));
+    return;
+  }
+
+  provider_->command_manager().ScheduleCommand(
+      std::make_unique<NavigateAndTriggerInstallDialogCommand>(
+          install_url, origin, is_renderer_initiated, std::move(callback),
+          provider_->ui_manager().GetWeakPtr(),
+          std::make_unique<WebAppUrlLoader>(),
+          std::make_unique<WebAppDataRetriever>(), &*profile_),
       location);
 }
 
@@ -331,12 +359,12 @@ void WebAppCommandScheduler::InstallIsolatedWebApp(
         base::BindOnce(std::move(callback), base::unexpected(error)));
     return;
   }
-
   provider_->command_manager().ScheduleCommand(
       std::make_unique<InstallIsolatedWebAppCommand>(
           url_info, location, CreateIsolatedWebAppWebContents(*profile_),
-          std::make_unique<WebAppUrlLoader>(), std::move(keep_alive),
-          std::move(profile_keep_alive), std::move(callback),
+          provider_->web_contents_manager().CreateUrlLoader(),
+          std::move(keep_alive), std::move(profile_keep_alive),
+          std::move(callback),
           InstallIsolatedWebAppCommand::CreateDefaultResponseReaderFactory(
               *profile_->GetPrefs())),
       call_location);
@@ -358,6 +386,26 @@ void WebAppCommandScheduler::GetIsolatedWebAppBrowsingData(
       call_location);
 }
 
+void WebAppCommandScheduler::GetControlledFramePartition(
+    const IsolatedWebAppUrlInfo& url_info,
+    const std::string& partition_name,
+    bool in_memory,
+    base::OnceCallback<void(absl::optional<content::StoragePartitionConfig>)>
+        callback,
+    const base::Location& location) {
+  if (IsShuttingDown()) {
+    std::move(callback).Run(absl::nullopt);
+    return;
+  }
+
+  provider_->scheduler().ScheduleCallbackWithLock<AppLock>(
+      "GetControlledFramePartition",
+      std::make_unique<AppLockDescription>(url_info.app_id()),
+      base::BindOnce(&GetControlledFramePartitionWithLock, &profile_.get(),
+                     url_info, partition_name, in_memory, std::move(callback)),
+      location);
+}
+
 void WebAppCommandScheduler::InstallFromSync(const WebApp& web_app,
                                              OnceInstallCallback callback,
                                              const base::Location& location) {
@@ -367,10 +415,16 @@ void WebAppCommandScheduler::InstallFromSync(const WebApp& web_app,
       web_app.sync_fallback_data().name, web_app.sync_fallback_data().scope,
       web_app.sync_fallback_data().theme_color, web_app.user_display_mode(),
       web_app.sync_fallback_data().icon_infos);
+  // TODO(http://b/262606416): Remove this when fully transitioned to
+  // WebContentsManager.
+  if (!url_loader_) {
+    url_loader_ = provider_->web_contents_manager().CreateUrlLoader();
+  }
   provider_->command_manager().ScheduleCommand(
       std::make_unique<InstallFromSyncCommand>(
           url_loader_.get(), &profile_.get(),
-          std::make_unique<WebAppDataRetriever>(), params, std::move(callback)),
+          provider_->web_contents_manager().CreateDataRetriever(), params,
+          std::move(callback)),
       location);
 }
 
@@ -389,7 +443,7 @@ void WebAppCommandScheduler::Uninstall(
   provider_->command_manager().ScheduleCommand(
       std::make_unique<WebAppUninstallCommand>(
           app_id, external_install_source, uninstall_source,
-          std::move(callback), &profile_.get()),
+          std::move(callback), profile_.get()),
       location);
 }
 
@@ -541,6 +595,20 @@ void WebAppCommandScheduler::LaunchAppWithCustomParams(
             std::move(callback), location);
 }
 
+void WebAppCommandScheduler::InstallAppLocally(const AppId& app_id,
+                                               base::OnceClosure callback,
+                                               const base::Location& location) {
+  if (IsShuttingDown()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(callback));
+    return;
+  }
+
+  provider_->command_manager().ScheduleCommand(
+      std::make_unique<InstallAppLocallyCommand>(app_id, std::move(callback)),
+      location);
+}
+
 void WebAppCommandScheduler::SynchronizeOsIntegration(
     const AppId& app_id,
     base::OnceClosure synchronize_callback,
@@ -555,20 +623,6 @@ void WebAppCommandScheduler::SynchronizeOsIntegration(
   provider_->command_manager().ScheduleCommand(
       std::make_unique<OsIntegrationSynchronizeCommand>(
           app_id, synchronize_options, std::move(synchronize_callback)),
-      location);
-}
-
-void WebAppCommandScheduler::InstallAppLocally(const AppId& app_id,
-                                               base::OnceClosure callback,
-                                               const base::Location& location) {
-  if (IsShuttingDown()) {
-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, std::move(callback));
-    return;
-  }
-
-  provider_->command_manager().ScheduleCommand(
-      std::make_unique<InstallAppLocallyCommand>(app_id, std::move(callback)),
       location);
 }
 

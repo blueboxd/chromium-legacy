@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "components/performance_manager/public/features.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_throbber.h"
@@ -51,6 +52,9 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   // used to render the tab icon.
   void SetData(const TabRendererData& data);
 
+  // Sets whether this tab is currently active.
+  void SetActiveState(bool is_active);
+
   // Enables or disables the given attention type. The attention indicator
   // will be shown as long as any of the types are enabled.
   void SetAttention(AttentionType type, bool enabled);
@@ -70,6 +74,8 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
   gfx::LinearAnimation* GetTabDiscardAnimationForTesting();
+  gfx::ImageSkia GetThemedIconForTesting() { return themed_favicon_; }
+  bool GetActiveStateForTesting() { return is_active_tab_; }
 
  private:
   class CrashAnimation;
@@ -99,7 +105,7 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   void PaintLoadingAnimation(gfx::Canvas* canvas, gfx::Rect bounds);
 
   // Gets either the crashed icon or favicon to be rendered for the tab.
-  const gfx::ImageSkia& GetIconToPaint();
+  gfx::ImageSkia GetIconToPaint();
 
   // Paint the favicon if it's available.
   void MaybePaintFavicon(gfx::Canvas* canvas,
@@ -108,7 +114,7 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   bool GetNonDefaultFavicon() const;
 
   // Sets the icon.
-  void SetIcon(const gfx::ImageSkia& icon, bool should_themify_favicon);
+  void SetIcon(const ui::ImageModel& icon, bool should_themify_favicon);
 
   // Start or stops the favicon fade animation for discard tabs
   void SetDiscarded(bool show_discard_status);
@@ -127,10 +133,15 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   void RefreshLayer();
 
   gfx::ImageSkia ThemeFavicon(const gfx::ImageSkia& source);
+  gfx::ImageSkia ThemeMonochromeFavicon(const gfx::ImageSkia& source);
+
+  // Updates the themed favicon if necessary.
+  void UpdateThemedFavicon();
 
   raw_ptr<const base::TickClock> clock_;
 
-  gfx::ImageSkia favicon_;
+  ui::ImageModel favicon_;
+  bool should_themify_favicon_ = false;
   TabNetworkState network_state_ = TabNetworkState::kNone;
   bool crashed_ = false;
   int attention_types_ = 0;  // Bitmask of AttentionType.
@@ -185,6 +196,10 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   bool can_paint_to_layer_ = false;
 
   bool has_tab_renderer_data_ = false;
+
+  bool is_active_tab_ = false;
+
+  bool is_monochrome_favicon_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_ICON_H_

@@ -306,6 +306,104 @@ void ManifestDemuxer::SetPlaybackRate(double rate) {
   TriggerEvent();
 }
 
+bool ManifestDemuxer::AddRole(base::StringPiece role,
+                              std::string container,
+                              std::string codec) {
+  CHECK(chunk_demuxer_);
+  if (ChunkDemuxer::kOk !=
+      chunk_demuxer_->AddId(std::string(role), container, codec)) {
+    return false;
+  }
+  chunk_demuxer_->SetParseWarningCallback(
+      std::string(role),
+      base::BindRepeating(&ManifestDemuxer::OnChunkDemuxerParseWarning,
+                          weak_factory_.GetWeakPtr(), role));
+  chunk_demuxer_->SetTracksWatcher(
+      std::string(role),
+      base::BindRepeating(&ManifestDemuxer::OnChunkDemuxerTracksChanged,
+                          weak_factory_.GetWeakPtr(), role));
+  return true;
+}
+
+void ManifestDemuxer::RemoveRole(base::StringPiece role) {
+  chunk_demuxer_->RemoveId(std::string(role));
+}
+
+void ManifestDemuxer::SetSequenceMode(base::StringPiece role,
+                                      bool sequence_mode) {
+  CHECK(chunk_demuxer_);
+  return chunk_demuxer_->SetSequenceMode(std::string(role), sequence_mode);
+}
+
+void ManifestDemuxer::SetDuration(double duration) {
+  CHECK(chunk_demuxer_);
+  return chunk_demuxer_->SetDuration(duration);
+}
+
+Ranges<base::TimeDelta> ManifestDemuxer::GetBufferedRanges(
+    base::StringPiece role) {
+  CHECK(chunk_demuxer_);
+  return chunk_demuxer_->GetBufferedRanges(std::string(role));
+}
+
+void ManifestDemuxer::Remove(base::StringPiece role,
+                             base::TimeDelta start,
+                             base::TimeDelta end) {
+  chunk_demuxer_->Remove(std::string(role), start, end);
+}
+
+void ManifestDemuxer::RemoveAndReset(base::StringPiece role,
+                                     base::TimeDelta start,
+                                     base::TimeDelta end,
+                                     base::TimeDelta* offset) {
+  CHECK(chunk_demuxer_);
+  Remove(role, start, end);
+  chunk_demuxer_->ResetParserState(std::string(role), start, end, offset);
+}
+
+void ManifestDemuxer::SetGroupStartIfParsingAndSequenceMode(
+    base::StringPiece role,
+    base::TimeDelta start) {
+  CHECK(chunk_demuxer_);
+  if (!chunk_demuxer_->IsParsingMediaSegment(std::string(role))) {
+    chunk_demuxer_->SetGroupStartTimestampIfInSequenceMode(std::string(role),
+                                                           start);
+  }
+}
+
+void ManifestDemuxer::EvictCodedFrames(base::StringPiece role,
+                                       base::TimeDelta time,
+                                       size_t data_size) {
+  CHECK(chunk_demuxer_);
+  if (!chunk_demuxer_->EvictCodedFrames(std::string(role), time, data_size)) {
+    MEDIA_LOG(ERROR, media_log_) << "EvictCodedFrames(" << role << ") failed.";
+  }
+}
+
+bool ManifestDemuxer::AppendAndParseData(base::StringPiece role,
+                                         base::TimeDelta start,
+                                         base::TimeDelta end,
+                                         base::TimeDelta* offset,
+                                         const uint8_t* data,
+                                         size_t data_size) {
+  CHECK(chunk_demuxer_);
+  if (!chunk_demuxer_->AppendToParseBuffer(std::string(role), data,
+                                           data_size)) {
+    return false;
+  }
+  while (true) {
+    switch (chunk_demuxer_->RunSegmentParserLoop(std::string(role), start, end,
+                                                 offset)) {
+      case StreamParser::ParseStatus::kSuccess:
+        return true;
+      case StreamParser::ParseStatus::kSuccessHasMoreData:
+        break;  // Keep parsing.
+      default:
+        return false;
+    }
+  }
+}
+
 void ManifestDemuxer::OnError(PipelineStatus error) {
   DCHECK(media_task_runner_->RunsTasksInCurrentSequence());
   cancelable_next_event_.Cancel();
@@ -455,6 +553,19 @@ void ManifestDemuxer::TryCompletePendingSeek() {
 
   // Schedule a new event ASAP to populate data.
   OnEngineEventFinished(base::Seconds(0));
+}
+
+void ManifestDemuxer::OnChunkDemuxerParseWarning(
+    base::StringPiece role,
+    SourceBufferParseWarning warning) {
+  MEDIA_LOG(WARNING, media_log_)
+      << "ParseWarning (" << role << "): " << static_cast<int>(warning);
+}
+
+void ManifestDemuxer::OnChunkDemuxerTracksChanged(
+    base::StringPiece role,
+    std::unique_ptr<MediaTracks> tracks) {
+  MEDIA_LOG(WARNING, media_log_) << "TracksChanged for role: " << role;
 }
 
 void ManifestDemuxer::OnEncryptedMediaData(EmeInitDataType type,

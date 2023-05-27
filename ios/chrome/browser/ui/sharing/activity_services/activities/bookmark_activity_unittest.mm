@@ -10,7 +10,6 @@
 #import "components/prefs/pref_registry_simple.h"
 #import "components/prefs/testing_pref_service.h"
 #import "ios/chrome/browser/bookmarks/bookmark_ios_unit_test_support.h"
-#import "ios/chrome/browser/shared/public/commands/bookmark_add_command.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -55,11 +54,12 @@ class BookmarkActivityTest : public BookmarkIOSUnitTestSupport {
 
   // Creates a BookmarkActivity instance with the given `URL`.
   BookmarkActivity* CreateActivity(const GURL& URL) {
-    return [[BookmarkActivity alloc] initWithURL:URL
-                                           title:kTestTitle
-                                   bookmarkModel:profile_bookmark_model_
-                                         handler:mocked_handler_
-                                     prefService:&testing_pref_service_];
+    return
+        [[BookmarkActivity alloc] initWithURL:URL
+                                        title:kTestTitle
+                                bookmarkModel:local_or_syncable_bookmark_model_
+                                      handler:mocked_handler_
+                                  prefService:&testing_pref_service_];
   }
 
   TestingPrefServiceSimple testing_pref_service_;
@@ -105,9 +105,9 @@ TEST_F(BookmarkActivityTest, ActivityTitle_AddBookmark) {
 // Tests that the title of the activity is edit when URL is already bookmarked.
 TEST_F(BookmarkActivityTest, ActivityTitle_EditBookmark) {
   // Add a bookmark.
-  const bookmarks::BookmarkNode* bookmark =
-      AddBookmark(profile_bookmark_model_->mobile_node(), u"activity_test");
-  ASSERT_TRUE(profile_bookmark_model_->IsBookmarked(bookmark->url()));
+  const bookmarks::BookmarkNode* bookmark = AddBookmark(
+      local_or_syncable_bookmark_model_->mobile_node(), u"activity_test");
+  ASSERT_TRUE(local_or_syncable_bookmark_model_->IsBookmarked(bookmark->url()));
 
   BookmarkActivity* activity = CreateActivity(bookmark->url());
 
@@ -121,11 +121,12 @@ TEST_F(BookmarkActivityTest, PerformActivity_BookmarkAddCommand) {
   BookmarkActivity* activity = CreateActivity(testUrl);
 
   [[mocked_handler_ expect]
-      bookmark:[OCMArg checkWithBlock:^BOOL(BookmarkAddCommand* value) {
-        EXPECT_EQ(testUrl, value.URLs.firstObject.URL);
-        EXPECT_EQ(kTestTitle, value.URLs.firstObject.title);
-        return YES;
-      }]];
+      createOrEditBookmarkWithURL:[OCMArg
+                                      checkWithBlock:^BOOL(URLWithTitle* URL) {
+                                        EXPECT_EQ(testUrl, URL.URL);
+                                        EXPECT_EQ(kTestTitle, URL.title);
+                                        return YES;
+                                      }]];
 
   id activity_partial_mock = OCMPartialMock(activity);
   [[activity_partial_mock expect] activityDidFinish:YES];

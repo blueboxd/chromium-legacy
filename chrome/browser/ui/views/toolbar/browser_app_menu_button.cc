@@ -52,6 +52,10 @@
 #include "ui/base/ime/virtual_keyboard_controller.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+namespace {
+constexpr int kChromeRefreshImageLabelPadding = 2;
+}
+
 // static
 bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 
@@ -60,6 +64,9 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
                                         base::Unretained(this))),
       toolbar_view_(toolbar_view) {
   SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  if (features::IsChromeRefresh2023()) {
+    SetImageLabelSpacing(kChromeRefreshImageLabelPadding);
+  }
 }
 
 BrowserAppMenuButton::~BrowserAppMenuButton() {}
@@ -104,12 +111,6 @@ AlertMenuItem BrowserAppMenuButton::CloseFeaturePromoAndContinue() {
     return AlertMenuItem::kNone;
 
   promo_handle_ = browser_window->CloseFeaturePromoAndContinue(
-      feature_engagement::kIPHReopenTabFeature);
-
-  if (promo_handle_.is_valid())
-    return AlertMenuItem::kReopenTabs;
-
-  promo_handle_ = browser_window->CloseFeaturePromoAndContinue(
       feature_engagement::kIPHHighEfficiencyModeFeature);
 
   if (promo_handle_.is_valid())
@@ -128,6 +129,9 @@ void BrowserAppMenuButton::UpdateColors() {
   // Call `UpdateIcon()` after `UpdateTextAndHighlightColor()` as the icon color
   // depends on if the container is in an expanded state.
   UpdateIcon();
+  if (features::IsChromeRefresh2023()) {
+    UpdateInkdrop();
+  }
 }
 
 void BrowserAppMenuButton::UpdateIcon() {
@@ -137,10 +141,29 @@ void BrowserAppMenuButton::UpdateIcon() {
           : (features::IsChromeRefresh2023() ? kBrowserToolsChromeRefreshIcon
                                              : kBrowserToolsIcon);
   for (auto state : kButtonStates) {
+    // `app_menu_icon_controller()->GetIconColor()` set different colors based
+    // on the severity. However with chrome refresh all the severities should
+    // have the same color. Decouple the logic from
+    // `app_menu_icon_controller()->GetIconColor()` to avoid impact from
+    // multiple call sites.
     SkColor icon_color =
-        toolbar_view_->app_menu_icon_controller()->GetIconColor(
-            GetForegroundColor(state));
+        features::IsChromeRefresh2023()
+            ? GetForegroundColor(state)
+            : toolbar_view_->app_menu_icon_controller()->GetIconColor(
+                  GetForegroundColor(state));
     SetImageModel(state, ui::ImageModel::FromVectorIcon(icon, icon_color));
+  }
+}
+
+void BrowserAppMenuButton::UpdateInkdrop() {
+  CHECK(features::IsChromeRefresh2023());
+
+  if (IsLabelPresentAndVisible()) {
+    ConfigureToolbarInkdropForRefresh2023(this, kColorAppMenuChipInkDropHover,
+                                          kColorAppMenuChipInkDropRipple);
+  } else {
+    ConfigureToolbarInkdropForRefresh2023(this, kColorToolbarInkDropHover,
+                                          kColorToolbarInkDropRipple);
   }
 }
 

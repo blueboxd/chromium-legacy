@@ -6,6 +6,9 @@ static_library("desks_storage") {
   output_name = "desks_storage_lib"
 
   sources = [
+    "core/admin_template_model.h",
+    "core/admin_template_service.cc",
+    "core/admin_template_service.h",
     "core/desk_model.cc",
     "core/desk_model.h",
     "core/desk_model_observer.h",
@@ -51,12 +54,19 @@ static_library("test_support") {
   sources = [
     "core/desk_test_util.cc",
     "core/desk_test_util.h",
+    "core/fake_desk_sync_bridge.cc",
+    "core/fake_desk_sync_bridge.h",
+    "core/fake_desk_sync_service.cc",
+    "core/fake_desk_sync_service.h",
   ]
+
+  public_deps = [ ":desks_storage" ]
 
   deps = [
     "//ash/public/cpp",
     "//base",
     "//components/app_constants",
+    "//components/sync:test_support",
   ]
 }
 

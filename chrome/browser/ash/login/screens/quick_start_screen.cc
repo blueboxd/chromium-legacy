@@ -20,11 +20,20 @@
 
 namespace ash {
 
+namespace {
+
+constexpr const char kUserActionCancelClicked[] = "cancel";
+constexpr const char kUserActionWifiConnected[] = "wifi_connected";
+
+}  // namespace
+
 // static
 std::string QuickStartScreen::GetResultString(Result result) {
   switch (result) {
     case Result::CANCEL:
       return "Cancel";
+    case Result::WIFI_CONNECTED:
+      return "WifiConnected";
   }
 }
 
@@ -43,24 +52,40 @@ bool QuickStartScreen::MaybeSkip(WizardContext& context) {
 }
 
 void QuickStartScreen::ShowImpl() {
-  if (!view_)
+  if (!view_) {
     return;
-
+  }
   view_->Show();
-  bootstrap_controller_ =
-      LoginDisplayHost::default_host()->GetQuickStartBootstrapController();
-  bootstrap_controller_->AddObserver(this);
-  bootstrap_controller_->StartAdvertising();
+
+  // Only for the first time setup.
+  if (!bootstrap_controller_) {
+    bootstrap_controller_ =
+        LoginDisplayHost::default_host()->GetQuickStartBootstrapController();
+    bootstrap_controller_->AddObserver(this);
+    bootstrap_controller_->StartAdvertising();
+    DetermineDiscoverableName();
+  }
 }
 
-void QuickStartScreen::HideImpl() {
-  if (!bootstrap_controller_)
-    return;
-  bootstrap_controller_->StopAdvertising();
-  UnbindFromBootstrapController();
+void QuickStartScreen::AttemptGoogleAccountTransfer() {
+  CHECK(bootstrap_controller_);
+  bootstrap_controller_->AttemptGoogleAccountTransfer();
 }
 
-void QuickStartScreen::OnUserAction(const base::Value::List& args) {}
+void QuickStartScreen::HideImpl() {}
+
+void QuickStartScreen::OnUserAction(const base::Value::List& args) {
+  const std::string& action_id = args[0].GetString();
+  if (action_id == kUserActionCancelClicked) {
+    if (bootstrap_controller_) {
+      bootstrap_controller_->MaybeCloseOpenConnections();
+      bootstrap_controller_->StopAdvertising();
+    }
+    exit_callback_.Run(Result::CANCEL);
+  } else if (action_id == kUserActionWifiConnected) {
+    exit_callback_.Run(Result::WIFI_CONNECTED);
+  }
+}
 
 void QuickStartScreen::OnStatusChanged(
     const quick_start::TargetDeviceBootstrapController::Status& status) {
@@ -71,8 +96,9 @@ void QuickStartScreen::OnStatusChanged(
   switch (status.step) {
     case Step::QR_CODE_VERIFICATION: {
       CHECK(absl::holds_alternative<QRCodePixelData>(status.payload));
-      if (!view_)
+      if (!view_) {
         return;
+      }
       const auto& code = absl::get<QRCodePixelData>(status.payload);
       base::Value::List qr_code_list;
       for (const auto& it : code) {
@@ -85,25 +111,56 @@ void QuickStartScreen::OnStatusChanged(
       SavePhoneInstanceID();
       return;
     }
-    case Step::PIN_VERIFICATION:
-    case Step::NONE:
     case Step::ERROR:
+      NOTIMPLEMENTED();
+      return;
+    case Step::CONNECTING_TO_WIFI:
+      view_->ShowConnectingToWifi();
+      return;
+    case Step::CONNECTED_TO_WIFI:
+      view_->ShowConnectedToWifi(status.ssid, status.password);
+      LoginDisplayHost::default_host()
+          ->GetWizardContext()
+          ->quick_start_setup_ongoing = true;
+      return;
+
+    case Step::TRANSFERRING_GOOGLE_ACCOUNT_DETAILS:
+      view_->ShowTransferringGaiaCredentials();
+      break;
+    case Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS:
+      view_->ShowFidoAssertionReceived(status.fido_email);
+      break;
+    case Step::NONE:
     case Step::ADVERTISING:
     case Step::CONNECTED:
-      NOTIMPLEMENTED();
+    case Step::PIN_VERIFICATION:
+      // TODO(b/282934168): Implement these screens fully
+      quick_start::QS_LOG(INFO)
+          << "Hit screen which is not implemented. Continuing";
+      return;
+  }
+}
+
+void QuickStartScreen::DetermineDiscoverableName() {
+  CHECK(bootstrap_controller_);
+  discoverable_name_ = bootstrap_controller_->GetDiscoverableName();
+  if (view_) {
+    view_->SetDiscoverableName(discoverable_name_);
   }
 }
 
 void QuickStartScreen::UnbindFromBootstrapController() {
-  if (!bootstrap_controller_)
+  if (!bootstrap_controller_) {
     return;
+  }
   bootstrap_controller_->RemoveObserver(this);
   bootstrap_controller_.reset();
 }
 
 void QuickStartScreen::SendRandomFiguresForTesting() const {
-  if (!view_)
+  if (!view_) {
     return;
+  }
 
   std::string token = base::UTF16ToASCII(
       base::TimeFormatWithPattern(base::Time::Now(), "MMMMdjmmss"));

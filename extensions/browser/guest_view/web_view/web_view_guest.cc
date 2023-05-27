@@ -17,6 +17,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -329,10 +330,23 @@ void WebViewGuest::CreateWebContents(std::unique_ptr<GuestViewBase> owned_this,
     return;
   }
 
-  content::StoragePartitionConfig partition_config =
-      ExtensionsBrowserClient::Get()->GetWebViewStoragePartitionConfig(
-          browser_context(), owner_render_frame_host->GetSiteInstance(),
-          storage_partition_id, /*in_memory=*/!persist_storage);
+  ExtensionsBrowserClient::Get()->GetWebViewStoragePartitionConfig(
+      browser_context(), owner_render_frame_host->GetSiteInstance(),
+      storage_partition_id, /*in_memory=*/!persist_storage,
+      base::BindOnce(&WebViewGuest::CreateWebContentsWithStoragePartition,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(owned_this),
+                     create_params.Clone(), std::move(callback)));
+}
+
+void WebViewGuest::CreateWebContentsWithStoragePartition(
+    std::unique_ptr<GuestViewBase> owned_this,
+    const base::Value::Dict& create_params,
+    WebContentsCreatedCallback callback,
+    absl::optional<content::StoragePartitionConfig> partition_config) {
+  if (!partition_config.has_value()) {
+    std::move(callback).Run(std::move(owned_this), nullptr);
+    return;
+  }
 
   // If we already have a webview tag in the same app using the same storage
   // partition, we should use the same SiteInstance so the existing tag and
@@ -340,13 +354,13 @@ void WebViewGuest::CreateWebContents(std::unique_ptr<GuestViewBase> owned_this,
   auto* guest_view_manager =
       GuestViewManager::FromBrowserContext(browser_context());
   scoped_refptr<content::SiteInstance> guest_site_instance =
-      guest_view_manager->GetGuestSiteInstance(partition_config);
+      guest_view_manager->GetGuestSiteInstance(*partition_config);
   if (!guest_site_instance) {
     // Create the SiteInstance in a new BrowsingInstance, which will ensure
     // that webview tags are also not allowed to send messages across
     // different partitions.
     guest_site_instance = content::SiteInstance::CreateForGuest(
-        browser_context(), partition_config);
+        browser_context(), *partition_config);
   }
   WebContents::CreateParams params(browser_context(),
                                    std::move(guest_site_instance));
@@ -532,20 +546,6 @@ void WebViewGuest::WebContentsDestroyed() {
       web_contents()->GetPrimaryMainFrame()->GetRoutingID());
   // The following call may destroy `this`.
   GuestViewBase::WebContentsDestroyed();
-}
-
-void WebViewGuest::GuestReady() {
-  // The guest RenderView should always live in an isolated guest process.
-  CHECK(web_contents()->GetPrimaryMainFrame()->GetProcess()->IsForGuestsOnly());
-  ExtensionWebContentsObserver::GetForWebContents(web_contents())
-      ->GetLocalFrame(web_contents()->GetPrimaryMainFrame())
-      ->SetFrameName(name_);
-
-  // We don't want to accidentally set the opacity of an interstitial page.
-  // WebContents::GetRenderWidgetHostView will return the RWHV of an
-  // interstitial page if one is showing at this time. We only want opacity
-  // to apply to web pages.
-  SetTransparency();
 }
 
 void WebViewGuest::GuestSizeChangedDueToAutoSize(const gfx::Size& old_size,
@@ -934,16 +934,23 @@ void WebViewGuest::UserAgentOverrideSet(
 
 void WebViewGuest::FrameNameChanged(RenderFrameHost* render_frame_host,
                                     const std::string& name) {
-  // WebViewGuest does not support back/forward cache or prerendering so
-  // |render_frame_host| should be either active or pending deletion.
-  DCHECK(render_frame_host->IsActive() ||
-         render_frame_host->IsInLifecycleState(
-             RenderFrameHost::LifecycleState::kPendingDeletion));
   if (render_frame_host->GetParentOrOuterDocument())
     return;
 
   if (name_ == name)
     return;
+
+  // WebViewGuest does not support back/forward cache or prerendering so
+  // `render_frame_host` should be either active or pending deletion.
+  //
+  // Note that the name change could also happen from WebViewGuest itself
+  // before a navigation commits (see WebViewGuest::RenderFrameCreated). In
+  // that case, `render_frame_host` could also be pending commit, but `name`
+  // should already match `name_` and we should early return above. Hence it is
+  // important to order this check after that redundant name check.
+  DCHECK(render_frame_host->IsActive() ||
+         render_frame_host->IsInLifecycleState(
+             RenderFrameHost::LifecycleState::kPendingDeletion));
 
   ReportFrameNameChange(name);
 }
@@ -974,8 +981,21 @@ void WebViewGuest::OnDidAddMessageToConsole(
 
 void WebViewGuest::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host->GetSiteInstance()->IsGuest())
-    PushWebViewStateToIOThread(render_frame_host);
+  CHECK_EQ(render_frame_host->GetProcess()->IsForGuestsOnly(),
+           render_frame_host->GetSiteInstance()->IsGuest());
+
+  if (!render_frame_host->GetSiteInstance()->IsGuest()) {
+    return;
+  }
+
+  PushWebViewStateToIOThread(render_frame_host);
+
+  if (!render_frame_host->GetParentOrOuterDocument()) {
+    ExtensionWebContentsObserver::GetForWebContents(web_contents())
+        ->GetLocalFrame(render_frame_host)
+        ->SetFrameName(name_);
+    SetTransparency(render_frame_host);
+  }
 }
 
 void WebViewGuest::RenderFrameDeleted(
@@ -1242,11 +1262,12 @@ void WebViewGuest::SetName(const std::string& name) {
   name_ = name;
 
   // Return early if this method is called before RenderFrameCreated().
-  // In that case, we still have a chance to update the name at GuestReady().
-  if (!web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive())
+  // In that case, we still update the name in RenderFrameCreated().
+  if (!GetGuestMainFrame()->IsRenderFrameLive()) {
     return;
+  }
   ExtensionWebContentsObserver::GetForWebContents(web_contents())
-      ->GetLocalFrame(web_contents()->GetPrimaryMainFrame())
+      ->GetLocalFrame(GetGuestMainFrame())
       ->SetFrameName(name_);
 }
 
@@ -1280,22 +1301,17 @@ void WebViewGuest::SetAllowTransparency(bool allow) {
     return;
 
   allow_transparency_ = allow;
-  if (!web_contents()
-           ->GetPrimaryMainFrame()
-           ->GetRenderViewHost()
-           ->GetWidget()
-           ->GetView())
-    return;
 
-  SetTransparency();
+  SetTransparency(GetGuestMainFrame());
 }
 
-void WebViewGuest::SetTransparency() {
-  auto* view = web_contents()
-                   ->GetPrimaryMainFrame()
-                   ->GetRenderViewHost()
-                   ->GetWidget()
-                   ->GetView();
+void WebViewGuest::SetTransparency(
+    content::RenderFrameHost* render_frame_host) {
+  auto* view = render_frame_host->GetView();
+  if (!view) {
+    return;
+  }
+
   if (allow_transparency_)
     view->SetBackgroundColor(SK_ColorTRANSPARENT);
   else

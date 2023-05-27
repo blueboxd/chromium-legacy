@@ -32,6 +32,12 @@ struct CORE_EXPORT NGInlineNodeData final : NGInlineItemsData {
   bool IsBisectLineBreakDisabled() const {
     return is_bisect_line_break_disabled_;
   }
+  // True if this node can't use the `NGScorehLineBreaker`, that can be
+  // determined by `CollectInlines`. Conditions that can change without
+  // `CollectInlines` are in `NGLineBreaker::ShouldDisableScoreLineBreak()`.
+  bool IsScoreLineBreakDisabled() const {
+    return is_score_line_break_disabled_;
+  }
 
   const NGInlineItemsData& ItemsData(bool is_first_line) const {
     return !is_first_line || !first_line_items_
@@ -91,6 +97,7 @@ struct CORE_EXPORT NGInlineNodeData final : NGInlineItemsData {
   unsigned changes_may_affect_earlier_lines_ : 1;
 
   unsigned is_bisect_line_break_disabled_ : 1;
+  unsigned is_score_line_break_disabled_ : 1;
 };
 
 }  // namespace blink

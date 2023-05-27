@@ -161,8 +161,6 @@ component("partition_alloc") {
     "partition_stats.cc",
     "partition_stats.h",
     "partition_tls.h",
-    "pkey.cc",
-    "pkey.h",
     "random.cc",
     "random.h",
     "reservation_offset_table.cc",
@@ -174,6 +172,11 @@ component("partition_alloc") {
     "tagging.h",
     "thread_cache.cc",
     "thread_cache.h",
+    "thread_isolation/alignment.h",
+    "thread_isolation/pkey.cc",
+    "thread_isolation/pkey.h",
+    "thread_isolation/thread_isolation.cc",
+    "thread_isolation/thread_isolation.h",
     "yield_processor.h",
   ]
 
@@ -320,6 +323,10 @@ component("partition_alloc") {
     deps += [ "//third_party/android_ndk:cpu_features" ]
   }
   if (is_fuchsia) {
+    deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.kernel:fuchsia.kernel_cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/component_incoming_cpp",
+    ]
     public_deps += [
       "//third_party/fuchsia-sdk/sdk/pkg/fit",
       "//third_party/fuchsia-sdk/sdk/pkg/sync",
@@ -367,6 +374,7 @@ source_set("raw_ptr") {
   check_includes = use_partition_alloc
   public = [
     "pointers/raw_ptr.h",
+    "pointers/raw_ptr_cast.h",
     "pointers/raw_ptr_exclusion.h",
     "pointers/raw_ref.h",
   ]
@@ -411,6 +419,21 @@ buildflag_header("partition_alloc_buildflags") {
   # enablement is already gated on BRP enablement.
   _enable_gwp_asan_support = put_ref_count_in_previous_slot
 
+  # Pools are a logical concept when address space is 32-bit.
+  _glue_core_pools = glue_core_pools && has_64_bit_pointers
+
+  # Pointer compression requires 64-bit pointers.
+  _enable_pointer_compression =
+      enable_pointer_compression_support && has_64_bit_pointers
+
+  # Force-enable live BRP in all processes, ignoring the canonical
+  # experiment state of `PartitionAllocBackupRefPtr`.
+  #
+  # This is not exposed as a GN arg as it is not meant to be used by
+  # developers - it is simply a compile-time hinge that should be
+  # set in the experimental build and then reverted immediately.
+  _force_all_process_brp = false
+
   # TODO(crbug.com/1151236): Need to refactor the following buildflags.
   # The buildflags (except RECORD_ALLOC_INFO) are used by both chrome and
   # partition alloc. For partition alloc,
@@ -426,7 +449,6 @@ buildflag_header("partition_alloc_buildflags") {
     "ENABLE_BACKUP_REF_PTR_SUPPORT=$enable_backup_ref_ptr_support",
     "ENABLE_BACKUP_REF_PTR_SLOW_CHECKS=$enable_backup_ref_ptr_slow_checks",
     "ENABLE_BACKUP_REF_PTR_FEATURE_FLAG=$enable_backup_ref_ptr_feature_flag",
-    "ENABLE_RAW_PTR_EXPERIMENTAL=$enable_raw_ptr_experimental",
     "ENABLE_DANGLING_RAW_PTR_CHECKS=$enable_dangling_raw_ptr_checks",
     "ENABLE_DANGLING_RAW_PTR_FEATURE_FLAG=$enable_dangling_raw_ptr_feature_flag",
     "ENABLE_DANGLING_RAW_PTR_PERF_EXPERIMENT=$enable_dangling_raw_ptr_perf_experiment",
@@ -437,19 +459,21 @@ buildflag_header("partition_alloc_buildflags") {
     "USE_ASAN_UNOWNED_PTR=$use_asan_unowned_ptr",
     "USE_HOOKABLE_RAW_PTR=$use_hookable_raw_ptr",
     "ENABLE_GWP_ASAN_SUPPORT=$_enable_gwp_asan_support",
+    "FORCIBLY_ENABLE_BACKUP_REF_PTR_IN_ALL_PROCESSES=$_force_all_process_brp",
 
     "FORCE_ENABLE_RAW_PTR_EXCLUSION=$force_enable_raw_ptr_exclusion",
 
     "RECORD_ALLOC_INFO=$_record_alloc_info",
     "USE_FREESLOT_BITMAP=$use_freeslot_bitmap",
-    "GLUE_CORE_POOLS=$glue_core_pools",
-    "ENABLE_POINTER_COMPRESSION=$enable_pointer_compression_support",
+    "GLUE_CORE_POOLS=$_glue_core_pools",
+    "ENABLE_POINTER_COMPRESSION=$_enable_pointer_compression",
     "ENABLE_SHADOW_METADATA_FOR_64_BITS_POINTERS=$enable_shadow_metadata",
 
     "USE_STARSCAN=$use_starscan",
     "PCSCAN_STACK_SUPPORTED=$pcscan_stack_supported",
 
     "ENABLE_PKEYS=$enable_pkeys",
+    "ENABLE_THREAD_ISOLATION=$enable_pkeys",
   ]
 
   if (is_apple) {

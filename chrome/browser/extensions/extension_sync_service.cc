@@ -34,8 +34,8 @@
 #include "extensions/common/permissions/permissions_data.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_service.h"
 #endif
 
 using extensions::AppSorting;
@@ -634,5 +634,7 @@ void ExtensionSyncService::FillSyncDataList(
 bool ExtensionSyncService::ShouldSync(const Extension& extension) const {
   // Themes are handled by the ThemeSyncableService.
   return extensions::util::ShouldSync(&extension, profile_) &&
-         !extension.is_theme();
+         !extension.is_theme() &&
+         !extensions::blocklist_prefs::IsExtensionBlocklisted(
+             extension.id(), ExtensionPrefs::Get(profile_));
 }

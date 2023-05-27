@@ -330,9 +330,7 @@ const base::FeatureParam<std::string> kDrDcBlockListByAndroidBuildFP{
 // Enable Skia Graphite. This will use the Dawn backend by default, but can be
 // overridden with command line flags for testing on non-official developer
 // builds. See --skia-graphite-backend flag in gpu_switches.h.
-BASE_FEATURE(kSkiaGraphite,
-             "SkiaUseGraphite",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kSkiaGraphite, "SkiaGraphite", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable GrShaderCache to use with Vulkan backend.
 BASE_FEATURE(kEnableGrShaderCacheForVulkan,
@@ -378,17 +376,17 @@ BASE_FEATURE(kUseGpuSchedulerDfs,
              "UseGpuSchedulerDfs",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Use the ClientGmb interface to create GpuMemoryBuffers. This is supposed to
+// reduce number of IPCs happening while creating GpuMemoryBuffers by allowing
+// Renderers to do IPC directly to GPU process.
+BASE_FEATURE(kUseClientGmbInterface,
+             "UseClientGmbInterface",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable YUV<->RGB conversion for video clients through passthrough command
 // decoder.
 BASE_FEATURE(kPassthroughYuvRgbConversion,
              "PassthroughYuvRgbConversion",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the validating command decoder always obtains the size to use
-// from the source texture when copying textures, rather than first checking if
-// there is a GLImage present and using its size if so.
-BASE_FEATURE(kCmdDecoderAlwaysGetSizeFromSourceTexture,
-             "CmdDecoderAlwaysGetSizeFromSourceTexture",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When the application is in background, whether to perform immediate GPU

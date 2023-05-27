@@ -76,8 +76,7 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
     case DRM_FORMAT_P010:
       return gfx::BufferFormat::P010;
     default:
-      NOTREACHED();
-      return gfx::BufferFormat::BGRA_8888;
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -216,10 +215,6 @@ gfx::NativePixmapHandle GLImageGLTexture::ExportHandle() {
   }
 
   return handle;
-}
-
-gfx::Size GLImageGLTexture::GetSize() {
-  return size_;
 }
 
 void GLImageGLTexture::BindTexImage(unsigned target) {

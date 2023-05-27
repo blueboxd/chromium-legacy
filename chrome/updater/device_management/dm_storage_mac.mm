@@ -5,6 +5,7 @@
 #include "chrome/updater/device_management/dm_storage.h"
 
 #import <Foundation/Foundation.h>
+
 #include <string>
 
 #include "base/files/file_path.h"
@@ -14,12 +15,15 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/util/mac_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace updater {
 namespace {
@@ -90,10 +94,7 @@ class TokenService : public TokenServiceInterface {
 
   // Overrides for TokenServiceInterface.
   std::string GetDeviceID() const override { return device_id_; }
-  bool IsEnrollmentMandatory() const override {
-    // TODO(crbug.com/1345407) : check if enrollment is mandatory.
-    return false;
-  }
+  bool IsEnrollmentMandatory() const override { return false; }
   bool StoreEnrollmentToken(const std::string& enrollment_token) override;
   std::string GetEnrollmentToken() const override { return enrollment_token_; }
   bool StoreDmToken(const std::string& dm_token) override;
@@ -124,6 +125,7 @@ TokenService::TokenService() {
 bool TokenService::StoreEnrollmentToken(const std::string& enrollment_token) {
   const base::FilePath enrollment_token_path = GetEnrollmentTokenFilePath();
   if (enrollment_token_path.empty() ||
+      !base::CreateDirectory(enrollment_token_path.DirName()) ||
       !base::ImportantFileWriter::WriteFileAtomically(enrollment_token_path,
                                                       enrollment_token)) {
     return false;
@@ -136,6 +138,7 @@ bool TokenService::StoreEnrollmentToken(const std::string& enrollment_token) {
 bool TokenService::StoreDmToken(const std::string& token) {
   const base::FilePath dm_token_path = GetDmTokenFilePath();
   if (dm_token_path.empty() ||
+      !base::CreateDirectory(dm_token_path.DirName()) ||
       !base::ImportantFileWriter::WriteFileAtomically(dm_token_path, token)) {
     return false;
   }

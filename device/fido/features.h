@@ -36,14 +36,6 @@ BASE_DECLARE_FEATURE(kWebAuthnGoogleCorpRemoteDesktopClientPrivilege);
 // Enable some experimental UI changes
 COMPONENT_EXPORT(DEVICE_FIDO) BASE_DECLARE_FEATURE(kWebAuthPasskeysUI);
 
-// Set credProtect=3 when rk=required and uv=preferred.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnCredProtectThree);
-
-// Advertise support for the `prf` extension as a hybrid authenticator.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnPRFAsAuthenticator);
-
 // Support optional UV for new credentials in the macOS platform authenticator.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnMacPlatformAuthenticatorOptionalUv);
@@ -62,6 +54,28 @@ BASE_DECLARE_FEATURE(kWebAuthnNewPrioritiesImpl);
 // Use the Android 14 Credential Manager API.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnAndroidCredMan);
+
+// Count kCtap2ErrPinRequired as meaning not recognised.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnPinRequiredMeansNotRecognized);
+
+// Advertise hybrid prelinking on Android even if the app doesn't have
+// notifications permission.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnHybridLinkWithoutNotifications);
+
+// Don't allow the old style JSON where values could be `null`.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnNoNullInJSON);
+
+// Require the "easy accessor" fields to be provided in JSON attestation
+// responses. Otherwise the fields are only checked if provided.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnRequireEasyAccessorFieldsInJSON);
+
+// Enable support for iCloud Keychain
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnICloudKeychain);
 
 }  // namespace device
 

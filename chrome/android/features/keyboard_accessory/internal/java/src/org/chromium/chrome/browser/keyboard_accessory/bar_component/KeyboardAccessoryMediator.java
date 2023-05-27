@@ -38,7 +38,6 @@ import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.components.autofill.PopupItemId;
 import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
@@ -147,24 +146,24 @@ class KeyboardAccessoryMediator
      */
     private boolean shouldShowSuggestion(AutofillSuggestion suggestion) {
         switch (suggestion.getSuggestionId()) {
-            case PopupItemId.ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
+            case PopupItemId.INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
                 // The insecure context warning has a replacement in the fallback sheet.
-            case PopupItemId.ITEM_ID_SEPARATOR:
-            case PopupItemId.ITEM_ID_CLEAR_FORM:
-            case PopupItemId.ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
-            case PopupItemId.ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
-            case PopupItemId.ITEM_ID_GENERATE_PASSWORD_ENTRY:
-            case PopupItemId.ITEM_ID_SHOW_ACCOUNT_CARDS:
-            case PopupItemId.ITEM_ID_AUTOFILL_OPTIONS:
+            case PopupItemId.SEPARATOR:
+            case PopupItemId.CLEAR_FORM:
+            case PopupItemId.CREDIT_CARD_SIGNIN_PROMO:
+            case PopupItemId.ALL_SAVED_PASSWORDS_ENTRY:
+            case PopupItemId.GENERATE_PASSWORD_ENTRY:
+            case PopupItemId.SHOW_ACCOUNT_CARDS:
+            case PopupItemId.AUTOFILL_OPTIONS:
                 return false;
-            case PopupItemId.ITEM_ID_AUTOCOMPLETE_ENTRY:
-            case PopupItemId.ITEM_ID_PASSWORD_ENTRY:
-            case PopupItemId.ITEM_ID_DATALIST_ENTRY:
-            case PopupItemId.ITEM_ID_SCAN_CREDIT_CARD:
-            case PopupItemId.ITEM_ID_TITLE:
-            case PopupItemId.ITEM_ID_USERNAME_ENTRY:
-            case PopupItemId.ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY:
-            case PopupItemId.ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY:
+            case PopupItemId.AUTOCOMPLETE_ENTRY:
+            case PopupItemId.PASSWORD_ENTRY:
+            case PopupItemId.DATALIST_ENTRY:
+            case PopupItemId.SCAN_CREDIT_CARD:
+            case PopupItemId.TITLE:
+            case PopupItemId.USERNAME_ENTRY:
+            case PopupItemId.ACCOUNT_STORAGE_PASSWORD_ENTRY:
+            case PopupItemId.ACCOUNT_STORAGE_USERNAME_ENTRY:
                 return true;
         }
         return true; // If it's not a special id, show the regular suggestion!
@@ -178,31 +177,24 @@ class KeyboardAccessoryMediator
             if (!shouldShowSuggestion(suggestion)) continue;
             barItems.add(new AutofillBarItem(suggestion, createAutofillAction(delegate, position)));
         }
-        return barItems;
-    }
 
-    /**
-     * Annotates the first suggestion in with an in-product help bubble. For password suggestions,
-     * the first suggestion is usually autofilled and therefore, the second element is annotated.
-     *
-     * This doesn't necessary mean that the IPH bubble will be shown - a final check will be
-     * performed right before the bubble can be displayed.
-     */
-    void prepareUserEducation() {
-        ListModel<BarItem> items = mModel.get(BAR_ITEMS);
+        // Annotates the first suggestion in with an in-product help bubble. For password
+        // suggestions, the first suggestion is usually autofilled and therefore, the second
+        // element is annotated.
+        // This doesn't necessary mean that the IPH bubble will be shown - a final check will be
+        // performed right before the bubble can be displayed.
         boolean skippedFirstPasswordItem = false;
-        for (int i = 0; i < items.size(); ++i) {
-            if (items.get(i).getViewType() != BarItem.Type.SUGGESTION) continue;
-            AutofillBarItem barItem = (AutofillBarItem) items.get(i);
+        for (AutofillBarItem barItem : barItems) {
             if (!skippedFirstPasswordItem && containsPasswordInfo(barItem.getSuggestion())) {
                 // For password suggestions, we want to educate about the 2nd entry.
                 skippedFirstPasswordItem = true;
                 continue;
             }
             barItem.setFeatureForIPH(getFeatureBySuggestionId(barItem.getSuggestion()));
-            items.update(i, barItem);
             break; // Only set IPH for one suggestions in the bar.
         }
+
+        return barItems;
     }
 
     private Collection<BarItem> toBarItems(Action[] actions) {
@@ -231,6 +223,7 @@ class KeyboardAccessoryMediator
             case AccessoryAction.AUTOFILL_SUGGESTION:
                 return BarItem.Type.SUGGESTION;
             case AccessoryAction.GENERATE_PASSWORD_AUTOMATIC:
+            case AccessoryAction.CREDMAN_CONDITIONAL_UI_REENTRY:
                 return BarItem.Type.ACTION_BUTTON;
             case AccessoryAction.MANAGE_PASSWORDS: // Intentional fallthrough - no view defined.
             case AccessoryAction.COUNT:
@@ -343,7 +336,7 @@ class KeyboardAccessoryMediator
     private static String getFeatureBySuggestionId(AutofillSuggestion suggestion) {
         // If the suggestion has an explicit IPH feature defined, prefer that over the default IPH
         // features.
-        if (!suggestion.getFeatureForIPH().isEmpty()) {
+        if (suggestion.getFeatureForIPH() != null && !suggestion.getFeatureForIPH().isEmpty()) {
             return suggestion.getFeatureForIPH();
         }
         if (containsPasswordInfo(suggestion)) {
@@ -359,8 +352,8 @@ class KeyboardAccessoryMediator
     }
 
     private static boolean containsPasswordInfo(AutofillSuggestion suggestion) {
-        return suggestion.getSuggestionId() == PopupItemId.ITEM_ID_USERNAME_ENTRY
-                || suggestion.getSuggestionId() == PopupItemId.ITEM_ID_PASSWORD_ENTRY;
+        return suggestion.getSuggestionId() == PopupItemId.USERNAME_ENTRY
+                || suggestion.getSuggestionId() == PopupItemId.PASSWORD_ENTRY;
     }
 
     private static boolean containsCreditCardInfo(AutofillSuggestion suggestion) {

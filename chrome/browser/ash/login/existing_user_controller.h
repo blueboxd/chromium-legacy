@@ -20,7 +20,7 @@
 #include "chrome/browser/ash/login/saml/password_sync_token_checkers_collection.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
-#include "chrome/browser/ash/login/ui/login_display.h"
+#include "chrome/browser/ash/login/signin_specifics.h"
 #include "chromeos/ash/components/login/auth/login_performer.h"
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
@@ -376,10 +376,6 @@ class ExistingUserController : public content::NotificationObserver,
 
   // Timer for the interval to wait for the reboot after TPM error UI was shown.
   base::OneShotTimer reboot_timer_;
-
-  // Collection of verifiers that check validity of password sync token for SAML
-  // users.
-  std::unique_ptr<PasswordSyncTokenCheckersCollection> sync_token_checkers_;
 
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 

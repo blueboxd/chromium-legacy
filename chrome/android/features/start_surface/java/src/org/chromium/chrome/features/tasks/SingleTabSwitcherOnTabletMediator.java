@@ -7,13 +7,19 @@ package org.chromium.chrome.features.tasks;
 import static org.chromium.chrome.features.tasks.SingleTabViewProperties.CLICK_LISTENER;
 import static org.chromium.chrome.features.tasks.SingleTabViewProperties.FAVICON;
 import static org.chromium.chrome.features.tasks.SingleTabViewProperties.IS_VISIBLE;
+import static org.chromium.chrome.features.tasks.SingleTabViewProperties.LATERAL_MARGIN;
 import static org.chromium.chrome.features.tasks.SingleTabViewProperties.TITLE;
 
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -26,24 +32,77 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
 /** Mediator of the single tab switcher in the new tab page on tablet. */
-public class SingleTabSwitcherOnTabletMediator {
+public class SingleTabSwitcherOnTabletMediator implements ConfigurationChangedObserver {
     private final PropertyModel mPropertyModel;
     private final TabListFaviconProvider mTabListFaviconProvider;
+    private final int mMarginDefaut;
+    private final int mMarginSmallPortrait;
+    private Resources mResources;
+    private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private Tab mMostRecentTab;
     private boolean mInitialized;
+    private boolean mIsScrollableMvtEnabled;
+    private boolean mIsMultiFeedEnabled;
 
-    SingleTabSwitcherOnTabletMediator(PropertyModel propertyModel,
+    private Runnable mSingleTabCardClickedCallback;
+
+    SingleTabSwitcherOnTabletMediator(PropertyModel propertyModel, Resources resources,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher,
             TabModelSelector tabModelSelector, TabListFaviconProvider tabListFaviconProvider,
-            Tab mostRecentTab) {
+            Tab mostRecentTab, boolean isMultiColumnFeedEnabled, boolean isScrollableMvtEnabled,
+            Runnable singleTabCardClickedCallback) {
         mPropertyModel = propertyModel;
+        mResources = resources;
         mTabListFaviconProvider = tabListFaviconProvider;
         mMostRecentTab = mostRecentTab;
+        mIsMultiFeedEnabled = isMultiColumnFeedEnabled;
+        mIsScrollableMvtEnabled = isScrollableMvtEnabled;
+        mSingleTabCardClickedCallback = singleTabCardClickedCallback;
+
+        if (mIsMultiFeedEnabled) {
+            mActivityLifecycleDispatcher = activityLifecycleDispatcher;
+            mMarginDefaut = mResources.getDimensionPixelSize(
+                    R.dimen.single_tab_card_lateral_margin_landscape_tablet);
+            mMarginSmallPortrait =
+                    mResources.getDimensionPixelSize(R.dimen.tile_grid_layout_bleed) / 2
+                    + mResources.getDimensionPixelSize(
+                            R.dimen.single_tab_card_lateral_margin_portrait_tablet);
+
+            if (mActivityLifecycleDispatcher != null) {
+                mActivityLifecycleDispatcher.register(this);
+            }
+        } else {
+            mMarginDefaut = 0;
+            mMarginSmallPortrait = 0;
+        }
 
         mPropertyModel.set(CLICK_LISTENER, v -> {
             TabModel currentTabModel = tabModelSelector.getModel(false);
             TabModelUtils.setIndex(currentTabModel,
                     TabModelUtils.getTabIndexById(currentTabModel, mMostRecentTab.getId()), false);
+            if (mSingleTabCardClickedCallback != null) {
+                mSingleTabCardClickedCallback.run();
+                mSingleTabCardClickedCallback = null;
+            }
         });
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        // The margin doesn't change when 2 row MV tiles are shown.
+        if (mIsScrollableMvtEnabled && mIsMultiFeedEnabled) {
+            updateMargins(newConfig.orientation);
+        }
+    }
+
+    void updateMargins(int orientation) {
+        if (!mIsMultiFeedEnabled) return;
+
+        int lateralMargin =
+                mIsScrollableMvtEnabled && orientation == Configuration.ORIENTATION_PORTRAIT
+                ? mMarginSmallPortrait
+                : mMarginDefaut;
+        mPropertyModel.set(LATERAL_MARGIN, lateralMargin);
     }
 
     /**
@@ -64,7 +123,11 @@ public class SingleTabSwitcherOnTabletMediator {
             updateTitle();
             updateFavicon();
         }
+
         mPropertyModel.set(IS_VISIBLE, true);
+        if (mResources != null) {
+            updateMargins(mResources.getConfiguration().orientation);
+        }
     }
 
     boolean isVisible() {
@@ -93,6 +156,21 @@ public class SingleTabSwitcherOnTabletMediator {
             updateTitle();
             updateFavicon();
             return true;
+        }
+    }
+
+    void destroy() {
+        if (mActivityLifecycleDispatcher != null) {
+            mActivityLifecycleDispatcher.unregister(this);
+            mActivityLifecycleDispatcher = null;
+        }
+
+        if (mResources != null) {
+            mResources = null;
+        }
+
+        if (mPropertyModel != null) {
+            mPropertyModel.set(CLICK_LISTENER, null);
         }
     }
 
@@ -133,5 +211,13 @@ public class SingleTabSwitcherOnTabletMediator {
     @VisibleForTesting
     void setMostRecentTab(Tab mostRecentTab) {
         mMostRecentTab = mostRecentTab;
+    }
+
+    int getMarginDefaultForTesting() {
+        return mMarginDefaut;
+    }
+
+    int getMarginSmallPortraitForTesting() {
+        return mMarginSmallPortrait;
     }
 }

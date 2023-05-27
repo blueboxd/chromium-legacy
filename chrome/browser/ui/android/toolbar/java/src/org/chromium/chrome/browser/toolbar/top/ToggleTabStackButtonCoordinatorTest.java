@@ -30,13 +30,11 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.user_education.IPHCommand;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -46,7 +44,6 @@ import java.util.Set;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @LooperMode(LooperMode.Mode.LEGACY)
-@DisableFeatures(ChromeFeatureList.ANDROID_SCROLL_OPTIMIZATIONS)
 public class ToggleTabStackButtonCoordinatorTest {
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
@@ -117,7 +114,7 @@ public class ToggleTabStackButtonCoordinatorTest {
     private void showOverviewMode() {
         mOverviewOpen = true;
         for (LayoutStateProvider.LayoutStateObserver observer : mLayoutStateObserverSet) {
-            observer.onStartedShowing(LayoutType.TAB_SWITCHER, /*showToolbar*/ false);
+            observer.onStartedShowing(LayoutType.TAB_SWITCHER /*showToolbar*/);
         }
         for (LayoutStateProvider.LayoutStateObserver observer : mLayoutStateObserverSet) {
             observer.onFinishedShowing(LayoutType.TAB_SWITCHER);
@@ -127,8 +124,7 @@ public class ToggleTabStackButtonCoordinatorTest {
     private void hideOverviewMode() {
         mOverviewOpen = false;
         for (LayoutStateProvider.LayoutStateObserver observer : mLayoutStateObserverSet) {
-            observer.onStartedHiding(
-                    LayoutType.TAB_SWITCHER, /*showToolbar*/ false, /*delayAnimation*/ false);
+            observer.onStartedHiding(LayoutType.TAB_SWITCHER);
         }
         for (LayoutStateProvider.LayoutStateObserver observer : mLayoutStateObserverSet) {
             observer.onFinishedHiding(LayoutType.TAB_SWITCHER);

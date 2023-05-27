@@ -206,10 +206,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   virtual void RestartIce();
 
   virtual void GetStats(RTCStatsRequest* request);
-  virtual void GetStats(
-      RTCStatsReportCallback callback,
-      const Vector<webrtc::NonStandardGroupId>& exposed_group_ids,
-      bool is_track_stats_deprecation_trial_enabled);
+  virtual void GetStats(RTCStatsReportCallback callback);
   virtual webrtc::RTCErrorOr<std::unique_ptr<RTCRtpTransceiverPlatform>>
   AddTransceiverWithTrack(MediaStreamComponent* component,
                           const webrtc::RtpTransceiverInit& init);
@@ -247,6 +244,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   void GetStats(rtc::scoped_refptr<webrtc::StatsObserver> observer,
                 webrtc::PeerConnectionInterface::StatsOutputLevel level,
                 rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector);
+
+  // Allows webrtc-internals to request a brief dump of the current state.
+  void EmitCurrentStateForTracker();
 
   // Tells the |client_| to close RTCPeerConnection.
   // Make it virtual for testing purpose.

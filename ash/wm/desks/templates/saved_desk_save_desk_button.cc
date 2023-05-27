@@ -15,6 +15,8 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/highlight_border.h"
+#include "ui/views/view.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 
@@ -31,9 +33,12 @@ SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
       button_type_(button_type) {
   views::FocusRing* focus_ring =
       StyleUtil::SetUpFocusRingForView(this, kFocusRingHaloInset);
-  focus_ring->SetHasFocusPredicate([](views::View* view) {
-    return static_cast<SavedDeskSaveDeskButton*>(view)->IsViewHighlighted();
-  });
+  focus_ring->SetHasFocusPredicate(
+      base::BindRepeating([](const views::View* view) {
+        const auto* v = views::AsViewClass<SavedDeskSaveDeskButton>(view);
+        CHECK(v);
+        return v->IsViewHighlighted();
+      }));
   focus_ring->SetColorId(ui::kColorAshFocusRing);
 
   SetBorder(std::make_unique<views::HighlightBorder>(
@@ -41,8 +46,15 @@ SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
       chromeos::features::IsJellyrollEnabled()
           ? views::HighlightBorder::Type::kHighlightBorderNoShadow
           : views::HighlightBorder::Type::kHighlightBorder2));
-  layer()->SetRoundedCornerRadius(gfx::RoundedCornersF{kSaveDeskCornerRadius});
-  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+
+  View* background_view = AddChildView(std::make_unique<views::View>());
+  background_view->SetPaintToLayer();
+
+  background_view->layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF{kSaveDeskCornerRadius});
+  background_view->layer()->SetBackgroundBlur(
+      ColorProvider::kBackgroundBlurSigma);
+  background_view->layer()->SetFillsBoundsOpaquely(false);
 }
 
 SavedDeskSaveDeskButton::~SavedDeskSaveDeskButton() = default;

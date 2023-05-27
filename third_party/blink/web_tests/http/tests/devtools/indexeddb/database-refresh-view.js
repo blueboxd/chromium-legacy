@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {TestRunner} from 'test_runner';
+import {ApplicationTestRunner} from 'application_test_runner';
+import {ConsoleTestRunner} from 'console_test_runner';
+
 (async function() {
   TestRunner.addResult(`Tests refreshing the database information and data views.\n`);
-  await TestRunner.loadLegacyModule('console'); await TestRunner.loadTestModule('application_test_runner');
+  await TestRunner.loadLegacyModule('console');
     // Note: every test that uses a storage API must manually clean-up state from previous tests.
   await ApplicationTestRunner.resetState();
 
-  await TestRunner.loadLegacyModule('console'); await TestRunner.loadTestModule('console_test_runner');
+  await TestRunner.loadLegacyModule('console');
   await TestRunner.showPanel('resources');
 
   var databaseName = 'testDatabase';
@@ -18,25 +22,27 @@
   var keyPath = 'testKey';
 
   var indexedDBModel = TestRunner.mainTarget.model(Resources.IndexedDBModel);
-  indexedDBModel._throttler._timeout = 100000;  // Disable live updating.
+  indexedDBModel.throttler['#timeout'] = 100000;  // Disable live updating.
   var databaseId;
 
   function waitRefreshDatabase() {
-    var view = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0]._view;
-    view._refreshDatabaseButtonClicked();
-    return new Promise((resolve) => {
-      TestRunner.addSniffer(Resources.IDBDatabaseView.prototype, '_updatedForTests', resolve, false);
+    var view = UI.panels.resources.sidebar.indexedDBListTreeElement.idbDatabaseTreeElements[0].view;
+    const promise = new Promise((resolve) => {
+      TestRunner.addSniffer(Resources.IDBDatabaseView.prototype, 'updatedForTests', resolve, false);
     });
+
+    view.getComponent().refreshDatabaseButtonClicked();
+    return promise;
   }
 
   function waitRefreshDatabaseRightClick() {
-    idbDatabaseTreeElement._refreshIndexedDB();
+    idbDatabaseTreeElement.refreshIndexedDB();
     return waitUpdateDataView();
   }
 
   function waitUpdateDataView() {
     return new Promise((resolve) => {
-      TestRunner.addSniffer(Resources.IDBDataView.prototype, '_updatedDataForTests', resolve, false);
+      TestRunner.addSniffer(Resources.IDBDataView.prototype, 'updatedDataForTests', resolve, false);
     });
   }
 
@@ -52,7 +58,7 @@
       Common.EventTarget.removeEventListeners([event]);
       callback();
     });
-    UI.panels.resources._sidebar.indexedDBListTreeElement.refreshIndexedDB();
+    UI.panels.resources.sidebar.indexedDBListTreeElement.refreshIndexedDB();
   }
 
   // Initial tree
@@ -61,8 +67,8 @@
   // Create database
   await ApplicationTestRunner.createDatabaseAsync(databaseName);
   await new Promise(waitDatabaseAdded);
-  var idbDatabaseTreeElement = UI.panels.resources._sidebar.indexedDBListTreeElement._idbDatabaseTreeElements[0];
-  databaseId = idbDatabaseTreeElement._databaseId;
+  var idbDatabaseTreeElement = UI.panels.resources.sidebar.indexedDBListTreeElement.idbDatabaseTreeElements[0];
+  databaseId = idbDatabaseTreeElement.databaseId;
   TestRunner.addResult('Created database.');
   ApplicationTestRunner.dumpIndexedDBTree();
 
@@ -70,11 +76,12 @@
   indexedDBModel.refreshDatabase(databaseId);  // Initial database refresh.
   await new Promise(waitDatabaseLoaded);       // Needed to initialize database view, otherwise
   idbDatabaseTreeElement.onselect(false);      // IDBDatabaseTreeElement.database would be undefined.
-  var databaseView = idbDatabaseTreeElement._view;
+  var databaseView = idbDatabaseTreeElement.view;
 
   // Create first objectstore
   await ApplicationTestRunner.createObjectStoreAsync(databaseName, objectStoreName1, indexName, keyPath);
   await waitRefreshDatabase();
+  await new Promise(resolve => setTimeout(resolve, 0));
   TestRunner.addResult('Created first objectstore.');
   ApplicationTestRunner.dumpIndexedDBTree();
 

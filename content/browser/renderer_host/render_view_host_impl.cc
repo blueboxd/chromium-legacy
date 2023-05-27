@@ -85,6 +85,7 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/page/browsing_context_group_info.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -554,6 +555,20 @@ bool RenderViewHostImpl::CreateRenderView(
     params->type = mojom::ViewWidgetType::kTopLevel;
   }
 
+  // Send the current page's browsing context group to the renderer. It is
+  // guaranteed to be consistent for the entire FrameTree, main frame and
+  // subframes. For this reason we simply use the main frame's browsing context
+  // group. Note that we cannot use this RenderViewHost's site_instance_group(),
+  // which may not match in a popup case. For example, if A opens a
+  // cross-browsing-context-group popup to B, A can have a RenderViewHost in the
+  // popup, but it needs to know B's BrowsingContextGroupInfo, which is the
+  // current page in the popup.
+  params->browsing_context_group_info = blink::BrowsingContextGroupInfo(
+      frame_tree_->GetMainFrame()->GetSiteInstance()->browsing_instance_token(),
+      frame_tree_->GetMainFrame()
+          ->GetSiteInstance()
+          ->coop_related_group_token());
+
   // RenderViewHostImpl is reused after a crash, so reset any endpoint that
   // might be a leftover from a crash.
   page_broadcast_.reset();
@@ -722,21 +737,15 @@ void RenderViewHostImpl::RenderViewCreated(
 }
 
 RenderFrameHostImpl* RenderViewHostImpl::GetMainRenderFrameHost() {
-  // If the RenderViewHost is active, it should always have a main frame
-  // RenderFrameHostImpl. If it is inactive, it could've been created for a
-  // speculative main frame navigation, in which case it will transition to
-  // active once that navigation commits. In this case, return the speculative
-  // main frame RenderFrameHostImpl, as that's expected by certain code paths,
-  // such as RenderViewHostImpl::SetUIProperty().  If there's no speculative
-  // main frame navigation, return nullptr.
-  //
-  // TODO(alexmos, creis): Migrate these code paths to use RenderFrameHost APIs
-  // and remove this fallback.  See https://crbug.com/763548.
-  if (is_active()) {
-    return RenderFrameHostImpl::FromID(GetProcess()->GetID(),
-                                       main_frame_routing_id_);
+  // Only active RenderViewHosts have a main frame RenderFrameHostImpl.
+  // Inactive RenderViewHosts would have a main frame RenderFrameProxyHost
+  // instead.
+  if (!is_active()) {
+    return nullptr;
   }
-  return frame_tree_->root()->render_manager()->speculative_frame_host();
+
+  return RenderFrameHostImpl::FromID(GetProcess()->GetID(),
+                                     main_frame_routing_id_);
 }
 
 void RenderViewHostImpl::ZoomToFindInPageRect(const gfx::Rect& rect_to_zoom) {

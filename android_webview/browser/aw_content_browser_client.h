@@ -232,6 +232,12 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       override;
   std::string GetProduct() override;
   std::string GetUserAgent() override;
+  // Override GetUserAgentMetadata API for ContentBrowserClient, it helps
+  // LocalFrameClient get the default user-agent metadata if user-agent isn't
+  // overridden. If Android WebView overrides the user-agent metadata when
+  // calling SetUserAgentOverride in AwSettings, the overridden user-agent
+  // metadata will take effect.
+  blink::UserAgentMetadata GetUserAgentMetadata() override;
   ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
       override;
   void LogWebFeatureForCurrentPage(content::RenderFrameHost* render_frame_host,
@@ -258,6 +264,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin* destination_origin,
       const url::Origin* reporting_origin) override;
   bool IsWebAttributionReportingAllowed() override;
+  bool ShouldUseOsWebSourceAttributionReporting() override;
+  blink::mojom::OriginTrialsSettingsPtr GetOriginTrialsSettings() override;
 
   AwFeatureListCreator* aw_feature_list_creator() {
     return aw_feature_list_creator_;

@@ -256,12 +256,13 @@ bool IsAblateSendPendingAccessibilityEventsEnabled() {
 }
 
 #if BUILDFLAG(IS_ANDROID)
-BASE_FEATURE(kAccessibilityAXModes,
-             "AccessibilityAXModes",
+BASE_FEATURE(kAccessibilityPerformanceFiltering,
+             "AccessibilityPerformanceFiltering",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-bool IsAccessibilityAXModesEnabled() {
-  return base::FeatureList::IsEnabled(::features::kAccessibilityAXModes);
+bool IsAccessibilityPerformanceFilteringEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityPerformanceFiltering);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -276,13 +277,18 @@ BASE_FEATURE(kReadAnythingWithScreen2x,
              "ReadAnythingWithScreen2x",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-bool IsReadAnythingWithScreen2xEnabled() {
-  return base::FeatureList::IsEnabled(::features::kReadAnythingWithScreen2x);
-}
+// This feature can be used as an emergency kill switch to disable Screen AI
+// main content extraction service in case of security or other issues.
+// Please talk to components/services/screen_ai/OWNERS if any changes to this
+// feature or its functionality is needed.
+BASE_FEATURE(kEmergencyDisableScreenAIMainContentExtraction,
+             "EmergencyDisableScreenAIMainContentExtraction",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
-bool IsScreenAIServiceNeeded() {
-  return IsPdfOcrEnabled() || IsLayoutExtractionEnabled() ||
-         IsReadAnythingWithScreen2xEnabled();
+bool IsReadAnythingWithScreen2xEnabled() {
+  return base::FeatureList::IsEnabled(::features::kReadAnythingWithScreen2x) &&
+         !base::FeatureList::IsEnabled(
+             ::features::kEmergencyDisableScreenAIMainContentExtraction);
 }
 
 // This feature is only for debug purposes and for security/privacy reasons,
@@ -295,10 +301,20 @@ bool IsScreenAIDebugModeEnabled() {
   return base::FeatureList::IsEnabled(::features::kScreenAIDebugMode);
 }
 
+// This feature can be used as an emergency kill switch to disable Screen AI
+// OCR service in case of security or other issues.
+// Please talk to components/services/screen_ai/OWNERS if any changes to this
+// feature or its functionality is needed.
+BASE_FEATURE(kEmergencyDisableScreenAIOCR,
+             "EmergencyDisableScreenAIOCR",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPdfOcr, "PdfOcr", base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsPdfOcrEnabled() {
-  return base::FeatureList::IsEnabled(::features::kPdfOcr);
+  return base::FeatureList::IsEnabled(::features::kPdfOcr) &&
+         !base::FeatureList::IsEnabled(
+             ::features::kEmergencyDisableScreenAIOCR);
 }
 
 BASE_FEATURE(kLayoutExtraction,

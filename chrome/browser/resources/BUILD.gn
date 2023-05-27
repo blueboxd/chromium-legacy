@@ -8,6 +8,7 @@ import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
+import("//components/signin/features.gni")
 import("//pdf/features.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//third_party/closure_compiler/compile_js.gni")
@@ -98,7 +99,7 @@ group("resources") {
     public_deps += [
       "app_home:resources",
       "app_settings:resources",
-      "ntp4:apps_resources",
+      "ntp4:resources",
     ]
   }
 
@@ -112,6 +113,10 @@ group("resources") {
       "signin/profile_picker:resources",
       "welcome:resources",
     ]
+  }
+
+  if (enable_waffle_desktop) {
+    public_deps += [ "waffle:resources" ]
   }
 
   if (enable_extensions) {
@@ -273,6 +278,7 @@ repack("dev_ui_paks") {
     "$root_gen_dir/chrome/dev_ui_browser_resources.pak",
     "$root_gen_dir/chrome/internals_resources.pak",
     "$root_gen_dir/chrome/invalidations_resources.pak",
+    "$root_gen_dir/chrome/location_internals_resources.pak",
     "$root_gen_dir/chrome/media_resources.pak",
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/omnibox_resources.pak",
@@ -284,7 +290,7 @@ repack("dev_ui_paks") {
     "$root_gen_dir/components/metrics_internals_resources.pak",
     "$root_gen_dir/components/optimization_guide_internals_resources.pak",
     "$root_gen_dir/components/policy_resources.pak",
-    "$root_gen_dir/components/sync_driver_sync_internals_resources.pak",
+    "$root_gen_dir/components/sync_service_sync_internals_resources.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
     "$root_gen_dir/content/gpu_resources.pak",
@@ -298,6 +304,7 @@ repack("dev_ui_paks") {
     "//chrome/browser/resources/browsing_topics:resources",
     "//chrome/browser/resources/internals:resources",
     "//chrome/browser/resources/invalidations:resources",
+    "//chrome/browser/resources/location_internals:resources",
     "//chrome/browser/resources/media:resources",
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/resources/omnibox:resources",
@@ -309,7 +316,7 @@ repack("dev_ui_paks") {
     "//components/optimization_guide/optimization_guide_internals/resources",
     "//components/policy/resources/webui:resources",
     "//components/resources:dev_ui_components_resources",
-    "//components/sync/driver/resources",
+    "//components/sync/service/resources",
     "//content/browser/resources/gpu:resources",
     "//content/browser/resources/media:resources",
     "//content/browser/resources/net:resources",

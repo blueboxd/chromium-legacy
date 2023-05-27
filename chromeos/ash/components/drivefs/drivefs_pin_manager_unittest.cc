@@ -1810,10 +1810,10 @@ TEST_F(DriveFsPinManagerTest, NotEnoughSpace) {
   RunLoop run_loop;
 
   // Mock Drive search to return 3 unpinned files that total just above 512 MB.
-  // The available space of 1 GB is not enough if you take in account the 512 MB
+  // The available space of 2.5 GB is not enough if you take in account the 2 GB
   // margin.
   const vector<DriveItem> items = {
-      {.size = 300 << 20}, {.size = 212 << 20}, {.size = 1}};
+      {.size = int64_t(300) << 20}, {.size = int64_t(212) << 20}, {.size = 1}};
 
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
@@ -1822,7 +1822,7 @@ TEST_F(DriveFsPinManagerTest, NotEnoughSpace) {
   EXPECT_CALL(completion_callback, Run(Stage::kNotEnoughSpace))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
-      .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
+      .WillOnce(RunOnceCallback<1>(int64_t(2560) << 20));  // 2.5 GB.
 
   PinManager manager(temp_dir_.GetPath(), &drivefs_);
   manager.SetSpaceGetter(GetSpaceGetter());
@@ -1832,8 +1832,8 @@ TEST_F(DriveFsPinManagerTest, NotEnoughSpace) {
 
   const Progress progress = manager.GetProgress();
   EXPECT_EQ(progress.stage, Stage::kNotEnoughSpace);
-  EXPECT_EQ(progress.free_space, 1 << 30);
-  EXPECT_EQ(progress.required_space, (512 << 20) + (4 << 10));
+  EXPECT_EQ(progress.free_space, int64_t(2560) << 20);
+  EXPECT_EQ(progress.required_space, (int64_t(512) << 20) + (int64_t(4) << 10));
   EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
 }
@@ -1895,11 +1895,11 @@ TEST_F(DriveFsPinManagerTest, OnFreeSpaceRetrieved2) {
   PinManager manager(temp_dir_.GetPath(), &drivefs_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
   manager.progress_.stage = Stage::kSyncing;
-  manager.OnFreeSpaceRetrieved2(1 << 30);
+  manager.OnFreeSpaceRetrieved2(int64_t(2) << 30);
 
   const Progress progress = manager.GetProgress();
   EXPECT_EQ(progress.stage, Stage::kSyncing);
-  EXPECT_EQ(progress.free_space, 1 << 30);
+  EXPECT_EQ(progress.free_space, int64_t(2) << 30);
   EXPECT_EQ(progress.required_space, 0);
   EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
@@ -1915,10 +1915,11 @@ TEST_F(DriveFsPinManagerTest, PeriodicSpaceCheck) {
   EXPECT_CALL(completion_callback, Run(Stage::kNotEnoughSpace))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
-      .WillOnce(RunOnceCallback<1>(1 << 30))     // 1 GB is enough space
-      .WillOnce(RunOnceCallback<1>(800 << 20))   // 800 MB is enough space
-      .WillOnce(RunOnceCallback<1>(600 << 20))   // 600 MB is enough space
-      .WillOnce(RunOnceCallback<1>(400 << 20));  // 400 MB is not enough
+      .WillOnce(RunOnceCallback<1>(int64_t(4) << 30))  // 4 GB is enough space
+      .WillOnce(RunOnceCallback<1>(int64_t(3) << 30))  // 3 GB is enough space
+      .WillOnce(
+          RunOnceCallback<1>(int64_t(2100) << 20))  // 2100 MB is enough space
+      .WillOnce(RunOnceCallback<1>(400 << 20));     // 400 MB is not enough
 
   PinManager manager(temp_dir_.GetPath(), &drivefs_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
@@ -1953,7 +1954,7 @@ TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
   RunLoop run_loop;
 
   // Mock Drive search to return 2 unpinned files that total to 512 MB. The
-  // available space of 1 GB is just enough if you take in account the 512 MB
+  // available space of 2.5GB is just enough if you take in account the 2 GB
   // margin.
   const vector<DriveItem> items = {{.size = 300 << 20}, {.size = 212 << 20}};
 
@@ -1964,7 +1965,7 @@ TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
   EXPECT_CALL(completion_callback, Run(Stage::kSuccess))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
-      .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
+      .WillOnce(RunOnceCallback<1>(int64_t(2560) << 20));  // 2.5 GB.
 
   PinManager manager(temp_dir_.GetPath(), &drivefs_);
   manager.SetSpaceGetter(GetSpaceGetter());
@@ -1974,7 +1975,7 @@ TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
 
   const Progress progress = manager.GetProgress();
   EXPECT_EQ(progress.stage, Stage::kSuccess);
-  EXPECT_EQ(progress.free_space, 1 << 30);
+  EXPECT_EQ(progress.free_space, int64_t(2560) << 20);
   EXPECT_EQ(progress.required_space, 512 << 20);
   EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
@@ -1997,7 +1998,7 @@ TEST_F(DriveFsPinManagerTest, WhenMoreResultsReturnedNextPageIsAttempted) {
   EXPECT_CALL(completion_callback, Run(Stage::kSuccess))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
-      .WillOnce(RunOnceCallback<1>(1 << 30));  // 2 GB.
+      .WillOnce(RunOnceCallback<1>(int64_t(2560) << 20));  // 2.5 GB.
 
   PinManager manager(temp_dir_.GetPath(), &drivefs_);
   manager.SetSpaceGetter(GetSpaceGetter());
@@ -2007,7 +2008,7 @@ TEST_F(DriveFsPinManagerTest, WhenMoreResultsReturnedNextPageIsAttempted) {
 
   const Progress progress = manager.GetProgress();
   EXPECT_EQ(progress.stage, Stage::kSuccess);
-  EXPECT_EQ(progress.free_space, 1 << 30);
+  EXPECT_EQ(progress.free_space, int64_t(2560) << 20);
   EXPECT_EQ(progress.required_space, 400 << 20);
   EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
@@ -2214,20 +2215,16 @@ TEST_F(DriveFsPinManagerTest, HandleQueryItem) {
   md.stable_id = static_cast<int64_t>(stable_id);
   md.type = FileMetadata::Type::kDirectory;
   md.size = 0;
-  EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   manager.HandleQueryItem(dir_id, dir_path, std::as_const(item));
-  EXPECT_EQ(manager.progress_.skipped_items, 0);
+  EXPECT_EQ(manager.progress_.skipped_items, 1);
   EXPECT_EQ(manager.progress_.listed_shortcuts, 1);
-  EXPECT_EQ(manager.progress_.listed_dirs, 1);
+  EXPECT_EQ(manager.progress_.listed_dirs, 0);
   EXPECT_EQ(manager.progress_.listed_files, 0);
   EXPECT_EQ(manager.progress_.listed_docs, 0);
-  EXPECT_THAT(manager.listed_items_, SizeIs(1));
-  EXPECT_THAT(manager.listed_items_,
-              UnorderedElementsAre<PinManager::ListedItems::value_type>(
-                  {target_id, dir_id}));
+  EXPECT_THAT(manager.listed_items_, SizeIs(0));
   EXPECT_THAT(manager.files_to_pin_, IsEmpty());
-  EXPECT_FALSE(md.shortcut_details);
-  EXPECT_EQ(Id(md.stable_id), target_id);
+  EXPECT_TRUE(md.shortcut_details);
+  EXPECT_NE(Id(md.stable_id), target_id);
   reset();
 
   // Unexpected path
@@ -2463,7 +2460,7 @@ TEST_F(DriveFsPinManagerTest, StartPinning) {
   EXPECT_EQ(manager.progress_.stage, Stage::kNotEnoughSpace);
 
   manager.progress_.stage = Stage::kListingFiles;
-  manager.progress_.free_space = 1 << 30;  // 1 GB
+  manager.progress_.free_space = int64_t(4) << 30;  // 4 GB
 
   EXPECT_TRUE(manager.should_pin_);
   manager.ShouldPin(false);

@@ -1,15 +1,15 @@
 <style include="sp-shared-style">
-  :host([has-checkbox]) cr-url-list-item {
-    pointer-events: none;
+  :host([drop-position='into']) cr-url-list-item {
+    background: var(--cr-hover-background-color);
+  }
+
+  :host-context(.focus-outline-visible):host(:focus) cr-url-list-item {
+    background-color: var(--cr-active-background-color);
   }
 
   cr-url-list-item[size=compact] {
     padding-inline-end: 14px;
     padding-inline-start: 14px;
-  }
-
-  cr-checkbox {
-    pointer-events: auto;
   }
 
   /* Visually hide the label but allow the screen reader to pick it up. */
@@ -29,12 +29,19 @@
   }
 
   iron-icon {
-    height: 18px;
-    width: 18px;
+    --iron-icon-fill-color: var(--google-grey-700);
+    height: 16px;
+    width: 16px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    iron-icon {
+      --iron-icon-fill-color: var(--google-grey-100);
+    }
   }
 
   :host-context([chrome-refresh-2023]) .sp-labelless-input:hover {
-    --cr-input-background-color: transparent;
+    --cr-input-hover-background-color: transparent;
   }
 </style>
 
@@ -52,8 +59,8 @@
     on-contextmenu="onContextMenu_"
     force-hover="[[forceHover]]">
   <template is="dom-if" if="[[hasCheckbox]]" restamp>
-    <cr-checkbox slot="prefix" hidden="[[!hasCheckbox]]"
-        on-change="onCheckboxChange_"
+    <cr-checkbox id="checkbox" slot="prefix" hidden="[[!hasCheckbox]]"
+        on-checked-changed="onCheckboxChange_"
         disabled="[[checkboxDisabled]]">
       $i18n{checkboxA11yLabel}
     </cr-checkbox>
@@ -72,11 +79,11 @@
 
   <template is="dom-if" if="[[showTrailingIcon_(hasInput, hasCheckbox)]]"
       on-dom-change="onInputDisplayChange_">
-   <slot slot="badges" id="badges" name="badges"></slot>
+    <slot slot="badges" id="badges" name="badges"></slot>
     <cr-icon-button slot="suffix-icon" iron-icon="[[trailingIcon]]"
         hidden="[[!trailingIcon]]" on-click="onTrailingIconClicked_"
         title="[[trailingIconTooltip]]"
-        aria-label="[[trailingIconAriaLabel]]">
+        aria-label="[[trailingIconAriaLabel]]"></cr-icon-button>
   </template>
 
   <template is="dom-if" if="[[isBookmarksBar_(bookmark)]]" restamp>

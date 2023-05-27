@@ -18,9 +18,9 @@
 #import "ios/chrome/browser/push_notification/push_notification_client_id.h"
 #import "ios/chrome/browser/push_notification/push_notification_service.h"
 #import "ios/chrome/browser/push_notification/push_notification_util.h"
-#import "ios/chrome/browser/shared/public/commands/bookmark_add_command.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
+#import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_table_view_item.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_alert_presenter.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_consumer.h"
@@ -170,10 +170,8 @@ using PriceNotificationItems =
 
 - (void)navigateToBookmarks {
   [self.handler hidePriceNotifications];
-  BookmarkAddCommand* command =
-      [[BookmarkAddCommand alloc] initWithWebState:self.webState
-                              presentFolderChooser:NO];
-  [self.bookmarksHandler openToExternalBookmark:command];
+  GURL URL = _webState->GetLastCommittedURL();
+  [self.bookmarksHandler openToExternalBookmark:URL];
 }
 
 #pragma mark - Private
@@ -193,7 +191,7 @@ using PriceNotificationItems =
 // created object to the Price Notifications UI.
 - (void)displayProduct:(const absl::optional<commerce::ProductInfo>&)productInfo
               fromSite:(const GURL&)URL {
-  if (!productInfo) {
+  if (!commerce::CanTrackPrice(productInfo)) {
     [self.consumer setTrackableItem:nil currentlyTracking:NO];
     return;
   }
@@ -205,7 +203,8 @@ using PriceNotificationItems =
                                  fromProductInfo:productInfo
                                            atURL:URL];
   self.shoppingService->IsClusterIdTrackedByUser(
-      productInfo->product_cluster_id, base::BindOnce(^(bool isTracked) {
+      productInfo->product_cluster_id.value(),
+      base::BindOnce(^(bool isTracked) {
         [weakSelf.consumer setTrackableItem:item currentlyTracking:isTracked];
       }));
 
@@ -298,8 +297,7 @@ using PriceNotificationItems =
 // to and populates the data into the Price Notifications UI.
 - (void)fetchTrackedItems {
   __weak PriceNotificationsPriceTrackingMediator* weakSelf = self;
-  commerce::GetAllPriceTrackedBookmarks(
-      self.shoppingService, self.bookmarkModel,
+  self.shoppingService->GetAllPriceTrackedBookmarks(
       base::BindOnce(
           ^(std::vector<const bookmarks::BookmarkNode*> subscribedItems) {
             if (!weakSelf) {
@@ -324,8 +322,13 @@ using PriceNotificationItems =
               info.emplace();
               info->title = specifics.title();
               info->image_url = GURL(meta->lead_image().url());
-              info->product_cluster_id = specifics.product_cluster_id();
-              info->offer_id = specifics.offer_id();
+              if (specifics.has_product_cluster_id()) {
+                info->product_cluster_id.emplace(
+                    specifics.product_cluster_id());
+              }
+              if (specifics.has_offer_id()) {
+                info->offer_id.emplace(specifics.offer_id());
+              }
               info->currency_code = specifics.current_price().currency_code();
               info->amount_micros = specifics.current_price().amount_micros();
               info->country_code = specifics.country_code();
@@ -417,12 +420,14 @@ using PriceNotificationItems =
 // `product_cluster_id` property.
 - (BOOL)isCurrentSiteEqualToProductInfo:
     (const absl::optional<commerce::ProductInfo>&)productInfo {
-  if (!productInfo || !self.currentSiteProductInfo) {
+  if (!productInfo || !productInfo->product_cluster_id.has_value() ||
+      !self.currentSiteProductInfo ||
+      !self.currentSiteProductInfo->product_cluster_id.has_value()) {
     return false;
   }
 
-  return productInfo->product_cluster_id ==
-         self.currentSiteProductInfo->product_cluster_id;
+  return productInfo->product_cluster_id.value() ==
+         self.currentSiteProductInfo->product_cluster_id.value();
 }
 
 // Checks if the item being offered at `URL` is already

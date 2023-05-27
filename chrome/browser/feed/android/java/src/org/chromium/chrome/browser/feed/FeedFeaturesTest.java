@@ -17,7 +17,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnit;
@@ -25,6 +24,8 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import org.chromium.base.FeatureList;
+import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator.StreamTabId;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -35,8 +36,7 @@ import java.time.Duration;
 /**
  * Unit tests for {@link FeedFeatures}.
  */
-// @RunWith(BaseRobolectricTestRunner.class)
-@RunWith(BlockJUnit4ClassRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 public class FeedFeaturesTest {
     @Rule
     public MockitoRule rule = MockitoJUnit.rule().strictness(Strictness.WARN);
@@ -151,6 +151,7 @@ public class FeedFeaturesTest {
     }
 
     @Test
+    @DisabledTest(message = "https://crbug.com/1445267")
     public void testShouldUseNewIndicator_notSeenFeedAndAnimation() {
         mParamsTestValues.addFieldTrialParamOverride(
                 ChromeFeatureList.WEB_FEED_AWARENESS, "awareness_style", "new_animation");

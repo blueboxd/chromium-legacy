@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_COCOA_TOUCHBAR_BROWSER_WINDOW_TOUCH_BAR_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
-#include <os/availability.h>
 
 class Browser;
 @class BrowserWindowDefaultTouchBar;
@@ -37,6 +36,7 @@ API_AVAILABLE(macos(10.12.2))
 - (BrowserWindowDefaultTouchBar*)defaultTouchBar;
 
 - (WebTextfieldTouchBarController*)webTextfieldTouchBar;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TOUCHBAR_BROWSER_WINDOW_TOUCH_BAR_CONTROLLER_H_

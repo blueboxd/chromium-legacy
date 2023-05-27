@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/performance_controls/high_efficiency_chip_view.h"
+#include <string>
 
 #include "base/time/time.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -50,11 +51,10 @@ HighEfficiencyChipView::HighEfficiencyChipView(
                          icon_label_bubble_delegate,
                          page_action_icon_delegate,
                          "HighEfficiency"),
-      browser_(browser) {
+      browser_(browser),
+      chip_accessible_label_(
+          l10n_util::GetStringUTF16(IDS_HIGH_EFFICIENCY_CHIP_ACCNAME)) {
   DCHECK(browser_);
-  SetAccessibilityProperties(
-      /*role*/ absl::nullopt,
-      l10n_util::GetStringUTF16(IDS_HIGH_EFFICIENCY_CHIP_ACCNAME));
 
   auto* manager = performance_manager::user_tuning::
       UserPerformanceTuningManager::GetInstance();
@@ -64,12 +64,9 @@ HighEfficiencyChipView::HighEfficiencyChipView(
   SetUpForInOutAnimation(kChipAnimationDuration);
   SetPaintLabelOverSolidBackground(true);
   SetProperty(views::kElementIdentifierKey, kHighEfficiencyChipElementId);
-  browser_->tab_strip_model()->AddObserver(this);
 }
 
-HighEfficiencyChipView::~HighEfficiencyChipView() {
-  browser_->tab_strip_model()->RemoveObserver(this);
-}
+HighEfficiencyChipView::~HighEfficiencyChipView() = default;
 
 void HighEfficiencyChipView::OnBubbleShown() {
   PauseAnimation();
@@ -78,22 +75,6 @@ void HighEfficiencyChipView::OnBubbleShown() {
 void HighEfficiencyChipView::OnBubbleHidden() {
   UnpauseAnimation();
   bubble_ = nullptr;
-}
-
-void HighEfficiencyChipView::OnTabStripModelChanged(
-    TabStripModel* tab_strip_model,
-    const TabStripModelChange& change,
-    const TabStripSelectionChange& selection) {
-  content::WebContents* const web_contents = selection.old_contents;
-  if (!web_contents) {
-    return;
-  }
-
-  if (selection.active_tab_changed()) {
-    HighEfficiencyChipTabHelper* const tab_helper =
-        HighEfficiencyChipTabHelper::FromWebContents(web_contents);
-    tab_helper->SetChipHasBeenHidden();
-  }
 }
 
 void HighEfficiencyChipView::UpdateImpl() {
@@ -120,15 +101,20 @@ void HighEfficiencyChipView::UpdateImpl() {
       } else if (ShouldHighlightMemorySavingsWithExpandedChip(tab_helper,
                                                               pref_service)) {
         int const memory_savings = tab_helper->GetMemorySavingsInBytes();
+        std::u16string memory_savings_string = ui::FormatBytes(memory_savings);
         SetLabel(
             l10n_util::GetStringFUTF16(IDS_HIGH_EFFICIENCY_CHIP_SAVINGS_LABEL,
-                                       {ui::FormatBytes(memory_savings)}));
+                                       {memory_savings_string}),
+            l10n_util::GetStringFUTF16(
+                IDS_HIGH_EFFICIENCY_CHIP_WITH_SAVINGS_ACCNAME,
+                {memory_savings_string}));
         AnimateIn(absl::nullopt);
         pref_service->SetTime(prefs::kLastHighEfficiencyChipExpandedTimestamp,
                               base::Time::Now());
         RecordHighEfficiencyChipState(
             HighEfficiencyChipState::kExpandedWithSavings);
       } else {
+        SetAccessibleName(chip_accessible_label_);
         RecordHighEfficiencyChipState(HighEfficiencyChipState::kCollapsed);
       }
     } else if (tab_helper->HasChipBeenHidden()) {

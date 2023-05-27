@@ -18,11 +18,15 @@
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_service.h"
 #include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_service_factory.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_metrics_logger.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/ranking/history_clusters_module_ranking_signals.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/side_panel/history_clusters/history_clusters_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history_clusters/core/history_cluster_type_utils.h"
 #include "components/history_clusters/core/history_clusters_service.h"
@@ -120,7 +124,10 @@ HistoryClustersPageHandler::HistoryClustersPageHandler(
     content::WebContents* web_contents)
     : receiver_(this, std::move(pending_receiver)),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      web_contents_(web_contents) {
+      web_contents_(web_contents),
+      ranking_metrics_logger_(
+          std::make_unique<HistoryClustersModuleRankingMetricsLogger>(
+              web_contents_->GetPrimaryMainFrame()->GetPageUkmSourceId())) {
   if (base::FeatureList::IsEnabled(
           ntp_features::kNtpChromeCartInHistoryClusterModule)) {
     cart_processor_ = std::make_unique<CartProcessor>(
@@ -130,15 +137,21 @@ HistoryClustersPageHandler::HistoryClustersPageHandler(
 
 HistoryClustersPageHandler::~HistoryClustersPageHandler() {
   receiver_.reset();
+
+  ranking_metrics_logger_->RecordUkm(/*record_in_cluster_id_order=*/false);
 }
 
 void HistoryClustersPageHandler::CallbackWithClusterData(
     GetClustersCallback callback,
-    std::vector<history::Cluster> clusters) {
+    std::vector<history::Cluster> clusters,
+    base::flat_map<int64_t, HistoryClustersModuleRankingSignals>
+        ranking_signals) {
   if (clusters.empty()) {
     std::move(callback).Run({});
     return;
   }
+
+  ranking_metrics_logger_->AddSignals(std::move(ranking_signals));
 
   std::vector<history_clusters::mojom::ClusterPtr> clusters_mojom;
   for (const auto& cluster : clusters) {
@@ -217,7 +230,12 @@ void HistoryClustersPageHandler::ShowJourneysSidePanel(
 }
 
 void HistoryClustersPageHandler::OpenUrlsInTabGroup(
-    const std::vector<GURL>& urls) {
+    const std::vector<GURL>& urls,
+    const absl::optional<std::string>& tab_group_name) {
+  // This method is different from HistoryClustersHandler::OpenUrlsInTabGroup:
+  //  - It takes over the current tab instead of opening new background tabs.
+  //  - It inserts the new tabs into the location of the current tab.
+
   if (urls.empty()) {
     return;
   }
@@ -250,7 +268,17 @@ void HistoryClustersPageHandler::OpenUrlsInTabGroup(
 
   tab_indices.insert(tab_indices.begin(), model->GetIndexOfWebContents(
                                               model->GetActiveWebContents()));
-  model->AddToNewGroup(tab_indices);
+
+  auto new_group_id = model->AddToNewGroup(tab_indices);
+  if (!new_group_id.is_empty() && tab_group_name) {
+    if (auto* group_model = model->group_model()) {
+      auto* tab_group = group_model->GetTabGroup(new_group_id);
+      // Copy and modify the existing visual data with a new title.
+      tab_groups::TabGroupVisualData visual_data = *tab_group->visual_data();
+      visual_data.SetTitle(base::UTF8ToUTF16(*tab_group_name));
+      tab_group->SetVisualData(visual_data);
+    }
+  }
 
   if (tab_indices.size() > 1) {
     model->ActivateTabAt(tab_indices.at(1));
@@ -272,4 +300,14 @@ void HistoryClustersPageHandler::DismissCluster(
       profile_, ServiceAccessType::EXPLICIT_ACCESS);
   history_service->HideVisits(visit_ids, base::BindOnce([]() {}),
                               &hide_visits_task_tracker_);
+}
+
+void HistoryClustersPageHandler::RecordClick(int64_t cluster_id) {
+  ranking_metrics_logger_->SetClicked(cluster_id);
+}
+
+void HistoryClustersPageHandler::RecordLayoutTypeShown(
+    ntp::history_clusters::mojom::LayoutType layout_type,
+    int64_t cluster_id) {
+  ranking_metrics_logger_->SetLayoutTypeShown(layout_type, cluster_id);
 }

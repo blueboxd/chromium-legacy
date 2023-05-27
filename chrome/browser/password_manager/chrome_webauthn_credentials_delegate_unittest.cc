@@ -52,10 +52,13 @@ constexpr char kRpId[] = "example.com";
 
 PasskeyCredential CreatePasskey(std::vector<uint8_t> cred_id,
                                 std::string username) {
-  return PasskeyCredential(PasskeyCredential::Source::kAndroidPhone,
-                           std::string(kRpId), std::move(cred_id),
-                           device::fido_parsing_utils::Materialize(kUserId),
-                           std::move(username));
+  return PasskeyCredential(
+      PasskeyCredential::Source::kAndroidPhone,
+      PasskeyCredential::RpId(std::string(kRpId)),
+      PasskeyCredential::CredentialId(std::move(cred_id)),
+      PasskeyCredential::UserId(
+          device::fido_parsing_utils::Materialize(kUserId)),
+      PasskeyCredential::Username(std::move(username)));
 }
 
 }  // namespace
@@ -112,7 +115,7 @@ class ChromeWebAuthnCredentialsDelegateTest
   }
 
 #if !BUILDFLAG(IS_ANDROID)
-  raw_ptr<AuthenticatorRequestDialogModel> dialog_model() {
+  AuthenticatorRequestDialogModel* dialog_model() {
     return authenticator_request_delegate_->GetDialogModelForTesting();
   }
 #endif

@@ -702,8 +702,10 @@ int SSLClientSocketImpl::Write(
   if (rv == ERR_IO_PENDING) {
     user_write_callback_ = std::move(callback);
   } else {
-    if (rv > 0)
+    if (rv > 0) {
+      CHECK_LE(rv, buf_len);
       was_ever_used_ = true;
+    }
     user_write_buf_ = nullptr;
     user_write_buf_len_ = 0;
   }
@@ -1247,10 +1249,15 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
   }
 
   // Enforce keyUsage extension for RSA leaf certificates chaining up to known
-  // roots.
-  // TODO(crbug.com/795089): Enforce this unconditionally.
+  // roots unconditionally. Enforcement for local anchors is, for now,
+  // conditional on feature flags and external configuration. See
+  // https://crbug.com/795089.
+  bool rsa_key_usage_for_local_anchors =
+      context_->config().rsa_key_usage_for_local_anchors_override.value_or(
+          base::FeatureList::IsEnabled(features::kRSAKeyUsageForLocalAnchors));
   SSL_set_enforce_rsa_key_usage(
-      ssl_.get(), server_cert_verify_result_.is_issued_by_known_root);
+      ssl_.get(), rsa_key_usage_for_local_anchors ||
+                      server_cert_verify_result_.is_issued_by_known_root);
 
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.
@@ -1505,6 +1512,7 @@ int SSLClientSocketImpl::DoPayloadWrite() {
   int rv = SSL_write(ssl_.get(), user_write_buf_->data(), user_write_buf_len_);
 
   if (rv >= 0) {
+    CHECK_LE(rv, user_write_buf_len_);
     net_log_.AddByteTransferEvent(NetLogEventType::SSL_SOCKET_BYTES_SENT, rv,
                                   user_write_buf_->data());
     if (first_post_handshake_write_ && SSL_is_init_finished(ssl_.get())) {
@@ -1842,7 +1850,7 @@ void SSLClientSocketImpl::MessageCallback(int is_write,
       break;
     case SSL3_RT_CLIENT_HELLO_INNER:
       DCHECK(is_write);
-      net_log_.AddEvent(NetLogEventType::SSL_ENCYPTED_CLIENT_HELLO,
+      net_log_.AddEvent(NetLogEventType::SSL_ENCRYPTED_CLIENT_HELLO,
                         [&](NetLogCaptureMode capture_mode) {
                           return NetLogSSLMessageParams(!!is_write, buf, len,
                                                         capture_mode);

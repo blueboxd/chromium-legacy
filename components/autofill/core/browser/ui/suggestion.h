@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_UI_SUGGESTION_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_UI_SUGGESTION_H_
 
+#include <ostream>
 #include <string>
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
@@ -24,6 +26,31 @@ struct Suggestion {
   using BackendId = base::StrongAlias<struct BackendIdTag, std::string>;
   using ValueToFill = base::StrongAlias<struct ValueToFill, std::u16string>;
   using Payload = absl::variant<BackendId, GURL, ValueToFill>;
+
+  // A frontend ID is just a PopupItemId.
+  // Frontend IDs are deprecated and will be eliminated: crbug.com/1394920.
+  //
+  // TODO(crbug.com/1394920): Convert frontend id into a PopupItemId.
+  class FrontendId {
+   public:
+    constexpr FrontendId() : value_(kAutocompleteEntry) {}
+    constexpr FrontendId(  // NOLINT(google-explicit-constructor)
+        PopupItemId popup_item_id)
+        : value_(popup_item_id) {}
+
+    // Returns the content of the variant as `PopupItemId`, even if it holds a
+    // raw integer.
+    PopupItemId as_popup_item_id() const {
+      return static_cast<PopupItemId>(value_);
+    }
+
+    bool is_an_address_or_card_popup_item_id() const {
+      return value_ == kAddressEntry || value_ == kCreditCardEntry;
+    }
+
+   private:
+    PopupItemId value_;
+  };
 
   enum MatchMode {
     PREFIX_MATCH,    // for prefix matched suggestions;
@@ -59,18 +86,18 @@ struct Suggestion {
 
   Suggestion();
   explicit Suggestion(std::u16string main_text);
-  explicit Suggestion(int frontend_id);
+  explicit Suggestion(Suggestion::FrontendId frontend_id);
   // Constructor for unit tests. It will convert the strings from UTF-8 to
   // UTF-16.
   Suggestion(base::StringPiece main_text,
              base::StringPiece label,
              std::string icon,
-             int frontend_id);
+             Suggestion::FrontendId frontend_id);
   Suggestion(base::StringPiece main_text,
              base::StringPiece minor_text,
              base::StringPiece label,
              std::string icon,
-             int frontend_id);
+             Suggestion::FrontendId frontend_id);
   Suggestion(const Suggestion& other);
   Suggestion(Suggestion&& other);
   Suggestion& operator=(const Suggestion& other);
@@ -87,10 +114,10 @@ struct Suggestion {
 
 #if DCHECK_IS_ON()
   bool Invariant() const {
-    switch (frontend_id) {
-      case PopupItemId::POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS:
+    switch (frontend_id.as_popup_item_id()) {
+      case PopupItemId::kSeePromoCodeDetails:
         return absl::holds_alternative<GURL>(payload);
-      case PopupItemId::POPUP_ITEM_ID_IBAN_ENTRY:
+      case PopupItemId::kIbanEntry:
         return absl::holds_alternative<ValueToFill>(payload);
       default:
         return absl::holds_alternative<BackendId>(payload);
@@ -111,7 +138,7 @@ struct Suggestion {
   // ID for the frontend to use in identifying the particular result. Positive
   // values are sent over IPC to identify the item selected. Negative values
   // (see popup_item_ids.h) have special built-in meanings.
-  int frontend_id = 0;
+  Suggestion::FrontendId frontend_id{};
 
   // The texts that will be displayed on the first line in a suggestion. The
   // order of showing the two texts on the first line depends on whether it is
@@ -173,6 +200,15 @@ struct Suggestion {
   // suggestion.
   absl::optional<std::u16string> acceptance_a11y_announcement;
 };
+
+bool operator==(Suggestion::FrontendId lhs, Suggestion::FrontendId rhs);
+bool operator==(Suggestion::FrontendId lhs, PopupItemId rhs);
+bool operator==(PopupItemId lhs, Suggestion::FrontendId rhs);
+bool operator!=(Suggestion::FrontendId lhs, Suggestion::FrontendId rhs);
+bool operator!=(Suggestion::FrontendId lhs, PopupItemId rhs);
+bool operator!=(PopupItemId lhs, Suggestion::FrontendId rhs);
+
+std::ostream& operator<<(std::ostream& os, Suggestion::FrontendId id);
 
 #if defined(UNIT_TEST)
 inline void PrintTo(const Suggestion& suggestion, std::ostream* os) {

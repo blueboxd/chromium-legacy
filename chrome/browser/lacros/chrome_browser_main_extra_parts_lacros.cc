@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/unguessable_token.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/lacros/arc/arc_icon_cache.h"
 #include "chrome/browser/lacros/automation_manager_lacros.h"
 #include "chrome/browser/lacros/browser_service_lacros.h"
+#include "chrome/browser/lacros/clipboard_history_lacros.h"
 #include "chrome/browser/lacros/desk_template_client_lacros.h"
 #include "chrome/browser/lacros/download_controller_client_lacros.h"
 #include "chrome/browser/lacros/drivefs_cache.h"
@@ -49,11 +51,14 @@
 #include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
+#include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
 #include "chromeos/components/quick_answers/quick_answers_client.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "chromeos/startup/browser_params_proxy.h"
+#include "chromeos/ui/clipboard_history/clipboard_history_util.h"
 #include "components/arc/common/intent_helper/arc_icon_cache_delegate.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
@@ -64,7 +69,7 @@ namespace {
 extensions::mojom::FeatureSessionType GetExtSessionType() {
   using extensions::mojom::FeatureSessionType;
 
-  if (profiles::IsKioskSession()) {
+  if (chromeos::IsKioskSession()) {
     return FeatureSessionType::kKiosk;
   }
 
@@ -130,6 +135,10 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
   task_manager_provider_ = std::make_unique<crosapi::TaskManagerLacros>();
   web_page_info_provider_ =
       std::make_unique<crosapi::WebPageInfoProviderLacros>();
+  if (chromeos::features::IsClipboardHistoryRefreshEnabled()) {
+    clipboard_history_lacros_ =
+        std::make_unique<crosapi::ClipboardHistoryLacros>();
+  }
 
   memory_pressure::MultiSourceMemoryPressureMonitor* monitor =
       static_cast<memory_pressure::MultiSourceMemoryPressureMonitor*>(
@@ -262,6 +271,30 @@ void ChromeBrowserMainExtraPartsLacros::PostProfileInit(
                 crosapi::ViewsTextServicesContextMenuLacros>(menu_model,
                                                              textfield);
           }));
+
+  // Sets the implementation of clipboard history utility functions.
+  if (chromeos::features::IsClipboardHistoryRefreshEnabled()) {
+    chromeos::clipboard_history::SetQueryItemDescriptorsImpl(
+        base::BindRepeating([]() {
+          return crosapi::ClipboardHistoryLacros::Get()->cached_descriptors();
+        }));
+    chromeos::clipboard_history::SetPasteClipboardItemByIdImpl(
+        base::BindRepeating(
+            [](const base::UnguessableToken& id, int event_flags,
+               crosapi::mojom::ClipboardHistoryControllerShowSource source) {
+              if (auto* lacros_service = chromeos::LacrosService::Get();
+                  lacros_service &&
+                  lacros_service
+                      ->IsAvailable<crosapi::mojom::ClipboardHistory>() &&
+                  lacros_service->GetInterfaceVersion<
+                      crosapi::mojom::ClipboardHistory>() >=
+                      int{crosapi::mojom::ClipboardHistory::MethodMinVersions::
+                              kPasteClipboardItemByIdMinVersion}) {
+                lacros_service->GetRemote<crosapi::mojom::ClipboardHistory>()
+                    ->PasteClipboardItemById(id, event_flags, source);
+              }
+            }));
+  }
 }
 
 void ChromeBrowserMainExtraPartsLacros::PostMainMessageLoopRun() {

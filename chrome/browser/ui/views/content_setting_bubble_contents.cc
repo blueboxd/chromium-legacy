@@ -29,6 +29,7 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/color_utils.h"
@@ -50,6 +51,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/table_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
@@ -382,6 +384,9 @@ END_METADATA
 
 // ContentSettingBubbleContents -----------------------------------------------
 
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ContentSettingBubbleContents,
+                                      kMainElementId);
+
 ContentSettingBubbleContents::ContentSettingBubbleContents(
     std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model,
     content::WebContents* web_contents,
@@ -419,6 +424,8 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
 
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
+
+  SetProperty(views::kElementIdentifierKey, kMainElementId);
 }
 
 ContentSettingBubbleContents::~ContentSettingBubbleContents() {
@@ -637,6 +644,9 @@ ContentSettingBubbleContents::CreateHelpAndManageView() {
     manage_button->SetMinSize(gfx::Size(
         layout->GetDistanceMetric(views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH),
         0));
+    if (features::IsChromeRefresh2023()) {
+      manage_button->SetStyle(ui::ButtonStyle::kTonal);
+    }
     manage_button_ = manage_button.get();
     extra_views.push_back(std::move(manage_button));
   }

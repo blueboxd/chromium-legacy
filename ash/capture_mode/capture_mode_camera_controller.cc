@@ -14,6 +14,7 @@
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_util.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -222,18 +223,35 @@ gfx::Rect GetTargetBoundsForBoundsAnimation(
 gfx::Rect GetCollisionAvoidanceRect(aura::Window* root_window) {
   DCHECK(root_window);
 
-  UnifiedSystemTray* tray = RootWindowController::ForWindow(root_window)
-                                ->GetStatusAreaWidget()
-                                ->unified_system_tray();
+  auto* status_area_widget =
+      RootWindowController::ForWindow(root_window)->GetStatusAreaWidget();
+  gfx::Rect collision_avoidance_rect;
 
-  if (!tray->IsBubbleShown())
-    return gfx::Rect();
+  if (UnifiedSystemTray* unified_system_tray =
+          status_area_widget->unified_system_tray();
+      unified_system_tray->IsBubbleShown()) {
+    collision_avoidance_rect = unified_system_tray->GetBubbleBoundsInScreen();
 
-  gfx::Rect collision_avoidance_rect = tray->GetBubbleBoundsInScreen();
-  auto* message_center_bubble = tray->message_center_bubble();
+    if (!features::IsQsRevampEnabled()) {
+      auto* message_center_bubble =
+          unified_system_tray->message_center_bubble();
 
-  if (message_center_bubble->IsMessageCenterVisible())
-    collision_avoidance_rect.Union(message_center_bubble->GetBoundsInScreen());
+      if (message_center_bubble->IsMessageCenterVisible()) {
+        collision_avoidance_rect.Union(
+            message_center_bubble->GetBoundsInScreen());
+      }
+    }
+  } else {
+    const std::vector<TrayBackgroundView*> tray_buttons =
+        status_area_widget->tray_buttons();
+    for (auto* tray_button : tray_buttons) {
+      if (views::Widget* tray_bubble_widget = tray_button->GetBubbleWidget();
+          tray_bubble_widget && tray_bubble_widget->IsVisible()) {
+        collision_avoidance_rect.Union(
+            tray_bubble_widget->GetWindowBoundsInScreen());
+      }
+    }
+  }
 
   // TODO(conniekxu): Return a vector of collision avoidance rects including
   // other system UIs, like launcher.
@@ -644,7 +662,7 @@ void CaptureModeCameraController::OnCaptureSessionStarted() {
 }
 
 void CaptureModeCameraController::OnRecordingStarted(
-    bool is_in_projector_mode) {
+    const CaptureModeBehavior* active_behavior) {
   // Check if there's a camera disconnection that happened before recording
   // starts. In this case, we don't want the camera preview to show, even if the
   // camera reconnects within the allowed grace period.
@@ -654,7 +672,7 @@ void CaptureModeCameraController::OnRecordingStarted(
   in_recording_camera_disconnections_ = 0;
 
   const bool starts_with_camera = camera_preview_widget();
-  RecordRecordingStartsWithCamera(starts_with_camera, is_in_projector_mode);
+  RecordRecordingStartsWithCamera(starts_with_camera, active_behavior);
   RecordCameraSizeOnStart(is_camera_preview_collapsed_
                               ? CaptureModeCameraSize::kCollapsed
                               : CaptureModeCameraSize::kExpanded);
@@ -722,6 +740,10 @@ void CaptureModeCameraController::OnDevicesChanged(
 }
 
 void CaptureModeCameraController::OnSystemTrayBubbleShown() {
+  MaybeUpdatePreviewWidget(/*animate=*/true);
+}
+
+void CaptureModeCameraController::OnStatusAreaAnchoredBubbleShown() {
   MaybeUpdatePreviewWidget(/*animate=*/true);
 }
 

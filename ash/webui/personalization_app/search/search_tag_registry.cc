@@ -262,6 +262,27 @@ SearchTagRegistry::SearchConceptUpdates GetDarkModePrefChangedUpdates(
           {&GetDarkModeOffSearchConcept(), !dark_mode_on}};
 }
 
+const SearchConcept& GetDynamicColorSearchConcept() {
+  static const base::NoDestructor<const SearchConcept> search_concept({
+      .id = mojom::SearchConceptId::kDynamicColor,
+      .message_id = IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR,
+      .alternate_message_ids =
+          {
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT1,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT2,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT3,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT4,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT5,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT6,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT7,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT8,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_DYNAMIC_COLOR_ALT9,
+          },
+      .relative_url = "",
+  });
+  return *search_concept;
+}
+
 const SearchConcept& GetKeyboardBacklightSearchConcept() {
   static const base::NoDestructor<const SearchConcept> search_concept({
       .id = mojom::SearchConceptId::kKeyboardBacklight,
@@ -273,6 +294,21 @@ const SearchConcept& GetKeyboardBacklightSearchConcept() {
               IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT3,
               IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT4,
               IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT5,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT6,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT7,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT8,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT9,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT10,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT11,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT12,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT13,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT14,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT15,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT16,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT17,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT18,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT19,
+              IDS_PERSONALIZATION_APP_SEARCH_RESULT_KEYBOARD_BACKLIGHT_ALT20,
           },
       .relative_url = "",
   });
@@ -313,6 +349,10 @@ SearchTagRegistry::SearchTagRegistry(
   if (::ash::features::IsRgbKeyboardEnabled() &&
       Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported()) {
     updates[&GetKeyboardBacklightSearchConcept()] = true;
+  }
+
+  if (::ash::features::IsPersonalizationJellyEnabled()) {
+    updates[&GetDynamicColorSearchConcept()] = true;
   }
 
   if (IsAmbientModeAllowed()) {

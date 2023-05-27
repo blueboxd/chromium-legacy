@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 
 #import "base/test/ios/wait_util.h"
-#import "components/sync/driver/sync_service_utils.h"
+#import "components/sync/service/sync_service_utils.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/test/test_browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/test_chrome_browser_state.h"
@@ -54,7 +54,8 @@ class TrustedVaultReauthenticationCoordinatorTest : public PlatformTest {
     system_identity_manager->AddIdentity(identity);
     AuthenticationService* authentication_service =
         AuthenticationServiceFactory::GetForBrowserState(browser_state_.get());
-    authentication_service->SignIn(identity);
+    authentication_service->SignIn(
+        identity, signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN);
 
     browser_ = std::make_unique<TestBrowser>(browser_state_.get());
   }

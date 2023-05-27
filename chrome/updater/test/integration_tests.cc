@@ -121,6 +121,10 @@ class IntegrationTest : public ::testing::Test {
                       base::StrCat({"unix:path=", xdg_runtime_dir, "/bus"})));
     }
 #endif
+
+    // Mark the device as de-registered. This stops sending DM requests
+    // that mess up the request expectations in the mock server.
+    ASSERT_NO_FATAL_FAILURE(DMDeregisterDevice());
   }
 
   void TearDown() override {
@@ -131,10 +135,9 @@ class IntegrationTest : public ::testing::Test {
     ExpectNoCrashes();
 
     PrintLog();
-
-    // TODO(crbug.com/1159189): Use a specific test output directory
-    // because Uninstall() deletes the files under GetInstallDirectory().
     CopyLog();
+
+    DMCleanup();
 
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // TearDownTestService();
@@ -420,6 +423,10 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->RunOfflineInstall(is_legacy_install, is_silent_install);
   }
 
+  void DMDeregisterDevice() { test_commands_->DMDeregisterDevice(); }
+
+  void DMCleanup() { test_commands_->DMCleanup(); }
+
   scoped_refptr<IntegrationTestCommands> test_commands_;
 
  private:
@@ -698,7 +705,7 @@ TEST_F(IntegrationTest, UpdateApp) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-#if BUILDFLAG(IS_WIN)  // TODO(crbug.com/1422385): fix for mac and linux.
+#if BUILDFLAG(IS_WIN)  // TODO(crbug.com/1422385): fix for macOS and Linux.
 TEST_F(IntegrationTest, InstallUpdaterAndApp) {
   ScopedServer test_server(test_commands_);
   const std::string kAppId("test");
@@ -887,7 +894,6 @@ TEST_F(IntegrationTest, UninstallUpdaterWhenAllAppsUninstalled) {
   ASSERT_NO_FATAL_FAILURE(InstallApp("test1"));
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_TRUE(WaitForUpdaterExit());
-  // TODO(crbug.com/1287235): The test is flaky without the following line.
   ASSERT_NO_FATAL_FAILURE(SetServerStarts(24));
   ASSERT_NO_FATAL_FAILURE(RunWake(0));
   ASSERT_TRUE(WaitForUpdaterExit());
@@ -1008,9 +1014,7 @@ TEST_F(IntegrationTest, MAYBE_UninstallIfUnusedSelfAndOldReal) {
 
   // Expect that the updater uninstalled itself as well as the lower version.
 }
-#endif  // #if BUILDFLAG(GOOGLE_CHROME_BRANDING) TODO(crbug.com/1097297) Enable
-        // these tests once the `Brand the updater and qualification app ids`
-        // change is available on CIPD.
+#endif  // #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.

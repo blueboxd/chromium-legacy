@@ -125,7 +125,8 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
                      scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,
                      WGPUDevice dawn_device,
-                     const GPUDeviceDescriptor* descriptor)
+                     const GPUDeviceDescriptor* descriptor,
+                     GPUDeviceLostInfo* lost_info)
     : ExecutionContextClient(execution_context),
       DawnObject(dawn_control_client, dawn_device),
       adapter_(adapter),
@@ -170,6 +171,12 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
     queue_->setLabel(descriptor->defaultQueue()->label());
 
   external_texture_cache_ = MakeGarbageCollected<ExternalTextureCache>(this);
+
+  // If lost_info is supplied it means the device should be treated as being
+  // lost at creation time.
+  if (lost_info) {
+    lost_property_->Resolve(lost_info);
+  }
 }
 
 GPUDevice::~GPUDevice() {
@@ -230,6 +237,12 @@ void GPUDevice::AddSingletonWarning(GPUSingletonWarning type) {
             "The key \"depth\" was included in a GPUExtent3D dictionary, which "
             "has no effect. It is likely that \"depthOrArrayLayers\" was "
             "intended instead.";
+        break;
+      case GPUSingletonWarning::kTimestampArray:
+        // TODO(dawn:1800): Remove after a deprecation period;
+        message =
+            "Specifying timestampWrites as an array is deprecated and will "
+            "soon be removed.";
         break;
       case GPUSingletonWarning::kCount:
         NOTREACHED();

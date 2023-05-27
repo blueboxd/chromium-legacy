@@ -26,6 +26,7 @@ class PageIndicatorView;
 class QuickSettingsFooter;
 class QuickSettingsHeader;
 class QuickSettingsMediaViewContainer;
+class TrayDetailedView;
 class UnifiedMediaControlsContainer;
 class UnifiedSystemTrayController;
 
@@ -54,12 +55,10 @@ class ASH_EXPORT QuickSettingsView : public views::View,
   views::View* AddSliderView(std::unique_ptr<views::View> slider_view);
 
   // Adds media controls view to `media_controls_container_`. Only called if
-  // media::kGlobalMediaControlsForChromeOS is enabled and
   // media::kGlobalMediaControlsCrOSUpdatedUI is disabled.
   void AddMediaControlsView(views::View* media_controls);
 
   // Shows media controls view. Only called if
-  // media::kGlobalMediaControlsForChromeOS is enabled and
   // media::kGlobalMediaControlsCrOSUpdatedUI is disabled.
   void ShowMediaControls();
 
@@ -107,14 +106,19 @@ class ASH_EXPORT QuickSettingsView : public views::View,
   FeatureTilesContainerView* feature_tiles_container() {
     return feature_tiles_container_;
   }
+  views::View* detailed_view_container() { return detailed_view_container_; }
 
-  views::View* detailed_view() { return detailed_view_container_; }
-  views::View* detailed_view_for_testing() { return detailed_view_container_; }
+  // Returns the current tray detailed view.
+  TrayDetailedView* GetDetailedViewForTest();
+
   PageIndicatorView* page_indicator_view_for_test() {
     return page_indicator_view_;
   }
   UnifiedMediaControlsContainer* media_controls_container_for_testing() {
     return media_controls_container_;
+  }
+  QuickSettingsMediaViewContainer* media_view_container_for_testing() {
+    return media_view_container_;
   }
   QuickSettingsFooter* footer_for_testing() { return footer_; }
 
@@ -137,7 +141,7 @@ class ASH_EXPORT QuickSettingsView : public views::View,
   raw_ptr<QuickSettingsFooter, ExperimentalAsh> footer_ = nullptr;
   raw_ptr<views::View, ExperimentalAsh> detailed_view_container_ = nullptr;
 
-  // Null if media::kGlobalMediaControlsForChromeOS is disabled.
+  // Null if media::kGlobalMediaControlsCrOSUpdatedUI is enabled.
   raw_ptr<UnifiedMediaControlsContainer, ExperimentalAsh>
       media_controls_container_ = nullptr;
 

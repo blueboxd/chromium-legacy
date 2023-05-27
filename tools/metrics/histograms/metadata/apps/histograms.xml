@@ -22,6 +22,15 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="AppDisplayModes">
+<!-- Should be kept in sync with variants DisplayModes in
+  tools/metrics/histograms/metadata/ash/histograms.xml.
+-->
+
+  <variant name="ClamshellMode" summary="Clamshell mode"/>
+  <variant name="TabletMode" summary="Tablet mode"/>
+</variants>
+
 <variants name="AppType">
   <variant name="Arc" summary="Android apps"/>
   <variant name="Borealis" summary="Borealis apps"/>
@@ -385,7 +394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.AppSearchProvider.QueryTime" units="ms"
-    expires_after="2023-08-27">
+    expires_after="2023-11-12">
   <owner>wrong@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <summary>
@@ -629,7 +638,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.GameProvider.SearchStatus"
-    enum="GameProviderSearchStatus" expires_after="2023-09-03">
+    enum="GameProviderSearchStatus" expires_after="2023-11-12">
   <owner>wrong@chromium.org</owner>
   <owner>amandadeacon@chromium.org</owner>
   <summary>
@@ -638,7 +647,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.GameProvider.UpdateStatus" enum="DiscoveryError"
-    expires_after="2023-08-28">
+    expires_after="2023-11-12">
   <owner>wrong@chromium.org</owner>
   <owner>amandadeacon@chromium.org</owner>
   <summary>
@@ -814,7 +823,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.OsSettingsProvider.Error"
-    enum="OsSettingsProviderStatus" expires_after="2023-08-27">
+    enum="OsSettingsProviderStatus" expires_after="2023-11-12">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -828,7 +837,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.OsSettingsProvider.IconLoadStatus"
-    enum="OsSettingsProviderIconLoadStatus" expires_after="2023-08-27">
+    enum="OsSettingsProviderIconLoadStatus" expires_after="2023-11-12">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>chenjih@chromium.org</owner>
@@ -901,10 +910,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Scoring.ScoreAboveBestMatchThreshold{Type}"
-    units="BooleanHit" expires_after="2023-06-25">
-  <owner>wrong@chromium.org</owner>
+    units="BooleanHit" expires_after="2023-12-25">
   <owner>amandadeacon@chromium.org</owner>
-  <owner>celiahe@google.com</owner>
+  <owner>laurencom@chromium.org</owner>
   <summary>
     The number of the results above the BestMatch threshold with {Type} case.
     Recorded once per result's score above the BestMatch threshold.
@@ -987,7 +995,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.Federated.Actions"
-    enum="AppListFederatedActions" expires_after="2023-07-01">
+    enum="AppListFederatedActions" expires_after="2024-02-01">
   <owner>amandadeacon@chromium.org</owner>
   <owner>wrong@chromium.org</owner>
   <summary>
@@ -1010,7 +1018,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.Federated.InitStatus"
-    enum="AppListFederatedInitStatus" expires_after="2023-07-01">
+    enum="AppListFederatedInitStatus" expires_after="2024-02-01">
   <owner>amandadeacon@chromium.org</owner>
   <owner>wrong@chromium.org</owner>
   <summary>
@@ -1020,7 +1028,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.Federated.ReportStatus"
-    enum="AppListFederatedReportStatus" expires_after="2023-07-01">
+    enum="AppListFederatedReportStatus" expires_after="2024-02-01">
   <owner>amandadeacon@chromium.org</owner>
   <owner>wrong@chromium.org</owner>
   <summary>
@@ -1030,7 +1038,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.Search.Federated.SearchSessionConclusion"
-    enum="AppListFederatedSearchSessionConclusion" expires_after="2023-09-01">
+    enum="AppListFederatedSearchSessionConclusion" expires_after="2024-02-01">
   <owner>amandadeacon@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <summary>
@@ -1160,7 +1168,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.SearchQueryLength.Apps" units="characters"
-    expires_after="2023-09-10">
+    expires_after="2023-11-12">
   <owner>wrong@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <owner>tby@chromium.org</owner>
@@ -1171,7 +1179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.SearchResultRemovalDecision"
-    enum="AppListResultRemovalConfirmation" expires_after="2023-09-03">
+    enum="AppListResultRemovalConfirmation" expires_after="2023-11-12">
   <owner>tbarzic@chromium.org</owner>
   <owner>gzadina@google.com</owner>
   <summary>
@@ -1219,7 +1227,7 @@ chromium-metrics-reviews@google.com.
     sort nudge shows initially in tablet (or clamshell), then the discovery
     duration is reported using the histogram for tablet (or clamshell).
   </summary>
-  <token key="TabletOrClamshell" variants="DisplayModes"/>
+  <token key="TabletOrClamshell" variants="AppDisplayModes"/>
 </histogram>
 
 <histogram name="Apps.AppList.SortOrderOnSessionStart.{TabletOrClamshell}"
@@ -1230,7 +1238,7 @@ chromium-metrics-reviews@google.com.
     The app list sort order preserved in the pref service. Triggered when the
     pref service for the new session is ready.
   </summary>
-  <token key="TabletOrClamshell" variants="DisplayModes"/>
+  <token key="TabletOrClamshell" variants="AppDisplayModes"/>
 </histogram>
 
 <histogram
@@ -1640,7 +1648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Apps.AppListFolderNameLength" units="characters"
-    expires_after="2023-08-27">
+    expires_after="2023-11-12">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -1678,7 +1686,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListLauncherClickedSearchQueryLength"
-    units="characters" expires_after="2023-09-03">
+    units="characters" expires_after="2023-11-12">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <summary>
@@ -2060,7 +2068,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.CreateShortcuts.Linux.Result"
-    enum="WebAppCreateShortcutLinuxResult" expires_after="2023-09-10">
+    enum="WebAppCreateShortcutLinuxResult" expires_after="2023-11-12">
   <owner>phillis@chromium.org</owner>
   <owner>cmumford@chromium.org</owner>
   <summary>
@@ -2224,7 +2232,7 @@ chromium-metrics-reviews@google.com.
     The events that reset the app list pref sort order. Triggered when the pref
     sort order is reset.
   </summary>
-  <token key="TabletOrClamshell" variants="DisplayModes"/>
+  <token key="TabletOrClamshell" variants="AppDisplayModes"/>
 </histogram>
 
 <histogram
@@ -2237,7 +2245,7 @@ chromium-metrics-reviews@google.com.
     smoothness of this animation. 100% represents the ideally smooth 60 frames
     per second.
   </summary>
-  <token key="TabletOrClamshell" variants="DisplayModes"/>
+  <token key="TabletOrClamshell" variants="AppDisplayModes"/>
 </histogram>
 
 <histogram name="Apps.Launcher.InstallAppFromLinkResult"
@@ -2271,7 +2279,7 @@ chromium-metrics-reviews@google.com.
     The user-set sort order of the productivity launcher. Triggered when the
     launcher is set with a new order.
   </summary>
-  <token key="TabletOrClamshell" variants="DisplayModes"/>
+  <token key="TabletOrClamshell" variants="AppDisplayModes"/>
 </histogram>
 
 <histogram
@@ -2284,7 +2292,7 @@ chromium-metrics-reviews@google.com.
     smoothness of this animation. 100% represents the ideally smooth 60 frames
     per second.
   </summary>
-  <token key="TabletOrClamshell" variants="DisplayModes"/>
+  <token key="TabletOrClamshell" variants="AppDisplayModes"/>
 </histogram>
 
 <histogram name="Apps.LockScreen.AppsProfile.Creation.Duration" units="ms"
@@ -2541,7 +2549,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.MediaApp.Load.OtherOpenWindowCount" units="windows"
-    expires_after="2023-09-17">
+    expires_after="2023-11-19">
   <owner>tapted@chromium.org</owner>
   <owner>patricialor@chromium.org</owner>
   <summary>
@@ -2904,7 +2912,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.StateTransition.AnimationSmoothness" units="%"
-    expires_after="2023-09-03">
+    expires_after="2023-11-05">
   <owner>tbarzic@chromium.org</owner>
   <owner>newcomer@chromium.org</owner>
   <owner>src/ash/app_list/OWNERS</owner>

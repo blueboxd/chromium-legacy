@@ -32,8 +32,16 @@ class WebAppProviderBridgeLacros : public mojom::WebAppProviderBridge {
       const std::string& app_id,
       GetWebApkCreationParamsCallback callback) override;
   void InstallMicrosoft365(InstallMicrosoft365Callback callback) override;
+  void ScheduleNavigateAndTriggerInstallDialog(
+      const GURL& install_url,
+      const GURL& origin_url,
+      bool is_renderer_initiated) override;
   void GetSubAppIds(const web_app::AppId& app_id,
                     GetSubAppIdsCallback callback) override;
+  void GetSubAppToParentMap(GetSubAppToParentMapCallback callback) override;
+  void InstallPreloadWebApp(
+      mojom::PreloadWebAppInstallInfoPtr preload_install_info,
+      InstallPreloadWebAppCallback callback) override;
 
  private:
   static void WebAppInstalledInArcImpl(
@@ -50,9 +58,20 @@ class WebAppProviderBridgeLacros : public mojom::WebAppProviderBridge {
       Profile* profile);
   static void InstallMicrosoft365Impl(InstallMicrosoft365Callback callback,
                                       Profile* profile);
+  static void ScheduleNavigateAndTriggerInstallDialogImpl(
+      const GURL& install_url,
+      const GURL& origin_url,
+      bool is_renderer_initiated,
+      Profile* profile);
   static void GetSubAppIdsImpl(const web_app::AppId& app_id,
                                GetSubAppIdsCallback callback,
                                Profile* profile);
+  static void GetSubAppToParentMapImpl(GetSubAppToParentMapCallback callback,
+                                       Profile* profile);
+  static void InstallPreloadWebAppImpl(
+      mojom::PreloadWebAppInstallInfoPtr preload_install_info,
+      InstallPreloadWebAppCallback callback,
+      Profile* profile);
 
   mojo::Receiver<mojom::WebAppProviderBridge> receiver_{this};
 };

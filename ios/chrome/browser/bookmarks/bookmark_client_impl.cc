@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/metrics/user_metrics.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
@@ -17,16 +16,21 @@
 #include "components/history/core/browser/url_database.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
+#include "components/undo/bookmark_undo_service.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 
 BookmarkClientImpl::BookmarkClientImpl(
     ChromeBrowserState* browser_state,
     bookmarks::ManagedBookmarkService* managed_bookmark_service,
-    sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
+    sync_bookmarks::BookmarkSyncService* bookmark_sync_service,
+    BookmarkUndoService* bookmark_undo_service,
+    bookmarks::StorageType storage_type_for_uma)
     : browser_state_(browser_state),
       managed_bookmark_service_(managed_bookmark_service),
-      bookmark_sync_service_(bookmark_sync_service) {}
+      bookmark_sync_service_(bookmark_sync_service),
+      bookmark_undo_service_(bookmark_undo_service),
+      storage_type_for_uma_(storage_type_for_uma) {}
 
 BookmarkClientImpl::~BookmarkClientImpl() {}
 
@@ -77,15 +81,24 @@ bool BookmarkClientImpl::IsPermanentNodeVisibleWhenEmpty(
   return type == bookmarks::BookmarkNode::MOBILE;
 }
 
-void BookmarkClientImpl::RecordAction(const base::UserMetricsAction& action) {
-  base::RecordAction(action);
-}
-
 bookmarks::LoadManagedNodeCallback
 BookmarkClientImpl::GetLoadManagedNodeCallback() {
   if (managed_bookmark_service_)
     return managed_bookmark_service_->GetLoadManagedNodeCallback();
   return bookmarks::LoadManagedNodeCallback();
+}
+
+bookmarks::metrics::StorageStateForUma
+BookmarkClientImpl::GetStorageStateForUma() {
+  switch (storage_type_for_uma_) {
+    case bookmarks::StorageType::kAccount:
+      return bookmarks::metrics::StorageStateForUma::kAccount;
+    case bookmarks::StorageType::kLocalOrSyncable:
+      return bookmark_sync_service_->IsTrackingMetadata()
+                 ? bookmarks::metrics::StorageStateForUma::kSyncEnabled
+                 : bookmarks::metrics::StorageStateForUma::kLocalOnly;
+  }
+  NOTREACHED_NORETURN();
 }
 
 bool BookmarkClientImpl::CanSetPermanentNodeTitle(
@@ -117,4 +130,13 @@ void BookmarkClientImpl::DecodeBookmarkSyncMetadata(
     const base::RepeatingClosure& schedule_save_closure) {
   bookmark_sync_service_->DecodeBookmarkSyncMetadata(
       metadata_str, schedule_save_closure, model_);
+}
+
+void BookmarkClientImpl::OnBookmarkNodeRemovedUndoable(
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* parent,
+    size_t index,
+    std::unique_ptr<bookmarks::BookmarkNode> node) {
+  bookmark_undo_service_->AddUndoEntryForRemovedNode(model, parent, index,
+                                                     std::move(node));
 }

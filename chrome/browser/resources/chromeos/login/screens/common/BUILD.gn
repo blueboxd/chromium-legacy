@@ -206,6 +206,7 @@ js_library("device_disabled") {
 js_library("display_size") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/display_size.js" ]
   deps = [
+    "../../components:oobe_display_size_selector",
     "../../components/behaviors:login_screen_behavior",
     "../../components/behaviors:oobe_dialog_host_behavior",
     "../../components/behaviors:oobe_i18n_behavior",
@@ -517,9 +518,18 @@ js_library("pin_setup") {
     "../../components/dialogs:oobe_adaptive_dialog",
     "//ash/webui/common/resources:cr.m",
     "//ash/webui/common/resources/quick_unlock:lock_screen_constants",
-    "//ash/webui/common/resources/quick_unlock:setup_pin_keyboard",
   ]
   extra_deps = [ ":web_components" ]
+  externs_list = [
+    "$externs_path/quick_unlock_private.js",
+
+    # setup_pin_keyboard_externs.js is a temporary band-aid to let this
+    # closure-compiled JS library depend on the typescript file
+    # setup_pin_keyboard.ts. If you remove this dependency, consider deleting
+    # the externs file if it's not used elsewhere.
+    "//ash/webui/common/resources/quick_unlock/setup_pin_keyboard_externs.js",
+  ]
+  extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
 }
 
 js_library("gaia_info") {

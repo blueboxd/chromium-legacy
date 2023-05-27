@@ -35,7 +35,8 @@ constexpr char kServicePatternEthernet[] = R"({
     "GUID": "%s", "Type": "ethernet", "State": "online"})";
 
 constexpr char kServicePatternWiFi[] = R"({
-    "GUID": "%s", "Type": "wifi", "State": "online", "Strength": 100})";
+    "GUID": "%s", "Type": "wifi", "State": "online",
+    "Strength": 100, "SecurityClass": "%s"})";
 }  // namespace
 
 // Pixel test for the quick settings network feature tile view.
@@ -109,10 +110,11 @@ class NetworkFeatureTilePixelTest : public AshTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetupWiFi() {
+  void SetupWiFi(const std::string& security) {
     ASSERT_TRUE(wifi_path_.empty());
-    wifi_path_ = ConfigureService(
-        base::StringPrintf(kServicePatternWiFi, kNetworkGuidWifi));
+    wifi_path_ = ConfigureService(base::StringPrintf(
+        kServicePatternWiFi, kNetworkGuidWifi, security.c_str()));
+
     base::RunLoop().RunUntilIdle();
   }
 
@@ -144,7 +146,7 @@ TEST_F(NetworkFeatureTilePixelTest, NoNetworks) {
   ASSERT_TRUE(tile_view);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_tile_view",
-      /*revision_number=*/0, tile_view));
+      /*revision_number=*/2, tile_view));
 }
 
 TEST_F(NetworkFeatureTilePixelTest, Ethernet) {
@@ -156,14 +158,26 @@ TEST_F(NetworkFeatureTilePixelTest, Ethernet) {
   ASSERT_TRUE(tile_view);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_tile_view",
-      /*revision_number=*/0, tile_view));
+      /*revision_number=*/1, tile_view));
 }
 
 TEST_F(NetworkFeatureTilePixelTest, Wifi) {
   ASSERT_TRUE(
       network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
 
-  SetupWiFi();
+  SetupWiFi("None");
+  auto* tile_view = feature_tile();
+  ASSERT_TRUE(tile_view);
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "check_tile_view",
+      /*revision_number=*/1, tile_view));
+}
+
+TEST_F(NetworkFeatureTilePixelTest, WifiSecurity) {
+  ASSERT_TRUE(
+      network_state_handler()->IsTechnologyEnabled(NetworkTypePattern::WiFi()));
+
+  SetupWiFi("wep");
   auto* tile_view = feature_tile();
   ASSERT_TRUE(tile_view);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
@@ -180,7 +194,7 @@ TEST_F(NetworkFeatureTilePixelTest, Cellular) {
   ASSERT_TRUE(tile_view);
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_tile_view",
-      /*revision_number=*/0, tile_view));
+      /*revision_number=*/1, tile_view));
 }
 
 }  // namespace ash

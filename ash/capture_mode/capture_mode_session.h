@@ -64,11 +64,13 @@ class ASH_EXPORT CaptureModeSession
       public FolderSelectionDialogController::Delegate,
       public ShellObserver {
  public:
-  // Creates the bar widget on a calculated root window. `projector_mode`
-  // specifies whether this session was started for the projector workflow.
+  // Centralized place to control the events, observe windows and create the
+  // capture mode needed widgets including `capture_mode_bar_widget_`,
+  // `capture_label_widget_`, `recording_type_menu_widget_`, etc, on a
+  // calculated root window. `active_behavior` will customize the widgets or
+  // restrict certain operations.
   CaptureModeSession(CaptureModeController* controller,
-                     CaptureModeBehavior* active_behavior,
-                     bool projector_mode);
+                     CaptureModeBehavior* active_behavior);
   CaptureModeSession(const CaptureModeSession&) = delete;
   CaptureModeSession& operator=(const CaptureModeSession&) = delete;
   ~CaptureModeSession() override;
@@ -88,7 +90,6 @@ class ASH_EXPORT CaptureModeSession
   views::Widget* capture_mode_settings_widget() {
     return capture_mode_settings_widget_.get();
   }
-  bool is_in_projector_mode() const { return is_in_projector_mode_; }
   void set_can_exit_on_escape(bool value) { can_exit_on_escape_ = value; }
   bool is_selecting_region() const { return is_selecting_region_; }
   bool is_drag_in_progress() const { return is_drag_in_progress_; }
@@ -119,6 +120,11 @@ class ASH_EXPORT CaptureModeSession
   // nullptr if no window is available for selection.
   aura::Window* GetSelectedWindow() const;
 
+  // Sets the pre-selected window to be observed by `capture_window_observer_`,
+  // once set, the window can't be altered throughout the entire capture
+  // session.
+  void SetPreSelectedWindow(aura::Window* pre_selected_window);
+
   // Called when a user toggles the capture source or capture type to announce
   // an accessibility alert. If `trigger_now` is true, it will announce
   // immediately; otherwise, it will trigger another alert asynchronously with
@@ -128,10 +134,13 @@ class ASH_EXPORT CaptureModeSession
   // Called when switching a capture type from another capture type.
   void A11yAlertCaptureType();
 
-  // Called when either the capture source, type, or recording type changes.
+  // Called when either the capture source, type, recording type, audio
+  // recording mode or demo tools changes.
   void OnCaptureSourceChanged(CaptureModeSource new_source);
   void OnCaptureTypeChanged(CaptureModeType new_type);
   void OnRecordingTypeChanged();
+  void OnAudioRecordingModeChanged();
+  void OnDemoToolsSettingsChanged();
 
   // When performing capture, or at the end of the 3-second count down, the DLP
   // manager is checked for any restricted content. The DLP manager may choose
@@ -255,6 +264,15 @@ class ASH_EXPORT CaptureModeSession
 
   void OnCameraPreviewDestroyed();
 
+  // If there's a user nudge currently showing, it will be dismissed forever,
+  // and will no longer be shown to the user.
+  void MaybeDismissUserNudgeForever();
+
+  // Sets the correct screen bounds on the `capture_mode_bar_widget_` based on
+  // the `current_root_`, potentially moving the bar to a new display if
+  // `current_root_` is different`.
+  void RefreshBarWidgetBounds();
+
  private:
   friend class CaptureModeSettingsTestApi;
   friend class CaptureModeSessionFocusCycler;
@@ -286,19 +304,14 @@ class ASH_EXPORT CaptureModeSession
   // could be shown, otherwise, returns false.
   bool CanShowWidget(views::Widget* widget) const;
 
-  // Sets the correct screen bounds on the `capture_mode_bar_widget_` based on
-  // the `current_root_`, potentially moving the bar to a new display if
-  // `current_root_` is different`.
-  void RefreshBarWidgetBounds();
+  // Triggers a selfie camera visibility update during capture mode session on
+  // capture mode type changed.
+  void MaybeUpdateSelfieCamInSessionVisibility();
 
   // If possible, this recreates and shows the nudge that alerts the user about
   // the new folder selection settings. The nudge will be created on top of the
   // the settings button on the capture mode bar.
   void MaybeCreateUserNudge();
-
-  // If there's a user nudge currently showing, it will be dismissed forever,
-  // and will no longer be shown to the user.
-  void MaybeDismissUserNudgeForever();
 
   // Called to accept and trigger a capture operation. This happens e.g. when
   // the user hits enter, selects a window/display to capture, or presses on the
@@ -496,9 +509,6 @@ class ASH_EXPORT CaptureModeSession
   // True if all UIs (cursors, widgets, and paintings on the layer) of the
   // capture mode session is visible.
   bool is_all_uis_visible_ = true;
-
-  // Whether this session was started from a projector workflow.
-  const bool is_in_projector_mode_ = false;
 
   // Whether pressing the escape key can exit the session. This is used when we
   // find capturable content at the end of the 3-second count down, but we need

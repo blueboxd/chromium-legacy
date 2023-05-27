@@ -678,13 +678,9 @@ void WebFrameWidgetImpl::BindWidgetCompositor(
 void WebFrameWidgetImpl::BindInputTargetClient(
     mojo::PendingReceiver<viz::mojom::blink::InputTargetClient> receiver) {
   DCHECK(!input_target_receiver_.is_bound());
-  TaskType priority = TaskType::kInternalDefault;
-  if (base::FeatureList::IsEnabled(
-          blink::features::kInputTargetClientHighPriority)) {
-    priority = TaskType::kInternalInputBlocking;
-  }
-  input_target_receiver_.Bind(std::move(receiver),
-                              local_root_->GetTaskRunner(priority));
+  input_target_receiver_.Bind(
+      std::move(receiver),
+      local_root_->GetTaskRunner(TaskType::kInternalInputBlocking));
 }
 
 void WebFrameWidgetImpl::FrameSinkIdAt(const gfx::PointF& point,
@@ -3820,6 +3816,19 @@ void WebFrameWidgetImpl::ExtendSelectionAndDelete(int32_t before,
   if (!focused_frame)
     return;
   focused_frame->ExtendSelectionAndDelete(before, after);
+}
+
+void WebFrameWidgetImpl::ExtendSelectionAndReplace(
+    uint32_t before,
+    uint32_t after,
+    const String& replacement_text) {
+  WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
+  if (!focused_frame) {
+    return;
+  }
+  focused_frame->ExtendSelectionAndReplace(base::checked_cast<int>(before),
+                                           base::checked_cast<int>(after),
+                                           replacement_text);
 }
 
 void WebFrameWidgetImpl::DeleteSurroundingText(int32_t before, int32_t after) {

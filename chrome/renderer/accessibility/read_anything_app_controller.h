@@ -20,7 +20,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_id_forward.h"
-#include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_update_forward.h"
 #include "url/gurl.h"
 
@@ -59,8 +58,7 @@ class ReadAnythingAppControllerTest;
 //
 class ReadAnythingAppController
     : public gin::Wrappable<ReadAnythingAppController>,
-      public read_anything::mojom::UntrustedPage,
-      public ui::AXTreeObserver {
+      public read_anything::mojom::UntrustedPage {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
@@ -68,7 +66,7 @@ class ReadAnythingAppController
   ReadAnythingAppController& operator=(const ReadAnythingAppController&) =
       delete;
 
-  // Installs v8 context for Read Anything and adds chrome.readAnything binding
+  // Installs v8 context for Read Anything and adds chrome.readingMode binding
   // to page.
   static ReadAnythingAppController* Install(content::RenderFrame* render_frame);
 
@@ -97,13 +95,6 @@ class ReadAnythingAppController
   void ScreenAIServiceReady() override;
 #endif
 
-  // ui::AXTreeObserver:
-  void OnAtomicUpdateFinished(ui::AXTree* tree,
-                              bool root_changed,
-                              const std::vector<Change>& changes) override;
-  // TODO(crbug.com/1266555): Implement OnNodeWillBeDeleted to capture the
-  // deletion of child trees.
-
   // gin templates:
   ui::AXNodeID RootId() const;
   ui::AXNodeID StartNodeId() const;
@@ -125,8 +116,9 @@ class ReadAnythingAppController
   bool ShouldBold(ui::AXNodeID ax_node_id) const;
   bool IsOverline(ui::AXNodeID ax_node_id) const;
   void OnConnected();
+  void OnCopy() const;
+  void OnScroll(bool on_selection) const;
   void OnLinkClicked(ui::AXNodeID ax_node_id) const;
-  void ClearSelection() const;
   void OnSelectionChange(ui::AXNodeID anchor_node_id,
                          int anchor_offset,
                          ui::AXNodeID focus_node_id,
@@ -184,6 +176,7 @@ class ReadAnythingAppController
 
   // Model that holds state for this controller.
   ReadAnythingAppModel model_;
+
   base::WeakPtrFactory<ReadAnythingAppController> weak_ptr_factory_{this};
 };
 

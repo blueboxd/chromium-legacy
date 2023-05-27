@@ -13,6 +13,7 @@
 
 #include "content/browser/devtools/devtools_device_request_prompt_info.h"
 #include "content/browser/devtools/devtools_throttle_handle.h"
+#include "content/browser/preloading/prefetch/prefetch_status.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -50,6 +51,7 @@ struct WebTransportError;
 namespace download {
 struct DownloadCreateInfo;
 class DownloadItem;
+class DownloadUrlParameters;
 }  // namespace download
 
 namespace content {
@@ -175,6 +177,9 @@ void OnNavigationRequestFailed(
     const network::URLLoaderCompletionStatus& status);
 bool ShouldBypassCSP(const NavigationRequest& nav_request);
 
+void ApplyNetworkOverridesForDownload(
+    RenderFrameHostImpl* rfh,
+    download::DownloadUrlParameters* parameters);
 void WillBeginDownload(download::DownloadCreateInfo* info,
                        download::DownloadItem* item);
 
@@ -186,6 +191,7 @@ void BackForwardCacheNotUsed(
 void WillSwapFrameTreeNode(FrameTreeNode& old_node, FrameTreeNode& new_node);
 void OnFrameTreeNodeDestroyed(FrameTreeNode& frame_tree_node);
 
+bool IsPrerenderAllowed(FrameTree& frame_tree);
 void WillInitiatePrerender(FrameTree& frame_tree);
 void DidActivatePrerender(
     const NavigationRequest& nav_request,
@@ -206,13 +212,15 @@ void DidUpdatePrefetchStatus(
     FrameTreeNode* ftn,
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prefetch_url,
-    PreloadingTriggeringOutcome status);
+    PreloadingTriggeringOutcome status,
+    PrefetchStatus prefetch_status);
 
 void DidUpdatePrerenderStatus(
     int initiator_frame_tree_node_id,
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prerender_url,
-    PreloadingTriggeringOutcome status);
+    PreloadingTriggeringOutcome status,
+    absl::optional<PrerenderFinalStatus> prerender_status);
 
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,

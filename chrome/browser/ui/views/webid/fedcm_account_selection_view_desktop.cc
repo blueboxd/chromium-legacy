@@ -33,8 +33,8 @@ int AccountSelectionView::GetBrandIconIdealSize() {
   // As only a single brand icon is selected and the user can have monitors with
   // different screen densities, make the ideal size be the size which works
   // with a high density display (if the OS supports high density displays).
-  float max_supported_scale = ui::GetScaleForResourceScaleFactor(
-      ui::GetMaxSupportedResourceScaleFactor());
+  const float max_supported_scale =
+      ui::GetScaleForMaxSupportedResourceScaleFactor();
   return round(GetBrandIconMinimumSize() * max_supported_scale);
 }
 
@@ -45,17 +45,10 @@ FedCmAccountSelectionView::FedCmAccountSelectionView(
 
 FedCmAccountSelectionView::~FedCmAccountSelectionView() {
   notify_delegate_of_dismiss_ = false;
+  should_show_bubble_widget_ = false;
   Close();
 
   TabStripModelObserver::StopObservingAll(this);
-
-  if (idp_signin_modal_dialog_) {
-    // Important to remove the observer here, so that we don't try to use it in
-    // FedCmModalDialogView's destructor to inform this
-    // FedCmAccountSelectionView, which would cause a use-after-free.
-    idp_signin_modal_dialog_->RemoveObserver();
-    CloseModalDialog();
-  }
 }
 
 void FedCmAccountSelectionView::Show(
@@ -138,9 +131,10 @@ void FedCmAccountSelectionView::Show(
     GetBubbleView()->ShowMultiAccountPicker(idp_display_data_list_);
   }
 
-  if (create_bubble) {
+  if (create_bubble || should_show_bubble_widget_) {
     input_protector_->VisibilityChanged(true);
     bubble_widget_->Show();
+    should_show_bubble_widget_ = false;
   }
   // Else:
   // Do not force show the bubble. The bubble may be purposefully hidden if the
@@ -151,8 +145,7 @@ void FedCmAccountSelectionView::ShowFailureDialog(
     const std::string& top_frame_etld_plus_one,
     const absl::optional<std::string>& iframe_etld_plus_one,
     const std::string& idp_etld_plus_one,
-    const content::IdentityProviderMetadata& idp_metadata,
-    IdentityRegistryCallback identity_registry_callback) {
+    const content::IdentityProviderMetadata& idp_metadata) {
   state_ = State::IDP_SIGNIN_STATUS_MISMATCH;
   absl::optional<std::u16string> iframe_etld_plus_one_u16 =
       iframe_etld_plus_one ? absl::make_optional<std::u16string>(
@@ -180,8 +173,7 @@ void FedCmAccountSelectionView::ShowFailureDialog(
 
   GetBubbleView()->ShowFailureDialog(
       base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
-      base::UTF8ToUTF16(idp_etld_plus_one), idp_metadata,
-      std::move(identity_registry_callback));
+      base::UTF8ToUTF16(idp_etld_plus_one), idp_metadata);
 
   if (create_bubble) {
     bubble_widget_->Show();
@@ -247,6 +239,11 @@ void FedCmAccountSelectionView::OnTabStripModelChanged(
 void FedCmAccountSelectionView::SetInputEventActivationProtectorForTesting(
     std::unique_ptr<views::InputEventActivationProtector> input_protector) {
   input_protector_ = std::move(input_protector);
+}
+
+void FedCmAccountSelectionView::SetIdpSigninPopupWindowForTesting(
+    std::unique_ptr<FedCmModalDialogView> idp_signin_popup_window) {
+  idp_signin_modal_dialog_ = std::move(idp_signin_popup_window);
 }
 
 views::Widget* FedCmAccountSelectionView::CreateBubbleWithAccessibleTitle(
@@ -373,27 +370,28 @@ void FedCmAccountSelectionView::OnCloseButtonClicked(const ui::Event& event) {
       views::Widget::ClosedReason::kCloseButtonClicked);
 }
 
-void FedCmAccountSelectionView::ShowModalDialog(const GURL& url) {
-  idp_signin_modal_dialog_ = FedCmModalDialogView::ShowFedCmModalDialog(
-      delegate_->GetWebContents(), url, this);
-  if (GetBubbleView()->HasIdentityRegistryCallback()) {
-    std::move(GetBubbleView()->GetIdentityRegistryCallback())
-        .Run(idp_signin_modal_dialog_->GetWebViewWebContents());
+void FedCmAccountSelectionView::OnSigninToIdP() {
+  delegate_->OnSigninToIdP();
+}
+
+content::WebContents* FedCmAccountSelectionView::ShowModalDialog(
+    const GURL& url) {
+  if (!idp_signin_modal_dialog_) {
+    idp_signin_modal_dialog_ =
+        std::make_unique<FedCmModalDialogView>(delegate_->GetWebContents());
   }
 
   input_protector_->VisibilityChanged(false);
   bubble_widget_->Hide();
+  return idp_signin_modal_dialog_->ShowPopupWindow(url);
 }
 
 void FedCmAccountSelectionView::CloseModalDialog() {
   if (idp_signin_modal_dialog_) {
-    idp_signin_modal_dialog_->CloseFedCmModalDialog();
+    idp_signin_modal_dialog_->ClosePopupWindow();
+    idp_signin_modal_dialog_.reset();
+    should_show_bubble_widget_ = true;
   }
-}
-
-void FedCmAccountSelectionView::OnFedCmModalDialogViewDestroyed() {
-  // The underlying FedCmModalDialogView has been destroyed.
-  idp_signin_modal_dialog_ = nullptr;
 
   if (show_accounts_dialog_callback_) {
     std::move(show_accounts_dialog_callback_).Run();

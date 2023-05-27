@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CrSettingsPrefs, osPageAvailability, Router, routes, setContactManagerForTesting, setNearbyShareSettingsForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
+import {createPageAvailabilityForTesting, CrSettingsPrefs, Router, routes, setContactManagerForTesting, setNearbyShareSettingsForTesting} from 'chrome://os-settings/os_settings.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {FakeContactManager} from 'chrome://webui-test/nearby_share/shared/fake_nearby_contact_manager.js';
@@ -36,7 +36,7 @@ suite('MainPageTests', function() {
     settingsMain = document.createElement('os-settings-main');
     settingsMain.prefs = settingsPrefs.prefs;
     settingsMain.toolbarSpinnerActive = false;
-    settingsMain.pageAvailability = osPageAvailability;
+    settingsMain.pageAvailability = createPageAvailabilityForTesting();
     document.body.appendChild(settingsMain);
   });
 
@@ -55,11 +55,12 @@ suite('MainPageTests', function() {
 
     assertTrue(showManagedHeader());
 
-    const page = settingsMain.shadowRoot.querySelector('os-settings-page');
+    const mainPageContainer =
+        settingsMain.shadowRoot.querySelector('main-page-container');
 
     const subpageExpandEvent =
         new CustomEvent('subpage-expand', {'bubbles': true, composed: true});
-    page.dispatchEvent(subpageExpandEvent);
+    mainPageContainer.dispatchEvent(subpageExpandEvent);
 
     assertFalse(showManagedHeader());
   });
@@ -75,9 +76,11 @@ suite('MainPageTests', function() {
 
   /** @return {!HTMLElement} */
   function getToggleContainer() {
-    const page = settingsMain.shadowRoot.querySelector('os-settings-page');
-    assertTrue(!!page);
-    const toggleContainer = page.shadowRoot.querySelector('#toggleContainer');
+    const mainPageContainer =
+        settingsMain.shadowRoot.querySelector('main-page-container');
+    assertTrue(!!mainPageContainer);
+    const toggleContainer =
+        mainPageContainer.shadowRoot.querySelector('#toggleContainer');
     assertTrue(!!toggleContainer);
     return toggleContainer;
   }
@@ -103,13 +106,17 @@ suite('MainPageTests', function() {
    */
   async function assertPageDisplay(expectedBasic, expectedAdvanced) {
     flush();
-    const page = settingsMain.shadowRoot.querySelector('os-settings-page');
+    const mainPageContainer =
+        settingsMain.shadowRoot.querySelector('main-page-container');
     assertEquals(
         expectedBasic,
-        getComputedStyle(page.shadowRoot.querySelector('#basicPage')).display);
+        getComputedStyle(
+            mainPageContainer.shadowRoot.querySelector('#basicPage'))
+            .display);
 
-    const advancedPage =
-        await page.shadowRoot.querySelector('#advancedPageTemplate').get();
+    const advancedPage = await mainPageContainer.shadowRoot
+                             .querySelector('#advancedPageTemplate')
+                             .get();
     assertEquals(expectedAdvanced, getComputedStyle(advancedPage).display);
   }
 

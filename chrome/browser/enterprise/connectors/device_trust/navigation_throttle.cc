@@ -16,7 +16,12 @@
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service.h"
 #include "chrome/browser/enterprise/connectors/device_trust/device_trust_service_factory.h"
+#include "chrome/browser/enterprise/signals/user_permission_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/device_signals_consent/consent_requester.h"
+#include "components/device_signals/core/browser/pref_names.h"
+#include "components/device_signals/core/browser/user_permission_service.h"
+#include "components/device_signals/core/common/signals_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -59,6 +64,19 @@ const std::string CreateErrorJsonString(
   return out_json;
 }
 
+bool VerifyURL(GURL url) {
+  return (url.is_valid() && url.SchemeIsHTTPOrHTTPS());
+}
+
+Profile* GetProfile(content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle || !navigation_handle->GetWebContents()) {
+    return nullptr;
+  }
+
+  return Profile::FromBrowserContext(
+      navigation_handle->GetWebContents()->GetBrowserContext());
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 DTOrigin GetAttestationFlowOrigin(content::BrowserContext* context) {
   if (context->IsOffTheRecord() && ash::ProfileHelper::IsSigninProfile(
@@ -83,33 +101,45 @@ constexpr char kVerifiedAccessResponseHeader[] =
 std::unique_ptr<DeviceTrustNavigationThrottle>
 DeviceTrustNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* navigation_handle) {
-  // TODO(b/183690432): Check if the browser or device is being managed
-  // to create the throttle.
-
-  // TODO(b/241102348): Remove this check.
-  if (!enterprise_connectors::IsDeviceTrustConnectorFeatureEnabled())
+  if (!enterprise_connectors::IsDeviceTrustConnectorFeatureEnabled()) {
     return nullptr;
+  }
+
+  auto* profile = GetProfile(navigation_handle);
   auto* device_trust_service =
-      DeviceTrustServiceFactory::GetForProfile(Profile::FromBrowserContext(
-          navigation_handle->GetWebContents()->GetBrowserContext()));
-  if (!device_trust_service || !device_trust_service->IsEnabled())
-    return nullptr;
+      DeviceTrustServiceFactory::GetForProfile(profile);
 
-  return std::make_unique<DeviceTrustNavigationThrottle>(device_trust_service,
-                                                         navigation_handle);
+  auto* user_permission_service =
+      enterprise_signals::UserPermissionServiceFactory::GetForProfile(profile);
+  if ((!device_trust_service || !device_trust_service->IsEnabled()) &&
+      (!user_permission_service ||
+       !user_permission_service->ShouldCollectConsent())) {
+    return nullptr;
+  }
+
+  return std::make_unique<DeviceTrustNavigationThrottle>(
+      device_trust_service, user_permission_service, navigation_handle);
 }
 
 DeviceTrustNavigationThrottle::DeviceTrustNavigationThrottle(
     DeviceTrustService* device_trust_service,
+    device_signals::UserPermissionService* user_permission_service,
     content::NavigationHandle* navigation_handle)
     : content::NavigationThrottle(navigation_handle),
-      device_trust_service_(device_trust_service) {}
+      device_trust_service_(device_trust_service),
+      user_permission_service_(user_permission_service),
+      consent_requester_(ConsentRequester::CreateConsentRequester(
+          GetProfile(navigation_handle))) {}
 
 DeviceTrustNavigationThrottle::~DeviceTrustNavigationThrottle() = default;
 
 content::NavigationThrottle::ThrottleCheckResult
 DeviceTrustNavigationThrottle::WillStartRequest() {
-  return AddHeadersIfNeeded();
+  auto consent_dialog_check_result = MayTriggerConsentDialog();
+
+  return (consent_dialog_check_result.action() == PROCEED)
+             ? AddHeadersIfNeeded()
+             : consent_dialog_check_result;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
@@ -122,14 +152,40 @@ const char* DeviceTrustNavigationThrottle::GetNameForLogging() {
 }
 
 content::NavigationThrottle::ThrottleCheckResult
+DeviceTrustNavigationThrottle::MayTriggerConsentDialog() {
+  if (!enterprise_signals::features::IsConsentDialogEnabled()) {
+    return PROCEED;
+  }
+  const GURL& url = navigation_handle()->GetURL();
+  if (!user_permission_service_ ||
+      !user_permission_service_->ShouldCollectConsent() || !VerifyURL(url) ||
+      !navigation_handle()->HasUserGesture() ||
+      !navigation_handle()->IsInMainFrame()) {
+    return PROCEED;
+  }
+  if (!consent_requester_) {
+    return PROCEED;
+  }
+
+  consent_requester_->RequestConsent(
+      base::BindRepeating(&DeviceTrustNavigationThrottle::OnConsentPrefUpdated,
+                          weak_ptr_factory_.GetWeakPtr()));
+
+  return DEFER;
+}
+
+content::NavigationThrottle::ThrottleCheckResult
 DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
   const GURL& url = navigation_handle()->GetURL();
-  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
+  if (!VerifyURL(url)) {
     return PROCEED;
-
-  if (!device_trust_service_ || !device_trust_service_->IsEnabled())
+  }
+  if (!device_trust_service_ || !device_trust_service_->IsEnabled() ||
+      !user_permission_service_ ||
+      user_permission_service_->CanCollectSignals() !=
+          device_signals::UserPermission::kGranted) {
     return PROCEED;
-
+  }
   const std::set<DTCPolicyLevel> levels = device_trust_service_->Watches(url);
   if (levels.empty()) {
     return PROCEED;
@@ -177,6 +233,7 @@ DeviceTrustNavigationThrottle::AddHeadersIfNeeded() {
       // Because BuildChallengeResponse() may run the resume callback
       // synchronously, this call is deferred to ensure that this method returns
       // DEFER before `resume_navigation_callback` is invoked.
+      LogAttestationPolicyLevel(levels);
       base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
@@ -253,6 +310,12 @@ void DeviceTrustNavigationThrottle::OnResponseTimedOut(
   navigation_handle()->SetRequestHeader(
       kVerifiedAccessResponseHeader, CreateErrorJsonString(timeout_response));
   Resume();
+}
+
+void DeviceTrustNavigationThrottle::OnConsentPrefUpdated() {
+  if (AddHeadersIfNeeded().action() == PROCEED) {
+    Resume();
+  }
 }
 
 }  // namespace enterprise_connectors

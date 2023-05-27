@@ -8,6 +8,7 @@
 #include "base/types/optional_util.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -15,6 +16,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 
 namespace gpu {
 
@@ -198,12 +200,12 @@ bool RawDrawImageBacking::CreateBackendTextureAndFlushPaintOps(bool flush) {
   }
   promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
 
-  auto surface = SkSurface::MakeFromBackendTexture(
+  auto surface = SkSurfaces::WrapBackendTexture(
       context_state_->gr_context(), backend_texture_, surface_origin(),
       final_msaa_count_, sk_color, color_space().ToSkColorSpace(),
       &surface_props_);
   if (!surface) {
-    DLOG(ERROR) << "SkSurface::MakeFromBackendTexture() failed! SkColorType:"
+    DLOG(ERROR) << "SkSurfaces::WrapBackendTexture() failed! SkColorType:"
                 << sk_color;
     DestroyBackendTexture();
     return false;

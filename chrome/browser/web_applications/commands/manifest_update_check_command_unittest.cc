@@ -19,11 +19,13 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_contents/web_app_icon_downloader.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "content/public/browser/web_contents.h"
@@ -370,7 +372,8 @@ class ManifestUpdateCheckCommandTest : public WebAppTest {
                   output_result.new_install_info = std::move(new_install_info);
                   loop.Quit();
                 }),
-            std::move(data_retriever)));
+            std::move(data_retriever),
+            std::make_unique<WebAppIconDownloader>()));
     loop.Run();
     return output_result;
   }
@@ -390,6 +393,7 @@ class ManifestUpdateCheckCommandTest : public WebAppTest {
   blink::mojom::ManifestPtr GetManifestFromInfo(const WebAppInstallInfo& info) {
     auto manifest = blink::mojom::Manifest::New();
     manifest->start_url = info.start_url;
+    manifest->id = GenerateManifestIdFromStartUrlOnly(info.start_url);
     manifest->scope = info.scope;
     manifest->display = info.display_mode;
     manifest->name = info.title;

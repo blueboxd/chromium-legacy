@@ -174,6 +174,20 @@ typedef std::vector<VisitRow> VisitVector;
 // used by HistoryBackend::AddVisits() to create new visits for a URL.
 typedef std::pair<base::Time, ui::PageTransition> VisitInfo;
 
+// Specifies the possible reasons a visit (or its annotations) can get updated.
+// Used by HistoryBackendNotifier::NotifyVisitUpdated() and
+// HistoryBackendObserver::OnVisitUpdated().
+// Only used internally and in memory (not persisted), so can be freely changed.
+enum class VisitUpdateReason {
+  kSetPageLanguage,
+  kSetPasswordState,
+  kUpdateVisitDuration,
+  kUpdateTransition,
+  kUpdateSyncedVisit,
+  kAddContextAnnotations,
+  kSetOnCloseContextAnnotations
+};
+
 // QueryResults ----------------------------------------------------------------
 
 // Encapsulates the results of a history query. It supports an ordered list of
@@ -860,6 +874,21 @@ struct DuplicateClusterVisit {
 
 // An `AnnotatedVisit` associated with some other metadata from clustering.
 struct ClusterVisit {
+  // Values are persisted; do not reorder or reuse, and only add new values at
+  // the end.
+  enum class InteractionState {
+    // The default state of visits. Visible in both zero-state and searches.
+    kDefault = 0,
+    // User has marked the visit hidden. Hidden in all surfaces.
+    kHidden = 1,
+    // User has dismissed the visit with positive intent. Hidden in the
+    // zero-state but still searchable.
+    kDone = 2,
+  };
+
+  // Used for both persistence and debug logging.
+  static int InteractionStateToInt(InteractionState state);
+
   ClusterVisit();
   ~ClusterVisit();
   ClusterVisit(const ClusterVisit&);
@@ -872,6 +901,9 @@ struct ClusterVisit {
   // A floating point score in the range [0, 1] describing how important this
   // visit is to the containing cluster.
   float score = 0.0;
+
+  // Can be changed when the user dismisses or hides the visit.
+  InteractionState interaction_state = InteractionState::kDefault;
 
   // Flagged as true if this cluster visit matches the user's search query.
   // This depends on the user's search query, and should not be persisted. It's
@@ -1019,6 +1051,9 @@ struct Cluster {
   // The value of label with any leading or trailing quotation indicators
   // removed.
   absl::optional<std::u16string> raw_label;
+
+  // Where the label came from. Determines in which ways we can use `raw_label`.
+  LabelSource label_source = LabelSource::kUnknown;
 
   // The positions within the label that match the search query, if it exists.
   // This depends on the user's search query, and should not be persisted.

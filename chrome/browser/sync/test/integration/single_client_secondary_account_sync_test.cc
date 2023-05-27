@@ -15,8 +15,8 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/glue/sync_transport_data_prefs.h"
-#include "components/sync/driver/sync_service_impl.h"
+#include "components/sync/service/glue/sync_transport_data_prefs.h"
+#include "components/sync/service/sync_service_impl.h"
 #include "content/public/test/browser_test.h"
 
 namespace {
@@ -25,11 +25,12 @@ namespace {
 syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
   // Only some special whitelisted types (and control types) are allowed in
   // standalone transport mode.
-  syncer::ModelTypeSet allowed_types(
+  syncer::ModelTypeSet allowed_types = {
       syncer::DEVICE_INFO, syncer::USER_CONSENTS, syncer::SECURITY_EVENTS,
-      syncer::AUTOFILL_WALLET_DATA, syncer::SHARING_MESSAGE);
+      syncer::AUTOFILL_WALLET_DATA, syncer::SHARING_MESSAGE};
   allowed_types.PutAll(syncer::ControlTypes());
   allowed_types.Put(syncer::SEND_TAB_TO_SELF);
+  allowed_types.Put(syncer::READING_LIST);
   return allowed_types;
 }
 
@@ -87,8 +88,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   EXPECT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  ASSERT_EQ(browser_defaults::kSyncAutoStarts,
-            GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
+  ASSERT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsInitialSyncFeatureSetupComplete());
 
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
   EXPECT_FALSE(GetSyncService(0)->IsSyncFeatureActive());
@@ -137,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   // complete.
   secondary_account_helper::GrantSyncConsent(profile(), "user@email.com");
   GetSyncService(0)->SetSyncFeatureRequested();
-  GetSyncService(0)->GetUserSettings()->SetFirstSetupComplete(
+  GetSyncService(0)->GetUserSettings()->SetInitialSyncFeatureSetupComplete(
       syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
 
   EXPECT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
@@ -171,7 +173,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  ASSERT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
+  ASSERT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsInitialSyncFeatureSetupComplete());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 
   syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());
@@ -192,7 +196,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSecondaryAccountSyncTest,
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
             GetSyncService(0)->GetTransportState());
 
-  ASSERT_FALSE(GetSyncService(0)->GetUserSettings()->IsFirstSetupComplete());
+  ASSERT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsInitialSyncFeatureSetupComplete());
   ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 
   syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());

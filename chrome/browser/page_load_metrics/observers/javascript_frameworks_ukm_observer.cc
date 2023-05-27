@@ -9,6 +9,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
+#include "third_party/blink/public/mojom/loader/javascript_framework_detection.mojom-forward.h"
 
 JavascriptFrameworksUkmObserver::JavascriptFrameworksUkmObserver() = default;
 
@@ -34,13 +35,10 @@ JavascriptFrameworksUkmObserver::OnPrerenderStart(
   return CONTINUE_OBSERVING;
 }
 
-void JavascriptFrameworksUkmObserver::OnLoadingBehaviorObserved(
+void JavascriptFrameworksUkmObserver::OnJavaScriptFrameworksObserved(
     content::RenderFrameHost* rfh,
-    int behavior_flag) {
-  // This will add bits corresponding to detected frameworks in |behavior_flag|
-  // to |frameworks_detected_|. It may also add other bits, which we don't care
-  // about.
-  frameworks_detected_ |= behavior_flag;
+    const blink::JavaScriptFrameworkDetectionResult& result) {
+  framework_detection_result_ = result;
 }
 
 void JavascriptFrameworksUkmObserver::OnComplete(
@@ -62,48 +60,72 @@ JavascriptFrameworksUkmObserver::FlushMetricsOnAppEnterBackground(
 }
 
 void JavascriptFrameworksUkmObserver::RecordJavascriptFrameworkPageLoad() {
-  ukm::builders::JavascriptFrameworkPageLoad builder(
+  ukm::builders::JavascriptFrameworkPageLoad detect_builder(
       GetDelegate().GetPageUkmSourceId());
-  builder
-      .SetGatsbyPageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorGatsbyFrameworkUsed) !=
-          0)
-      .SetNextJSPageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorNextJSFrameworkUsed) !=
-          0)
-      .SetNuxtJSPageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorNuxtJSFrameworkUsed) !=
-          0)
-      .SetSapperPageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorSapperFrameworkUsed) !=
-          0)
-      .SetVuePressPageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorVuePressFrameworkUsed) !=
-          0)
-      .SetAngularPageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorAngularFrameworkUsed) !=
-          0)
-      .SetPreactPageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorPreactFrameworkUsed) !=
-          0)
-      .SetReactPageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorReactFrameworkUsed) != 0)
-      .SetSveltePageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorSvelteFrameworkUsed) !=
-          0)
-      .SetVuePageLoad(
-          (frameworks_detected_ &
-           blink::LoadingBehaviorFlag::kLoadingBehaviorVueFrameworkUsed) != 0);
-  builder.Record(ukm::UkmRecorder::Get());
+
+  using blink::mojom::JavaScriptFramework;
+
+  auto is_detected = [&](JavaScriptFramework framework) -> bool {
+    return framework_detection_result_.detected_versions.contains(framework);
+  };
+
+  detect_builder.SetAngularPageLoad(is_detected(JavaScriptFramework::kAngular))
+      .SetDrupalPageLoad(is_detected(JavaScriptFramework::kDrupal))
+      .SetGatsbyPageLoad(is_detected(JavaScriptFramework::kGatsby))
+      .SetJoomlaPageLoad(is_detected(JavaScriptFramework::kJoomla))
+      .SetNextJSPageLoad(is_detected(JavaScriptFramework::kNext))
+      .SetNuxtJSPageLoad(is_detected(JavaScriptFramework::kNuxt))
+      .SetPreactPageLoad(is_detected(JavaScriptFramework::kPreact))
+      .SetReactPageLoad(is_detected(JavaScriptFramework::kReact))
+      .SetSapperPageLoad(is_detected(JavaScriptFramework::kSapper))
+      .SetShopifyPageLoad(is_detected(JavaScriptFramework::kShopify))
+      .SetSquarespacePageLoad(is_detected(JavaScriptFramework::kSquarespace))
+      .SetSveltePageLoad(is_detected(JavaScriptFramework::kSvelte))
+      .SetVuePageLoad(is_detected(JavaScriptFramework::kVue))
+      .SetVuePressPageLoad(is_detected(JavaScriptFramework::kVuePress))
+      .SetWixPageLoad(is_detected(JavaScriptFramework::kWix))
+      .SetWordPressPageLoad(is_detected(JavaScriptFramework::kWordPress));
+
+  detect_builder.Record(ukm::UkmRecorder::Get());
+
+  ukm::builders::Blink_JavaScriptFramework_Versions versions_builder(
+      GetDelegate().GetPageUkmSourceId());
+
+  typedef ukm::builders::Blink_JavaScriptFramework_Versions& (
+      ukm::builders::Blink_JavaScriptFramework_Versions::*ValueSetter)(int64_t);
+
+  auto detect_version = [&](JavaScriptFramework framework, ValueSetter setter) {
+    auto version =
+        framework_detection_result_.detected_versions.find(framework);
+    if (version == framework_detection_result_.detected_versions.end() ||
+        version->second == blink::kNoFrameworkVersionDetected) {
+      return false;
+    }
+
+    (versions_builder.*setter)(version->second);
+    return true;
+  };
+
+  if (detect_version(JavaScriptFramework::kAngular,
+                     &ukm::builders::Blink_JavaScriptFramework_Versions::
+                         SetAngularVersion) ||
+      detect_version(JavaScriptFramework::kDrupal,
+                     &ukm::builders::Blink_JavaScriptFramework_Versions::
+                         SetDrupalVersion) ||
+      detect_version(JavaScriptFramework::kNext,
+                     &ukm::builders::Blink_JavaScriptFramework_Versions::
+                         SetNextJSVersion) ||
+      detect_version(
+          JavaScriptFramework::kNuxt,
+          &ukm::builders::Blink_JavaScriptFramework_Versions::SetNuxtVersion) ||
+      detect_version(
+          JavaScriptFramework::kVue,
+          &ukm::builders::Blink_JavaScriptFramework_Versions::SetVueVersion) ||
+      detect_version(JavaScriptFramework::kWordPress,
+                     &ukm::builders::Blink_JavaScriptFramework_Versions::
+                         SetWordPressVersion)) {
+    versions_builder.Record(ukm::UkmRecorder::Get());
+  }
 }
 
 void JavascriptFrameworksUkmObserver::DidActivatePrerenderedPage(

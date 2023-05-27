@@ -5,6 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_NTP_SET_UP_LIST_PREFS_H_
 #define IOS_CHROME_BROWSER_NTP_SET_UP_LIST_PREFS_H_
 
+namespace base {
+class Time;
+}
 class PrefRegistrySimple;
 class PrefService;
 enum class SetUpListItemType;
@@ -48,5 +51,18 @@ void SetItemState(PrefService* prefs,
 // Marks the item as completed.
 void MarkItemComplete(PrefService* prefs, SetUpListItemType type);
 
+// Returns `true` if the Set Up List has been disabled.
+bool IsSetUpListDisabled(PrefService* prefs);
+
+// Disables the SetUpList.
+void DisableSetUpList(PrefService* prefs);
+
+// Stores the current time as the "last interaction" time for SetUpList.
+void RecordInteraction(PrefService* prefs);
+
+// Returns the "last interaction" time for Set Up List.
+base::Time GetLastInteraction(PrefService* prefs);
+
 }  // namespace set_up_list_prefs
+
 #endif  // IOS_CHROME_BROWSER_NTP_SET_UP_LIST_PREFS_H_

@@ -9,6 +9,7 @@
 #include "base/trace_event/traced_value.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_issue_storage.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
@@ -232,6 +233,9 @@ std::string FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kError: {
       return FederatedAuthRequestIssueReasonEnum::ErrorIdToken;
     }
+    case FederatedAuthRequestResult::kErrorSilentMediationFailure: {
+      return FederatedAuthRequestIssueReasonEnum::SilentMediationFailure;
+    }
     case FederatedAuthRequestResult::kSuccess: {
       DCHECK(false);
       return "";
@@ -407,6 +411,13 @@ void OnFrameTreeNodeDestroyed(FrameTreeNode& frame_tree_node) {
   }
 }
 
+bool IsPrerenderAllowed(FrameTree& frame_tree) {
+  bool is_allowed = true;
+  DispatchToAgents(frame_tree.root(),
+                   &protocol::PageHandler::IsPrerenderingAllowed, is_allowed);
+  return is_allowed;
+}
+
 void WillInitiatePrerender(FrameTree& frame_tree) {
   DCHECK(frame_tree.is_prerendering());
   auto* wc = WebContentsImpl::FromFrameTreeNode(frame_tree.root());
@@ -418,11 +429,6 @@ void DidActivatePrerender(
     const NavigationRequest& nav_request,
     const base::UnguessableToken& initiator_devtools_navigation_token) {
   FrameTreeNode* ftn = nav_request.frame_tree_node();
-  WebContentsImpl* web_contents = WebContentsImpl::FromFrameTreeNode(ftn);
-  // Record prerender activation here because users don't necessarily open
-  // DevTools when the activation is triggered. If the DevTools is not opened at
-  // the moment, recording the activation here will still preserve the signal.
-  web_contents->set_last_navigation_was_prerender_activation_for_devtools();
   DispatchToAgents(ftn, &protocol::PreloadHandler::DidActivatePrerender,
                    initiator_devtools_navigation_token, nav_request);
   UpdateChildFrameTrees(ftn, /* update_target_info= */ true);
@@ -449,7 +455,8 @@ void DidUpdatePrefetchStatus(
     FrameTreeNode* ftn,
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prefetch_url,
-    PreloadingTriggeringOutcome status) {
+    PreloadingTriggeringOutcome status,
+    PrefetchStatus prefetch_status) {
   if (!ftn) {
     return;
   }
@@ -458,23 +465,24 @@ void DidUpdatePrefetchStatus(
       ftn->current_frame_host()->devtools_frame_token().ToString();
   DispatchToAgents(ftn, &protocol::PreloadHandler::DidUpdatePrefetchStatus,
                    initiator_devtools_navigation_token, initiating_frame_id,
-                   prefetch_url, status);
+                   prefetch_url, status, prefetch_status);
 }
 
 void DidUpdatePrerenderStatus(
     int initiator_frame_tree_node_id,
     const base::UnguessableToken& initiator_devtools_navigation_token,
     const GURL& prerender_url,
-    PreloadingTriggeringOutcome status) {
+    PreloadingTriggeringOutcome status,
+    absl::optional<PrerenderFinalStatus> prerender_status) {
   auto* ftn = FrameTreeNode::GloballyFindByID(initiator_frame_tree_node_id);
   // ftn will be null if this is browser-initiated, which has no initiator.
-  if (ftn) {
-    std::string initiating_frame_id =
-        ftn->current_frame_host()->devtools_frame_token().ToString();
-    DispatchToAgents(ftn, &protocol::PreloadHandler::DidUpdatePrerenderStatus,
-                     initiator_devtools_navigation_token, initiating_frame_id,
-                     prerender_url, status);
+  if (!ftn) {
+    return;
   }
+
+  DispatchToAgents(ftn, &protocol::PreloadHandler::DidUpdatePrerenderStatus,
+                   initiator_devtools_navigation_token, prerender_url, status,
+                   prerender_status);
 }
 
 namespace {
@@ -586,6 +594,18 @@ bool ShouldBypassCSP(const NavigationRequest& nav_request) {
       return true;
   }
   return false;
+}
+
+void ApplyNetworkOverridesForDownload(
+    RenderFrameHostImpl* rfh,
+    download::DownloadUrlParameters* parameters) {
+  FrameTreeNode* ftn =
+      FrameTreeNode::GloballyFindByID(rfh->GetFrameTreeNodeId());
+  if (ftn) {
+    DispatchToAgents(
+        ftn, &protocol::EmulationHandler::ApplyNetworkOverridesForDownload,
+        parameters);
+  }
 }
 
 void WillBeginDownload(download::DownloadCreateInfo* info,

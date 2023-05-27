@@ -6,13 +6,13 @@
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {ContentSetting, CookieControlsMode, ContentSettingsTypes, defaultSettingLabel, NotificationSetting, SettingsSiteSettingsPageElement, SiteSettingsPermissionsBrowserProxyImpl, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {ContentSetting, CookieControlsMode, ContentSettingsTypes, defaultSettingLabel, NotificationSetting, SettingsSiteSettingsPageElement, SafetyHubBrowserProxyImpl, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {CrLinkRowElement} from 'chrome://settings/settings.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isChildVisible} from 'chrome://webui-test/test_util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
-import {TestSiteSettingsPermissionsBrowserProxy} from './test_site_settings_permissions_browser_proxy.js';
+import {TestSafetyHubBrowserProxy} from './test_safety_hub_browser_proxy.js';
 import {TestSiteSettingsPrefsBrowserProxy} from './test_site_settings_prefs_browser_proxy.js';
 
 // clang-format on
@@ -195,6 +195,12 @@ suite('SiteSettingsPage', function() {
         loadTimeData.getString('siteSettingsSiteDataAllowedSubLabel'),
         siteDataLinkRow.subLabel);
   });
+
+  test('StorageAccessLinkRow', function() {
+    assertTrue(isChildVisible(
+        page.shadowRoot!.querySelector('#basicPermissionsList')!,
+        '#storage-access'));
+  });
 });
 
 // TODO(crbug/1378703): Remove after crbug/1378703 launched.
@@ -262,14 +268,11 @@ const unusedSitePermissionMockData = [{
 
 suite('UnusedSitePermissionsReview', function() {
   let page: SettingsSiteSettingsPageElement;
-  let siteSettingsPermissionsBrowserProxy:
-      TestSiteSettingsPermissionsBrowserProxy;
+  let siteSettingsPermissionsBrowserProxy: TestSafetyHubBrowserProxy;
 
   setup(function() {
-    siteSettingsPermissionsBrowserProxy =
-        new TestSiteSettingsPermissionsBrowserProxy();
-    SiteSettingsPermissionsBrowserProxyImpl.setInstance(
-        siteSettingsPermissionsBrowserProxy);
+    siteSettingsPermissionsBrowserProxy = new TestSafetyHubBrowserProxy();
+    SafetyHubBrowserProxyImpl.setInstance(siteSettingsPermissionsBrowserProxy);
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
   });
 
@@ -310,8 +313,7 @@ suite('UnusedSitePermissionsReview', function() {
  */
 suite('UnusedSitePermissionsReviewDisabled', function() {
   let page: SettingsSiteSettingsPageElement;
-  let siteSettingsPermissionsBrowserProxy:
-      TestSiteSettingsPermissionsBrowserProxy;
+  let siteSettingsPermissionsBrowserProxy: TestSafetyHubBrowserProxy;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
@@ -320,10 +322,8 @@ suite('UnusedSitePermissionsReviewDisabled', function() {
   });
 
   setup(function() {
-    siteSettingsPermissionsBrowserProxy =
-        new TestSiteSettingsPermissionsBrowserProxy();
-    SiteSettingsPermissionsBrowserProxyImpl.setInstance(
-        siteSettingsPermissionsBrowserProxy);
+    siteSettingsPermissionsBrowserProxy = new TestSafetyHubBrowserProxy();
+    SafetyHubBrowserProxyImpl.setInstance(siteSettingsPermissionsBrowserProxy);
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
   });
 
@@ -344,5 +344,32 @@ suite('UnusedSitePermissionsReviewDisabled', function() {
     await flushTasks();
 
     assertFalse(isChildVisible(page, 'settings-unused-site-permissions'));
+  });
+});
+
+suite('PermissionStorageAccessApiDisabled', function() {
+  let page: SettingsSiteSettingsPageElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      enablePermissionStorageAccessApi: false,
+    });
+  });
+
+  setup(function() {
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    page = document.createElement('settings-site-settings-page');
+    document.body.appendChild(page);
+    flush();
+  });
+
+  teardown(function() {
+    page.remove();
+  });
+
+  test('StorageAccessLinkRow', function() {
+    assertFalse(isChildVisible(
+        page.shadowRoot!.querySelector('#basicPermissionsList')!,
+        '#storage-access'));
   });
 });

@@ -82,6 +82,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       const override;
   const AutofillProfileUpdateStrikeDatabase* GetProfileUpdateStrikeDatabase()
       const override;
+  bool IsAutofillPaymentMethodsMandatoryReauthEnabled() override;
 
   // Unique to TestPersonalDataManager:
 
@@ -126,6 +127,10 @@ class TestPersonalDataManager : public PersonalDataManager {
     return num_times_save_imported_profile_called_;
   }
 
+  AutofillProfile* last_save_imported_profile() {
+    return last_save_imported_profile_.get();
+  }
+
   int num_times_save_imported_credit_card_called() const {
     return num_times_save_imported_credit_card_called_;
   }
@@ -167,10 +172,15 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void ClearCreditCardArtImages() { credit_card_art_images_.clear(); }
 
+  void SetAutofillPaymentMethodsMandatoryReauthEnabled(bool val) {
+    autofill_payment_methods_mandatory_reauth_enabled_ = val;
+  }
+
  private:
   std::string timezone_country_code_;
   std::string default_country_code_;
   int num_times_save_imported_profile_called_ = 0;
+  std::unique_ptr<AutofillProfile> last_save_imported_profile_;
   int num_times_save_imported_credit_card_called_ = 0;
   int num_times_save_upi_id_called_ = 0;
   absl::optional<bool> autofill_profile_enabled_;
@@ -181,6 +191,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   AutofillSyncSigninState sync_and_signin_state_ =
       AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;
   CoreAccountInfo account_info_;
+  bool autofill_payment_methods_mandatory_reauth_enabled_ = false;
 
   TestInMemoryStrikeDatabase inmemory_strike_database_;
   AutofillProfileMigrationStrikeDatabase

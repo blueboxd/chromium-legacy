@@ -7,11 +7,14 @@ import("//ios/web/public/js_messaging/optimize_js.gni")
 
 source_set("js_messaging") {
   deps = [
-    "//base",
     "//ios/web/public/",
     "//url",
   ]
-  public_deps = [ "//third_party/abseil-cpp:absl" ]
+
+  public_deps = [
+    "//base",
+    "//third_party/abseil-cpp:absl",
+  ]
 
   frameworks = [ "Foundation.framework" ]
 
@@ -32,8 +35,19 @@ source_set("content_world_header") {
   sources = [ "content_world.h" ]
 }
 
+compile_ts("frame_id") {
+  sources = [ "resources/frame_id.ts" ]
+
+  deps = [
+    ":gcrweb",
+    ":util_scripts",
+  ]
+}
+
 compile_ts("util_scripts") {
   sources = [ "resources/utils.ts" ]
+
+  deps = [ ":gcrweb" ]
 }
 
 # `compile_ts` and `optimize_js` targets are defined separately here instead of

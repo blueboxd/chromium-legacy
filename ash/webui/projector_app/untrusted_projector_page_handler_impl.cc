@@ -5,13 +5,20 @@
 #include "ash/webui/projector_app/untrusted_projector_page_handler_impl.h"
 
 #include <memory>
+#include <vector>
+
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/webui/projector_app/mojom/untrusted_projector.mojom.h"
 #include "ash/webui/projector_app/projector_app_client.h"
+#include "ash/webui/projector_app/projector_oauth_token_fetcher.h"
+#include "ash/webui/projector_app/projector_xhr_sender.h"
 #include "ash/webui/projector_app/public/mojom/projector_types.mojom.h"
+#include "base/files/safe_base_name.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "url/gurl.h"
 
 namespace ash {
 
@@ -70,7 +77,8 @@ UntrustedProjectorPageHandlerImpl::UntrustedProjectorPageHandlerImpl(
     PrefService* pref_service)
     : receiver_(this, std::move(receiver)),
       projector_remote_(std::move(projector_remote)),
-      pref_service_(pref_service) {
+      pref_service_(pref_service),
+      xhr_sender_(ProjectorAppClient::Get()->GetUrlLoaderFactory()) {
   ProjectorAppClient::Get()->AddObserver(this);
 }
 
@@ -102,29 +110,27 @@ void UntrustedProjectorPageHandlerImpl::OnScreencastsPendingStatusChanged(
 }
 
 void UntrustedProjectorPageHandlerImpl::GetNewScreencastPrecondition(
-    projector::mojom::UntrustedProjectorPageHandler::
-        GetNewScreencastPreconditionCallback callback) {
+
+    GetNewScreencastPreconditionCallback callback) {
   std::move(callback).Run(
       ProjectorController::Get()->GetNewScreencastPrecondition());
 }
 
 void UntrustedProjectorPageHandlerImpl::ShouldDownloadSoda(
-    projector::mojom::UntrustedProjectorPageHandler::ShouldDownloadSodaCallback
-        callback) {
+    ShouldDownloadSodaCallback callback) {
   bool should_download = ProjectorAppClient::Get()->ShouldDownloadSoda();
   std::move(callback).Run(should_download);
 }
 void UntrustedProjectorPageHandlerImpl::InstallSoda(
-    projector::mojom::UntrustedProjectorPageHandler::InstallSodaCallback
-        callback) {
+    InstallSodaCallback callback) {
   ProjectorAppClient::Get()->InstallSoda();
   // We have successfully triggered the request.
   std::move(callback).Run(/*triggered=*/true);
 }
 
 void UntrustedProjectorPageHandlerImpl::GetPendingScreencasts(
-    projector::mojom::UntrustedProjectorPageHandler::
-        GetPendingScreencastsCallback callback) {
+
+    GetPendingScreencastsCallback callback) {
   auto pending_screencast = GetPendingScreencastsFromContainers(
       ProjectorAppClient::Get()->GetPendingScreencasts());
   std::move(callback).Run(std::move(pending_screencast));
@@ -132,8 +138,7 @@ void UntrustedProjectorPageHandlerImpl::GetPendingScreencasts(
 
 void UntrustedProjectorPageHandlerImpl::GetUserPref(
     projector::mojom::PrefsThatProjectorCanAskFor pref,
-    projector::mojom::UntrustedProjectorPageHandler::GetUserPrefCallback
-        callback) {
+    GetUserPrefCallback callback) {
   const auto& value = pref_service_->GetValue(GetPrefName(pref));
 
   bool valid_request = (value.is_bool() && IsBoolPref(pref)) ||
@@ -150,8 +155,7 @@ void UntrustedProjectorPageHandlerImpl::GetUserPref(
 void UntrustedProjectorPageHandlerImpl::SetUserPref(
     projector::mojom::PrefsThatProjectorCanAskFor pref,
     base::Value value,
-    projector::mojom::UntrustedProjectorPageHandler::SetUserPrefCallback
-        callback) {
+    SetUserPrefCallback callback) {
   bool valid_request = (value.is_bool() && IsBoolPref(pref)) ||
                        (value.is_int() && IsIntPref(pref));
 
@@ -165,10 +169,99 @@ void UntrustedProjectorPageHandlerImpl::SetUserPref(
 }
 
 void UntrustedProjectorPageHandlerImpl::OpenFeedbackDialog(
-    projector::mojom::UntrustedProjectorPageHandler::OpenFeedbackDialogCallback
-        callback) {
+    OpenFeedbackDialogCallback callback) {
   ProjectorAppClient::Get()->OpenFeedbackDialog();
   std::move(callback).Run();
+}
+
+void UntrustedProjectorPageHandlerImpl::StartProjectorSession(
+    const base::SafeBaseName& storage_dir_name,
+    StartProjectorSessionCallback callback) {
+  auto* controller = ProjectorController::Get();
+
+  if (controller->GetNewScreencastPrecondition().state !=
+      NewScreencastPreconditionState::kEnabled) {
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  controller->StartProjectorSession(storage_dir_name);
+  std::move(callback).Run(/*success=*/true);
+}
+
+void UntrustedProjectorPageHandlerImpl::SendXhr(
+    const GURL& url,
+    projector::mojom::RequestType method,
+    const absl::optional<std::string>& request_body,
+    bool use_credentials,
+    bool use_api_key,
+    const absl::optional<base::flat_map<std::string, std::string>>& headers,
+    const absl::optional<std::string>& account_email,
+    SendXhrCallback callback) {
+  CHECK(url.is_valid());
+  xhr_sender_.Send(
+      url, method, request_body, use_credentials, use_api_key,
+      base::BindOnce(&UntrustedProjectorPageHandlerImpl::OnXhrRequestCompleted,
+                     GetWeakPtr(), std::move(callback)),
+      headers, account_email);
+}
+
+void UntrustedProjectorPageHandlerImpl::GetAccounts(
+    GetAccountsCallback callback) {
+  const std::vector<AccountInfo> accounts =
+      ProjectorOAuthTokenFetcher::GetAccounts();
+  const CoreAccountInfo primary_account =
+      ProjectorOAuthTokenFetcher::GetPrimaryAccountInfo();
+
+  std::vector<projector::mojom::AccountPtr> mojo_accounts;
+  mojo_accounts.reserve(accounts.size());
+
+  for (const auto& info : accounts) {
+    auto account = projector::mojom::Account::New();
+    account->email = info.email;
+    account->is_primary_user = info.gaia == primary_account.gaia;
+    mojo_accounts.push_back(std::move(account));
+  }
+
+  std::move(callback).Run(std::move(mojo_accounts));
+}
+
+void UntrustedProjectorPageHandlerImpl::GetVideo(
+    const std::string& video_file_id,
+    const absl::optional<std::string>& resource_key,
+    GetVideoCallback callback) {
+  ProjectorAppClient::Get()->GetVideo(
+      video_file_id, resource_key,
+      base::BindOnce(&UntrustedProjectorPageHandlerImpl::OnVideoLocated,
+                     GetWeakPtr(), std::move(callback)));
+}
+
+void UntrustedProjectorPageHandlerImpl::OnVideoLocated(
+    projector::mojom::UntrustedProjectorPageHandler::GetVideoCallback callback,
+    projector::mojom::GetVideoResultPtr result) {
+  std::move(callback).Run(std::move(result));
+}
+
+base::WeakPtr<UntrustedProjectorPageHandlerImpl>
+UntrustedProjectorPageHandlerImpl::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void UntrustedProjectorPageHandlerImpl::OnXhrRequestCompleted(
+    SendXhrCallback callback,
+    const std::string& response_body,
+    projector::mojom::XhrResponseCode response_code) {
+  // If the request made is an unsupported url, then
+  // crash the renderer.
+  if (response_code == projector::mojom::XhrResponseCode::kUnsupportedURL) {
+    receiver_.ReportBadMessage("Unsupported url requested.");
+    return;
+  }
+
+  auto response = projector::mojom::XhrResponse::New();
+  response->response = response_body;
+  response->response_code = response_code;
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace ash

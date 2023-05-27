@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.R;
+import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -35,6 +36,7 @@ class SuggestionLayout extends ViewGroup {
     public final @Px int mCompactContentHeightPx;
     private final @Px int mActionButtonWidthPx;
     private final @Px int mContentPaddingPx;
+    private final @NonNull RoundedCornerOutlineProvider mOutlineProvider;
 
     /**
      * SuggestionLayout's LayoutParams.
@@ -148,25 +150,22 @@ class SuggestionLayout extends ViewGroup {
 
         mActionButtonWidthPx = getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_action_button_width);
-
-        if (OmniboxFeatures.shouldShowSmallestMargins()) {
-            int marginPx = getResources().getDimensionPixelSize(
-                    R.dimen.omnibox_suggestion_vertical_margin);
-            mCompactContentHeightPx = getResources().getDimensionPixelSize(
-                                              R.dimen.omnibox_suggestion_compact_content_height)
-                    - marginPx;
-            mContentHeightPx =
-                    getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_content_height)
-                    - marginPx;
-        } else {
-            mCompactContentHeightPx = getResources().getDimensionPixelSize(
-                    R.dimen.omnibox_suggestion_compact_content_height);
-            mContentHeightPx =
-                    getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_content_height);
-        }
+        mCompactContentHeightPx = getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_compact_content_height);
+        mContentHeightPx =
+                getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_content_height);
 
         mContentPaddingPx =
                 getResources().getDimensionPixelSize(R.dimen.omnibox_suggestion_content_padding);
+
+        mOutlineProvider = new RoundedCornerOutlineProvider(getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_bg_round_corner_radius));
+        setOutlineProvider(mOutlineProvider);
+    }
+
+    public void setRoundingEdges(boolean roundTopEdge, boolean roundBottomEdge) {
+        mOutlineProvider.setRoundingEdges(true, roundTopEdge, true, roundBottomEdge);
+        setClipToOutline(roundTopEdge || roundBottomEdge);
     }
 
     @Override

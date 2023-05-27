@@ -24,7 +24,6 @@
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
-#include "content/browser/web_package/subresource_web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/common/content_constants.h"
@@ -113,7 +112,6 @@ void RecursivelyGenerateFrameEntries(
         state.initiator_origin, initiator_base_url, std::vector<GURL>(),
         blink::PageState::CreateFromEncodedData(data), "GET", -1,
         nullptr /* blob_url_loader_factory */,
-        nullptr /* subresource_web_bundle_navigation_info */,
         // TODO(https://crbug.com/1140393): We should restore the policy
         // container.
         nullptr /* policy_container_policies */,
@@ -418,7 +416,6 @@ NavigationEntryImpl::NavigationEntryImpl(
               "GET",
               -1,
               std::move(blob_url_loader_factory),
-              nullptr /* subresource_web_bundle_navigation_info */,
               nullptr /* policy_container_policies */,
               false /* protect_url_in_navigation_api */))),
       unique_id_(CreateUniqueEntryID()),
@@ -896,6 +893,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
     int current_history_list_length,
     const blink::FramePolicy& frame_policy,
     bool ancestor_or_self_has_cspee,
+    blink::mojom::SystemEntropy system_entropy_at_navigation_start,
     absl::optional<blink::scheduler::TaskAttributionId>
         soft_navigation_heuristics_task_id) {
   // Set the redirect chain to the navigation's redirects, unless returning to a
@@ -976,6 +974,10 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
     commit_params->data_url_as_string = GetDataURLAsString()->data();
   }
 #endif
+
+  commit_params->navigation_timing->system_entropy_at_navigation_start =
+      system_entropy_at_navigation_start;
+
   return commit_params;
 }
 
@@ -1032,8 +1034,6 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     const std::string& method,
     int64_t post_id,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    std::unique_ptr<SubresourceWebBundleNavigationInfo>
-        subresource_web_bundle_navigation_info,
     std::unique_ptr<PolicyContainerPolicies> policy_container_policies) {
   bool protect_url_in_navigation_api =
       policy_container_policies &&
@@ -1064,7 +1064,6 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
         std::move(source_site_instance), url, origin, referrer,
         initiator_origin, initiator_base_url, redirect_chain, page_state,
         method, post_id, std::move(blob_url_loader_factory),
-        std::move(subresource_web_bundle_navigation_info),
         std::move(policy_container_policies), protect_url_in_navigation_api);
     return;
   }
@@ -1100,7 +1099,6 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
           url, origin, referrer, initiator_origin, initiator_base_url,
           redirect_chain, page_state, method, post_id,
           std::move(blob_url_loader_factory),
-          std::move(subresource_web_bundle_navigation_info),
           std::move(policy_container_policies), protect_url_in_navigation_api);
       return;
     }
@@ -1114,7 +1112,6 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       navigation_api_key, site_instance, std::move(source_site_instance), url,
       origin, referrer, initiator_origin, initiator_base_url, redirect_chain,
       page_state, method, post_id, std::move(blob_url_loader_factory),
-      std::move(subresource_web_bundle_navigation_info),
       std::move(policy_container_policies), protect_url_in_navigation_api);
   parent_node->children.push_back(
       std::make_unique<NavigationEntryImpl::TreeNode>(parent_node,

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_AUTOFILL_PRIVATE_AUTOFILL_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_AUTOFILL_PRIVATE_AUTOFILL_PRIVATE_API_H_
 
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 
@@ -334,6 +335,52 @@ class AutofillPrivateRemoveVirtualCardFunction : public ExtensionFunction {
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
+};
+
+class AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction
+    : public ExtensionFunction {
+ public:
+  AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction() = default;
+  AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction(
+      const AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction&) =
+      delete;
+  AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction& operator=(
+      const AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction&) =
+      delete;
+  DECLARE_EXTENSION_FUNCTION(
+      "autofillPrivate.authenticateUserAndFlipMandatoryAuthToggle",
+      AUTOFILLPRIVATE_AUTHENTICATEUSERANDFLIPMANDATORYAUTHTOGGLE)
+
+ protected:
+  ~AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction()
+      override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void UpdateMandatoryAuthTogglePref(bool reauth_succeeded);
+};
+
+class AutofillPrivateAuthenticateUserToEditLocalCardFunction
+    : public ExtensionFunction {
+ public:
+  AutofillPrivateAuthenticateUserToEditLocalCardFunction() = default;
+  AutofillPrivateAuthenticateUserToEditLocalCardFunction(
+      const AutofillPrivateAuthenticateUserToEditLocalCardFunction&) = delete;
+  AutofillPrivateAuthenticateUserToEditLocalCardFunction& operator=(
+      const AutofillPrivateAuthenticateUserToEditLocalCardFunction&) = delete;
+  DECLARE_EXTENSION_FUNCTION("autofillPrivate.authenticateUserToEditLocalCard",
+                             AUTOFILLPRIVATE_AUTHENTICATEUSERTOEDITLOCALCARD)
+
+ protected:
+  ~AutofillPrivateAuthenticateUserToEditLocalCardFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void CanShowEditDialogForLocalCard(bool can_show);
 };
 
 }  // namespace extensions

@@ -39,6 +39,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/http/structured_headers.h"
+#include "services/network/public/cpp/attribution_reporting_runtime_features.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/web_client_hints_types.mojom-blink.h"
@@ -336,15 +337,15 @@ void FrameFetchContext::PrepareRequest(
   }
 
   const bool ua_reduced =
-      request.HttpHeaderField(
+      request.HttpHeaderField(AtomicString(
           network::GetClientHintToNameMap()
               .at(network::mojom::blink::WebClientHintsType::kUAReduced)
-              .c_str()) == "?1";
+              .c_str())) == "?1";
   const bool ua_full =
-      request.HttpHeaderField(
+      request.HttpHeaderField(AtomicString(
           network::GetClientHintToNameMap()
               .at(network::mojom::blink::WebClientHintsType::kFullUserAgent)
-              .c_str()) == "?1";
+              .c_str())) == "?1";
 
   String user_agent =
       ua_full ? GetFullUserAgent()
@@ -361,11 +362,27 @@ void FrameFetchContext::PrepareRequest(
   if (document_loader_->ForceFetchCacheMode())
     request.SetCacheMode(*document_loader_->ForceFetchCacheMode());
 
-  if (AttributionSrcLoader* attribution_src_loader =
+  if (const AttributionSrcLoader* attribution_src_loader =
           GetFrame()->GetAttributionSrcLoader()) {
     request.SetAttributionReportingSupport(
         attribution_src_loader->GetSupport());
+    request.SetAttributionReportingRuntimeFeatures(
+        attribution_src_loader->GetRuntimeFeatures());
   }
+
+  if (request.GetSharedStorageWritable()) {
+    auto* policy = GetPermissionsPolicy();
+    if (!policy ||
+        !request.IsFeatureEnabledForSubresourceRequestAssumingOptIn(
+            policy, mojom::blink::PermissionsPolicyFeature::kSharedStorage,
+            SecurityOrigin::Create(request.Url())->ToUrlOrigin())) {
+      request.SetSharedStorageWritable(false);
+    }
+  }
+
+  request.SetSharedDictionaryWriterEnabled(
+      RuntimeEnabledFeatures::CompressionDictionaryTransportEnabled(
+          GetExecutionContext()));
 
   GetLocalFrameClient()->DispatchWillSendRequest(request);
   FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler();
@@ -459,12 +476,13 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       image_info->viewport_height = GetFrame()->View()->ViewportHeight();
     }
 
-    prefers_color_scheme = document_->InDarkMode()
-                               ? network::kPrefersColorSchemeDark
-                               : network::kPrefersColorSchemeLight;
-    prefers_reduced_motion = GetSettings()->GetPrefersReducedMotion()
-                                 ? network::kPrefersReducedMotionReduce
-                                 : network::kPrefersReducedMotionNoPreference;
+    prefers_color_scheme = AtomicString(
+        document_->InDarkMode() ? network::kPrefersColorSchemeDark
+                                : network::kPrefersColorSchemeLight);
+    prefers_reduced_motion =
+        AtomicString(GetSettings()->GetPrefersReducedMotion()
+                         ? network::kPrefersReducedMotionReduce
+                         : network::kPrefersReducedMotionNoPreference);
   }
 
   // GetClientHintsPreferences() has things parsed for this document
@@ -499,8 +517,9 @@ void FrameFetchContext::AddReducedAcceptLanguageIfNecessary(
   const String& reduced_accept_language = GetReducedAcceptLanguage();
   if (!reduced_accept_language.empty() &&
       request.HttpHeaderField(http_names::kAcceptLanguage).empty()) {
-    request.SetHttpHeaderField(http_names::kAcceptLanguage,
-                               reduced_accept_language.Ascii().c_str());
+    request.SetHttpHeaderField(
+        http_names::kAcceptLanguage,
+        AtomicString(reduced_accept_language.Ascii().c_str()));
   }
 }
 

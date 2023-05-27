@@ -28,8 +28,7 @@
   /* copied from |AshColorProvider| |kSecondToneOpacity| constant. */
   --personalization-app-second-tone-opacity: 0.3;
 
-  --personalization-app-label-font: 500 13px/20px
-      var(--cros-font-family-google-sans);
+  --personalization-app-label-font: var(--cros-button-2-font);
 }
 
 :host-context(body.jelly-enabled) {
@@ -294,4 +293,16 @@ iron-list {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.disabled {
+  opacity: var(--cros-disabled-opacity);
+}
+
+img.disabled {
+  /**
+   * Use 50% for image instead of default cros-disabled-opacity.
+   * TODO(b/236415314) get this into design system as a semantic value.
+   */
+  opacity: 50%;
 }

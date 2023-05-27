@@ -58,11 +58,11 @@ void MerchantPromoCodeManager::CancelPendingQueries(
 void MerchantPromoCodeManager::OnRemoveCurrentSingleFieldSuggestion(
     const std::u16string& field_name,
     const std::u16string& value,
-    int frontend_id) {}
+    Suggestion::FrontendId frontend_id) {}
 
 void MerchantPromoCodeManager::OnSingleFieldSuggestionSelected(
     const std::u16string& value,
-    int frontend_id) {
+    Suggestion::FrontendId frontend_id) {
   uma_recorder_.OnOfferSuggestionSelected(frontend_id);
 }
 
@@ -106,8 +106,8 @@ void MerchantPromoCodeManager::UMARecorder::OnOffersSuggestionsShown(
 }
 
 void MerchantPromoCodeManager::UMARecorder::OnOfferSuggestionSelected(
-    int frontend_id) {
-  if (frontend_id == PopupItemId::POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY) {
+    Suggestion::FrontendId frontend_id) {
+  if (frontend_id == PopupItemId::kMerchantPromoCodeEntry) {
     // We log every time an individual offer suggestion is selected, regardless
     // if the user is repeatedly autofilling the same field.
     autofill_metrics::LogIndividualOfferSuggestionEvent(
@@ -123,7 +123,7 @@ void MerchantPromoCodeManager::UMARecorder::OnOfferSuggestionSelected(
               kOfferSuggestionSelectedOnce,
           AutofillOfferData::OfferType::GPAY_PROMO_CODE_OFFER);
     }
-  } else if (frontend_id == PopupItemId::POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS) {
+  } else if (frontend_id == PopupItemId::kSeePromoCodeDetails) {
     // We log every time the see offer details suggestion in the footer is
     // selected, regardless if the user is repeatedly autofilling the same
     // field.

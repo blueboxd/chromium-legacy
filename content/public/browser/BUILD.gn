@@ -5,6 +5,7 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/ui.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//media/media_options.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//third_party/webrtc/webrtc.gni")
@@ -82,6 +83,7 @@ source_set("browser_sources") {
     "browser_main_runner.h",
     "browser_message_filter.cc",
     "browser_message_filter.h",
+    "browser_or_resource_context.cc",
     "browser_or_resource_context.h",
     "browser_plugin_guest_delegate.cc",
     "browser_plugin_guest_delegate.h",
@@ -109,6 +111,7 @@ source_set("browser_sources") {
     "client_certificate_delegate.h",
     "client_hints.cc",
     "client_hints.h",
+    "client_hints_controller_delegate.cc",
     "client_hints_controller_delegate.h",
     "commit_deferring_condition.cc",
     "commit_deferring_condition.h",
@@ -352,6 +355,7 @@ source_set("browser_sources") {
     "serial_delegate.h",
     "service_process_host.cc",
     "service_process_host.h",
+    "service_process_host_passkeys.h",
     "service_process_info.cc",
     "service_process_info.h",
     "service_worker_client_info.cc",
@@ -585,6 +589,7 @@ source_set("browser_sources") {
       "android/compositor_client.h",
       "android/devtools_auth.h",
       "android/gpu_video_accelerator_factories_provider.h",
+      "android/impression_android.h",
       "android/java_interfaces.h",
       "android/media_url_interceptor_register.cc",
       "android/media_url_interceptor_register.h",
@@ -628,10 +633,11 @@ source_set("browser_sources") {
   }
 
   if (is_linux || is_chromeos) {
-    sources += [
-      "stable_video_decoder_factory.h",
-      "zygote_host/zygote_host_linux.h",
-    ]
+    sources += [ "zygote_host/zygote_host_linux.h" ]
+  }
+
+  if (allow_oop_video_decoder) {
+    sources += [ "stable_video_decoder_factory.h" ]
     public_deps += [ "//media/mojo/mojom/stable:stable_video_decoder" ]
   }
 

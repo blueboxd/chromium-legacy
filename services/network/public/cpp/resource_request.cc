@@ -251,6 +251,7 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          destination == request.destination &&
          request_body == request.request_body &&
          keepalive == request.keepalive &&
+         shared_storage_writable == request.shared_storage_writable &&
          has_user_gesture == request.has_user_gesture &&
          enable_load_timing == request.enable_load_timing &&
          enable_upload_progress == request.enable_upload_progress &&
@@ -281,7 +282,9 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
                                             request.net_log_create_info) &&
          OptionalNetLogInfoEqualsForTesting(net_log_reference_info,
                                             request.net_log_reference_info) &&
-         target_ip_address_space == request.target_ip_address_space;
+         target_ip_address_space == request.target_ip_address_space &&
+         shared_dictionary_writer_enabled ==
+             request.shared_dictionary_writer_enabled;
 }
 
 bool ResourceRequest::SendsCookies() const {

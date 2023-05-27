@@ -14,7 +14,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
-#include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -182,8 +182,8 @@ bool OutputPresenterGL::Reshape(const SkImageInfo& image_info,
                                 float device_scale_factor,
                                 gfx::OverlayTransform transform) {
   const gfx::Size size = gfx::SkISizeToSize(image_info.dimensions());
-  image_format_ = SharedImageFormat::SinglePlane(
-      SkColorTypeToResourceFormat(image_info.colorType()));
+  image_format_ =
+      SkColorTypeToSinglePlaneSharedImageFormat(image_info.colorType());
   const bool has_alpha = !image_info.isOpaque();
   return presenter_->Resize(size, device_scale_factor, color_space, has_alpha);
 }

@@ -42,6 +42,8 @@ export const SELECTOR_MAP = {
   expertModeButton: '#settings-expert',
   expertModeOption: '#expert-enable-expert-mode',
   expertMultiStreamRecordingOption: '#expert-enable-multistream-recording',
+  expertMultiStreamRecordingChromeOption:
+      '#expert-enable-multistream-recording-chrome',
   expertSaveMetadataOption: '#expert-save-metadata',
   expertShowMetadataOption: '#expert-show-metadata',
   feedbackButton: '#settings-feedback',
@@ -75,6 +77,9 @@ export const SELECTOR_MAP = {
   panRightButton: '#pan-right',
   photoAspectRatioSettingButton: '#settings-photo-aspect-ratio',
   photoResolutionSettingButton: '#settings-photo-resolution',
+  // TODO(kamchonlathorn): Remove this once its usage in Tast is removed.
+  previewExposureTime: '#preview-exposure-time',
+  previewResolution: '#preview-resolution',
   previewVideo: '#preview-video',
   previewViewport: '#preview-viewport',
   ptzResetAllButton: '#ptz-reset-all',
@@ -114,6 +119,10 @@ export const SETTING_OPTION_MAP = {
   multiStreamRecordingOption: {
     component: 'expertMultiStreamRecordingOption',
     state: ExpertOption.ENABLE_MULTISTREAM_RECORDING,
+  },
+  multiStreamRecordingChromeOption: {
+    component: 'expertMultiStreamRecordingChromeOption',
+    state: ExpertOption.ENABLE_MULTISTREAM_RECORDING_CHROME,
   },
   saveMetadataOption: {
     component: 'expertSaveMetadataOption',

@@ -10,7 +10,6 @@
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-shared.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash::quick_start {
@@ -37,6 +36,12 @@ class FakeQuickStartDecoder : public mojom::QuickStartDecoder {
   void DecodeNotifySourceOfUpdateResponse(
       const std::vector<uint8_t>& data,
       DecodeNotifySourceOfUpdateResponseCallback callback) override;
+  void DecodeUserVerificationRequested(
+      const std::vector<uint8_t>& data,
+      DecodeUserVerificationRequestedCallback callback) override;
+  void DecodeUserVerificationResult(
+      const std::vector<uint8_t>& data,
+      DecodeUserVerificationResultCallback callback) override;
 
   void SetExpectedData(std::vector<uint8_t> expected_data);
   void SetAssertionResponse(
@@ -48,11 +53,22 @@ class FakeQuickStartDecoder : public mojom::QuickStartDecoder {
       const std::vector<uint8_t>& signature,
       const std::vector<uint8_t>& data);
 
+  void SetUserVerificationResponse(mojom::UserVerificationResult result,
+                                   bool is_first_user_verification);
+
+  void SetUserVerificationRequested(bool is_awaiting_user_verification);
+
+  void SetDecoderError(mojom::QuickStartDecoderError error);
+
   void SetWifiCredentialsResponse(
       mojom::WifiCredentialsPtr credentials,
       absl::optional<mojom::QuickStartDecoderError> error);
 
   void SetNotifySourceOfUpdateResponse(absl::optional<bool> ack_received);
+
+  void SetBootstrapConfigurationsResponse(
+      const std::string& cryptauth_device_id,
+      absl::optional<mojom::QuickStartDecoderError> error);
 
  private:
   std::vector<uint8_t> expected_data_;
@@ -66,7 +82,10 @@ class FakeQuickStartDecoder : public mojom::QuickStartDecoder {
   mojo::ReceiverSet<ash::quick_start::mojom::QuickStartDecoder> receiver_set_;
   absl::optional<bool> notify_source_of_update_response_;
   mojom::WifiCredentialsPtr credentials_;
+  mojom::UserVerificationRequestedPtr user_verification_request_;
+  mojom::UserVerificationResponsePtr user_verification_response_;
   absl::optional<mojom::QuickStartDecoderError> error_;
+  std::string response_cryptauth_device_id_;
 };
 
 }  // namespace ash::quick_start

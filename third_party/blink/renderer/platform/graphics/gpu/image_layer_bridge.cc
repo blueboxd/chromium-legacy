@@ -10,6 +10,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_bitmap.h"
+#include "components/viz/common/resources/shared_image_format_utils.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -191,8 +192,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
     *out_resource = viz::TransferableResource::MakeGpu(
         mailbox_holder.mailbox, mailbox_holder.texture_target,
         mailbox_holder.sync_token, size,
-        viz::SharedImageFormat::SinglePlane(
-            viz::SkColorTypeToResourceFormat(color_type)),
+        viz::SkColorTypeToSinglePlaneSharedImageFormat(color_type),
         is_overlay_candidate);
 
     // If the transferred ImageBitmap contained in this ImageLayerBridge was

@@ -37,10 +37,10 @@
       metrics::EnableMetricsDefault::DEFAULT_UNKNOWN);
 }
 
-+ (BOOL)isSyncFirstSetupComplete {
++ (BOOL)isInitialSyncFeatureSetupComplete {
   return SyncSetupServiceFactory::GetForBrowserState(
              chrome_test_util::GetOriginalBrowserState())
-      ->IsFirstSetupComplete();
+      ->IsInitialSyncFeatureSetupComplete();
 }
 
 @end

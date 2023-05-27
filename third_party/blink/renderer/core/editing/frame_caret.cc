@@ -220,8 +220,7 @@ void FrameCaret::SetVisibleIfActive(bool visible) {
     }
   }
   // Fallback to full update if direct update is not available.
-  frame_->View()->SetPaintArtifactCompositorNeedsUpdate(
-      PaintArtifactCompositorUpdateReason::kFrameCaretSetVisible);
+  frame_->View()->SetPaintArtifactCompositorNeedsUpdate();
 }
 
 void FrameCaret::PaintCaret(GraphicsContext& context,
@@ -235,8 +234,7 @@ void FrameCaret::PaintCaret(GraphicsContext& context,
       PaintPropertyChangeType::kUnchanged) {
     // Needs full PaintArtifactCompositor update if the parent or the local
     // transform space changed.
-    frame_->View()->SetPaintArtifactCompositorNeedsUpdate(
-        PaintArtifactCompositorUpdateReason::kFrameCaretPaint);
+    frame_->View()->SetPaintArtifactCompositorNeedsUpdate();
   }
   ScopedPaintChunkProperties scoped_properties(context.GetPaintController(),
                                                *effect_, *display_item_client_,
@@ -245,11 +243,14 @@ void FrameCaret::PaintCaret(GraphicsContext& context,
   display_item_client_->PaintCaret(context, paint_offset, DisplayItem::kCaret);
 
   if (!frame_->Selection().IsHidden()) {
-    display_item_client_->RecordSelection(
-        context, paint_offset,
-        frame_->Selection().IsHandleVisible()
-            ? gfx::SelectionBound::Type::CENTER
-            : gfx::SelectionBound::Type::HIDDEN);
+    auto type = frame_->Selection().IsHandleVisible()
+                    ? gfx::SelectionBound::Type::CENTER
+                    : gfx::SelectionBound::Type::HIDDEN;
+
+    if (type == gfx::SelectionBound::Type::CENTER ||
+        base::FeatureList::IsEnabled(blink::features::kHiddenSelectionBounds)) {
+      display_item_client_->RecordSelection(context, paint_offset, type);
+    }
   }
 }
 

@@ -22,6 +22,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
+#include "chrome/browser/web_applications/isolated_web_apps/error/uma_logging.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
@@ -230,10 +231,8 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestSingleRequest) {
   EXPECT_EQ(expected_parser_base_url, on_create_parser_future_.Take());
 
   histogram_tester.ExpectBucketCount(
-      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
-          kSuccess,
-      1);
+      ToSuccessHistogramName("WebApp.Isolated.SwbnFileUsability"),
+      /*success*/ 1, 1);
 
   std::string response_body = ReadAndFulfillResponseBody(
       result->head()->payload_length,
@@ -320,8 +319,8 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestRequestToNonExistingResponse) {
             "aaaaaaacaibaaaaaaaaaaaaaaiaaeaaaaaaaaaaaaabaeaqaaaaaaaic/foo");
 
   histogram_tester.ExpectBucketCount(
-      "WebApp.Isolated.ReadResponseHeadStatus",
-      IsolatedWebAppReaderRegistry::ReadResponseHeadStatus::
+      ToErrorHistogramName("WebApp.Isolated.ReadResponseHead"),
+      IsolatedWebAppReaderRegistry::ReadResponseHeadError::
           kResponseNotFoundError,
       1);
 }
@@ -448,8 +447,7 @@ class IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest
     : public IsolatedWebAppReaderRegistryTest,
       public ::testing::WithParamInterface<
           std::pair<web_package::mojom::BundleParseErrorType,
-                    IsolatedWebAppResponseReaderFactory::
-                        ReadIntegrityBlockAndMetadataStatus>> {};
+                    UnusableSwbnFileError::Error>> {};
 
 TEST_P(IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest,
        TestIntegrityBlockParserError) {
@@ -474,8 +472,8 @@ TEST_P(IsolatedWebAppReaderRegistryIntegrityBlockParserErrorTest,
             "Failed to parse integrity block: test error");
 
   histogram_tester.ExpectBucketCount(
-      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus", GetParam().second,
-      1);
+      ToErrorHistogramName("WebApp.Isolated.SwbnFileUsability"),
+      GetParam().second, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -484,17 +482,13 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_pair(
             web_package::mojom::BundleParseErrorType::kParserInternalError,
-            IsolatedWebAppResponseReaderFactory::
-                ReadIntegrityBlockAndMetadataStatus::
-                    kIntegrityBlockParserInternalError),
-        std::make_pair(web_package::mojom::BundleParseErrorType::kVersionError,
-                       IsolatedWebAppResponseReaderFactory::
-                           ReadIntegrityBlockAndMetadataStatus::
-                               kIntegrityBlockParserVersionError),
-        std::make_pair(web_package::mojom::BundleParseErrorType::kFormatError,
-                       IsolatedWebAppResponseReaderFactory::
-                           ReadIntegrityBlockAndMetadataStatus::
-                               kIntegrityBlockParserFormatError)));
+            UnusableSwbnFileError::Error::kIntegrityBlockParserInternalError),
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kVersionError,
+            UnusableSwbnFileError::Error::kIntegrityBlockParserVersionError),
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kFormatError,
+            UnusableSwbnFileError::Error::kIntegrityBlockParserFormatError)));
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidIntegrityBlockContents) {
   base::HistogramTester histogram_tester;
@@ -523,10 +517,8 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidIntegrityBlockContents) {
             "Failed to validate integrity block: test error");
 
   histogram_tester.ExpectBucketCount(
-      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
-          kIntegrityBlockValidationError,
-      1);
+      ToErrorHistogramName("WebApp.Isolated.SwbnFileUsability"),
+      UnusableSwbnFileError::Error::kIntegrityBlockValidationError, 1);
 }
 
 class IsolatedWebAppReaderRegistrySignatureVerificationErrorTest
@@ -563,10 +555,8 @@ TEST_P(IsolatedWebAppReaderRegistrySignatureVerificationErrorTest,
   ASSERT_TRUE(read_response_future.Take().has_value());
 
   histogram_tester.ExpectBucketCount(
-      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
-          kSuccess,
-      1);
+      ToSuccessHistogramName("WebApp.Isolated.SwbnFileUsability"),
+      /*success*/ 1, 1);
 #else
   ReadResult result = read_response_future.Take();
   ASSERT_FALSE(result.has_value());
@@ -576,10 +566,8 @@ TEST_P(IsolatedWebAppReaderRegistrySignatureVerificationErrorTest,
                                GetParam().message.c_str()));
 
   histogram_tester.ExpectBucketCount(
-      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
-          kSignatureVerificationError,
-      1);
+      ToErrorHistogramName("WebApp.Isolated.SwbnFileUsability"),
+      UnusableSwbnFileError::Error::kSignatureVerificationError, 1);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 }
 
@@ -593,8 +581,7 @@ class IsolatedWebAppReaderRegistryMetadataParserErrorTest
     : public IsolatedWebAppReaderRegistryTest,
       public ::testing::WithParamInterface<
           std::pair<web_package::mojom::BundleParseErrorType,
-                    IsolatedWebAppResponseReaderFactory::
-                        ReadIntegrityBlockAndMetadataStatus>> {};
+                    UnusableSwbnFileError::Error>> {};
 
 TEST_P(IsolatedWebAppReaderRegistryMetadataParserErrorTest,
        TestMetadataParserError) {
@@ -620,8 +607,8 @@ TEST_P(IsolatedWebAppReaderRegistryMetadataParserErrorTest,
   EXPECT_EQ(result.error().message, "Failed to parse metadata: test error");
 
   histogram_tester.ExpectBucketCount(
-      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus", GetParam().second,
-      1);
+      ToErrorHistogramName("WebApp.Isolated.SwbnFileUsability"),
+      GetParam().second, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -630,17 +617,13 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_pair(
             web_package::mojom::BundleParseErrorType::kParserInternalError,
-            IsolatedWebAppResponseReaderFactory::
-                ReadIntegrityBlockAndMetadataStatus::
-                    kMetadataParserInternalError),
-        std::make_pair(web_package::mojom::BundleParseErrorType::kVersionError,
-                       IsolatedWebAppResponseReaderFactory::
-                           ReadIntegrityBlockAndMetadataStatus::
-                               kMetadataParserVersionError),
-        std::make_pair(web_package::mojom::BundleParseErrorType::kFormatError,
-                       IsolatedWebAppResponseReaderFactory::
-                           ReadIntegrityBlockAndMetadataStatus::
-                               kMetadataParserFormatError)));
+            UnusableSwbnFileError::Error::kMetadataParserInternalError),
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kVersionError,
+            UnusableSwbnFileError::Error::kMetadataParserVersionError),
+        std::make_pair(
+            web_package::mojom::BundleParseErrorType::kFormatError,
+            UnusableSwbnFileError::Error::kMetadataParserFormatError)));
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataPrimaryUrl) {
   base::HistogramTester histogram_tester;
@@ -667,10 +650,8 @@ TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataPrimaryUrl) {
                                kUrl.spec().c_str()));
 
   histogram_tester.ExpectBucketCount(
-      "WebApp.Isolated.ReadIntegrityBlockAndMetadataStatus",
-      IsolatedWebAppResponseReaderFactory::ReadIntegrityBlockAndMetadataStatus::
-          kMetadataValidationError,
-      1);
+      ToErrorHistogramName("WebApp.Isolated.SwbnFileUsability"),
+      UnusableSwbnFileError::Error::kMetadataValidationError, 1);
 }
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestInvalidMetadataInvalidExchange) {
@@ -703,7 +684,7 @@ class IsolatedWebAppReaderRegistryResponseHeadParserErrorTest
     : public IsolatedWebAppReaderRegistryTest,
       public ::testing::WithParamInterface<
           std::pair<web_package::mojom::BundleParseErrorType,
-                    IsolatedWebAppReaderRegistry::ReadResponseHeadStatus>> {};
+                    IsolatedWebAppReaderRegistry::ReadResponseHeadError>> {};
 
 TEST_P(IsolatedWebAppReaderRegistryResponseHeadParserErrorTest,
        TestResponseHeadParserError) {
@@ -733,8 +714,9 @@ TEST_P(IsolatedWebAppReaderRegistryResponseHeadParserErrorTest,
   EXPECT_EQ(result.error().message,
             "Failed to parse response head: test error");
 
-  histogram_tester.ExpectBucketCount("WebApp.Isolated.ReadResponseHeadStatus",
-                                     GetParam().second, 1);
+  histogram_tester.ExpectBucketCount(
+      ToErrorHistogramName("WebApp.Isolated.ReadResponseHead"),
+      GetParam().second, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -743,10 +725,10 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         std::make_pair(
             web_package::mojom::BundleParseErrorType::kParserInternalError,
-            IsolatedWebAppReaderRegistry::ReadResponseHeadStatus::
+            IsolatedWebAppReaderRegistry::ReadResponseHeadError::
                 kResponseHeadParserInternalError),
         std::make_pair(web_package::mojom::BundleParseErrorType::kFormatError,
-                       IsolatedWebAppReaderRegistry::ReadResponseHeadStatus::
+                       IsolatedWebAppReaderRegistry::ReadResponseHeadError::
                            kResponseHeadParserFormatError)));
 
 TEST_F(IsolatedWebAppReaderRegistryTest, TestConcurrentRequests) {

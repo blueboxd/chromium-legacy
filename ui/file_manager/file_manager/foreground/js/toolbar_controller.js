@@ -8,10 +8,11 @@ import {queryRequiredElement} from '../../common/js/dom_utils.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
-import {State} from '../../externs/ts/state.js';
+import {CurrentDirectory, State} from '../../externs/ts/state.js';
 import {Store} from '../../externs/ts/store.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 import {getStore} from '../../state/store.js';
+import {XfCloudPanel} from '../../widgets/xf_cloud_panel.js';
 
 import {constants} from './constants.js';
 import {DirectoryModel} from './directory_model.js';
@@ -134,6 +135,13 @@ export class ToolbarController {
      */
     this.cloudButtonIcon_ = queryRequiredElement(
         '#cloud-button > xf-icon[slot="prefix-icon"]', this.toolbar_);
+
+    /**
+     * @private {!HTMLElement}
+     * @const
+     */
+    this.cloudOfflineFolderIndicator_ =
+        queryRequiredElement('#offline-folder-indicator', this.toolbar_);
 
     /**
      * @private {!Command}
@@ -286,8 +294,15 @@ export class ToolbarController {
 
     if (util.isDriveFsBulkPinningEnabled()) {
       const cloudPanel = queryRequiredElement('xf-cloud-panel');
-      this.cloudButton_.addEventListener(
-          'click', () => cloudPanel.showAt(this.cloudButton_));
+      this.cloudButton_.addEventListener('click', () => {
+        this.cloudButton_.toggleAttribute('menu-shown', true);
+        this.cloudButton_.toggleAttribute('aria-expanded', true);
+        cloudPanel.showAt(this.cloudButton_);
+      });
+      cloudPanel.addEventListener(XfCloudPanel.events.PANEL_CLOSED, () => {
+        this.cloudButton_.toggleAttribute('menu-shown', false);
+        this.cloudButton_.toggleAttribute('aria-expanded', false);
+      });
       /** @type {?boolean} */
       this.bulkPinningPref_ = null;
     }
@@ -541,10 +556,30 @@ export class ToolbarController {
     if (!util.canBulkPinningCloudPanelShow(
             bulkPinning?.stage, bulkPinningPref)) {
       this.cloudButton_.hidden = true;
+      this.cloudOfflineFolderIndicator_.hidden = true;
       return;
     }
+    this.updateBulkPinningFolderIndicator_(
+        state.currentDirectory, bulkPinning?.stage);
     this.updateBulkPinningIcon_(bulkPinning);
     this.cloudButton_.hidden = false;
+  }
+
+  /**
+   * Updates the icon that appears beside the breadcrumbs when a user is within
+   * their My drive.
+   * @param {CurrentDirectory|undefined} currentDirectory
+   * @param {chrome.fileManagerPrivate.BulkPinStage|undefined} stage
+   * @private
+   */
+  updateBulkPinningFolderIndicator_(currentDirectory, stage) {
+    if (currentDirectory?.rootType === VolumeManagerCommon.RootType.DRIVE &&
+        (stage === chrome.fileManagerPrivate.BulkPinStage.SYNCING ||
+         stage === chrome.fileManagerPrivate.BulkPinStage.PAUSED)) {
+      this.cloudOfflineFolderIndicator_.hidden = false;
+      return;
+    }
+    this.cloudOfflineFolderIndicator_.hidden = true;
   }
 
   /**

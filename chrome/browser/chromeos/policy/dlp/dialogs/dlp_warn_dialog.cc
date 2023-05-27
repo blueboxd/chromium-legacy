@@ -39,18 +39,6 @@ DlpWarnDialog::DlpWarnDialogOptions::DlpWarnDialogOptions(
 }
 
 DlpWarnDialog::DlpWarnDialogOptions::DlpWarnDialogOptions(
-    Restriction restriction,
-    const std::vector<DlpConfidentialFile>& confidential_files,
-    absl::optional<DlpFileDestination> files_destination,
-    DlpFilesController::FileAction files_action)
-    : restriction(restriction),
-      confidential_files(confidential_files),
-      files_destination(files_destination),
-      files_action(files_action) {
-  DCHECK(restriction == Restriction::kFiles);
-}
-
-DlpWarnDialog::DlpWarnDialogOptions::DlpWarnDialogOptions(
     const DlpWarnDialogOptions& other) = default;
 
 DlpWarnDialog::DlpWarnDialogOptions&
@@ -61,10 +49,11 @@ DlpWarnDialog::DlpWarnDialogOptions::~DlpWarnDialogOptions() = default;
 
 DlpWarnDialog::DlpWarnDialog(OnDlpRestrictionCheckedCallback callback,
                              DlpWarnDialogOptions options)
-    : PolicyDialogBase(std::move(callback)),
-      restriction_(options.restriction),
+    : restriction_(options.restriction),
       application_title_(options.application_title),
       contents_(std::move(options.confidential_contents)) {
+  SetOnDlpRestrictionCheckedCallback(std::move(callback));
+
   SetModalType(ui::MODAL_TYPE_SYSTEM);
 
   SetButtonLabel(ui::DIALOG_BUTTON_OK, GetOkButton());

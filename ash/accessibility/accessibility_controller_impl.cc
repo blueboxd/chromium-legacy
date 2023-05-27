@@ -130,7 +130,8 @@ const FeatureData kFeatures[] = {
      &kSystemMenuAccessibilityChromevoxIcon},
     {FeatureType::kSelectToSpeak, prefs::kAccessibilitySelectToSpeakEnabled,
      &kSystemMenuAccessibilitySelectToSpeakIcon},
-    {FeatureType::kStickyKeys, prefs::kAccessibilityStickyKeysEnabled, nullptr},
+    {FeatureType::kStickyKeys, prefs::kAccessibilityStickyKeysEnabled, nullptr,
+     /*conflicting_feature=*/FeatureType::kSpokenFeedback},
     {FeatureType::kSwitchAccess, prefs::kAccessibilitySwitchAccessEnabled,
      &kSwitchAccessIcon},
     {FeatureType::kVirtualKeyboard, prefs::kAccessibilityVirtualKeyboardEnabled,
@@ -827,6 +828,26 @@ void AccessibilityControllerImpl::Feature::SetConflictingFeature(
   conflicting_feature_ = feature;
 }
 
+void AccessibilityControllerImpl::Feature::ObserveConflictingFeature() {
+  std::string conflicting_pref_name = "";
+  switch (conflicting_feature_) {
+    case A11yFeatureType::kSpokenFeedback:
+      conflicting_pref_name = prefs::kAccessibilitySpokenFeedbackEnabled;
+      break;
+    default:
+      // No other features are used as conflicting features at the moment,
+      // but this could be populated if needed in the future.
+      NOTREACHED() << "No pref name for conflicting feature "
+                   << static_cast<int>(conflicting_feature_);
+  }
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(owner_->active_user_prefs_);
+  pref_change_registrar_->Add(
+      conflicting_pref_name,
+      base::BindRepeating(&AccessibilityControllerImpl::Feature::UpdateFromPref,
+                          base::Unretained(this)));
+}
+
 AccessibilityControllerImpl::FeatureWithDialog::FeatureWithDialog(
     FeatureType type,
     const std::string& pref_name,
@@ -923,6 +944,11 @@ void AccessibilityControllerImpl::CreateAccessibilityFeatures() {
       features_[feature_index] = std::make_unique<FeatureWithDialog>(
           feature_data.type, feature_data.pref, feature_data.icon, it->second,
           this);
+    }
+    if (feature_data.conflicting_feature !=
+        FeatureType::kNoConflictingFeature) {
+      features_[feature_index]->SetConflictingFeature(
+          feature_data.conflicting_feature);
     }
   }
 }
@@ -1031,8 +1057,7 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kAccessibilityChromeVoxEnableSpeechLogging, false);
   registry->RegisterDictionaryPref(
-      prefs::kAccessibilityChromeVoxEventStreamFilters,
-      base::Value(base::Value::Type::DICT));
+      prefs::kAccessibilityChromeVoxEventStreamFilters, base::Value::Dict());
   registry->RegisterBooleanPref(prefs::kAccessibilityChromeVoxLanguageSwitching,
                                 false);
   registry->RegisterBooleanPref(
@@ -1115,15 +1140,12 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
                                std::numeric_limits<double>::min());
   registry->RegisterDictionaryPref(
       prefs::kAccessibilitySwitchAccessSelectDeviceKeyCodes,
-      base::Value(base::Value::Type::DICT),
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterDictionaryPref(
       prefs::kAccessibilitySwitchAccessNextDeviceKeyCodes,
-      base::Value(base::Value::Type::DICT),
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterDictionaryPref(
       prefs::kAccessibilitySwitchAccessPreviousDeviceKeyCodes,
-      base::Value(base::Value::Type::DICT),
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kAccessibilitySwitchAccessAutoScanEnabled, false,
@@ -1915,6 +1937,9 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
         base::BindRepeating(
             &AccessibilityControllerImpl::Feature::UpdateFromPref,
             base::Unretained(feature.get())));
+    if (feature->conflicting_feature() != FeatureType::kNoConflictingFeature) {
+      feature->ObserveConflictingFeature();
+    }
     feature->UpdateFromPref();
   }
 

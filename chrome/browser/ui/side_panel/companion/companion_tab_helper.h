@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_SIDE_PANEL_COMPANION_COMPANION_TAB_HELPER_H_
 
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
+#include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "components/lens/buildflags.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -31,10 +32,18 @@ class CompanionTabHelper
    public:
     virtual ~Delegate() = default;
 
+    // Creates the companion SidePanelEntry and registers it to the contextual
+    // registry.
+    virtual void CreateAndRegisterEntry() = 0;
+    // Deregisters the companion SidePanelEntry.
+    virtual void DeregisterEntry() = 0;
     // Shows the companion side panel.
-    virtual void ShowCompanionSidePanel() = 0;
-    // Triggers an update of the 'open in new tab' button
-    virtual void UpdateNewTabButtonState() = 0;
+    virtual void ShowCompanionSidePanel(
+        SidePanelOpenTrigger side_panel_open_trigger) = 0;
+    // Triggers an update of the 'open in new tab' button.
+    virtual void UpdateNewTabButton(GURL url_to_open) = 0;
+    // Retrieves the web contents for testing purposes.
+    virtual content::WebContents* GetCompanionWebContentsForTesting() = 0;
   };
 
   CompanionTabHelper(const CompanionTabHelper&) = delete;
@@ -68,16 +77,31 @@ class CompanionTabHelper
   // handler or an empty pointer if none.
   std::unique_ptr<side_panel::mojom::ImageQuery> GetImageQuery();
 
+  // Triggers the companion side panel entry to be created and registered for
+  // the tab.
+  void CreateAndRegisterEntry();
+  // Triggers the companion side panel entry to be deregistered for the tab.
+  void DeregisterEntry();
+
   // Triggers an update for the 'open in new tab' button in the side panel
   // header to make sure the visibility is correct.
-  void UpdateNewTabButtonState();
-  // Returns the latest set url to be used for the 'open in new tab' button in
-  // the side panel header.
-  GURL GetNewTabButtonUrl();
+  void UpdateNewTabButton(GURL url_to_open);
 
   base::WeakPtr<CompanionPageHandler> GetCompanionPageHandler();
   void SetCompanionPageHandler(
       base::WeakPtr<CompanionPageHandler> companion_page_handler);
+
+  // Returns the companion web contents for testing purposes.
+  content::WebContents* GetCompanionWebContentsForTesting();
+
+  // For caching entry point metrics.
+  // Called to cache the trigger which is later recorded as metrics as soon as
+  // the companion page opens up.
+  void SetMostRecentSidePanelOpenTrigger(
+      absl::optional<SidePanelOpenTrigger> side_panel_open_trigger);
+  // Called to get the most recent value of trigger and immediately reset it.
+  absl::optional<SidePanelOpenTrigger>
+  GetAndResetMostRecentSidePanelOpenTrigger();
 
  private:
   explicit CompanionTabHelper(content::WebContents* web_contents);
@@ -95,6 +119,10 @@ class CompanionTabHelper
   std::unique_ptr<side_panel::mojom::ImageQuery> image_query_;
   std::unique_ptr<Delegate> delegate_;
   std::string text_query_;
+
+  // Caches the trigger source for an in-progress companion page open action in
+  // the current tab. Should be cleared after the open action is complete.
+  absl::optional<SidePanelOpenTrigger> side_panel_open_trigger_;
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
   std::unique_ptr<lens::LensRegionSearchController>
       lens_region_search_controller_;

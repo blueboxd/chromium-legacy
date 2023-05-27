@@ -624,19 +624,23 @@ ax::mojom::blink::ListStyle AXLayoutObject::GetListStyle() const {
     case ListMarker::ListStyleCategory::kSymbol: {
       const AtomicString& counter_style_name =
           computed_style->ListStyleType()->GetCounterStyleName();
-      if (counter_style_name == "disc")
+      if (counter_style_name == keywords::kDisc) {
         return ax::mojom::blink::ListStyle::kDisc;
-      if (counter_style_name == "circle")
+      }
+      if (counter_style_name == keywords::kCircle) {
         return ax::mojom::blink::ListStyle::kCircle;
-      if (counter_style_name == "square")
+      }
+      if (counter_style_name == keywords::kSquare) {
         return ax::mojom::blink::ListStyle::kSquare;
+      }
       return ax::mojom::blink::ListStyle::kOther;
     }
     case ListMarker::ListStyleCategory::kLanguage: {
       const AtomicString& counter_style_name =
           computed_style->ListStyleType()->GetCounterStyleName();
-      if (counter_style_name == "decimal")
+      if (counter_style_name == keywords::kDecimal) {
         return ax::mojom::blink::ListStyle::kNumeric;
+      }
       if (counter_style_name == "decimal-leading-zero") {
         // 'decimal-leading-zero' may be overridden by custom counter styles. We
         // return kNumeric only when we are using the predefined counter style.
@@ -1177,7 +1181,7 @@ bool AXLayoutObject::IsDataTable() const {
       Color cell_color = computed_style->VisitedDependentColor(
           GetCSSPropertyBackgroundColor());
       if (has_cell_spacing && table_bg_color != cell_color &&
-          cell_color.AlphaAsInteger() != 1) {
+          !cell_color.IsFullyTransparent()) {
         background_difference_cell_count++;
       }
 

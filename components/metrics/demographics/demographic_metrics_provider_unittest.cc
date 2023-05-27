@@ -64,7 +64,7 @@ class TestProfileClient : public DemographicMetricsProvider::ProfileClient {
         // Set an arbitrary disable reason to mimic sync feature being unable to
         // start.
         sync_service_->SetDisableReasons(
-            syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR);
+            {syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR});
         break;
 
       case SYNC_FEATURE_ENABLED:
@@ -88,15 +88,15 @@ class TestProfileClient : public DemographicMetricsProvider::ProfileClient {
 
       case SYNC_FEATURE_DISABLED_ON_CHROMEOS_ASH_VIA_DASHBOARD:
         sync_service_ = std::make_unique<syncer::TestSyncService>();
-        sync_service_->SetDisableReasons(syncer::SyncService::DisableReasonSet(
-            syncer::SyncService::DISABLE_REASON_USER_CHOICE));
+        sync_service_->SetSyncFeatureDisabledViaDashboard(true);
 
-        // On ChromeOS Ash, IsFirstSetupComplete gets cleared temporarily but
-        // immediately afterwards, it gets set again with
+        // On ChromeOS Ash, IsInitialSyncFeatureSetupComplete gets cleared
+        // temporarily but immediately afterwards, it gets set again with
         // ENGINE_INITIALIZED_WITH_AUTO_START. And yet, IsSyncFeatureEnabled()
         // stays false because the user needs to manually resume sync the
         // feature.
-        CHECK(sync_service_->GetUserSettings()->IsFirstSetupComplete());
+        CHECK(sync_service_->GetUserSettings()
+                  ->IsInitialSyncFeatureSetupComplete());
         CHECK(!sync_service_->IsSyncFeatureEnabled());
         break;
     }

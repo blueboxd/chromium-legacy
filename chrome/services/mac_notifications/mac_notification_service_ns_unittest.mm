@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/apple/bundle_locations.h"
 #include "base/barrier_closure.h"
-#include "base/mac/bundle_locations.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind.h"
@@ -64,6 +64,15 @@
 namespace mac_notifications {
 
 namespace {
+
+struct NotificationActionParams {
+  NSUserNotificationActivationType activation_type;
+  NSNumber* has_settings_button;
+  NSArray* action_button_titles;
+  NSNumber* alternate_action_index;
+  NotificationOperation operation;
+  int button_index;
+};
 
 class MockNotificationActionHandler
     : public mojom::MacNotificationActionHandler {
@@ -305,15 +314,6 @@ TEST_F(MacNotificationServiceNSTest, CloseAllNotifications) {
   run_loop.Run();
   [mock_notification_center_ verify];
 }
-
-struct NotificationActionParams {
-  NSUserNotificationActivationType activation_type;
-  NSNumber* has_settings_button;
-  NSArray* action_button_titles;
-  NSNumber* alternate_action_index;
-  NotificationOperation operation;
-  int button_index;
-};
 
 const NotificationActionParams kNotificationActionParams[] = {
     {NSUserNotificationActivationTypeNone,

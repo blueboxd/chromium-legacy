@@ -27,6 +27,7 @@ class GURL;
 @protocol CRWFindSession;
 @protocol UITraitEnvironment;
 @class NSString;
+@class NSData;
 
 namespace net {
 class SSLInfo;
@@ -83,9 +84,6 @@ class WebClient {
   // true for every custom app specific schema it supports. For example Chromium
   // browser would return true for "chrome://about" URL.
   virtual bool IsAppSpecificURL(const GURL& url) const;
-
-  // Returns text to be displayed for an unsupported plugin.
-  virtual std::u16string GetPluginNotSupportedText() const;
 
   // Returns the user agent string for the specified type.
   virtual std::string GetUserAgent(UserAgentType type) const;
@@ -179,8 +177,9 @@ class WebClient {
   virtual void LogDefaultUserAgent(web::WebState* web_state,
                                    const GURL& url) const;
 
-  // Returns true if URL was restored via session restoration cache.
-  virtual bool RestoreSessionFromCache(web::WebState* web_state) const;
+  // Fetches the session data blob from cache for `web_state`. Returns nil if
+  // the blob could not be loaded (missing, feature disabled, ...).
+  virtual NSData* FetchSessionFromCache(web::WebState* web_state) const;
 
   // Correct missing NTP and reading list virtualURLs and titles. Native session
   // restoration may not properly restore these items.

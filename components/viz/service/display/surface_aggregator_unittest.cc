@@ -3191,7 +3191,6 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
                          surface_quad_rect, testing::A<base::TimeTicks>()))
       .Times(1);
 
-  render_pass_quad.render_pass_id = CompositorRenderPassId{3};
   std::vector<Quad> expected_quads2{
       right_gutter_quad, bottom_gutter_quad,
       AllowMerge() ? fallback_quad : render_pass_quad};
@@ -3222,7 +3221,9 @@ TEST_P(SurfaceAggregatorValidSurfaceWithMergingPassesTest,
   // SurfaceAggregator to embed the primary Surface, and drop the fallback
   // Surface.
   Quad primary_quad = Quad::SolidColorQuad(SkColors::kGreen, gfx::Rect(5, 5));
-  render_pass_quad.render_pass_id = CompositorRenderPassId{4};
+  // The primary surface is now available, so the RPDQ will point to a new pass
+  // ID instead of the previous fallback pass ID.
+  render_pass_quad.render_pass_id = CompositorRenderPassId{3};
   std::vector<Quad> expected_quads3{AllowMerge() ? primary_quad
                                                  : render_pass_quad};
   std::vector<Pass> expected_passes3;
@@ -5370,10 +5371,9 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     filter_pass->filters.Append(cc::FilterOperation::CreateZoomFilter(2, 4));
     auto* root_pass = root_pass_list[2].get();
     // Set the root damage rect which doesn't intersect with the expanded
-    // filter_pass quad (-4, -4, 13, 13) (filter quad (0, 0, 5, 5) +
-    // MaximumPixelMovement(2 * 3 = 6)), so we don't have to add more damage
-    // from the filter_pass and the first render pass draw quad will not be
-    // drawn.
+    // filter_pass quad (-4, -4, 13, 13) (filter quad (0, 0, 5, 5) + blur filter
+    // pixel movement (2 * 3 = 6)), so we don't have to add more damage from the
+    // filter_pass and the first render pass draw quad will not be drawn.
     root_pass->damage_rect = gfx::Rect(20, 20, 2, 2);
     SubmitPassListAsFrame(root_sink_.get(), root_surface_id_.local_surface_id(),
                           &root_pass_list, std::move(referenced_surfaces),
@@ -5432,8 +5432,8 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
         gfx::Point(0, 0), 10, SkColors::kTransparent));
     filter_pass->filters.Append(cc::FilterOperation::CreateZoomFilter(2, 20));
     auto* root_pass = root_pass_list[2].get();
-    // Make the root damage rect intersect with the expanded filter_pass
-    // quad (filter quad (0, 0, 5, 5) + MaximumPixelMovement(10 * 3) = (-30,
+    // Make the root damage rect intersect with the expanded filter_pass quad
+    // (filter quad (0, 0, 5, 5) + blur filter pixel movement (10 * 3) = (-30,
     // -30, 65, 65)), but not with filter_pass quad itself (0, 0, 5, 5). The
     // first render pass will be drawn.
     root_pass->damage_rect = gfx::Rect(20, 20, 2, 2);
@@ -5452,9 +5452,9 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     EXPECT_EQ(gfx::Rect(kSurfaceSize), aggregated_pass_list[2]->damage_rect);
     // The filter pass intersects with the root surface damage, the root damage
     // should increase.
-    // damage_rect = original root damage (0, 0, 5, 5) + MaximumPixelMovement(10
-    // * 3) = (-30, -30, 65, 65). Then intersects with the root output_rect (0,
-    // 0, 100, 100) = (0, 0, 35, 35).
+    // damage_rect = original root damage (0, 0, 5, 5) + blur filter pixel
+    // movement (10 * 3) = (-30, -30, 65, 65). Then intersects with the root
+    // output_rect (0, 0, 100, 100) = (0, 0, 35, 35).
     EXPECT_EQ(gfx::Rect(0, 0, 35, 35), aggregated_pass_list[3]->damage_rect);
     EXPECT_EQ(1u, aggregated_pass_list[0]->quad_list.size());
     EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());

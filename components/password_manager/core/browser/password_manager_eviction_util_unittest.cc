@@ -23,25 +23,17 @@ constexpr char kUnenrollmentHistogram[] =
 constexpr char kUnenrollmentReasonHistogram[] =
     "PasswordManager.UPMUnenrollmentReason";
 
-constexpr int kTestErrorListVersion = 2;
-
+constexpr int kNetworkError = 7;
 constexpr int kInternalError = 8;
 constexpr int kDeveloperError = 10;
+constexpr int kApiNotConnected = 17;
+constexpr int kConnectionSuspendedDuringCall = 20;
+constexpr int kReconnectionTimedOut = 22;
+constexpr int kAuthErrorResolvable = 11005;
+constexpr int kAuthErrorUnresolvable = 11006;
 constexpr int kBackendGeneric = 11009;
 constexpr int kInvalidData = 11011;
 constexpr int kUnexpectedError = 11013;
-
-void EnableUPMFeatureWithTestParams(
-    base::test::ScopedFeatureList* feature_list) {
-  feature_list->InitAndEnableFeatureWithParameters(
-      password_manager::features::kUnifiedPasswordManagerAndroid,
-      {// INTERNAL_ERROR=8, BACKEND_GENERIC=11009
-       {password_manager::features::kIgnoredGmsApiErrors.name, "8,11009"},
-       // DEVELOPER_ERROR=10, INVALID_DATA=11011
-       {password_manager::features::kRetriableGmsApiErrors.name, "10,11011"},
-       {password_manager::features::kGmsApiErrorListVersion.name,
-        base::NumberToString(kTestErrorListVersion)}});
-}
 
 }  // namespace
 
@@ -50,11 +42,9 @@ class PasswordManagerEvictionUtilTest : public testing::Test {
   PasswordManagerEvictionUtilTest();
   ~PasswordManagerEvictionUtilTest() override;
 
-  base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
   TestingPrefServiceSimple* pref_service() { return &test_pref_service_; }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   TestingPrefServiceSimple test_pref_service_;
 };
 
@@ -65,10 +55,6 @@ PasswordManagerEvictionUtilTest::PasswordManagerEvictionUtilTest() {
   test_pref_service_.registry()->RegisterIntegerPref(
       password_manager::prefs::
           kUnenrolledFromGoogleMobileServicesAfterApiErrorCode,
-      0);
-  test_pref_service_.registry()->RegisterIntegerPref(
-      password_manager::prefs::
-          kUnenrolledFromGoogleMobileServicesWithErrorListVersion,
       0);
   test_pref_service_.registry()->RegisterIntegerPref(
       password_manager::prefs::kTimesReenrolledToGoogleMobileServices, 0);
@@ -83,15 +69,11 @@ PasswordManagerEvictionUtilTest::PasswordManagerEvictionUtilTest() {
       password_manager::prefs::kTimeOfLastMigrationAttempt, 0.0);
   test_pref_service_.registry()->RegisterBooleanPref(
       password_manager::prefs::kSettingsMigratedToUPM, false);
-  test_pref_service_.registry()->RegisterIntegerPref(
-      password_manager::prefs::kTimesUPMAuthErrorShown, 0);
 }
 
 PasswordManagerEvictionUtilTest::~PasswordManagerEvictionUtilTest() = default;
 
 TEST_F(PasswordManagerEvictionUtilTest, EvictsUser) {
-  EnableUPMFeatureWithTestParams(feature_list());
-
   pref_service()->SetInteger(
       password_manager::prefs::kCurrentMigrationVersionToGoogleMobileServices,
       1);
@@ -99,8 +81,6 @@ TEST_F(PasswordManagerEvictionUtilTest, EvictsUser) {
       password_manager::prefs::kTimeOfLastMigrationAttempt, 20.22);
   pref_service()->SetBoolean(password_manager::prefs::kSettingsMigratedToUPM,
                              true);
-  pref_service()->SetInteger(password_manager::prefs::kTimesUPMAuthErrorShown,
-                             2);
 
   base::HistogramTester histogram_tester;
 
@@ -113,10 +93,6 @@ TEST_F(PasswordManagerEvictionUtilTest, EvictsUser) {
                 password_manager::prefs::
                     kUnenrolledFromGoogleMobileServicesAfterApiErrorCode),
             kInternalError);
-  EXPECT_EQ(pref_service()->GetInteger(
-                password_manager::prefs::
-                    kUnenrolledFromGoogleMobileServicesWithErrorListVersion),
-            kTestErrorListVersion);
 
   EXPECT_EQ(pref_service()->GetInteger(
                 password_manager::prefs::
@@ -127,9 +103,6 @@ TEST_F(PasswordManagerEvictionUtilTest, EvictsUser) {
             0.0);
   EXPECT_FALSE(pref_service()->GetBoolean(
       password_manager::prefs::kSettingsMigratedToUPM));
-  EXPECT_EQ(pref_service()->GetInteger(
-                password_manager::prefs::kTimesUPMAuthErrorShown),
-            0);
 
   histogram_tester.ExpectUniqueSample(kUnenrollmentHistogram, true, 1);
   histogram_tester.ExpectUniqueSample(kUnenrollmentReasonHistogram,
@@ -137,8 +110,6 @@ TEST_F(PasswordManagerEvictionUtilTest, EvictsUser) {
 }
 
 TEST_F(PasswordManagerEvictionUtilTest, IndicatesEvictedUser) {
-  EnableUPMFeatureWithTestParams(feature_list());
-
   pref_service()->SetBoolean(
       password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
       true);
@@ -148,16 +119,11 @@ TEST_F(PasswordManagerEvictionUtilTest, IndicatesEvictedUser) {
 }
 
 TEST_F(PasswordManagerEvictionUtilTest, IndicatesNotEvictedUser) {
-  feature_list()->InitAndEnableFeature(
-      password_manager::features::kUnifiedPasswordManagerAndroid);
-
   EXPECT_FALSE(
       password_manager_upm_eviction::IsCurrentUserEvicted(pref_service()));
 }
 
 TEST_F(PasswordManagerEvictionUtilTest, ReenrollsUser) {
-  EnableUPMFeatureWithTestParams(feature_list());
-
   pref_service()->SetBoolean(
       password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
       true);
@@ -165,10 +131,6 @@ TEST_F(PasswordManagerEvictionUtilTest, ReenrollsUser) {
       password_manager::prefs::
           kUnenrolledFromGoogleMobileServicesAfterApiErrorCode,
       kInternalError);
-  pref_service()->SetInteger(
-      password_manager::prefs::
-          kUnenrolledFromGoogleMobileServicesWithErrorListVersion,
-      kTestErrorListVersion);
   pref_service()->SetInteger(
       password_manager::prefs::kTimesReenrolledToGoogleMobileServices, 1);
   pref_service()->SetInteger(
@@ -183,10 +145,6 @@ TEST_F(PasswordManagerEvictionUtilTest, ReenrollsUser) {
                 password_manager::prefs::
                     kUnenrolledFromGoogleMobileServicesAfterApiErrorCode),
             0);
-  EXPECT_EQ(pref_service()->GetInteger(
-                password_manager::prefs::
-                    kUnenrolledFromGoogleMobileServicesWithErrorListVersion),
-            0);
   EXPECT_EQ(
       pref_service()->GetInteger(
           password_manager::prefs::kTimesReenrolledToGoogleMobileServices),
@@ -197,69 +155,11 @@ TEST_F(PasswordManagerEvictionUtilTest, ReenrollsUser) {
             0);
 }
 
-TEST_F(PasswordManagerEvictionUtilTest,
-       ShouldInvalidateEvictionWithOutdatedVersion) {
-  EnableUPMFeatureWithTestParams(feature_list());
-
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
-  pref_service()->SetInteger(
-      password_manager::prefs::
-          kUnenrolledFromGoogleMobileServicesAfterApiErrorCode,
-      kInternalError);
-  pref_service()->SetInteger(
-      password_manager::prefs::
-          kUnenrolledFromGoogleMobileServicesWithErrorListVersion,
-      kTestErrorListVersion - 1);
-
-  EXPECT_TRUE(
-      password_manager_upm_eviction::ShouldInvalidateEviction(pref_service()));
-}
-
-TEST_F(PasswordManagerEvictionUtilTest,
-       ShouldNotInvalidateEvictionWithCurrentVersion) {
-  EnableUPMFeatureWithTestParams(feature_list());
-
-  pref_service()->SetBoolean(
-      password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors,
-      true);
-  pref_service()->SetInteger(
-      password_manager::prefs::
-          kUnenrolledFromGoogleMobileServicesAfterApiErrorCode,
-      kInternalError);
-  pref_service()->SetInteger(
-      password_manager::prefs::
-          kUnenrolledFromGoogleMobileServicesWithErrorListVersion,
-      kTestErrorListVersion);
-
-  EXPECT_FALSE(
-      password_manager_upm_eviction::ShouldInvalidateEviction(pref_service()));
-}
-
-TEST_F(PasswordManagerEvictionUtilTest, ShouldNotIgnoreByDefault) {
-  feature_list()->InitAndEnableFeature(
-      password_manager::features::kUnifiedPasswordManagerAndroid);
-
-  EXPECT_FALSE(
-      password_manager_upm_eviction::ShouldIgnoreOnApiError(kInternalError));
-}
-
-TEST_F(PasswordManagerEvictionUtilTest, ShouldNotRetryByDefault) {
-  feature_list()->InitAndEnableFeature(
-      password_manager::features::kUnifiedPasswordManagerAndroid);
-
-  EXPECT_FALSE(
-      password_manager_upm_eviction::ShouldRetryOnApiError(kInternalError));
-}
-
 TEST_F(PasswordManagerEvictionUtilTest, ShouldIgnoreOnlyListedError) {
-  EnableUPMFeatureWithTestParams(feature_list());
-
-  EXPECT_TRUE(
-      password_manager_upm_eviction::ShouldIgnoreOnApiError(kInternalError));
-  EXPECT_TRUE(
-      password_manager_upm_eviction::ShouldIgnoreOnApiError(kBackendGeneric));
+  EXPECT_TRUE(password_manager_upm_eviction::ShouldIgnoreOnApiError(
+      kAuthErrorResolvable));
+  EXPECT_TRUE(password_manager_upm_eviction::ShouldIgnoreOnApiError(
+      kAuthErrorUnresolvable));
   EXPECT_FALSE(
       password_manager_upm_eviction::ShouldIgnoreOnApiError(kDeveloperError));
   EXPECT_FALSE(
@@ -267,11 +167,19 @@ TEST_F(PasswordManagerEvictionUtilTest, ShouldIgnoreOnlyListedError) {
 }
 
 TEST_F(PasswordManagerEvictionUtilTest, ShouldRetryOnlyListedError) {
-  EnableUPMFeatureWithTestParams(feature_list());
-
   EXPECT_TRUE(
+      password_manager_upm_eviction::ShouldRetryOnApiError(kNetworkError));
+  EXPECT_TRUE(
+      password_manager_upm_eviction::ShouldRetryOnApiError(kApiNotConnected));
+  EXPECT_TRUE(password_manager_upm_eviction::ShouldRetryOnApiError(
+      kConnectionSuspendedDuringCall));
+  EXPECT_TRUE(password_manager_upm_eviction::ShouldRetryOnApiError(
+      kReconnectionTimedOut));
+  EXPECT_TRUE(
+      password_manager_upm_eviction::ShouldRetryOnApiError(kBackendGeneric));
+  EXPECT_FALSE(
       password_manager_upm_eviction::ShouldRetryOnApiError(kDeveloperError));
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       password_manager_upm_eviction::ShouldRetryOnApiError(kInvalidData));
   EXPECT_FALSE(
       password_manager_upm_eviction::ShouldRetryOnApiError(kInternalError));

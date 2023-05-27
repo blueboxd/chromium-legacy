@@ -122,9 +122,11 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/embedder_support/origin_trials/component_updater_utils.h"
+#include "components/embedder_support/origin_trials/origin_trials_settings_storage.h"
 #include "components/embedder_support/switches.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/google/core/common/google_util.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/language/content/browser/geo_language_provider.h"
 #include "components/language/core/browser/language_usage_metrics.h"
 #include "components/language/core/browser/pref_names.h"
@@ -133,6 +135,7 @@
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/clean_exit_beacon.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/metrics/expired_histogram_util.h"
 #include "components/metrics/metrics_reporting_default_state.h"
 #include "components/metrics/metrics_service.h"
@@ -189,6 +192,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include "third_party/blink/public/common/origin_trials/origin_trials_settings_provider.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -517,6 +521,16 @@ bool ShouldInstallSodaDuringPostProfileInit(
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+void DisallowKeyedServiceFactoryRegistration() {
+  // From this point, do not allow KeyedServiceFactories to be registered, all
+  // factories should be registered in the main registration function
+  // `ChromeBrowserMainExtraPartsProfiles::EnsureBrowserContextKeyedServiceFactoriesBuilt()`.
+  BrowserContextDependencyManager::GetInstance()
+      ->DisallowKeyedServiceFactoryRegistration(
+          "ChromeBrowserMainExtraPartsProfiles::"
+          "EnsureBrowserContextKeyedServiceFactoriesBuilt()");
+}
+
 }  // namespace
 
 // ChromeBrowserMainParts::ProfileInitManager ----------------------------------
@@ -550,21 +564,20 @@ ChromeBrowserMainParts::ProfileInitManager::ProfileInitManager(
     Profile* initial_profile)
     : browser_main_(browser_main) {
   // `initial_profile` is null when the profile picker is shown.
-  if (initial_profile)
+  if (initial_profile) {
     browser_main_->CallPostProfileInit(initial_profile);
+  }
 
-  if (base::FeatureList::IsEnabled(features::kObserverBasedPostProfileInit)) {
-    // Run `CallPostProfileInit()` on the other existing and future profiles.
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    // Register the observer first, in case `OnProfileAdded()` causes a
-    // creation.
-    profile_manager_observer_.Observe(profile_manager);
-    for (auto* profile : profile_manager->GetLoadedProfiles()) {
-      DCHECK(profile);
-      if (profile == initial_profile)
-        continue;
-      OnProfileAdded(profile);
+  // Run `CallPostProfileInit()` on the other existing and future profiles.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // Register the observer first, in case `OnProfileAdded()` causes a creation.
+  profile_manager_observer_.Observe(profile_manager);
+  for (auto* profile : profile_manager->GetLoadedProfiles()) {
+    DCHECK(profile);
+    if (profile == initial_profile) {
+      continue;
     }
+    OnProfileAdded(profile);
   }
 }
 
@@ -613,6 +626,7 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 
 void ChromeBrowserMainParts::SetupMetrics() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetrics");
+  CHECK(metrics::SubprocessMetricsProvider::CreateInstance());
   metrics::MetricsService* metrics = browser_process_->metrics_service();
   metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::VariationsIdsProvider::GetInstance());
@@ -871,8 +885,13 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   if (apply_first_run_result != content::RESULT_CODE_NORMAL_EXIT)
     return apply_first_run_result;
 
-  embedder_support::SetupOriginTrialsCommandLine(
-      browser_process_->local_state());
+  embedder_support::OriginTrialsSettingsStorage*
+      origin_trials_settings_storage =
+          browser_process_->GetOriginTrialsSettingsStorage();
+  embedder_support::SetupOriginTrialsCommandLineAndSettings(
+      browser_process_->local_state(), origin_trials_settings_storage);
+  blink::OriginTrialsSettingsProvider::Get()->SetSettings(
+      origin_trials_settings_storage->GetSettings());
 
   metrics::EnableExpiryChecker(chrome_metrics::kExpiredHistogramsHashes,
                                chrome_metrics::kNumExpiredHistograms);
@@ -1177,6 +1196,8 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
   for (auto& chrome_extra_part : chrome_extra_parts_)
     chrome_extra_part->PreProfileInit();
+
+  DisallowKeyedServiceFactoryRegistration();
 
 #if !BUILDFLAG(IS_ANDROID)
   // Ephemeral profiles may have been left behind if the browser crashed.

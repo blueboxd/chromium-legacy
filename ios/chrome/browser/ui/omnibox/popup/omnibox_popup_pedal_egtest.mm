@@ -106,6 +106,252 @@ id<GREYMatcher> popupRowWithString(NSString* string) {
   [ChromeEarlGrey closeCurrentTab];
 }
 
+// Tests that the manage passwords pedal is present and it opens the password
+// manager page.
+- (void)testManagePasswordsPedal {
+  // Focus omnibox from Web.
+  [ChromeEarlGrey loadURL:GURL("about:blank")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"passwords"];
+
+  NSString* managePasswordsPedalString =
+      l10n_util::GetNSString(IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_MANAGE_PASSWORDS);
+
+  // Matcher for the manage passwords pedal suggestion.
+  id<GREYMatcher> managePasswordsPedal =
+      popupRowWithString(managePasswordsPedalString);
+
+  // Manage passwords pedal should be visible.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:managePasswordsPedal];
+
+  // Tap on Manage passwords pedal.
+  [[EarlGrey selectElementWithMatcher:managePasswordsPedal]
+      performAction:grey_tap()];
+
+  // Password Manager page should be displayed.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      chrome_test_util::PasswordsTableViewMatcher()];
+
+  // Close the password manager.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                      chrome_test_util::PasswordsTableViewMatcher()];
+
+  [ChromeEarlGrey closeCurrentTab];
+}
+
+// Tests that the clear browsing data pedal is present and it opens the clear
+// browsing data page.
+- (void)testClearBrowsingDataPedal {
+  // Focus omnibox from Web.
+  [ChromeEarlGrey loadURL:GURL("about:blank")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"pedalclearbrowsing"];
+
+  NSString* clearBrowsingDataPedalString = l10n_util::GetNSString(
+      IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_CLEAR_BROWSING_DATA);
+
+  // Matcher for the clear browsing data pedal suggestion.
+  id<GREYMatcher> clearBrowsingDataPedal =
+      popupRowWithString(clearBrowsingDataPedalString);
+
+  // Clear browsing data pedal should be visible.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:clearBrowsingDataPedal];
+
+  // Tap on clear browsing data pedal.
+  [[EarlGrey selectElementWithMatcher:clearBrowsingDataPedal]
+      performAction:grey_tap()];
+
+  // Clear browsing data page should be displayed.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      chrome_test_util::ClearBrowsingDataView()];
+
+  // Close the Clear browsing data page.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                      chrome_test_util::ClearBrowsingDataView()];
+
+  [ChromeEarlGrey closeCurrentTab];
+}
+
+// Tests that the default browser pedal is present and it opens the set default
+// browser page.
+- (void)testSetDefaultBrowserPedal {
+  // Focus omnibox from Web.
+  [ChromeEarlGrey loadURL:GURL("about:blank")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"pedaldefaultbrowser"];
+
+  NSString* defaultBrowserPedalString =
+      l10n_util::GetNSString(IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_DEFAULT_BROWSER);
+
+  // Matcher for the set default browser pedal suggestion.
+  id<GREYMatcher> setDefaultBrowserPedal =
+      popupRowWithString(defaultBrowserPedalString);
+
+  // Set default browser pedal should be visible.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:setDefaultBrowserPedal];
+
+  // Tap on Set default browser pedal.
+  [[EarlGrey selectElementWithMatcher:setDefaultBrowserPedal]
+      performAction:grey_tap()];
+
+  // Set default browser page should be displayed.
+  [ChromeEarlGrey
+      waitForUIElementToAppearWithMatcher:
+          chrome_test_util::DefaultBrowserSettingsTableViewMatcher()];
+
+  // Close the set default browser page.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarCancelButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForUIElementToDisappearWithMatcher:
+          chrome_test_util::DefaultBrowserSettingsTableViewMatcher()];
+
+  [ChromeEarlGrey closeCurrentTab];
+}
+
+// Tests that manage settings pedal is present and it opens the manage settings
+// page.
+- (void)testManageSettingsPedal {
+  // Focus omnibox from Web.
+  [ChromeEarlGrey loadURL:GURL("about:blank")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"pedalsettings"];
+
+  NSString* manageSettingsPedalString = l10n_util::GetNSString(
+      IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_MANAGE_CHROME_SETTINGS);
+
+  // Matcher for the manage settings pedal suggestion.
+  id<GREYMatcher> manageSettingsPedal =
+      popupRowWithString(manageSettingsPedalString);
+
+  // Manage settings pedal should be visible.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:manageSettingsPedal];
+
+  // Tap on manage settings pedal.
+  [[EarlGrey selectElementWithMatcher:manageSettingsPedal]
+      performAction:grey_tap()];
+
+  // Manage settings page should be displayed.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      chrome_test_util::SettingsCollectionView()];
+
+  // Close the Manage settings page.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                      chrome_test_util::SettingsCollectionView()];
+
+  [ChromeEarlGrey closeCurrentTab];
+}
+
+// Tests that manage payment methods pedal is present and it opens the manage
+// payment methods page.
+- (void)testManagePaymentMethodsPedal {
+  // Focus omnibox from Web.
+  [ChromeEarlGrey loadURL:GURL("about:blank")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"pedalmanagepayment"];
+
+  NSString* managePaymenyMethodsPedalString =
+      l10n_util::GetNSString(IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_UPDATE_CREDIT_CARD);
+
+  // Matcher for the manage payment methods pedal suggestion.
+  id<GREYMatcher> managePaymentMethodsPedal =
+      popupRowWithString(managePaymenyMethodsPedalString);
+
+  // Manage payment methods pedal should be visible.
+  [ChromeEarlGrey
+      waitForUIElementToAppearWithMatcher:managePaymentMethodsPedal];
+
+  // Tap on manage payment methods pedal.
+  [[EarlGrey selectElementWithMatcher:managePaymentMethodsPedal]
+      performAction:grey_tap()];
+
+  // Manage payment methods page should be displayed.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      chrome_test_util::AutofillCreditCardTableView()];
+
+  // Close the Manage payments settings page.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                      chrome_test_util::AutofillCreditCardTableView()];
+
+  [ChromeEarlGrey closeCurrentTab];
+}
+
+// Tests that safety check pedal is present and it opens the safety check page.
+- (void)testSafetyCheckPedal {
+  // Focus omnibox from Web.
+  [ChromeEarlGrey loadURL:GURL("about:blank")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"pedalsafetycheck"];
+
+  NSString* safetyCheckPedalString = l10n_util::GetNSString(
+      IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_RUN_CHROME_SAFETY_CHECK);
+
+  // Matcher for safety check pedal suggestion.
+  id<GREYMatcher> safetyCheckPedal = popupRowWithString(safetyCheckPedalString);
+
+  // Safety check pedal should be visible.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:safetyCheckPedal];
+
+  // Tap on safety check pedal.
+  [[EarlGrey selectElementWithMatcher:safetyCheckPedal]
+      performAction:grey_tap()];
+
+  // Safety check page should be displayed.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:
+                      chrome_test_util::SafetyCheckTableViewMatcher()];
+
+  // Close the safety check page.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                      chrome_test_util::SafetyCheckTableViewMatcher()];
+
+  [ChromeEarlGrey closeCurrentTab];
+}
+
+// Tests that visit history pedal is present and it opens the browser history
+// page.
+- (void)testVisitHistoryPedal {
+  // Focus omnibox from Web.
+  [ChromeEarlGrey loadURL:GURL("about:blank")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"history"];
+
+  NSString* visitHistoryPedalString = l10n_util::GetNSString(
+      IDS_IOS_OMNIBOX_PEDAL_SUBTITLE_VIEW_CHROME_HISTORY);
+
+  // Matcher for visit history pedal suggestion.
+  id<GREYMatcher> visitHistoryPedal =
+      popupRowWithString(visitHistoryPedalString);
+
+  // Visit history pedal should be visible.
+  [ChromeEarlGrey waitForUIElementToAppearWithMatcher:visitHistoryPedal];
+
+  // Tap on visit history pedal.
+  [[EarlGrey selectElementWithMatcher:visitHistoryPedal]
+      performAction:grey_tap()];
+
+  // Visit history page should be displayed.
+  [ChromeEarlGrey
+      waitForUIElementToAppearWithMatcher:chrome_test_util::HistoryTableView()];
+
+  // Close the Visit history page.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForUIElementToDisappearWithMatcher:
+                      chrome_test_util::HistoryTableView()];
+
+  [ChromeEarlGrey closeCurrentTab];
+}
+
 // Tests that the dino pedal does not appear when the search suggestion is below
 // the top 3.
 - (void)testNoPedal {

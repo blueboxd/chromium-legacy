@@ -78,14 +78,14 @@ ACTION_P2(SimulateTypeThrottled, type, throttle) {
   SyncCycle* cycle = arg0;
   cycle->mutable_status_controller()->set_commit_result(
       SyncerError(SyncerError::SYNCER_OK));
-  cycle->delegate()->OnTypesThrottled(ModelTypeSet(type), throttle);
+  cycle->delegate()->OnTypesThrottled({type}, throttle);
 }
 
 ACTION_P(SimulatePartialFailure, type) {
   SyncCycle* cycle = arg0;
   cycle->mutable_status_controller()->set_commit_result(
       SyncerError(SyncerError::SYNCER_OK));
-  cycle->delegate()->OnTypesBackedOff(ModelTypeSet(type));
+  cycle->delegate()->OnTypesBackedOff({type});
 }
 
 ACTION_P(SimulatePollIntervalUpdate, new_poll) {
@@ -105,8 +105,7 @@ ACTION_P(SimulateGuRetryDelayCommand, delay) {
 void SimulateGetEncryptionKeyFailed(ModelTypeSet requsted_types,
                                     sync_pb::SyncEnums::GetUpdatesOrigin origin,
                                     SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(
-      SyncerError(SyncerError::SERVER_RESPONSE_VALIDATION_FAILED));
+  cycle->mutable_status_controller()->set_last_get_key_failed(true);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SyncerError(SyncerError::SYNCER_OK));
 }
@@ -114,8 +113,7 @@ void SimulateGetEncryptionKeyFailed(ModelTypeSet requsted_types,
 void SimulateConfigureSuccess(ModelTypeSet requsted_types,
                               sync_pb::SyncEnums::GetUpdatesOrigin origin,
                               SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(
-      SyncerError(SyncerError::SYNCER_OK));
+  cycle->mutable_status_controller()->set_last_get_key_failed(false);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SyncerError(SyncerError::SYNCER_OK));
 }
@@ -123,8 +121,7 @@ void SimulateConfigureSuccess(ModelTypeSet requsted_types,
 void SimulateConfigureFailed(ModelTypeSet requsted_types,
                              sync_pb::SyncEnums::GetUpdatesOrigin origin,
                              SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(
-      SyncerError(SyncerError::SYNCER_OK));
+  cycle->mutable_status_controller()->set_last_get_key_failed(false);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SyncerError(SyncerError::SERVER_RETURN_TRANSIENT_ERROR));
 }
@@ -133,8 +130,7 @@ void SimulateConfigureConnectionFailure(
     ModelTypeSet requsted_types,
     sync_pb::SyncEnums::GetUpdatesOrigin origin,
     SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(
-      SyncerError(SyncerError::SYNCER_OK));
+  cycle->mutable_status_controller()->set_last_get_key_failed(false);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SyncerError::NetworkConnectionUnavailable(net::ERR_FAILED));
 }
@@ -158,8 +154,7 @@ void SimulateDownloadUpdatesFailed(ModelTypeSet requested_types,
 void SimulateCommitFailed(ModelTypeSet requested_types,
                           NudgeTracker* nudge_tracker,
                           SyncCycle* cycle) {
-  cycle->mutable_status_controller()->set_last_get_key_result(
-      SyncerError(SyncerError::SYNCER_OK));
+  cycle->mutable_status_controller()->set_last_get_key_failed(false);
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SyncerError(SyncerError::SYNCER_OK));
   cycle->mutable_status_controller()->set_commit_result(
@@ -558,7 +553,7 @@ TEST_F(SyncSchedulerImplTest, Config) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(1);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), ready_task.Get());
+                                     {THEMES}, ready_task.Get());
   PumpLoop();
 }
 
@@ -580,7 +575,7 @@ TEST_F(SyncSchedulerImplTest, ConfigWithBackingOff) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(1);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), ready_task.Get());
+                                     {THEMES}, ready_task.Get());
   RunLoop();
 
   // RunLoop() will trigger TryCanaryJob which will retry configuration.
@@ -615,7 +610,7 @@ TEST_F(SyncSchedulerImplTest, ConfigWithStop) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(0);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), ready_task.Get());
+                                     {THEMES}, ready_task.Get());
   PumpLoop();
 }
 
@@ -628,7 +623,7 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAccessToken) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(0);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), ready_task.Get());
+                                     {THEMES}, ready_task.Get());
   PumpLoop();
 }
 
@@ -648,7 +643,7 @@ TEST_F(SyncSchedulerImplTest, ConfigNoAccessTokenLocalSync) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(1);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), ready_task.Get());
+                                     {THEMES}, ready_task.Get());
   PumpLoop();
 }
 
@@ -670,8 +665,7 @@ TEST_F(SyncSchedulerImplTest, NudgeWithConfigWithBackingOff) {
   EXPECT_CALL(ready_task, Run).Times(0);
   const ModelType model_type = THEMES;
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(model_type),
-                                     ready_task.Get());
+                                     {model_type}, ready_task.Get());
   RunLoop();
   Mock::VerifyAndClearExpectations(syncer());
   Mock::VerifyAndClearExpectations(&ready_task);
@@ -940,7 +934,7 @@ TEST_F(SyncSchedulerImplTest, ThrottlingDoesThrottle) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(0);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(type), ready_task.Get());
+                                     {type}, ready_task.Get());
   PumpLoop();
 }
 
@@ -1010,7 +1004,7 @@ TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromConfigure) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(0);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), ready_task.Get());
+                                     {THEMES}, ready_task.Get());
   PumpLoop();
   Mock::VerifyAndClearExpectations(&ready_task);
   EXPECT_TRUE(scheduler()->IsGlobalThrottle());
@@ -1244,7 +1238,7 @@ TEST_F(SyncSchedulerImplTest, TypeThrottlingDoesBlockOtherSources) {
   PumpLoop();
 
   // Ignore refresh requests for throttled types.
-  scheduler()->ScheduleLocalRefreshRequest(ModelTypeSet(throttled_type));
+  scheduler()->ScheduleLocalRefreshRequest({throttled_type});
   PumpLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
@@ -1289,7 +1283,7 @@ TEST_F(SyncSchedulerImplTest, TypeBackingOffDoesBlockOtherSources) {
   PumpLoop();
 
   // Ignore refresh requests for backed off types.
-  scheduler()->ScheduleLocalRefreshRequest(ModelTypeSet(backed_off_type));
+  scheduler()->ScheduleLocalRefreshRequest({backed_off_type});
   PumpLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
@@ -1323,7 +1317,7 @@ TEST_F(SyncSchedulerImplTest, ConfigurationMode) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(1);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), ready_task.Get());
+                                     {THEMES}, ready_task.Get());
   RunLoop();
 
   Mock::VerifyAndClearExpectations(syncer());
@@ -1403,7 +1397,7 @@ TEST_F(BackoffTriggersSyncSchedulerImplTest, FailGetEncryptionKey) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(0);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), ready_task.Get());
+                                     {THEMES}, ready_task.Get());
   RunLoop();
 
   EXPECT_TRUE(scheduler()->IsGlobalBackoff());
@@ -1448,7 +1442,7 @@ TEST_F(SyncSchedulerImplTest, BackoffDropsJobs) {
   base::MockOnceClosure ready_task;
   EXPECT_CALL(ready_task, Run).Times(0);
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(type), ready_task.Get());
+                                     {type}, ready_task.Get());
   PumpLoop();
 }
 
@@ -1690,7 +1684,7 @@ TEST_F(SyncSchedulerImplTest, DoubleCanaryInConfigure) {
   connection()->UpdateConnectionStatus();
 
   scheduler()->ScheduleConfiguration(sync_pb::SyncEnums::RECONFIGURATION,
-                                     ModelTypeSet(THEMES), base::DoNothing());
+                                     {THEMES}, base::DoNothing());
 
   scheduler()->OnConnectionStatusChange(
       network::mojom::ConnectionType::CONNECTION_WIFI);

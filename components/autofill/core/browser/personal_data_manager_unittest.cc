@@ -352,6 +352,13 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
     WaitForOnPersonalDataChanged();
   }
 
+  // Wallet address conversion is deprecated by the CONTACT_INFO type.
+  // TODO(crbug.com/1423319): Cleanup
+  bool IsWalletAddressConversionDeprecated() const {
+    return base::FeatureList::IsEnabled(
+        features::kAutofillAccountProfilesUnionView);
+  }
+
   void AddOfferDataForTest(AutofillOfferData offer_data) {
     personal_data_->AddOfferDataForTest(
         std::make_unique<AutofillOfferData>(offer_data));
@@ -416,7 +423,7 @@ class PersonalDataManagerMockTest : public PersonalDataManagerTestBase,
   void StopTheDedupeProcess() {
     personal_data_->pref_service_->SetInteger(
         prefs::kAutofillLastVersionDeduped,
-        atoi(version_info::GetVersionNumber().c_str()));
+        version_info::GetMajorVersionNumberAsInt());
   }
 
   void AddProfileToPersonalDataManager(const AutofillProfile& profile) {
@@ -1422,8 +1429,7 @@ TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
   sync_service_.SetHasSyncConsent(true);
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
-      /*types=*/syncer::UserSelectableTypeSet(
-          syncer::UserSelectableType::kAutofill));
+      /*types=*/{syncer::UserSelectableType::kAutofill});
   EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
             personal_data_->GetSyncSigninState());
   ASSERT_TRUE(TurnOnSyncFeature());
@@ -2378,17 +2384,18 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
                        "Orlando", "FL", "32801", "US", "19482937549");
   AddProfileToPersonalDataManager(local_profile);
 
-  // Add a different server profile.
-  std::vector<AutofillProfile> server_profiles;
-  server_profiles.emplace_back(AutofillProfile::SERVER_PROFILE,
-                               kServerAddressId);
-  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
-                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
-                       "77401", "US", "");
-  // Wallet only provides a full name, so the above first and last names
-  // will be ignored when the profile is written to the DB.
-  server_profiles.back().SetRawInfo(NAME_FULL, u"John Doe");
-  SetServerProfiles(server_profiles);
+  if (!IsWalletAddressConversionDeprecated()) {
+    std::vector<AutofillProfile> server_profiles;
+    server_profiles.emplace_back(AutofillProfile::SERVER_PROFILE,
+                                 kServerAddressId);
+    test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
+                         "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
+                         "77401", "US", "");
+    // Wallet only provides a full name, so the above first and last names
+    // will be ignored when the profile is written to the DB.
+    server_profiles.back().SetRawInfo(NAME_FULL, u"John Doe");
+    SetServerProfiles(server_profiles);
+  }
 
   // Disable Profile autofill.
   prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
@@ -2396,7 +2403,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   ConvertWalletAddressesAndUpdateWalletCards();
 
   // Check that profiles were saved.
-  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
+  const size_t expected_profiles = 1 + !IsWalletAddressConversionDeprecated();
+  EXPECT_EQ(expected_profiles, personal_data_->GetProfiles().size());
   // Expect no autofilled values or suggestions.
   EXPECT_EQ(0U, personal_data_->GetProfilesToSuggest().size());
 
@@ -2424,25 +2432,27 @@ TEST_F(PersonalDataManagerTest,
                        "Orlando", "FL", "32801", "US", "19482937549");
   AddProfileToPersonalDataManager(local_profile);
 
-  // Add a different server profile.
-  std::vector<AutofillProfile> server_profiles;
-  server_profiles.emplace_back(AutofillProfile::SERVER_PROFILE,
-                               kServerAddressId);
-  test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
-                       "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
-                       "77401", "US", "");
-  // Wallet only provides a full name, so the above first and last names
-  // will be ignored when the profile is written to the DB.
-  server_profiles.back().SetRawInfo(NAME_FULL, u"John Doe");
-  SetServerProfiles(server_profiles);
+  if (!IsWalletAddressConversionDeprecated()) {
+    std::vector<AutofillProfile> server_profiles;
+    server_profiles.emplace_back(AutofillProfile::SERVER_PROFILE,
+                                 kServerAddressId);
+    test::SetProfileInfo(&server_profiles.back(), "John", "", "Doe", "",
+                         "ACME Corp", "500 Oak View", "Apt 8", "Houston", "TX",
+                         "77401", "US", "");
+    // Wallet only provides a full name, so the above first and last names
+    // will be ignored when the profile is written to the DB.
+    server_profiles.back().SetRawInfo(NAME_FULL, u"John Doe");
+    SetServerProfiles(server_profiles);
+  }
 
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
   ConvertWalletAddressesAndUpdateWalletCards();
 
-  // Expect 2 autofilled values or suggestions.
-  EXPECT_EQ(2U, personal_data_->GetProfiles().size());
-  EXPECT_EQ(2U, personal_data_->GetProfilesToSuggest().size());
+  // Expect that all profiles are suggested.
+  const size_t expected_profiles = 1 + !IsWalletAddressConversionDeprecated();
+  EXPECT_EQ(expected_profiles, personal_data_->GetProfiles().size());
+  EXPECT_EQ(expected_profiles, personal_data_->GetProfilesToSuggest().size());
 
   // Disable Profile autofill.
   prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
@@ -3174,6 +3184,9 @@ TEST_F(PersonalDataManagerTest,
 
 // Tests the suggestions of duplicate local and server credit cards.
 TEST_F(PersonalDataManagerTest, GetCreditCardsToSuggest_ServerDuplicates) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillSuggestServerCardInsteadOfLocalCard);
   SetUpReferenceLocalCreditCards();
 
   // Add some server cards. If there are local dupes, the locals should be
@@ -3284,37 +3297,45 @@ TEST_F(PersonalDataManagerTest,
   PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
   ASSERT_EQ(1U, credit_cards.size());
 
-  const CreditCard* deduped_card(credit_cards.front());
+  const CreditCard* deduped_card = credit_cards.front();
   EXPECT_TRUE(*deduped_card == full_server_card);
 }
 
 // Tests that only the local card is kept when deduping with a masked server
-// duplicate of it.
-TEST_F(PersonalDataManagerTest, DedupeCreditCardToSuggest_LocalShadowsMasked) {
-  std::list<CreditCard*> credit_cards;
+// duplicate of it or vice-versa. This is checked based on the value assigned
+// during the for loop.
+TEST_F(PersonalDataManagerTest,
+       DedupeCreditCardToSuggest_BothLocalAndServerShadowsMaskedInTurns) {
+  for (bool is_dedupe_experiment_active : {true, false}) {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureState(
+        features::kAutofillSuggestServerCardInsteadOfLocalCard,
+        is_dedupe_experiment_active);
+    std::list<CreditCard*> credit_cards;
 
-  CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
-                        test::kEmptyOrigin);
-  local_card.set_use_count(300);
-  local_card.set_use_date(AutofillClock::Now() - base::Days(10));
-  test::SetCreditCardInfo(&local_card, "Homer Simpson",
-                          "4234567890123456" /* Visa */, "01", "2999", "1");
-  credit_cards.push_back(&local_card);
+    CreditCard local_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
+                          test::kEmptyOrigin);
+    test::SetCreditCardInfo(&local_card, "Homer Simpson",
+                            "4234567890123456" /* Visa */, "01", "2999", "1");
+    credit_cards.push_back(&local_card);
 
-  // Create a masked server card that is a duplicate of a local card.
-  CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&masked_card, "Homer Simpson", "3456" /* Visa */,
-                          "01", "2999", "1");
-  masked_card.set_use_count(2);
-  masked_card.set_use_date(AutofillClock::Now() - base::Days(15));
-  masked_card.SetNetworkForMaskedCard(kVisaCard);
-  credit_cards.push_back(&masked_card);
+    // Create a masked server card that is a duplicate of a local card.
+    CreditCard masked_card(CreditCard::MASKED_SERVER_CARD, "a123");
+    test::SetCreditCardInfo(&masked_card, "Homer Simpson", "3456" /* Visa */,
+                            "01", "2999", "1");
+    masked_card.SetNetworkForMaskedCard(kVisaCard);
+    credit_cards.push_back(&masked_card);
 
-  PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
-  ASSERT_EQ(1U, credit_cards.size());
+    PersonalDataManager::DedupeCreditCardToSuggest(&credit_cards);
+    ASSERT_EQ(1U, credit_cards.size());
 
-  const CreditCard* deduped_card(credit_cards.front());
-  EXPECT_TRUE(*deduped_card == local_card);
+    const CreditCard* deduped_card = credit_cards.front();
+    if (is_dedupe_experiment_active) {
+      EXPECT_EQ(*deduped_card, masked_card);
+    } else {
+      EXPECT_EQ(*deduped_card, local_card);
+    }
+  }
 }
 
 // Tests that identical full server and masked credit cards are not deduped.
@@ -3568,7 +3589,7 @@ TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
   // Get the set of profiles persisted in the db.
   std::vector<std::unique_ptr<AutofillProfile>> db_profiles;
   profile_autofill_table_->GetAutofillProfiles(
-      &db_profiles, AutofillProfile::Source::kLocalOrSyncable);
+      AutofillProfile::Source::kLocalOrSyncable, &db_profiles);
 
   // Expect the profiles held in-memory by PersonalDataManager and the db
   // profiles to be the same.
@@ -4019,6 +4040,9 @@ TEST_F(PersonalDataManagerTest, DeleteLocalCreditCards) {
 // transferred to the converted address.
 TEST_F(PersonalDataManagerTest,
        ConvertWalletAddressesAndUpdateWalletCards_NewProfile) {
+  if (IsWalletAddressConversionDeprecated()) {
+    return;
+  }
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -4112,6 +4136,9 @@ TEST_F(PersonalDataManagerTest,
 // address relationship was transferred to the converted address.
 TEST_F(PersonalDataManagerTest,
        ConvertWalletAddressesAndUpdateWalletCards_MergedProfile) {
+  if (IsWalletAddressConversionDeprecated()) {
+    return;
+  }
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -4204,6 +4231,9 @@ TEST_F(PersonalDataManagerTest,
 // a second time.
 TEST_F(PersonalDataManagerTest,
        ConvertWalletAddressesAndUpdateWalletCards_AlreadyConverted) {
+  if (IsWalletAddressConversionDeprecated()) {
+    return;
+  }
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -4246,6 +4276,9 @@ TEST_F(PersonalDataManagerTest,
 TEST_F(
     PersonalDataManagerTest,
     ConvertWalletAddressesAndUpdateWalletCards_MultipleSimilarWalletAddresses) {
+  if (IsWalletAddressConversionDeprecated()) {
+    return;
+  }
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -4357,6 +4390,9 @@ TEST_F(
 TEST_F(
     PersonalDataManagerTest,
     ConvertWalletAddressesAndUpdateWalletCards_NewCrd_AddressAlreadyConverted) {
+  if (IsWalletAddressConversionDeprecated()) {
+    return;
+  }
   ///////////////////////////////////////////////////////////////////////
   // Setup.
   ///////////////////////////////////////////////////////////////////////
@@ -4802,40 +4838,6 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS)
 
-// Tests that all the non settings origins of autofill profiles are cleared even
-// if sync is disabled.
-TEST_F(
-    PersonalDataManagerTest,
-    SyncServiceInitializedWithAutofillDisabled_ClearProfileNonSettingsOrigins) {
-  // Create a profile with a non-settings, non-empty origin.
-  AutofillProfile profile;
-  test::SetProfileInfo(&profile, "Marion0", "Mitchell", "Morrison",
-                       "johnwayne@me.xyz", "Fox",
-                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
-                       "Hollywood", "CA", "91601", "US", "12345678910");
-  AddProfileToPersonalDataManager(profile);
-
-  // Turn off autofill profile sync.
-  syncer::UserSelectableTypeSet user_selectable_type_set =
-      sync_service_.GetUserSettings()->GetSelectedTypes();
-  user_selectable_type_set.Remove(syncer::UserSelectableType::kAutofill);
-  sync_service_.GetUserSettings()->SetSelectedTypes(
-      /*sync_everything=*/false,
-      /*types=*/user_selectable_type_set);
-
-  // The data should still exist.
-  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
-
-  // Reload the personal data manager.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
-
-  // The profile should still exist.
-  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
-
-  // The profile's origin should be cleared
-  EXPECT_TRUE(personal_data_->GetProfiles()[0]->origin().empty());
-}
-
 // Tests that all the non settings origins of autofill credit cards are cleared
 // even if sync is disabled.
 TEST_F(
@@ -4973,7 +4975,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
   // Expect that a profile is stored in the profile autofill table.
   profile_autofill_table_->GetAutofillProfiles(
-      &profiles, AutofillProfile::Source::kLocalOrSyncable);
+      AutofillProfile::Source::kLocalOrSyncable, &profiles);
   EXPECT_EQ(1U, profiles.size());
   EXPECT_EQ(profile, *profiles[0]);
 }
@@ -5376,8 +5378,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
   ASSERT_FALSE(sync_service_.HasSyncConsent());
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
-      /*types=*/syncer::UserSelectableTypeSet(
-          syncer::UserSelectableType::kAutofill));
+      /*types=*/{syncer::UserSelectableType::kAutofill});
 
   EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
             personal_data_->GetSyncSigninState());
@@ -5441,8 +5442,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
 
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
-      /*types=*/syncer::UserSelectableTypeSet(
-          syncer::UserSelectableType::kAutofill));
+      /*types=*/{syncer::UserSelectableType::kAutofill});
   // Make sure there are no opt-ins recorded yet.
   ASSERT_FALSE(prefs::IsUserOptedInWalletSyncTransport(prefs_.get(),
                                                        active_info.account_id));

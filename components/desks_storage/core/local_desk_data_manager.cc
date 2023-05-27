@@ -42,6 +42,7 @@ bool g_disable_max_template_limit = false;
 // File extension for saving template entries.
 constexpr char kFileExtension[] = ".saveddesk";
 constexpr char kSavedDeskDirectoryName[] = "saveddesk";
+constexpr char kAppLaunchAutomationDirectoryName[] = "app_launch_automation";
 constexpr size_t kMaxDeskTemplateCount = 6u;
 // Currently, the save for later button is dependent on the the max number of
 // entries total.
@@ -60,8 +61,9 @@ std::unique_ptr<ash::DeskTemplate> ReadFileToTemplate(
                                                 base::BlockingType::MAY_BLOCK);
 
   std::string value_string;
-  if (!base::ReadFileToString(fully_qualified_path, &value_string))
+  if (!base::ReadFileToString(fully_qualified_path, &value_string)) {
     return nullptr;
+  }
 
   std::string error_message;
   int error_code;
@@ -91,8 +93,9 @@ bool EndsWith(const char* input, const char* suffix) {
 // TODO(crbug.com/1320836): Make template creation for
 // local_desk_data_manager_unittests cleaner.
 bool IsValidTemplateFileName(const char* name) {
-  if (name == nullptr)
+  if (name == nullptr) {
     return false;
+  }
   return EndsWith(name, kFileExtension);
 }
 
@@ -122,17 +125,28 @@ base::FilePath GetFullyQualifiedPath(base::FilePath file_path,
   return base::FilePath(file_path.Append(base::FilePath(filename)));
 }
 
+std::string StorageLocationToDirName(
+    LocalDeskDataManager::StorageLocation storage_location) {
+  switch (storage_location) {
+    case LocalDeskDataManager::StorageLocation::kSavedDeskDir:
+      return kSavedDeskDirectoryName;
+    case LocalDeskDataManager::StorageLocation::kAppLaunchAutomationDir:
+      return kAppLaunchAutomationDirectoryName;
+  }
+}
+
 }  // namespace
 
 LocalDeskDataManager::LocalDeskDataManager(
     const base::FilePath& user_data_dir_path,
-    const AccountId& account_id)
+    const AccountId& account_id,
+    StorageLocation storage_location)
     : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       user_data_dir_path_(user_data_dir_path),
-      local_saved_desk_path_(
-          user_data_dir_path.AppendASCII(kSavedDeskDirectoryName)),
+      local_saved_desk_path_(user_data_dir_path.AppendASCII(
+          StorageLocationToDirName(storage_location))),
       account_id_(account_id),
       cache_status_(CacheStatus::kNotInitialized) {
   // Populate `saved_desks_list_` with all the desk types.
@@ -143,7 +157,8 @@ LocalDeskDataManager::LocalDeskDataManager(
   task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&LocalDeskDataManager::LoadCacheOnBackgroundSequence,
-                     user_data_dir_path),
+                     user_data_dir_path,
+                     StorageLocationToDirName(storage_location)),
       base::BindOnce(&LocalDeskDataManager::MoveEntriesIntoCache,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -177,8 +192,9 @@ DeskModel::GetAllEntriesResult LocalDeskDataManager::GetAllEntries() {
                                std::move(entries));
   }
 
-  for (const auto& it : policy_entries_)
+  for (const auto& it : policy_entries_) {
     entries.push_back(it.get());
+  }
 
   for (auto& saved_desk : saved_desks_list_) {
     for (auto& [uuid, template_entry] : saved_desk.second) {
@@ -395,6 +411,16 @@ ash::DeskTemplate* LocalDeskDataManager::FindOtherEntryWithName(
                                                     saved_desks_list_.at(type));
 }
 
+// There is no cache guid associated with local desk storage.
+std::string LocalDeskDataManager::GetCacheGuid() {
+  return std::string();
+}
+
+void LocalDeskDataManager::UpdateEntry(
+    std::unique_ptr<ash::DeskTemplate> entry) {
+  // TODO(b/281857868) implement update entry logic.
+}
+
 // static
 void LocalDeskDataManager::SetDisableMaxTemplateLimitForTesting(bool disabled) {
   g_disable_max_template_limit = disabled;
@@ -403,7 +429,8 @@ void LocalDeskDataManager::SetDisableMaxTemplateLimitForTesting(bool disabled) {
 // static
 LocalDeskDataManager::LoadCacheResult
 LocalDeskDataManager::LoadCacheOnBackgroundSequence(
-    const base::FilePath& user_data_dir_path) {
+    const base::FilePath& user_data_dir_path,
+    const std::string sub_directory_name) {
   std::vector<std::unique_ptr<ash::DeskTemplate>> entries;
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -417,7 +444,7 @@ LocalDeskDataManager::LoadCacheOnBackgroundSequence(
   // check to make sure there is a `local_saved_desk_path_` directory. If not
   // create it.
   base::FilePath local_saved_desk_path =
-      user_data_dir_path.AppendASCII(kSavedDeskDirectoryName);
+      user_data_dir_path.AppendASCII(sub_directory_name);
   base::CreateDirectory(local_saved_desk_path);
   base::DirReaderPosix dir_reader(local_saved_desk_path.AsUTF8Unsafe().c_str());
 
@@ -502,8 +529,9 @@ LocalDeskDataManager::DeleteTaskResult LocalDeskDataManager::DeleteEntryTask(
       GetFullyQualifiedPath(local_saved_desk_path, uuid);
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  if (base::DeleteFile(fully_qualified_path))
+  if (base::DeleteFile(fully_qualified_path)) {
     return {DeleteEntryStatus::kOk, std::move(roll_back_entry)};
+  }
   return {DeleteEntryStatus::kFailure, std::move(roll_back_entry)};
 }
 

@@ -84,7 +84,14 @@ public class SplitCompatCustomTabsService extends CustomTabsService {
     @Override
     protected boolean requestPostMessageChannel(
             CustomTabsSessionToken sessionToken, Uri postMessageOrigin) {
-        return mImpl.requestPostMessageChannel(sessionToken, postMessageOrigin);
+        return mImpl.requestPostMessageChannel(sessionToken, postMessageOrigin, null);
+    }
+
+    @Override
+    protected boolean requestPostMessageChannel(CustomTabsSessionToken sessionToken,
+            Uri postMessageSourceOrigin, Uri postMessageTargetOrigin, Bundle extras) {
+        return mImpl.requestPostMessageChannel(
+                sessionToken, postMessageSourceOrigin, postMessageTargetOrigin);
     }
 
     @Override
@@ -122,11 +129,6 @@ public class SplitCompatCustomTabsService extends CustomTabsService {
         return mImpl.setEngagementSignalsCallback(sessionToken, callback, extras);
     }
 
-    @Override
-    protected int getGreatestScrollPercentage(CustomTabsSessionToken sessionToken, Bundle extras) {
-        return mImpl.getGreatestScrollPercentage(sessionToken, extras);
-    }
-
     /**
      * Holds the implementation of service logic. Will be called by {@link
      * SplitCompatCustomTabsService}.
@@ -158,8 +160,8 @@ public class SplitCompatCustomTabsService extends CustomTabsService {
         protected abstract Bundle extraCommand(String commandName, Bundle args);
         protected abstract boolean updateVisuals(
                 CustomTabsSessionToken sessionToken, Bundle bundle);
-        protected abstract boolean requestPostMessageChannel(
-                CustomTabsSessionToken sessionToken, Uri postMessageOrigin);
+        protected abstract boolean requestPostMessageChannel(CustomTabsSessionToken sessionToken,
+                Uri postMessageOrigin, Uri postMessageTargetOrigin);
         protected abstract int postMessage(
                 CustomTabsSessionToken sessionToken, String message, Bundle extras);
         protected abstract boolean validateRelationship(
@@ -170,7 +172,5 @@ public class SplitCompatCustomTabsService extends CustomTabsService {
                 CustomTabsSessionToken sessionToken, Bundle extras);
         protected abstract boolean setEngagementSignalsCallback(CustomTabsSessionToken sessionToken,
                 EngagementSignalsCallback callback, Bundle extras);
-        protected abstract int getGreatestScrollPercentage(
-                CustomTabsSessionToken sessionToken, Bundle extras);
     }
 }

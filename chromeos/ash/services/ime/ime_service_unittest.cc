@@ -156,12 +156,17 @@ struct MockInputMethodHost : public mojom::InputMethodHost {
   void RequestSuggestions(mojom::SuggestionsRequestPtr request,
                           RequestSuggestionsCallback callback) override {}
   void DisplaySuggestions(
-      const std::vector<AssistiveSuggestion>& suggestions) override {}
+      const std::vector<AssistiveSuggestion>& suggestions,
+      const absl::optional<SuggestionsTextContext>& context) override {}
   void UpdateCandidatesWindow(mojom::CandidatesWindowPtr window) override {}
   void RecordUkm(mojom::UkmEntryPtr entry) override {}
-  void ReportKoreanAction(mojom::KoreanAction action) override {}
-  void ReportKoreanSettings(mojom::KoreanSettingsPtr settings) override {}
-  void ReportSuggestionOpportunity(AssistiveSuggestionMode mode) override {}
+  void DEPRECATED_ReportKoreanAction(mojom::KoreanAction action) override {}
+  void DEPRECATED_ReportKoreanSettings(
+      mojom::KoreanSettingsPtr settings) override {}
+  void DEPRECATED_ReportSuggestionOpportunity(
+      AssistiveSuggestionMode mode) override {}
+  void ReportHistogramSample(base::Histogram* histogram,
+                             uint16_t value) override {}
   void UpdateQuickSettings(
       mojom::InputMethodQuickSettingsPtr settings) override {}
 
@@ -209,12 +214,17 @@ class ImeServiceTest : public testing::Test, public mojom::InputMethodHost {
   void RequestSuggestions(mojom::SuggestionsRequestPtr request,
                           RequestSuggestionsCallback callback) override {}
   void DisplaySuggestions(
-      const std::vector<AssistiveSuggestion>& suggestions) override {}
+      const std::vector<AssistiveSuggestion>& suggestions,
+      const absl::optional<SuggestionsTextContext>& context) override {}
   void UpdateCandidatesWindow(mojom::CandidatesWindowPtr window) override {}
   void RecordUkm(mojom::UkmEntryPtr entry) override {}
-  void ReportKoreanAction(mojom::KoreanAction action) override {}
-  void ReportKoreanSettings(mojom::KoreanSettingsPtr settings) override {}
-  void ReportSuggestionOpportunity(AssistiveSuggestionMode mode) override {}
+  void DEPRECATED_ReportKoreanAction(mojom::KoreanAction action) override {}
+  void DEPRECATED_ReportKoreanSettings(
+      mojom::KoreanSettingsPtr settings) override {}
+  void DEPRECATED_ReportSuggestionOpportunity(
+      AssistiveSuggestionMode mode) override {}
+  void ReportHistogramSample(base::Histogram* histogram,
+                             uint16_t value) override {}
   void UpdateQuickSettings(
       mojom::InputMethodQuickSettingsPtr settings) override {}
 

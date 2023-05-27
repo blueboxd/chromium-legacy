@@ -5,6 +5,7 @@
 #include "ash/user_education/user_education_controller.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "ash/constants/ash_features.h"
@@ -14,6 +15,7 @@
 #include "ash/user_education/mock_user_education_delegate.h"
 #include "ash/user_education/user_education_ash_test_base.h"
 #include "ash/user_education/user_education_feature_controller.h"
+#include "ash/user_education/user_education_help_bubble_controller.h"
 #include "ash/user_education/user_education_ping_controller.h"
 #include "ash/user_education/welcome_tour/welcome_tour_controller.h"
 #include "base/test/bind.h"
@@ -28,10 +30,11 @@ namespace ash {
 namespace {
 
 // Aliases.
-using testing::_;
-using testing::Eq;
-using user_education::TutorialDescription;
-using user_education::TutorialIdentifier;
+using ::testing::_;
+using ::testing::Eq;
+using ::testing::Return;
+using ::user_education::TutorialDescription;
+using ::user_education::TutorialIdentifier;
 
 }  // namespace
 
@@ -101,6 +104,13 @@ TEST_P(UserEducationControllerTest, HoldingSpaceTourControllerExists) {
   EXPECT_EQ(!!HoldingSpaceTourController::Get(), IsHoldingSpaceTourEnabled());
 }
 
+// Verifies that the user education help bubble controller exists iff user
+// education features are enabled.
+TEST_P(UserEducationControllerTest, UserEducationHelpBubbleControllerExists) {
+  EXPECT_EQ(!!UserEducationHelpBubbleController::Get(),
+            !!UserEducationController::Get());
+}
+
 // Verifies that the user education ping controller exists iff user education
 // features are enabled.
 TEST_P(UserEducationControllerTest, UserEducationPingControllerExists) {
@@ -111,6 +121,31 @@ TEST_P(UserEducationControllerTest, UserEducationPingControllerExists) {
 // Verifies that the Welcome Tour controller exists iff the feature is enabled.
 TEST_P(UserEducationControllerTest, WelcomeTourControllerExists) {
   EXPECT_EQ(!!WelcomeTourController::Get(), IsWelcomeTourEnabled());
+}
+
+// Verifies that `GetElementIdentifierForAppId()` delegates as expected. Note
+// that this test is skipped if the controller does not exist.
+TEST_P(UserEducationControllerTest, GetElementIdentifierForAppId) {
+  auto* controller = UserEducationController::Get();
+  if (!controller) {
+    GTEST_SKIP();
+  }
+
+  // Ensure `delegate` exists.
+  auto* delegate = user_education_delegate();
+  ASSERT_TRUE(delegate);
+
+  // Create an app ID and associated element identifier.
+  constexpr char kAppId[] = "app_id";
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kElementId);
+
+  // Expect that calls to `GetElementIdentifierForAppId()` are delegated.
+  EXPECT_CALL(*delegate, GetElementIdentifierForAppId(Eq(kAppId)))
+      .WillOnce(Return(kElementId));
+
+  // Invoke `GetElementIdentifierForAppId()` and verify expectations.
+  EXPECT_EQ(controller->GetElementIdentifierForAppId(kAppId), kElementId);
+  testing::Mock::VerifyAndClearExpectations(delegate);
 }
 
 // Verifies that tutorials are registered when the primary user session is

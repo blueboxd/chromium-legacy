@@ -68,9 +68,9 @@ class MockAutofillAgent : public mojom::AutofillAgent {
                              std::move(handle)));
   }
 
-  MOCK_METHOD(void, TriggerReparse, (), (override));
+  MOCK_METHOD(void, TriggerFormExtraction, (), (override));
   MOCK_METHOD(void,
-              TriggerReparseWithResponse,
+              TriggerFormExtractionWithResponse,
               (base::OnceCallback<void(bool)>),
               (override));
   MOCK_METHOD(void,
@@ -121,6 +121,10 @@ class MockAutofillAgent : public mojom::AutofillAgent {
   MOCK_METHOD(void,
               SetFieldsEligibleForManualFilling,
               (const std::vector<FieldRendererId>& fields),
+              (override));
+  MOCK_METHOD(void,
+              GetPotentialLastFourCombinationsForStandaloneCvc,
+              (base::OnceCallback<void(const std::vector<std::string>&)>),
               (override));
 
  private:

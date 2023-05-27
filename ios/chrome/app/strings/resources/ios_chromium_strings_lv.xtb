@@ -14,7 +14,6 @@
 <translation id="1617663976202781617">Chromium sinhronizācijas dati</translation>
 <translation id="1722370509450468186">Jūsu parole tiks saglabāta jūsu kontā (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Chromium dati dzēsti</translation>
-<translation id="177102542580335555">Jūs šim Chromium profilam saņemat standarta aizsardzību</translation>
 <translation id="1838412507805038478">Chromium apstiprināja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu.</translation>
 <translation id="1843424232666537147">Pārlūkā Chromium ir funkcijas, ko varat izmantot, lai pārvaldītu interneta datus un tīmekļa lapu ielādes ātrumu.
 <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
@@ -47,8 +46,11 @@
 <translation id="3567399274263440288">Lai pilnvērtīgi izmantotu pārlūku Chromium, pierakstieties tajā, izmantojot savu Google kontu.</translation>
 <translation id="3639997914391704523">Pārlūkprogrammā Chromium var pārbaudīt jūsu paroles, ja esat pierakstījies savā Google kontā.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> izmantoja pārlūku Chromium un neizdzēsa grāmatzīmes, paroles un citus iestatījumus šajā ierīcē.</translation>
+<translation id="3661862315467204831">Atveriet Chromium iestatījumus iOS ierīcē, pēc tam pieskarieties vienumam “Browser Default APP” (Noklusējuma pārlūka lietotne) un atlasiet Chromium.</translation>
 <translation id="372658070733623520">Lai izmantotu un saglabātu Chromium datus savā Google kontā, apstipriniet savu identitāti.</translation>
 <translation id="3805899903892079518">Chromium nevar piekļūt jūsu fotoattēliem un videoklipiem. Iespējojiet piekļuvi: iOS Settings &gt; Privacy &gt; Photos.</translation>
+<translation id="3827545470516145620">Jūs saņemat standarta drošības aizsardzību šajā ierīcē.</translation>
+<translation id="3955621079070267756">Atveriet Chromium jebkurā lietotnē</translation>
 <translation id="4043291146360695975">Paroles tiek saglabātas tikai šīs ierīces paroļu pārvaldniekā</translation>
 <translation id="4099085513035183040">Netiek atbalstīta pārlūkā Chromium Beta.</translation>
 <translation id="4432744876818348753">Pierakstieties, lai pilnvērtīgi izmantotu pārlūku Chromium.</translation>
@@ -82,6 +84,7 @@
 1. Atveriet iestatījumus.
 2. Pieskarieties vienumam “Noklusējuma pārlūka lietotne”.
 3. Atlasiet Chromium.</translation>
+<translation id="6247557882553405851">Google paroļu pārvaldnieks</translation>
 <translation id="6268381023930128611">Vai izrakstīties no Chromium?</translation>
 <translation id="632825460376924298">Atļaut pierakstīšanos pārlūkā Chromium</translation>
 <translation id="6337530241089703714">Izvēlieties, vai notīrīt Chromium datus no šīs ierīces vai tos paturēt</translation>
@@ -100,7 +103,6 @@
 <translation id="7192111075364461693">Chromium paziņojumi pašlaik ir izslēgti jūsu ierīces iestatījumos.</translation>
 <translation id="7208566199746267865">Chromium ietaupa jūsu laiku, pievienojot jūsu kontus tīmeklim. Kontus varat pievienot vai noņemt sadaļā Iestatījumi.</translation>
 <translation id="725427773388857052">Chromium var palīdzēt aizsargāt jūs pret datu pārkāpumiem, nedrošām vietnēm un citiem apdraudējumiem.</translation>
-<translation id="7255976941681861701">Uzziniet vairāk par jauno Chromium izvēlni</translation>
 <translation id="7269362888766543920">Daži papildinājumi var izraisīt pārlūka Chromium avarēšanu. Lūdzu, atinstalējiet tos.</translation>
 <translation id="7313655110045230863">Lai iestatītu Chromium kā noklusējuma pārlūku, atveriet iestatījumus. Pieskarieties vienumam “Noklusējuma pārlūka lietotne” un pēc tam atlasiet Chromium.</translation>
 <translation id="7337881442233988129">Chromium</translation>
@@ -143,5 +145,6 @@ Svarīga informācija
 <translation id="9089354809943900324">Chromium versija ir novecojusi.</translation>
 <translation id="9110075932708282655">Chromium izmantošana pēc noklusējuma</translation>
 <translation id="921174536258924340">Pārlūkprogrammā Chromium nevarēja pārbaudīt visas paroles. Mēģiniet vēlreiz rīt vai <ph name="BEGIN_LINK" />pārbaudiet paroles savā Google kontā<ph name="END_LINK" />.</translation>
+<translation id="971488683725792095">Varat automātiski izmantot pārlūku Chromium, kad pieskaraties saitēm ziņojumos, dokumentos un citās lietotnēs.</translation>
 <translation id="985602178874221306">Chromium autori</translation>
 </translationbundle>

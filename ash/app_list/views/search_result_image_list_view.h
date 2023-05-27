@@ -15,6 +15,7 @@
 
 namespace views {
 class BoxLayoutView;
+class TableLayoutView;
 class Label;
 }  // namespace views
 
@@ -31,16 +32,22 @@ class ASH_EXPORT SearchResultImageListView : public SearchResultContainerView {
       delete;
   ~SearchResultImageListView() override;
 
+  // Called when the search result is activated.
+  void SearchResultActivated(SearchResultImageView* view,
+                             int event_flags,
+                             bool by_button_press);
+
   // Overridden from SearchResultContainerView:
   SearchResultImageView* GetResultViewAt(size_t index) override;
-  bool HasAnimatingChildView() override;
   void AppendShownResultMetadata(
       std::vector<SearchResultAimationMetadata>* result_metadata_) override;
-  absl::optional<ResultsAnimationInfo> ScheduleResultAnimations(
-      const ResultsAnimationInfo& aggregate_animation_info) override;
 
   // Returns all search result image views children of this view.
   std::vector<SearchResultImageView*> GetSearchResultImageViews();
+
+  const views::TableLayoutView* image_info_container_for_test() const {
+    return image_info_container_.get();
+  }
 
  private:
   // Overridden from views::View:
@@ -49,6 +56,9 @@ class ASH_EXPORT SearchResultImageListView : public SearchResultContainerView {
   // Overridden from SearchResultContainerView:
   void OnSelectedResultChanged() override;
   int DoUpdate() override;
+  void UpdateResultsVisibility(bool force_hide) override;
+  views::View* GetTitleLabel() override;
+  std::vector<views::View*> GetViewsToAnimate() override;
 
   // The singleton delegate for search result image views that implements
   // support for context menu and drag-and-drop operations. This delegate needs
@@ -58,6 +68,7 @@ class ASH_EXPORT SearchResultImageListView : public SearchResultContainerView {
   // Owned by views hierarchy.
   raw_ptr<views::Label> title_label_ = nullptr;
   raw_ptr<views::BoxLayoutView> image_view_container_ = nullptr;
+  raw_ptr<views::TableLayoutView> image_info_container_ = nullptr;
   std::vector<SearchResultImageView*> image_views_;
 };
 

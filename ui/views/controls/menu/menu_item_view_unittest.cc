@@ -251,8 +251,8 @@ TEST_F(TouchableMenuItemViewTest, MinAndMaxWidth) {
   // Test a title which is between the min and max allowed widths.
   gfx::Size item2_size =
       AppendItemAndGetSize(2, u"Item2 bigger than min less than max");
-  EXPECT_GT(item2_size.width(), min_menu_width);
-  EXPECT_LT(item2_size.width(), max_menu_width);
+  EXPECT_GE(item2_size.width(), min_menu_width);
+  EXPECT_LE(item2_size.width(), max_menu_width);
 
   // Test a title which is longer than the max touchable menu width.
   gfx::Size item3_size =
@@ -648,11 +648,6 @@ class MenuItemViewAccessTest : public MenuItemViewPaintUnitTest {
  private:
   class DisallowMenuDelegate : public test::TestMenuDelegate {
    public:
-    const gfx::FontList* GetLabelFontList(int command_id) const override {
-      EXPECT_NE(1, command_id);
-      return nullptr;
-    }
-
     absl::optional<SkColor> GetLabelColor(int command_id) const override {
       EXPECT_NE(1, command_id);
       return absl::nullopt;

@@ -108,7 +108,8 @@ const CGFloat kFaviconBadgeSideLength = 24;
     [self.view addSubview:self.navigationBar];
   }
 
-  if (self.imageEnclosedWithShadowAndBadge) {
+  if (self.imageEnclosedWithShadowAndBadge ||
+      self.imageEnclosedWithShadowWithoutBadge) {
     // The image view is set within the helper method.
     self.imageContainerView = [self createImageContainerViewWithShadowAndBadge];
   } else {
@@ -430,7 +431,7 @@ const CGFloat kFaviconBadgeSideLength = 24;
   UINavigationBar* navigationBar = [[UINavigationBar alloc] init];
   navigationBar.translucent = NO;
   [navigationBar setShadowImage:[[UIImage alloc] init]];
-  [navigationBar setBarTintColor:[UIColor colorNamed:kBackgroundColor]];
+  [navigationBar setBarTintColor:[UIColor colorNamed:kPrimaryBackgroundColor]];
 
   UINavigationItem* navigationItem = [[UINavigationItem alloc] init];
   if (self.helpButtonAvailable) {
@@ -523,12 +524,20 @@ const CGFloat kFaviconBadgeSideLength = 24;
   [containerView addSubview:frameView];
   [containerView addSubview:faviconBadgeView];
 
+  if (self.imageEnclosedWithShadowWithoutBadge) {
+    [faviconBadgeView setHidden:YES];
+  }
+
+  CGFloat faviconSideLength = self.customFaviconSideLength > 0
+                                  ? self.customFaviconSideLength
+                                  : kFaviconSideLength;
+
   [NSLayoutConstraint activateConstraints:@[
     // Size constraints.
     [frameView.widthAnchor constraintEqualToConstant:kFaviconFrameSideLength],
     [frameView.heightAnchor constraintEqualToConstant:kFaviconFrameSideLength],
-    [faviconView.widthAnchor constraintEqualToConstant:kFaviconSideLength],
-    [faviconView.heightAnchor constraintEqualToConstant:kFaviconSideLength],
+    [faviconView.widthAnchor constraintEqualToConstant:faviconSideLength],
+    [faviconView.heightAnchor constraintEqualToConstant:faviconSideLength],
     [faviconBadgeView.widthAnchor
         constraintEqualToConstant:kFaviconBadgeSideLength],
     [faviconBadgeView.heightAnchor

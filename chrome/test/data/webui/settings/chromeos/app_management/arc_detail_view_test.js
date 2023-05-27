@@ -4,13 +4,13 @@
 
 'use strict';
 
-import {AppManagementStore, updateSelectedAppId} from 'chrome://os-settings/chromeos/os_settings.js';
+import {AppManagementStore, updateSelectedAppId} from 'chrome://os-settings/os_settings.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {getPermissionValueBool} from 'chrome://resources/cr_components/app_management/util.js';
-import {createBoolPermission} from 'chrome://resources/cr_components/app_management/permission_util.js';
+import {createBoolPermission, createTriStatePermission} from 'chrome://resources/cr_components/app_management/permission_util.js';
 import {setupFakeHandler, replaceStore, replaceBody, isHiddenByDomIf, isHidden, getPermissionItemByType, getPermissionCrToggleByType} from './test_util.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
-import {AppType, PermissionType} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
+import {AppType, PermissionType, TriState} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {FakePageHandler} from './fake_page_handler.js';
 
 
@@ -77,57 +77,6 @@ suite('<app-management-arc-detail-view>', () => {
         isHidden(getPermissionItemByType(arcPermissionView, 'kCamera')));
   });
 
-  test('Toggle works correctly', async () => {
-    const checkPermissionToggle = async (permissionType) => {
-      assertTrue(getPermissionBoolByType(permissionType));
-      assertTrue(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                     .checked);
-
-      // Toggle Off.
-      await clickPermissionToggle(permissionType);
-      assertFalse(getPermissionBoolByType(permissionType));
-      assertFalse(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                      .checked);
-
-      // Toggle On.
-      await clickPermissionToggle(permissionType);
-      assertTrue(getPermissionBoolByType(permissionType));
-      assertTrue(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                     .checked);
-    };
-
-    await checkPermissionToggle('kLocation');
-    await checkPermissionToggle('kCamera');
-    await checkPermissionToggle('kNotifications');
-  });
-
-
-  test('OnClick handler for permission item works correctly', async () => {
-    const checkPermissionItemOnClick = async (permissionType) => {
-      assertTrue(getPermissionBoolByType(permissionType));
-      assertTrue(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                     .checked);
-
-      // Toggle Off.
-      await clickPermissionItem(permissionType);
-      assertFalse(getPermissionBoolByType(permissionType));
-      assertFalse(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                      .checked);
-
-      // Toggle On.
-      await clickPermissionItem(permissionType);
-      assertTrue(getPermissionBoolByType(permissionType));
-      assertTrue(getPermissionCrToggleByType(arcPermissionView, permissionType)
-                     .checked);
-    };
-
-    await checkPermissionItemOnClick('kLocation');
-    await checkPermissionItemOnClick('kCamera');
-    await checkPermissionItemOnClick('kNotifications');
-    await checkPermissionItemOnClick('kContacts');
-    await checkPermissionItemOnClick('kStorage');
-  });
-
   test('No permissions requested label', async () => {
     assertTrue(isHiddenByDomIf(
         arcPermissionView.shadowRoot.querySelector('#noPermissions')));
@@ -147,6 +96,75 @@ suite('<app-management-arc-detail-view>', () => {
         arcPermissionView.shadowRoot.querySelector('#noPermissions')));
   });
 
+  suite('Read-write permissions', () => {
+    setup(async () => {
+      loadTimeData.overrideValues(
+          {'appManagementArcReadOnlyPermissions': false});
+
+      // Re-render with the new loadTimeData.
+      arcPermissionView =
+          document.createElement('app-management-arc-detail-view');
+      replaceBody(arcPermissionView);
+      await flushTasks();
+    });
+
+    test('Toggle works correctly', async () => {
+      const checkPermissionToggle = async (permissionType) => {
+        assertTrue(getPermissionBoolByType(permissionType));
+        assertTrue(
+            getPermissionCrToggleByType(arcPermissionView, permissionType)
+                .checked);
+
+        // Toggle Off.
+        await clickPermissionToggle(permissionType);
+        assertFalse(getPermissionBoolByType(permissionType));
+        assertFalse(
+            getPermissionCrToggleByType(arcPermissionView, permissionType)
+                .checked);
+
+        // Toggle On.
+        await clickPermissionToggle(permissionType);
+        assertTrue(getPermissionBoolByType(permissionType));
+        assertTrue(
+            getPermissionCrToggleByType(arcPermissionView, permissionType)
+                .checked);
+      };
+
+      await checkPermissionToggle('kLocation');
+      await checkPermissionToggle('kCamera');
+      await checkPermissionToggle('kNotifications');
+    });
+
+    test('OnClick handler for permission item works correctly', async () => {
+      const checkPermissionItemOnClick = async (permissionType) => {
+        assertTrue(getPermissionBoolByType(permissionType));
+        assertTrue(
+            getPermissionCrToggleByType(arcPermissionView, permissionType)
+                .checked);
+
+        // Toggle Off.
+        await clickPermissionItem(permissionType);
+        assertFalse(getPermissionBoolByType(permissionType));
+        assertFalse(
+            getPermissionCrToggleByType(arcPermissionView, permissionType)
+                .checked);
+
+        // Toggle On.
+        await clickPermissionItem(permissionType);
+        assertTrue(getPermissionBoolByType(permissionType));
+        assertTrue(
+            getPermissionCrToggleByType(arcPermissionView, permissionType)
+                .checked);
+      };
+
+      await checkPermissionItemOnClick('kLocation');
+      await checkPermissionItemOnClick('kCamera');
+      await checkPermissionItemOnClick('kNotifications');
+      await checkPermissionItemOnClick('kContacts');
+      await checkPermissionItemOnClick('kStorage');
+    });
+  });
+
   suite('Read-only permissions', () => {
     setup(async () => {
       loadTimeData.overrideValues(
@@ -164,7 +182,7 @@ suite('<app-management-arc-detail-view>', () => {
           {'appManagementArcReadOnlyPermissions': false});
     });
 
-    test('Permission display', async () => {
+    test('Boolean permission display', async () => {
       const locationItem =
           getPermissionItemByType(arcPermissionView, 'kLocation');
       assertEquals(
@@ -190,6 +208,48 @@ suite('<app-management-arc-detail-view>', () => {
           locationItem.shadowRoot.querySelector('#description')
               .textContent.trim());
     });
+
+    test('Tri-state permission display', async () => {
+      const locationItem =
+          getPermissionItemByType(arcPermissionView, 'kLocation');
+
+      fakeHandler.setPermission(
+          arcPermissionView.app_.id,
+          createTriStatePermission(
+              PermissionType.kLocation, /*value=*/ TriState.kAllow,
+              /*is_managed=*/ false));
+      await flushTasks();
+
+      assertEquals(
+          'Allowed',
+          locationItem.shadowRoot.querySelector('#description')
+              .textContent.trim());
+
+      fakeHandler.setPermission(
+          arcPermissionView.app_.id,
+          createTriStatePermission(
+              PermissionType.kLocation, /*value=*/ TriState.kAsk,
+              /*is_managed=*/ false));
+      await flushTasks();
+
+      assertEquals(
+          'Ask every time',
+          locationItem.shadowRoot.querySelector('#description')
+              .textContent.trim());
+
+      fakeHandler.setPermission(
+          arcPermissionView.app_.id,
+          createTriStatePermission(
+              PermissionType.kLocation, /*value=*/ TriState.kBlock,
+              /*is_managed=*/ false));
+      await flushTasks();
+
+      assertEquals(
+          'Denied',
+          locationItem.shadowRoot.querySelector('#description')
+              .textContent.trim());
+    });
+
 
     test('Permission display with detail', async () => {
       const permission = createBoolPermission(

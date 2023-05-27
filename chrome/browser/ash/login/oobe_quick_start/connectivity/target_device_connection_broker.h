@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
+#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-shared.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -44,6 +45,7 @@ class TargetDeviceConnectionBroker {
     kConnectionLost,
     kRequestTimedOut,
     kTargetDeviceUpdate,
+    kResponseTimeout,
     kUnknownError,
   };
 
@@ -58,6 +60,8 @@ class TargetDeviceConnectionBroker {
         base::OnceCallback<void(/*ack_successful=*/bool)>;
     using RequestAccountTransferAssertionCallback =
         base::OnceCallback<void(absl::optional<FidoAssertionInfo>)>;
+    using AwaitUserVerificationCallback = base::OnceCallback<void(
+        absl::optional<mojom::UserVerificationResponse>)>;
 
     // Close the connection.
     virtual void Close(
@@ -85,6 +89,10 @@ class TargetDeviceConnectionBroker {
     virtual void RequestAccountTransferAssertion(
         const std::string& challenge_b64url,
         RequestAccountTransferAssertionCallback callback) = 0;
+
+    // Wait for the user to perform verification, and return if it succeeded
+    virtual void WaitForUserVerification(
+        AwaitUserVerificationCallback callback) = 0;
 
    protected:
     AuthenticatedConnection() = default;
@@ -164,6 +172,12 @@ class TargetDeviceConnectionBroker {
   // Clients should check  GetFeatureSupportStatus()  before calling
   // StartAdvertising().
   //
+  // If the target device is attempting to resume a Quick Start connection after
+  // an update, it skips the Fast Pair advertising step and automatically
+  // begins Nearby Connections advertising. Since the source device "remembers"
+  // the target device, we don't need to require manual user confirmation with
+  // the Fast Pair half-sheet.
+  //
   // If |use_pin_authentication| is true, then the target device will
   // advertise its preference to use pin authentication instead of QR code
   // authentication. This should be false unless the user would benefit from
@@ -184,6 +198,9 @@ class TargetDeviceConnectionBroker {
   // are needed to resume the Quick Start connection after the target device
   // reboots.
   virtual base::Value::Dict GetPrepareForUpdateInfo() = 0;
+
+  // Gets the 3 digits of the discoverable name. e.g.: Chromebook (123)
+  virtual std::string GetSessionIdDisplayCode() = 0;
 
  protected:
   void MaybeNotifyFeatureStatus();

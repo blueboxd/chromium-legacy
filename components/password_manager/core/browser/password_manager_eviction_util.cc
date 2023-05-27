@@ -11,28 +11,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/string_split.h"
+#include "components/password_manager/core/browser/password_store_android_backend_api_error_codes.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
-
-namespace {
-
-base::flat_set<int> ParseErrorList(const std::string& serialised_list) {
-  base::flat_set<int> error_list;
-
-  for (base::StringPiece error_str :
-       base::SplitStringPiece(serialised_list, ",", base::TRIM_WHITESPACE,
-                              base::SPLIT_WANT_NONEMPTY)) {
-    int error_code;
-    bool is_converted = base::StringToInt(error_str, &error_code);
-    DCHECK(is_converted);
-    error_list.emplace(error_code);
-  }
-
-  return error_list;
-}
-
-}  // namespace
 
 namespace password_manager_upm_eviction {
 
@@ -53,9 +35,6 @@ void EvictCurrentUser(int api_error_code, PrefService* prefs) {
   prefs->SetInteger(password_manager::prefs::
                         kUnenrolledFromGoogleMobileServicesAfterApiErrorCode,
                     api_error_code);
-  prefs->SetInteger(password_manager::prefs::
-                        kUnenrolledFromGoogleMobileServicesWithErrorListVersion,
-                    password_manager::features::kGmsApiErrorListVersion.Get());
 
   // Reset migration prefs so when the user can join the experiment again,
   // non-syncable data and settings can be migrated to GMS Core.
@@ -65,29 +44,12 @@ void EvictCurrentUser(int api_error_code, PrefService* prefs) {
   prefs->SetDouble(password_manager::prefs::kTimeOfLastMigrationAttempt, 0.0);
   prefs->SetBoolean(password_manager::prefs::kSettingsMigratedToUPM, false);
 
-  // Reset the counter for the auth error prompts, so that the user starts
-  // with a fresh state when re-enrolling.
-  prefs->SetInteger(password_manager::prefs::kTimesUPMAuthErrorShown, 0);
-
   base::UmaHistogramBoolean("PasswordManager.UnenrolledFromUPMDueToErrors",
                             true);
   base::UmaHistogramSparse("PasswordManager.UPMUnenrollmentReason",
                            api_error_code);
   LOG(ERROR) << "Unenrolled from UPM due to error with code: "
              << api_error_code;
-}
-
-bool ShouldInvalidateEviction(const PrefService* prefs) {
-  if (!IsCurrentUserEvicted(prefs))
-    return false;
-
-  // Configured error versions are > 0, default stored version is 0.
-  int stored_version = prefs->GetInteger(
-      password_manager::prefs::
-          kUnenrolledFromGoogleMobileServicesWithErrorListVersion);
-
-  return stored_version <
-         password_manager::features::kGmsApiErrorListVersion.Get();
 }
 
 void ReenrollCurrentUser(PrefService* prefs) {
@@ -98,8 +60,6 @@ void ReenrollCurrentUser(PrefService* prefs) {
       password_manager::prefs::kUnenrolledFromGoogleMobileServicesDueToErrors);
   prefs->ClearPref(password_manager::prefs::
                        kUnenrolledFromGoogleMobileServicesAfterApiErrorCode);
-  prefs->ClearPref(password_manager::prefs::
-                       kUnenrolledFromGoogleMobileServicesWithErrorListVersion);
   prefs->ClearPref(
       password_manager::prefs::kTimesReenrolledToGoogleMobileServices);
   prefs->ClearPref(
@@ -107,15 +67,23 @@ void ReenrollCurrentUser(PrefService* prefs) {
 }
 
 bool ShouldIgnoreOnApiError(int api_error_code) {
-  base::flat_set<int> ignored_errors =
-      ParseErrorList(password_manager::features::kIgnoredGmsApiErrors.Get());
-  return ignored_errors.contains(api_error_code);
+  return api_error_code ==
+             static_cast<int>(
+                 AndroidBackendAPIErrorCode::kAuthErrorResolvable) ||
+         api_error_code ==
+             static_cast<int>(
+                 AndroidBackendAPIErrorCode::kAuthErrorUnresolvable);
 }
 
 bool ShouldRetryOnApiError(int api_error_code) {
-  base::flat_set<int> ignored_errors =
-      ParseErrorList(password_manager::features::kRetriableGmsApiErrors.Get());
-  return ignored_errors.contains(api_error_code);
+  const base::flat_set<int> kRetriableErrors = {
+      static_cast<int>(AndroidBackendAPIErrorCode::kNetworkError),
+      static_cast<int>(AndroidBackendAPIErrorCode::kApiNotConnected),
+      static_cast<int>(
+          AndroidBackendAPIErrorCode::kConnectionSuspendedDuringCall),
+      static_cast<int>(AndroidBackendAPIErrorCode::kReconnectionTimedOut),
+      static_cast<int>(AndroidBackendAPIErrorCode::kBackendGeneric)};
+  return kRetriableErrors.contains(api_error_code);
 }
 
 }  // namespace password_manager_upm_eviction

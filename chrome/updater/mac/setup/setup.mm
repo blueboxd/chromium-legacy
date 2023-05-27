@@ -9,19 +9,20 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "base/apple/bundle_locations.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -42,6 +43,10 @@
 #include "chrome/updater/util/util.h"
 #include "components/crash/core/common/crash_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace updater {
 namespace {
@@ -82,7 +87,7 @@ bool CopyBundle(UpdaterScope scope) {
     }
   }
 
-  if (!CopyDir(base::mac::OuterBundlePath(), *versioned_install_dir,
+  if (!CopyDir(base::apple::OuterBundlePath(), *versioned_install_dir,
                scope == UpdaterScope::kSystem)) {
     LOG(ERROR) << "Copying app to '" << versioned_install_dir->value().c_str()
                << "' failed";
@@ -92,15 +97,119 @@ bool CopyBundle(UpdaterScope scope) {
   return true;
 }
 
+bool BootstrapPlist(UpdaterScope scope, const base::FilePath& path) {
+  std::string output;
+  int exit_code = 0;
+  base::CommandLine launchctl(base::FilePath("/bin/launchctl"));
+  launchctl.AppendArg("bootstrap");
+  launchctl.AppendArg(GetDomain(scope));
+  launchctl.AppendArgPath(path);
+  if (!base::GetAppOutputWithExitCode(launchctl, &output, &exit_code) ||
+      exit_code != 0) {
+    VLOG(1) << "launchctl bootstrap of " << path << " failed: " << exit_code
+            << ": " << output;
+    return false;
+  }
+  return true;
+}
+
+// Ensure that the LaunchAgents/LaunchDaemons directory contains the wake item
+// plist, with the specified contents. If not, the plist will be overwritten and
+// the item reloaded. May block.
+bool EnsureWakeLaunchItemPresence(UpdaterScope scope, NSDictionary* contents) {
+  const absl::optional<base::FilePath> path = GetWakeTaskPlistPath(scope);
+  if (!path) {
+    VLOG(1) << "Failed to find wake plist path.";
+    return false;
+  }
+  const bool previousPlistExists = base::PathExists(*path);
+  if (!base::CreateDirectory(path->DirName())) {
+    VLOG(1) << "Failed to create " << path->DirName();
+    return false;
+  }
+  @autoreleasepool {
+    NSURL* const url = base::mac::FilePathToNSURL(*path);
+
+    // If the file is unchanged, avoid a spammy notification by not touching it.
+    if (previousPlistExists &&
+        [contents isEqualToDictionary:[NSDictionary
+                                          dictionaryWithContentsOfURL:url]]) {
+      VLOG(2) << "Skipping unnecessary update to " << path;
+      return true;
+    }
+
+    // Save a backup of the previous plist.
+    base::ScopedTempDir backup_dir;
+    if (previousPlistExists &&
+        (!backup_dir.CreateUniqueTempDir() ||
+         !base::CopyFile(*path, backup_dir.GetPath().Append("backup_plist")))) {
+      VLOG(1) << "Failed to back up previous plist.";
+      return false;
+    }
+
+    // Bootout the old plist.
+    {
+      std::string output;
+      int exit_code = 0;
+      base::CommandLine launchctl(base::FilePath("/bin/launchctl"));
+      launchctl.AppendArg("bootout");
+      launchctl.AppendArg(GetDomain(scope));
+      launchctl.AppendArgPath(*path);
+      if (!base::GetAppOutputWithExitCode(launchctl, &output, &exit_code)) {
+        VLOG(1) << "Failed to launch launchctl.";
+      } else if (exit_code != 0) {
+        // This is expected in cases where there the service doesn't exist.
+        // Unfortunately, in the user case, bootout returns 5 both for does-not-
+        // exist errors and other errors.
+        VLOG(2) << "launchctl bootout exited: " << exit_code
+                << ", stdout: " << output;
+      }
+    }
+
+    // Update app registration with LaunchServices.
+    const absl::optional<base::FilePath> install_path =
+        GetInstallDirectory(scope);
+    if (install_path) {
+      OSStatus ls_result = LSRegisterURL(
+          base::mac::FilePathToCFURL(
+              install_path->Append("Current").Append(base::StrCat(
+                  {PRODUCT_FULLNAME_STRING, kExecutableSuffix, ".app"}))),
+          true);
+      VLOG_IF(1, ls_result != noErr) << "LSRegisterURL failed: " << ls_result;
+    } else {
+      VLOG(1) << "Failed to retrieve bundle path, skipping LSRegisterURL.";
+    }
+
+    // Overwrite the plist.
+    if (![contents writeToURL:url atomically:YES]) {
+      VLOG(1) << "Failed to write " << url;
+      return false;
+    }
+
+    // Bootstrap the new plist.
+    if (!BootstrapPlist(scope, *path)) {
+      // The plist has already been replaced! If launchctl doesn't like it,
+      // this installation is now broken. Try to recover by restoring and
+      // bootstrapping the backup.
+      if (previousPlistExists &&
+          (!base::Move(backup_dir.GetPath().Append("backup_plist"), *path) ||
+           !BootstrapPlist(scope, *path))) {
+        VLOG(1) << "Failed to restore backup plist.";
+      }
+      return false;
+    }
+    return true;
+  }
+}
+
 bool CreateWakeLaunchdJobPlist(UpdaterScope scope) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  absl::optional<base::ScopedCFTypeRef<CFDictionaryRef>> plist =
-      CreateWakeLaunchdPlist(scope);
+  NSDictionary* plist = CreateWakeLaunchdPlist(scope);
   if (!plist) {
     return false;
   }
-  return EnsureWakeLaunchItemPresence(scope, *plist);
+  return EnsureWakeLaunchItemPresence(scope, plist);
 }
 
 void CleanAfterInstallFailure(UpdaterScope scope) {
@@ -121,8 +230,7 @@ int DoSetup(UpdaterScope scope) {
     return kErrorFailedToGetInstallDir;
   }
   if (!RemoveQuarantineAttributes(*install_dir)) {
-    VLOG(1) << "Couldn't remove quarantine bits for updater. This will likely "
-               "cause Gatekeeper to show a prompt to the user.";
+    VLOG(1) << "RemoveQuarantineAttributes failed. Gatekeeper may prompt.";
   }
 
   // If there is no Current symlink, create one now.
@@ -130,12 +238,30 @@ int DoSetup(UpdaterScope scope) {
   if (!base::PathExists(current_symlink)) {
     if (base::DeleteFile(current_symlink) &&
         symlink(kUpdaterVersion, current_symlink.value().c_str())) {
-      return kErrorFailedToLinkLauncher;
+      return kErrorFailedToLinkCurrent;
     }
   }
 
   if (!CreateWakeLaunchdJobPlist(scope)) {
     return kErrorFailedToCreateWakeLaunchdJobPlist;
+  }
+
+  if (scope == UpdaterScope::kSystem) {
+    const absl::optional<base::FilePath> bundle_path =
+        GetUpdaterAppBundlePath(scope);
+    if (bundle_path) {
+      base::FilePath path =
+          bundle_path->Append("Contents").Append("Helpers").Append("launcher");
+      struct stat info;
+      if (lstat(path.value().c_str(), &info) || info.st_uid ||
+          !(S_IFREG & info.st_mode) ||
+          lchmod(path.value().c_str(),
+                 S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH | S_ISUID)) {
+        VPLOG(1)
+            << "Launcher lchmod failed. Cross-user on-demand will not work";
+        base::debug::DumpWithoutCrashing();
+      }
+    }
   }
 
   return kErrorOk;
@@ -160,29 +286,17 @@ int PromoteCandidate(UpdaterScope scope) {
     return kErrorFailedToGetVersionedInstallDirectory;
   }
 
-  // Update the launcher sym link.
-  base::FilePath tmp_launcher_name = install_dir->Append("NewCurrent");
-  if (!base::DeleteFile(tmp_launcher_name)) {
-    VLOG(1) << "Failed to delete existing " << tmp_launcher_name.value();
+  // Update the Current symlink.
+  base::FilePath tmp_current_name = install_dir->Append("NewCurrent");
+  if (!base::DeleteFile(tmp_current_name)) {
+    VLOG(1) << "Failed to delete existing " << tmp_current_name.value();
   }
-  if (symlink(kUpdaterVersion, tmp_launcher_name.value().c_str())) {
-    return kErrorFailedToLinkLauncher;
+  if (symlink(kUpdaterVersion, tmp_current_name.value().c_str())) {
+    return kErrorFailedToLinkCurrent;
   }
-  if (rename(tmp_launcher_name.value().c_str(),
+  if (rename(tmp_current_name.value().c_str(),
              install_dir->Append("Current").value().c_str())) {
-    return kErrorFailedToRenameLauncher;
-  }
-  if (scope == UpdaterScope::kSystem) {
-    base::FilePath path =
-        bundle_path->Append("Contents").Append("Helpers").Append("launcher");
-    struct stat info;
-    if (lstat(path.value().c_str(), &info) || info.st_uid ||
-        !(S_IFREG & info.st_mode) ||
-        lchmod(path.value().c_str(),
-               S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH | S_ISUID)) {
-      VPLOG(1) << "Launcher lchmod failed. Cross-user on-demand will not work";
-      base::debug::DumpWithoutCrashing();
-    }
+    return kErrorFailedToRenameCurrent;
   }
 
   if (!CreateWakeLaunchdJobPlist(scope)) {
@@ -197,10 +311,8 @@ int PromoteCandidate(UpdaterScope scope) {
 
 #pragma mark Uninstall
 int UninstallCandidate(UpdaterScope scope) {
-  return !DeleteCandidateInstallFolder(scope) ||
-                 !DeleteFolder(GetVersionedInstallDirectory(scope))
-             ? kErrorFailedToDeleteFolder
-             : kErrorOk;
+  return !DeleteCandidateInstallFolder(scope) ? kErrorFailedToDeleteFolder
+                                              : kErrorOk;
 }
 
 int Uninstall(UpdaterScope scope) {
@@ -216,6 +328,20 @@ int Uninstall(UpdaterScope scope) {
                              {base::MayBlock(), base::WithBaseSyncPrimitives()},
                              base::BindOnce(&UninstallKeystone, scope));
 
+  // Delete Keystone shim plists.
+  if (IsSystemInstall(scope)) {
+    base::DeleteFile(GetLibraryFolderPath(scope)
+                         ->Append("LaunchDaemons")
+                         .Append(base::ToLowerASCII(LEGACY_GOOGLE_UPDATE_APPID
+                                                    ".daemon.plist")));
+  } else {
+    base::FilePath launch_agent_dir =
+        GetLibraryFolderPath(scope)->Append("LaunchAgents");
+    base::DeleteFile(launch_agent_dir.Append(
+        base::ToLowerASCII(LEGACY_GOOGLE_UPDATE_APPID ".agent.plist"))) &&
+        base::DeleteFile(launch_agent_dir.Append(base::ToLowerASCII(
+            LEGACY_GOOGLE_UPDATE_APPID ".xpcservice.plist")));
+  }
   // Deleting the install folder is best-effort. Current running processes such
   // as the crash handler process may still write to the updater log file, thus
   // it is not always possible to delete the data folder.

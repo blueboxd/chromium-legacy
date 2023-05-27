@@ -6,11 +6,11 @@
 
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
-#import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/credential_provider_promo_commands.h"
 #import "ios/chrome/browser/shared/public/commands/promos_manager_commands.h"
@@ -196,6 +196,9 @@ using credential_provider_promo::IOSCredentialProviderPromoAction;
   credential_provider_promo::RecordAction(
       [self.mediator promoOriginalSource],
       self.trigger == CredentialProviderPromoTrigger::RemindMeLater, action);
+  GetApplicationContext()->GetLocalState()->SetInteger(
+      prefs::kIosCredentialProviderPromoLastActionTaken,
+      static_cast<int>(action));
 }
 
 @end

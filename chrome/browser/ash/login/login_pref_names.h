@@ -13,6 +13,7 @@ extern const char kOobeComplete[];
 extern const char kOobeOnboardingTime[];
 extern const char kOobeMarketingOptInScreenFinished[];
 extern const char kOobeMarketingOptInChoice[];
+extern const char kOobeCriticalUpdate[];
 // TODO(https://crbug.com/1322394): deprecate this pref once update from
 // CloudReady won't be available anymore.
 extern const char kOobeRevenUpdatedToFlex[];
@@ -26,7 +27,6 @@ extern const char kSamlLockScreenOfflineSigninTimeLimitDays[];
 extern const char kSamlInSessionPasswordChangeEnabled[];
 extern const char kSamlPasswordExpirationAdvanceWarningDays[];
 extern const char kLockScreenReauthenticationEnabled[];
-extern const char kSamlPasswordSyncToken[];
 extern const char kActivityTimeAfterOnboarding[];
 extern const char kOobeGuestMetricsEnabled[];
 extern const char kOobeGuestAcceptedTos[];
@@ -38,6 +38,7 @@ extern const char kUrlParameterToAutofillSAMLUsername[];
 extern const char kChoobeSelectedScreens[];
 extern const char kChoobeCompletedScreens[];
 extern const char kOobeDrivePinningEnabledDeferred[];
+extern const char kOobeDisplaySizeFactorDeferred[];
 
 }  // namespace prefs
 }  // namespace ash

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CrostiniBrowserProxyImpl, GuestOsBrowserProxyImpl} from 'chrome://os-settings/chromeos/lazy_load.js';
-import {Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {CrostiniBrowserProxyImpl, GuestOsBrowserProxyImpl} from 'chrome://os-settings/lazy_load.js';
+import {Router, routes} from 'chrome://os-settings/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {getDeepActiveElement} from 'chrome://resources/ash/common/util.js';
@@ -95,14 +95,16 @@ function selectContainerByIndex(select, index) {
 
 suite('CrostiniPageTests', function() {
   setup(function() {
+    loadTimeData.overrideValues({
+      isCrostiniAllowed: true,
+      isCrostiniSupported: true,
+    });
     crostiniBrowserProxy = new TestCrostiniBrowserProxy();
     CrostiniBrowserProxyImpl.setInstanceForTesting(crostiniBrowserProxy);
     guestOsBrowserProxy = new TestGuestOsBrowserProxy();
     GuestOsBrowserProxyImpl.setInstanceForTesting(guestOsBrowserProxy);
     PolymerTest.clearBody();
     crostiniPage = document.createElement('settings-crostini-page');
-    crostiniPage.showCrostini = true;
-    crostiniPage.allowCrostini = true;
     document.body.appendChild(crostiniPage);
     testing.Test.disableAnimationsAndTransitions();
   });
@@ -167,8 +169,8 @@ suite('CrostiniPageTests', function() {
     });
 
     test('NotSupported', function() {
-      crostiniPage.showCrostini = false;
-      crostiniPage.allowCrostini = false;
+      crostiniPage.set('isCrostiniSupported_', false);
+      crostiniPage.set('isCrostiniAllowed_', false);
       flush();
       assertTrue(!!crostiniPage.shadowRoot.querySelector('#enable'));
       assertFalse(
@@ -176,8 +178,8 @@ suite('CrostiniPageTests', function() {
     });
 
     test('NotAllowed', function() {
-      crostiniPage.showCrostini = true;
-      crostiniPage.allowCrostini = false;
+      crostiniPage.set('isCrostiniSupported_', true);
+      crostiniPage.set('isCrostiniAllowed_', false);
       flush();
       assertTrue(!!crostiniPage.shadowRoot.querySelector('#enable'));
       assertTrue(

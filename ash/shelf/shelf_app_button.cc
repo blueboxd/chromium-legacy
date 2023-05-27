@@ -14,19 +14,23 @@
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/dot_indicator.h"
+#include "ash/style/style_util.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -52,6 +56,8 @@ constexpr int kStatusIndicatorRadiusDip = 2;
 constexpr int kStatusIndicatorMaxSize = 10;
 constexpr int kStatusIndicatorActiveSize = 8;
 constexpr int kStatusIndicatorRunningSize = 4;
+constexpr int kStatusIndicatorActiveSizeJellyEnabled = 12;
+constexpr int kStatusIndicatorRunningSizeJellyEnabled = 6;
 constexpr int kStatusIndicatorThickness = 2;
 
 // The size of the notification indicator circle over the size of the icon.
@@ -159,7 +165,8 @@ class ShelfAppButton::AppStatusIndicatorView
  public:
   METADATA_HEADER(AppStatusIndicatorView);
 
-  AppStatusIndicatorView() {
+  AppStatusIndicatorView()
+      : jelly_enabled_(chromeos::features::IsJellyEnabled()) {
     // Make sure the events reach the parent view for handling.
     SetCanProcessEventsWithinSubtree(false);
     status_change_animation_ = std::make_unique<gfx::SlideAnimation>(this);
@@ -181,15 +188,25 @@ class ShelfAppButton::AppStatusIndicatorView
   }
 
   void OnPaint(gfx::Canvas* canvas) override {
+    if (!GetColorProvider()) {
+      return;
+    }
+
     gfx::ScopedCanvas scoped(canvas);
-    canvas->SaveLayerAlpha(GetAlpha());
+    if (!jelly_enabled_) {
+      canvas->SaveLayerAlpha(GetAlpha());
+    }
 
     const float dsf = canvas->UndoDeviceScaleFactor();
     gfx::PointF center = gfx::RectF(GetLocalBounds()).CenterPoint();
     cc::PaintFlags flags;
+    if (jelly_enabled_) {
+      flags.setColor(GetJellyColor());
+    } else {
+      flags.setColor(
+          GetColorProvider()->GetColor(kColorAshAppStateIndicatorColor));
+    }
     // Active and running indicators look a little different in the new UI.
-    flags.setColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kAppStateIndicatorColor));
     flags.setAntiAlias(true);
     flags.setStrokeCap(cc::PaintFlags::Cap::kRound_Cap);
     flags.setStrokeJoin(cc::PaintFlags::Join::kRound_Join);
@@ -214,12 +231,42 @@ class ShelfAppButton::AppStatusIndicatorView
   }
 
   float GetStrokeLength() {
+    bool is_jelly_enabled = chromeos::features::IsJellyEnabled();
+    int status_indicator_active_size =
+        is_jelly_enabled ? kStatusIndicatorActiveSizeJellyEnabled
+                         : kStatusIndicatorActiveSize;
+    int status_indicator_running_size =
+        is_jelly_enabled ? kStatusIndicatorRunningSizeJellyEnabled
+                         : kStatusIndicatorRunningSize;
+
     if (status_change_animation_->is_animating()) {
       return status_change_animation_->CurrentValueBetween(
-          kStatusIndicatorRunningSize, kStatusIndicatorActiveSize);
+          status_indicator_running_size, status_indicator_active_size);
     }
 
-    return active_ ? kStatusIndicatorActiveSize : kStatusIndicatorRunningSize;
+    return active_ ? status_indicator_active_size
+                   : status_indicator_running_size;
+  }
+
+  SkColor GetJellyColor() {
+    const SkColor active_color =
+        GetColorProvider()->GetColor(cros_tokens::kCrosSysOnSurface);
+    const SkColor inactive_color =
+        GetColorProvider()->GetColor(cros_tokens::kCrosSysSecondary);
+    if (show_attention_) {
+      if (!ShelfAppButtonAnimation::GetInstance()->HasObserver(this)) {
+        return active_color;
+      }
+      return SkColorSetA(active_color,
+                         ShelfAppButtonAnimation::GetInstance()->GetAlpha());
+    }
+
+    if (status_change_animation_->is_animating()) {
+      return gfx::Tween::ColorValueBetween(
+          status_change_animation_->GetCurrentValue(), inactive_color,
+          active_color);
+    }
+    return active_ ? active_color : inactive_color;
   }
 
   SkAlpha GetAlpha() {
@@ -290,6 +337,7 @@ class ShelfAppButton::AppStatusIndicatorView
       ShelfAppButtonAnimation::GetInstance()->RemoveObserver(this);
   }
 
+  const bool jelly_enabled_;
   bool show_attention_ = false;
   bool active_ = false;
   bool horizontal_shelf_ = true;
@@ -375,7 +423,11 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   views::InstallEmptyHighlightPathGenerator(this);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(true);
-  views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
+  if (chromeos::features::IsJellyEnabled()) {
+    views::FocusRing::Get(this)->SetColorId(cros_tokens::kCrosSysFocusRing);
+  } else {
+    views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
+  }
   // The focus ring should have an inset of half the focus border thickness, so
   // the parent view won't clip it.
   views::FocusRing::Get(this)->SetPathGenerator(

@@ -11,8 +11,8 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/account_managed_status_finder.h"
 #include "components/sync/base/features.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
+#include "components/sync/service/sync_service.h"
+#include "components/sync/service/sync_user_settings.h"
 
 namespace history {
 
@@ -85,6 +85,7 @@ syncer::DataTypeController::PreconditionState GetStricterPreconditionState(
 
 }  // namespace
 
+// TODO(crbug.com/1448887): Create a `delegate_for_transport_mode`.
 HistoryModelTypeController::HistoryModelTypeController(
     syncer::ModelType model_type,
     syncer::SyncService* sync_service,
@@ -93,7 +94,8 @@ HistoryModelTypeController::HistoryModelTypeController(
     PrefService* pref_service)
     : ModelTypeController(
           model_type,
-          GetDelegateFromHistoryService(model_type, history_service)),
+          GetDelegateFromHistoryService(model_type, history_service),
+          /*delegate_for_transport_mode=*/nullptr),
       helper_(model_type, sync_service, pref_service),
       identity_manager_(identity_manager),
       history_service_(history_service) {

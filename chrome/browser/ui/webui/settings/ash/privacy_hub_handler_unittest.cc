@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/containers/adapters.h"
+#include "base/ranges/algorithm.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/privacy_hub/privacy_hub_hats_trigger.h"

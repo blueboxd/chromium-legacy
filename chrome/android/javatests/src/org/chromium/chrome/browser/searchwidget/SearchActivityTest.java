@@ -61,7 +61,6 @@ import org.chromium.chrome.browser.locale.LocaleManagerDelegate;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.suggestions.CachedZeroSuggestionsManager;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -87,6 +86,7 @@ import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.components.omnibox.OmniboxSuggestionType;
+import org.chromium.components.omnibox.suggestions.OmniboxSuggestionUiType;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
@@ -215,7 +215,7 @@ public class SearchActivityTest {
 
     @Test
     @SmallTest
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // see crbug.com/1177417
+    @DisabledTest(message = "https://crbug.com/1446044 and https://crbug.com/1177417")
     public void testOmniboxSuggestionContainerAppears() throws Exception {
         SearchActivity searchActivity = startSearchActivity();
 
@@ -257,8 +257,8 @@ public class SearchActivityTest {
      */
     @Test
     @SmallTest
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // see crbug.com/1177417
     @EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
+    @DisabledTest(message = "https://crbug.com/1446044 and https://crbug.com/1177417")
     public void testBackPressFinishActivity_BackRefactored() throws Exception {
         SearchActivity searchActivity = startSearchActivity();
 

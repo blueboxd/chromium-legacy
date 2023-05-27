@@ -223,7 +223,7 @@ float OverlayCandidateFactory::EstimateVisibleDamage(
     const OverlayCandidate& candidate,
     QuadList::ConstIterator quad_list_begin,
     QuadList::ConstIterator quad_list_end) const {
-  gfx::Rect quad_damage = gfx::ToEnclosingRect(GetDamageRect(quad, candidate));
+  gfx::Rect quad_damage = gfx::ToEnclosingRect(GetDamageEstimate(candidate));
   float occluded_damage_estimate_total = 0.f;
   for (auto overlap_iter = quad_list_begin; overlap_iter != quad_list_end;
        ++overlap_iter) {
@@ -386,54 +386,75 @@ OverlayCandidate::CandidateStatus OverlayCandidateFactory::FromDrawQuadResource(
     }
   }
 
-  // The delegate might not support specifying |clip_rect| so if not, apply it
-  // to the |display_rect| and |uv_rect| directly.
-  if (is_delegated_context_ && !supports_clip_rect_) {
-    // A clip rect cannot be applied directly to any rects in content space if
-    // we have a non-axis-aligned transform between content and target space.
-    // There are no platforms that support arbitrary transforms but do not
-    // support clip rects, so we DCHECK here instead of returning an error.
-    DCHECK(absl::holds_alternative<gfx::OverlayTransform>(candidate.transform));
-
-    gfx::RectF clip_to_apply = candidate.display_rect;
-
-    auto* rpdq = quad->DynamicCast<AggregatedRenderPassDrawQuad>();
-    if (rpdq) {
-      auto filter_it = render_pass_filters_->find(rpdq->render_pass_id);
-      if (filter_it != render_pass_filters_->end()) {
-        clip_to_apply =
-            gfx::RectF(GetExpandedRectWithPixelMovingForegroundFilter(
-                *rpdq, *filter_it->second));
+  if (is_delegated_context_) {
+    // Lacros cannot currently delegate clip rects on quads that extend outside
+    // the primary rect. This is because there are bugs that cause the Lacros
+    // window and drop shadow to move incorrectly in that case.
+    bool quad_within_window = primary_rect_.Contains(candidate.display_rect);
+    bool transform_supports_clipping =
+        supports_arbitrary_transform_ ||
+        absl::holds_alternative<gfx::OverlayTransform>(candidate.transform);
+    bool has_content_clipping = quad->visible_rect != quad->rect;
+    bool can_delegate_clipping = supports_clip_rect_ && quad_within_window &&
+                                 transform_supports_clipping &&
+                                 !has_content_clipping;
+    if (can_delegate_clipping) {
+      if (candidate.clip_rect.has_value() && candidate.clip_rect->IsEmpty()) {
+        return CandidateStatus::kFailVisible;
+      }
+    } else {
+      // Apply clipping to the |display_rect| and |uv_rect| directly.
+      auto status = DoGeometricClipping(quad, candidate);
+      if (status != CandidateStatus::kSuccess) {
+        return status;
       }
     }
+  }
 
-    if (candidate.clip_rect.has_value()) {
-      clip_to_apply.Intersect(gfx::RectF(*candidate.clip_rect));
+  return CandidateStatus::kSuccess;
+}
+
+OverlayCandidate::CandidateStatus OverlayCandidateFactory::DoGeometricClipping(
+    const DrawQuad* quad,
+    OverlayCandidate& candidate) const {
+  gfx::RectF clip_to_apply = candidate.display_rect;
+
+  auto* rpdq = quad->DynamicCast<AggregatedRenderPassDrawQuad>();
+  if (rpdq) {
+    auto filter_it = render_pass_filters_->find(rpdq->render_pass_id);
+    if (filter_it != render_pass_filters_->end()) {
+      clip_to_apply = gfx::RectF(GetExpandedRectWithPixelMovingForegroundFilter(
+          *rpdq, *filter_it->second));
     }
+  }
 
-    // TODO(rivr): Apply the same |visible_rect| and |display_rect| clip logic
-    // when delegating |clip_rect|.
-    if (quad->visible_rect != quad->rect) {
-      auto visible_rect = gfx::RectF(quad->visible_rect);
-      visible_rect = sqs->quad_to_target_transform.MapRect(visible_rect);
-      clip_to_apply.Intersect(visible_rect);
-    }
+  if (candidate.clip_rect.has_value()) {
+    clip_to_apply.Intersect(gfx::RectF(*candidate.clip_rect));
+  }
 
-    // TODO(https://crbug.com/1300552) : Tile quads can overlay other quads
-    // and the window by one pixel. Exo does not yet clip these quads so we
-    // need to clip here with the |primary_rect|.
-    clip_to_apply.Intersect(primary_rect_);
+  // TODO(rivr): Apply the same |visible_rect| and |display_rect| clip logic
+  // when delegating |clip_rect|.
+  if (quad->visible_rect != quad->rect) {
+    auto visible_rect = gfx::RectF(quad->visible_rect);
+    visible_rect =
+        quad->shared_quad_state->quad_to_target_transform.MapRect(visible_rect);
+    clip_to_apply.Intersect(visible_rect);
+  }
 
-    if (clip_to_apply.IsEmpty()) {
-      return CandidateStatus::kFailVisible;
-    }
+  // TODO(https://crbug.com/1300552) : Tile quads can overlay other quads
+  // and the window by one pixel. Exo does not yet clip these quads so we
+  // need to clip here with the |primary_rect|.
+  clip_to_apply.Intersect(primary_rect_);
 
-    // Render passes must be clipped after drawing in 'PrepareRenderPassOverlay'
-    // as filters can expand their display size.
-    if (!rpdq) {
-      OverlayCandidate::ApplyClip(candidate, clip_to_apply);
-      candidate.clip_rect = absl::nullopt;
-    }
+  if (clip_to_apply.IsEmpty()) {
+    return CandidateStatus::kFailVisible;
+  }
+
+  // Render passes must be clipped after drawing in 'PrepareRenderPassOverlay'
+  // as filters can expand their display size.
+  if (!rpdq) {
+    OverlayCandidate::ApplyClip(candidate, clip_to_apply);
+    candidate.clip_rect = absl::nullopt;
   }
 
   return CandidateStatus::kSuccess;
@@ -657,47 +678,27 @@ void OverlayCandidateFactory::HandleClipAndSubsampling(
 
 void OverlayCandidateFactory::AssignDamage(const DrawQuad* quad,
                                            OverlayCandidate& candidate) const {
-  auto& transform = quad->shared_quad_state->quad_to_target_transform;
-  auto damage_rect = GetDamageRect(quad, candidate);
-  gfx::RectF transformed_damage;
-  if (absl::optional<gfx::RectF> transformed =
-          transform.InverseMapRect(damage_rect)) {
-    transformed_damage = *transformed;
-    // The quad's |rect| is in content space. To get to buffer space we need
-    // to remove the |rect|'s pixel offset.
-    auto buffer_damage_origin =
-        transformed_damage.origin() - gfx::PointF(quad->rect.origin());
-    transformed_damage.set_origin(
-        gfx::PointF(buffer_damage_origin.x(), buffer_damage_origin.y()));
-
-    if (!quad->rect.IsEmpty()) {
-      // Normalize damage to be in UVs.
-      transformed_damage.InvScale(quad->rect.width(), quad->rect.height());
-    }
-
-    // The normalization above is not enough if the |uv_rect| is not 0,0-1x1.
-    // This is because texture uvs can effectively magnify damage.
-    if (!candidate.uv_rect.IsEmpty()) {
-      transformed_damage.Scale(candidate.uv_rect.width(),
-                               candidate.uv_rect.height());
-      transformed_damage.Offset(candidate.uv_rect.OffsetFromOrigin());
-    }
-
-    // Buffer damage is in texels not UVs so scale by resource size.
-    transformed_damage.Scale(candidate.resource_size_in_pixels.width(),
-                             candidate.resource_size_in_pixels.height());
-  } else {
-    // If not invertible, set to full damage.
-    // TODO(https://crbug.com/1279965): |resource_size_in_pixels| might not be
-    // properly initialized at this stage.
-    transformed_damage =
-        gfx::RectF(gfx::SizeF(candidate.resource_size_in_pixels));
-  }
+  candidate.damage_rect = GetDamageRect(quad, candidate);
   // For underlays the function 'EstimateVisibleDamage()' is called to update
   // |damage_area_estimate| to more accurately reflect the actual visible
   // damage.
-  candidate.damage_area_estimate = damage_rect.size().GetArea();
-  candidate.damage_rect = transformed_damage;
+  if (!is_delegated_context_) {
+    candidate.damage_area_estimate =
+        GetDamageEstimate(candidate).size().GetArea();
+  }
+}
+
+gfx::RectF OverlayCandidateFactory::GetDamageEstimate(
+    const OverlayCandidate& candidate) const {
+  // If we have assigned damage we can trust that.
+  if (!candidate.damage_rect.IsEmpty()) {
+    return candidate.damage_rect;
+  }
+
+  // Otherwise we will see how much unassigned damage covers the display_rect.
+  return gfx::IntersectRects(
+      OverlayCandidate::DisplayRectInTargetSpace(candidate),
+      gfx::RectF(unassigned_surface_damage_));
 }
 
 gfx::RectF OverlayCandidateFactory::GetDamageRect(
@@ -705,15 +706,7 @@ gfx::RectF OverlayCandidateFactory::GetDamageRect(
     const OverlayCandidate& candidate) const {
   const SharedQuadState* sqs = quad->shared_quad_state;
   if (!sqs->overlay_damage_index.has_value()) {
-    // This is a special case where an overlay candidate may have damage but it
-    // does not have a damage index since it was not the only quad in the
-    // original surface. Here the |unassigned_surface_damage_| will contain all
-    // unassigned damage and we use it to conservatively estimate the damage for
-    // this quad. We limit the damage to the candidates quad rect in question.
-    gfx::RectF intersection =
-        OverlayCandidate::DisplayRectInTargetSpace(candidate);
-    intersection.Intersect(gfx::RectF(unassigned_surface_damage_));
-    return intersection;
+    return gfx::RectF();
   }
 
   size_t overlay_damage_index = sqs->overlay_damage_index.value();
@@ -723,7 +716,22 @@ gfx::RectF OverlayCandidateFactory::GetDamageRect(
     return gfx::RectF();
   }
 
-  return gfx::RectF((*surface_damage_rect_list_)[overlay_damage_index]);
+  // Assigned damage assumes that |candidate.display_rect| is already in target
+  // space, but that isn't true for transformation matrices.
+  if (absl::holds_alternative<gfx::Transform>(candidate.transform)) {
+    return gfx::RectF();
+  }
+
+  // Ash can't overlay candidates that aren't pixel-aligned so don't bother
+  // assigning damage to them. This would also be a challenge because
+  // |OverlayCandidate.damage_rect| is only a gfx::Rect.
+  if (!candidate.display_rect.IsExpressibleAsRect()) {
+    return gfx::RectF();
+  }
+
+  auto damage = gfx::RectF((*surface_damage_rect_list_)[overlay_damage_index]);
+  DBG_DRAW_RECT("damage_assigned", damage);
+  return damage;
 }
 
 }  // namespace viz

@@ -78,6 +78,9 @@ SafetyCheckHandler::UpdateStatus ConvertToUpdateStatus(
       return SafetyCheckHandler::UpdateStatus::kRelaunch;
     case VersionUpdater::DISABLED_BY_ADMIN:
       return SafetyCheckHandler::UpdateStatus::kDisabledByAdmin;
+    case VersionUpdater::UPDATE_TO_ROLLBACK_VERSION_DISALLOWED:
+      return SafetyCheckHandler::UpdateStatus::
+          kUpdateToRollbackVersionDisallowed;
     // The disabled state can only be returned on non Chrome-branded browsers.
     case VersionUpdater::DISABLED:
       return SafetyCheckHandler::UpdateStatus::kUnknown;
@@ -358,7 +361,7 @@ void SafetyCheckHandler::OnPasswordsCheckResult(PasswordsStatus status,
             GetStringForPasswords(status, compromised, weak, done, total));
   FireWebUIListener(kPasswordsEvent, event);
   if (status != PasswordsStatus::kChecking) {
-    base::UmaHistogramEnumeration("Settings.SafetyCheck.PasswordsResult",
+    base::UmaHistogramEnumeration("Settings.SafetyCheck.PasswordsResult2",
                                   status);
   }
   passwords_status_ = status;
@@ -416,6 +419,10 @@ std::u16string SafetyCheckHandler::GetStringForUpdates(UpdateStatus status) {
       return l10n_util::GetStringFUTF16(
           IDS_SETTINGS_SAFETY_CHECK_UPDATES_DISABLED_BY_ADMIN,
           base::ASCIIToUTF16(chrome::kWhoIsMyAdministratorHelpURL));
+    // This status is only used in ChromeOS.
+    case UpdateStatus::kUpdateToRollbackVersionDisallowed:
+      return l10n_util::GetStringUTF16(
+          IDS_SETTINGS_UPDATE_TO_ROLLBACK_VERSION_DISALLOWED);
     case UpdateStatus::kFailedOffline:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_UPDATES_FAILED_OFFLINE);
@@ -517,6 +524,11 @@ std::u16string SafetyCheckHandler::GetStringForPasswords(
     case PasswordsStatus::kFeatureUnavailable:
       return l10n_util::GetStringUTF16(
           IDS_SETTINGS_SAFETY_CHECK_PASSWORDS_FEATURE_UNAVAILABLE);
+    case PasswordsStatus::kReusedPasswordsExist:
+    case PasswordsStatus::kMutedCompromisedExist:
+      // Reused and muted compromised warning results not yet supported on
+      // Desktop.
+      NOTREACHED_NORETURN();
   }
 }
 

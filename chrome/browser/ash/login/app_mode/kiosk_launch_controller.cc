@@ -9,11 +9,9 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/check_is_test.h"
-#include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -28,6 +26,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/app_mode/lacros_launcher.h"
 #include "chrome/browser/ash/app_mode/startup_app_launcher.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
@@ -250,15 +249,9 @@ KioskLaunchController::KioskLaunchController(
     KioskAppLauncherFactory app_launcher_factory)
     : host_(host),
       splash_screen_view_(splash_screen),
-      app_launcher_factory_(std::move(app_launcher_factory)),
-      network_ui_controller_(
-          std::make_unique<NetworkUiController>(*this, host, splash_screen)) {}
+      app_launcher_factory_(std::move(app_launcher_factory)) {}
 
-KioskLaunchController::~KioskLaunchController() {
-  if (splash_screen_view_) {
-    splash_screen_view_->SetDelegate(nullptr);
-  }
-}
+KioskLaunchController::~KioskLaunchController() = default;
 
 void KioskLaunchController::Start(const KioskAppId& kiosk_app_id,
                                   bool auto_launch) {
@@ -285,7 +278,9 @@ void KioskLaunchController::Start(const KioskAppId& kiosk_app_id,
     }
   }
 
-  splash_screen_view_->SetDelegate(network_ui_controller_.get());
+  network_ui_controller_ =
+      std::make_unique<NetworkUiController>(*this, host_, splash_screen_view_);
+
   splash_screen_view_->Show(GetAppData());
 
   splash_wait_timer_.Start(FROM_HERE, GetSplashScreenMinTime(),
@@ -362,12 +357,7 @@ void KioskLaunchController::OnProfileLoaded(Profile* profile) {
   network_ui_controller_->SetProfile(profile);
 
   InitializeKeyboard();
-
-  if (network_ui_controller_->ShouldShowNetworkConfig()) {
-    network_ui_controller_->UserRequestedNetworkConfig();
-  } else {
-    InitializeLauncher();
-  }
+  LaunchLacros();
 }
 
 void KioskLaunchController::InitializeKeyboard() {
@@ -377,6 +367,22 @@ void KioskLaunchController::InitializeKeyboard() {
     // Make keyboard config sync with the `VirtualKeyboardFeatures`
     // policy.
     ChromeKeyboardControllerClient::Get()->SetKeyboardConfigFromPref(true);
+  }
+}
+
+void KioskLaunchController::LaunchLacros() {
+  app_state_ = kLaunchingLacros;
+  lacros_launcher_ = std::make_unique<app_mode::LacrosLauncher>();
+  lacros_launcher_->Start(
+      base::BindOnce(&KioskLaunchController::OnLacrosLaunchComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void KioskLaunchController::OnLacrosLaunchComplete() {
+  if (network_ui_controller_->ShouldShowNetworkConfig()) {
+    network_ui_controller_->UserRequestedNetworkConfig();
+  } else {
+    InitializeLauncher();
   }
 }
 
@@ -453,11 +459,8 @@ void KioskLaunchController::CleanUp() {
 
   app_launcher_observation_.Reset();
 
-  // Deleting the local objects later so they
-  DeleteSoon(std::move(kiosk_profile_loader_));
-  DeleteSoon(std::move(force_install_observer_));
-  DeleteSoon(std::move(app_launcher_));
-  DeleteSoon(std::move(network_ui_controller_));
+  app_launcher_.reset();
+  network_ui_controller_.reset();
 
   // Can be null in tests.
   if (host_) {
@@ -509,18 +512,7 @@ void KioskLaunchController::OnAppPrepared() {
     return;
   }
 
-  if (network_ui_controller_->IsShowingNetworkConfigScreen()) {
-    return;
-  }
-
   app_state_ = AppState::kInstallingExtensions;
-
-  // Initialize and start Lacros for preparing force-installed extensions.
-  if (crosapi::browser_util::IsLacrosEnabledInWebKioskSession() &&
-      !crosapi::BrowserManager::Get()->IsRunningOrWillRun()) {
-    SYSLOG(INFO) << "Launching lacros for web kiosk";
-    crosapi::BrowserManager::Get()->InitializeAndStartIfNeeded();
-  }
 
   splash_screen_view_->UpdateAppLaunchState(
       AppLaunchSplashScreenView::AppLaunchState::kInstallingExtension);

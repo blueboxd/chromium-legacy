@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
+#include "components/sync/service/sync_service.h"
 #include "components/sync/test/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
@@ -105,8 +105,7 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest, PersonalizedDataCollection) {
       syncer::SyncService::TransportState::INITIALIZING);
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
-      /*types=*/syncer::UserSelectableTypeSet(
-          syncer::UserSelectableType::kHistory));
+      /*types=*/{syncer::UserSelectableType::kHistory});
 
   sync_service_.FireOnStateChangeOnAllObservers();
   EXPECT_EQ(helper->GetConsentState(),
@@ -145,8 +144,7 @@ TEST_F(UrlKeyedDataCollectionConsentHelperTest,
 
     sync_service_.GetUserSettings()->SetSelectedTypes(
         /*sync_everything=*/false,
-        /*types=*/syncer::UserSelectableTypeSet(
-            syncer::UserSelectableType::kBookmarks));
+        /*types=*/{syncer::UserSelectableType::kBookmarks});
 
     sync_service_.FireOnStateChangeOnAllObservers();
     EXPECT_TRUE(helper->IsEnabled());

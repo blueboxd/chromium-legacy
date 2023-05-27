@@ -15,10 +15,14 @@ AuthenticatorMac::AuthenticatorMac() = default;
 AuthenticatorMac::~AuthenticatorMac() = default;
 
 bool AuthenticatorMac::CheckIfBiometricsAvailable() {
-  base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  return
-      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                           error:nil];
+  if (@available(macOS 10.12.2, *)) {
+    base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
+    return
+        [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                             error:nil];
+  } else {
+    return NO;
+  }
 }
 
 bool AuthenticatorMac::AuthenticateUserWithNonBiometrics(

@@ -187,11 +187,15 @@ CodeSigningState ProcessIsSigned() {
 }
 
 bool DeviceHasBiometricsAvailable() {
-  base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
-  NSError* nserr;
-  return
-      [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
-                           error:&nserr];
+  if (@available(macOS 10.12.2, *)) {
+    base::scoped_nsobject<LAContext> context([[LAContext alloc] init]);
+    NSError* nserr;
+    return
+        [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+                             error:&nserr];
+  } else {
+    return NO;
+  }
 }
 
 }  // namespace mac

@@ -14,6 +14,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,7 +26,7 @@ namespace quarantine {
 NSDictionary* GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties) {
-  static NSString * const*NSURLQuarantinePropertiesKeyStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSURLQuarantinePropertiesKey"));
+  static NSString * const*NSURLQuarantinePropertiesKeyStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSURLQuarantinePropertiesKey"));
   if(NSURLQuarantinePropertiesKeyStr) {
     NSURL* file_url = base::mac::FilePathToNSURL(file);
     if (!file_url) {
@@ -35,7 +36,7 @@ NSDictionary* GetQuarantineProperties(
     NSError* __autoreleasing error = nil;
     id __autoreleasing quarantine_properties = nil;
     BOOL success = [file_url getResourceValue:&quarantine_properties
-                                       forKey:NSURLQuarantinePropertiesKeyStr
+                                       forKey:*NSURLQuarantinePropertiesKeyStr
                                         error:&error];
     if (!success) {
       std::string error_message(error ? error.description.UTF8String : "");

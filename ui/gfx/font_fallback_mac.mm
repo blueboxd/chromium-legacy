@@ -47,7 +47,6 @@ CFArrayRef CTFontCopyDefaultCascadeListForLanguagesWrapper(
 
 }  // namespace
 
-
 namespace gfx {
 
 namespace {
@@ -68,12 +67,12 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
   // On Mac "There is a system default cascade list (which is polymorphic, based
   // on the user's language setting and current font)" - CoreText Programming
   // Guide.
-  NSArray* languages = [[NSUserDefaults standardUserDefaults]
-      stringArrayForKey:@"AppleLanguages"];
+  NSArray* languages =
+      [NSUserDefaults.standardUserDefaults stringArrayForKey:@"AppleLanguages"];
   CFArrayRef languages_cf = base::mac::NSToCFCast(languages);
   base::ScopedCFTypeRef<CFArrayRef> cascade_list(
       CTFontCopyDefaultCascadeListForLanguagesWrapper(
-          static_cast<CTFontRef>(font.GetNativeFont()), languages_cf));
+          font.GetCTFont(), languages_cf));
 
   std::vector<Font> fallback_fonts;
   if (!cascade_list)

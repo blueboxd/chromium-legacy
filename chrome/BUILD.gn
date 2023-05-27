@@ -1267,6 +1267,8 @@ if (is_win) {
       "VideoToolbox",
       "-weak_framework",
       "CoreBluetooth",
+      "-weak-lpmenergy",
+      "-weak-lpmsample",
     ]
 
     if (!is_component_build) {
